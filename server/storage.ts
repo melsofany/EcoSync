@@ -298,8 +298,32 @@ export class DatabaseStorage implements IStorage {
     return item;
   }
 
-  async getQuotationItems(quotationId: string): Promise<QuotationItem[]> {
-    return await db.select().from(quotationItems).where(eq(quotationItems.quotationId, quotationId));
+  async getQuotationItems(quotationId: string): Promise<any[]> {
+    const results = await db
+      .select({
+        id: quotationItems.id,
+        quotationId: quotationItems.quotationId,
+        itemId: quotationItems.itemId,
+        quantity: quotationItems.quantity,
+        unitPrice: quotationItems.unitPrice,
+        totalPrice: quotationItems.totalPrice,
+        currency: quotationItems.currency,
+        supplierId: quotationItems.supplierId,
+        supplierQuoteDate: quotationItems.supplierQuoteDate,
+        createdAt: quotationItems.createdAt,
+        item: {
+          id: items.id,
+          itemNumber: items.itemNumber,
+          description: items.description,
+          partNumber: items.partNumber,
+          category: items.category,
+        }
+      })
+      .from(quotationItems)
+      .leftJoin(items, eq(quotationItems.itemId, items.id))
+      .where(eq(quotationItems.quotationId, quotationId));
+    
+    return results;
   }
 
   async removeQuotationItem(itemId: string): Promise<void> {
