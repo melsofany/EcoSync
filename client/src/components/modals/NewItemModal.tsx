@@ -91,11 +91,22 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
       onClose();
     },
     onError: (error: any) => {
-      toast({
-        title: "خطأ في إضافة الصنف",
-        description: error.message || "حدث خطأ أثناء إضافة الصنف",
-        variant: "destructive",
-      });
+      console.error('Item creation error:', error);
+      
+      // Handle duplicate error specifically
+      if (error.status === 409 && error.error === "DUPLICATE_PART_NUMBER") {
+        toast({
+          title: "صنف مكرر",
+          description: `يوجد صنف بنفس رقم القطعة: ${error.existingItem?.itemNumber}`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "خطأ في إضافة الصنف",
+          description: error.message || "حدث خطأ أثناء إضافة الصنف",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -252,19 +263,43 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
 
                 {aiResults && !isCheckingAI && (
                   <div>
+                    {/* Show duplicate warning if AI detected duplicates */}
+                    {aiResults.isDuplicate && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-3">
+                        <div className="flex items-center space-x-2 space-x-reverse mb-2">
+                          <AlertCircle className="h-5 w-5 text-red-600" />
+                          <span className="text-sm font-bold text-red-800">
+                            تحذير: تم اكتشاف صنف مكرر!
+                          </span>
+                        </div>
+                        <p className="text-sm text-red-700 mb-2">
+                          {aiResults.recommendation || "يُنصح بعدم إضافة هذا الصنف لأنه موجود مسبقاً"}
+                        </p>
+                        {aiResults.duplicateOf && (
+                          <p className="text-xs text-red-600">
+                            الصنف المكرر: {aiResults.duplicateOf}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     {aiResults.similarItems && aiResults.similarItems.length > 0 ? (
                       <div>
                         <div className="flex items-center space-x-2 space-x-reverse mb-2">
-                          <AlertCircle className="h-4 w-4 text-amber-600" />
-                          <span className="text-sm font-medium text-amber-700">
+                          <AlertCircle className={`h-4 w-4 ${aiResults.isDuplicate ? 'text-red-600' : 'text-amber-600'}`} />
+                          <span className={`text-sm font-medium ${aiResults.isDuplicate ? 'text-red-700' : 'text-amber-700'}`}>
                             تم العثور على {aiResults.similarItems.length} صنف مشابه
+                            {aiResults.isDuplicate && ' (مكرر)'}
                           </span>
                         </div>
                         <div className="space-y-2">
                           {aiResults.similarItems.slice(0, 3).map((item: any) => (
-                            <div key={item.id} className="p-2 bg-white rounded border">
+                            <div key={item.id} className={`p-2 rounded border ${aiResults.isDuplicate ? 'bg-red-50 border-red-200' : 'bg-white'}`}>
                               <p className="text-sm font-medium">{item.itemNumber}</p>
                               <p className="text-xs text-gray-600">{item.description}</p>
+                              {item.partNumber && (
+                                <p className="text-xs text-blue-600">Part Number: {item.partNumber}</p>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -278,10 +313,17 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
                       </div>
                     )}
                     
-                    <p className="text-xs text-purple-600 mt-2">
-                      AI Provider: {aiResults.aiProvider === "deep_seek" ? "Deep Seek" : "Local Matching"}
-                      {aiResults.aiProvider === "deep_seek" && !aiResults.apiKeyConfigured && " (API Key غير مُكوّن)"}
-                    </p>
+                    <div className="mt-3 pt-2 border-t border-gray-200">
+                      <p className="text-xs text-purple-600">
+                        AI Provider: {aiResults.aiProvider === "deepseek" ? "DeepSeek" : "Local Matching"}
+                        {aiResults.aiProvider === "deepseek" && !aiResults.apiKeyConfigured && " (API Key غير مُكوّن)"}
+                      </p>
+                      {aiResults.confidence && (
+                        <p className="text-xs text-gray-500">
+                          مستوى الثقة: {aiResults.confidence === "high" ? "عالي" : aiResults.confidence === "medium" ? "متوسط" : "منخفض"}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -299,7 +341,8 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
             </Button>
             <Button
               type="submit"
-              disabled={createItemMutation.isPending}
+              disabled={createItemMutation.isPending || (aiResults?.isDuplicate && aiResults?.confidence === "high")}
+              variant={aiResults?.isDuplicate && aiResults?.confidence === "high" ? "destructive" : "default"}
             >
               {createItemMutation.isPending ? (
                 <>

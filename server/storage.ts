@@ -300,6 +300,16 @@ export class DatabaseStorage implements IStorage {
 
   async findSimilarItems(description: string, partNumber?: string): Promise<Item[]> {
     if (partNumber) {
+      // First check for exact part number match (highest priority for duplicates)
+      const exactPartNumberMatch = await db.select().from(items).where(
+        eq(items.partNumber, partNumber)
+      ).limit(10);
+      
+      if (exactPartNumberMatch.length > 0) {
+        return exactPartNumberMatch;
+      }
+      
+      // If no exact match, check for similar descriptions with similar part numbers
       return await db.select().from(items).where(
         and(
           like(items.description, `%${description}%`),

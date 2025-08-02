@@ -325,6 +325,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: userId,
       });
       
+      // Check for exact duplicates before creating the item
+      if (validatedData.partNumber) {
+        const similarItems = await storage.findSimilarItems(validatedData.description, validatedData.partNumber);
+        const exactMatch = similarItems.find(item => item.partNumber === validatedData.partNumber);
+        
+        if (exactMatch) {
+          return res.status(409).json({ 
+            message: "Duplicate item detected: An item with this part number already exists",
+            error: "DUPLICATE_PART_NUMBER",
+            existingItem: {
+              itemNumber: exactMatch.itemNumber,
+              description: exactMatch.description,
+              partNumber: exactMatch.partNumber
+            }
+          });
+        }
+      }
+      
       // Check for similar items using AI simulation
       const similarItems = await storage.findSimilarItems(validatedData.description, validatedData.partNumber || undefined);
       
@@ -369,13 +387,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       try {
-        // DeepSeek AI integration for item comparison
-        const prompt = `Analyze this item for similarity with existing items:
-        Description: ${description}
-        ${partNumber ? `Part Number: ${partNumber}` : ''}
+        // Get local similar items first for comparison context
+        const similarItems = await storage.findSimilarItems(description, partNumber);
         
-        Compare with existing items and determine if this is a duplicate or new item.
-        Return similarity analysis and recommendations.`;
+        // Create context for AI analysis with existing items
+        const existingItemsContext = similarItems.length > 0 
+          ? `\n\nExisting similar items in database:\n${similarItems.map((item, index) => 
+              `${index + 1}. Item Number: ${item.itemNumber}, Part Number: ${item.partNumber}, Description: ${item.description}`
+            ).join('\n')}`
+          : '\n\nNo similar items found in database.';
+
+        // DeepSeek AI integration for item comparison
+        const prompt = `You are an inventory management expert. Analyze if this new item is a duplicate of existing items:
+
+NEW ITEM TO ADD:
+- Description: ${description}
+${partNumber ? `- Part Number: ${partNumber}` : '- Part Number: Not provided'}
+${existingItemsContext}
+
+ANALYSIS REQUIRED:
+1. Is this item a DUPLICATE of any existing item? (Consider exact part number matches as definite duplicates)
+2. If duplicate, which existing item number should be used instead?
+3. If not duplicate, confirm it's safe to add as a new item.
+
+RULES:
+- Items with identical part numbers are ALWAYS duplicates (regardless of description differences)
+- Consider variations in language (Arabic/English) and spelling
+- Account for abbreviations and common naming variations
+
+Respond in JSON format:
+{
+  "isDuplicate": boolean,
+  "confidence": "high|medium|low",
+  "duplicateOf": "item_number_if_duplicate_or_null",
+  "reason": "explanation_of_decision",
+  "recommendation": "action_to_take"
+}`;
 
         const deepSeekResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
           method: 'POST',
@@ -393,6 +440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ],
             max_tokens: 1000,
             temperature: 0.1,
+            response_format: { type: "json_object" }
           }),
         });
 
@@ -402,9 +450,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         const deepSeekResult = await deepSeekResponse.json();
         const aiAnalysis = deepSeekResult.choices[0]?.message?.content || '';
-
-        // Also get local similar items for comparison
-        const similarItems = await storage.findSimilarItems(description, partNumber);
+        
+        let aiParsedResult = null;
+        try {
+          aiParsedResult = JSON.parse(aiAnalysis);
+        } catch (parseError) {
+          console.error("Failed to parse AI response:", parseError);
+        }
         
         await logActivity(req, "ai_item_comparison", "item", undefined, `DeepSeek AI analysis for: ${description}`);
 
@@ -414,6 +466,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           aiProvider: "deepseek",
           apiKeyConfigured: true,
           aiAnalysis,
+          aiParsedResult,
+          isDuplicate: aiParsedResult?.isDuplicate || false,
+          duplicateOf: aiParsedResult?.duplicateOf || null,
+          confidence: aiParsedResult?.confidence || "low",
+          recommendation: aiParsedResult?.recommendation || "Manual review required"
         });
       } catch (error) {
         console.error("DeepSeek API error:", error);
