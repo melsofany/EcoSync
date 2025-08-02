@@ -61,9 +61,15 @@ export default function CreatePurchaseOrder() {
     queryKey: ["/api/quotations"],
   });
 
-  // Get selected quotation details
+  // Get selected quotation details with items
   const { data: selectedQuotation } = useQuery<Quotation>({
     queryKey: ["/api/quotations", selectedQuotationId],
+    enabled: !!selectedQuotationId,
+  });
+
+  // Get quotation items separately
+  const { data: quotationItems } = useQuery({
+    queryKey: ["/api/quotations", selectedQuotationId, "items"],
     enabled: !!selectedQuotationId,
   });
 
@@ -78,21 +84,19 @@ export default function CreatePurchaseOrder() {
     }
   }, [useCustomPONumber]);
 
-  // Initialize PO items when quotation is selected
+  // Initialize PO items when quotation items are loaded
   React.useEffect(() => {
-    if (selectedQuotation?.items) {
-      const items: POItem[] = selectedQuotation.items
-        .filter(item => item.supplierPricing)
-        .map(item => ({
-          itemId: item.id,
-          quantity: item.quantity,
-          unitPrice: Number(item.supplierPricing!.unitPrice),
-          totalPrice: item.quantity * Number(item.supplierPricing!.unitPrice),
-          notes: ""
-        }));
+    if (quotationItems && Array.isArray(quotationItems)) {
+      const items: POItem[] = quotationItems.map((item: any) => ({
+        itemId: item.id || item.itemId,
+        quantity: item.quantity || 1,
+        unitPrice: 0, // Start with 0 so user must enter price
+        totalPrice: 0,
+        notes: ""
+      }));
       setPOItems(items);
     }
-  }, [selectedQuotation]);
+  }, [quotationItems]);
 
   // Update item in PO
   const updatePOItem = (index: number, field: keyof POItem, value: any) => {
@@ -174,6 +178,17 @@ export default function CreatePurchaseOrder() {
       toast({
         title: "خطأ",
         description: "يرجى إضافة بنود لأمر الشراء",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if all items have valid prices and quantities
+    const invalidItems = poItems.filter(item => !item.unitPrice || item.unitPrice <= 0 || !item.quantity || item.quantity <= 0);
+    if (invalidItems.length > 0) {
+      toast({
+        title: "خطأ",
+        description: "يرجى إدخال سعر وكمية صحيحة لجميع البنود",
         variant: "destructive",
       });
       return;
@@ -324,58 +339,69 @@ export default function CreatePurchaseOrder() {
                   بنود أمر الشراء
                 </h4>
                 
-                {poItems.length > 0 ? (
+                {quotationItems && quotationItems.length > 0 ? (
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>البند</TableHead>
-                          <TableHead>المورد</TableHead>
-                          <TableHead>السعر المتفق عليه</TableHead>
-                          <TableHead>الكمية</TableHead>
+                          <TableHead>المورد الحالي</TableHead>
+                          <TableHead>السعر المتفق عليه *</TableHead>
+                          <TableHead>الكمية المطلوبة *</TableHead>
                           <TableHead>الإجمالي</TableHead>
                           <TableHead>ملاحظات</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {poItems.map((poItem, index) => {
-                          const quotationItem = selectedQuotation.items.find(
-                            (item) => item.id === poItem.itemId
+                          const quotationItem = quotationItems?.find(
+                            (item: any) => (item.id || item.itemId) === poItem.itemId
                           );
                           return (
                             <TableRow key={index}>
                               <TableCell>
                                 <div>
-                                  <p className="font-medium">{quotationItem?.description}</p>
-                                  <p className="text-sm text-gray-500">{quotationItem?.itemNumber}</p>
+                                  <p className="font-medium">{quotationItem?.description || "وصف البند"}</p>
+                                  <p className="text-sm text-gray-500">{quotationItem?.itemNumber || "رقم البند"}</p>
                                 </div>
                               </TableCell>
                               <TableCell>
-                                {quotationItem?.supplierPricing?.supplier.name}
+                                <div className="text-sm text-gray-600">
+                                  {quotationItem?.supplier || "سيتم تحديده لاحقاً"}
+                                  <div className="text-xs text-gray-400">
+                                    أدخل السعر المتفق عليه مع المورد
+                                  </div>
+                                </div>
                               </TableCell>
                               <TableCell>
                                 <Input
                                   type="number"
                                   step="0.01"
-                                  value={poItem.unitPrice}
+                                  min="0"
+                                  value={poItem.unitPrice || ""}
                                   onChange={(e) =>
-                                    updatePOItem(index, "unitPrice", Number(e.target.value))
+                                    updatePOItem(index, "unitPrice", Number(e.target.value) || 0)
                                   }
-                                  className="w-28"
+                                  placeholder="أدخل السعر"
+                                  className="w-32"
+                                  required
                                 />
                               </TableCell>
                               <TableCell>
                                 <Input
                                   type="number"
-                                  value={poItem.quantity}
+                                  min="1"
+                                  value={poItem.quantity || ""}
                                   onChange={(e) =>
-                                    updatePOItem(index, "quantity", Number(e.target.value))
+                                    updatePOItem(index, "quantity", Number(e.target.value) || 1)
                                   }
-                                  className="w-20"
+                                  placeholder="الكمية"
+                                  className="w-24"
+                                  required
                                 />
                               </TableCell>
-                              <TableCell className="font-semibold">
-                                {formatCurrency(poItem.totalPrice)}
+                              <TableCell className="font-semibold text-green-600">
+                                {formatCurrency(poItem.totalPrice || 0)}
                               </TableCell>
                               <TableCell>
                                 <Input
@@ -383,8 +409,8 @@ export default function CreatePurchaseOrder() {
                                   onChange={(e) =>
                                     updatePOItem(index, "notes", e.target.value)
                                   }
-                                  placeholder="ملاحظات"
-                                  className="w-32"
+                                  placeholder="ملاحظات إضافية"
+                                  className="w-40"
                                 />
                               </TableCell>
                             </TableRow>
@@ -392,11 +418,21 @@ export default function CreatePurchaseOrder() {
                         })}
                       </TableBody>
                     </Table>
+                    
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-700 mb-2">
+                        <strong>ملاحظة:</strong> يمكنك تعديل السعر والكمية لكل بند حسب الاتفاق مع المورد
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        * الحقول المطلوبة يجب ملؤها قبل إنشاء أمر الشراء
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>لا توجد بنود متاحة للشراء في طلب التسعير المحدد</p>
+                    <p>لا توجد بنود في طلب التسعير المحدد</p>
+                    <p className="text-sm mt-2">اختر طلب تسعير يحتوي على بنود لإنشاء أمر الشراء</p>
                   </div>
                 )}
 
