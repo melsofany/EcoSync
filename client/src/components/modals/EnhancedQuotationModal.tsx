@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { formatEGP } from "@/lib/currency";
 import { Plus, X, Bot, AlertTriangle, CheckCircle, Trash2, Save } from "lucide-react";
 
 // Schema for individual quotation items

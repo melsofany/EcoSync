@@ -47,13 +47,13 @@ export default function Items() {
     );
   };
 
-  const filteredItems = items?.filter((item: any) => {
+  const filteredItems = items && Array.isArray(items) ? items.filter((item: any) => {
     return (
       (!filters.partNumber || item.partNumber?.includes(filters.partNumber)) &&
       (!filters.description || item.description.includes(filters.description)) &&
-      (!filters.category || item.category === filters.category)
+      (!filters.category || filters.category === "all" || item.category === filters.category)
     );
-  }) || [];
+  }) : [];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG');
@@ -146,7 +146,7 @@ export default function Items() {
                   <SelectValue placeholder="جميع الفئات" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع الفئات</SelectItem>
+                  <SelectItem value="all">جميع الفئات</SelectItem>
                   <SelectItem value="electrical">كهربائية</SelectItem>
                   <SelectItem value="mechanical">ميكانيكية</SelectItem>
                   <SelectItem value="civil">مدنية</SelectItem>

@@ -267,8 +267,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/items", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
     try {
-      const validatedData = insertItemSchema.parse(req.body);
-      validatedData.createdBy = req.session.user!.id;
+      const userId = req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const validatedData = insertItemSchema.parse({
+        ...req.body,
+        createdBy: userId,
+      });
       
       // Check for similar items using AI simulation
       const similarItems = await storage.findSimilarItems(validatedData.description, validatedData.partNumber || undefined);
