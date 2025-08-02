@@ -475,30 +475,28 @@ export default function Admin() {
                                 <Edit className="h-4 w-4" />
                               </Button>
 
-                              {/* Block/Unblock Button */}
-                              {userItem.isActive ? (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => blockUserMutation.mutate(userItem.id)}
-                                  disabled={blockUserMutation.isPending}
-                                  className="text-orange-600 hover:text-orange-800"
-                                  title="حظر المستخدم"
-                                >
-                                  <Ban className="h-4 w-4" />
-                                </Button>
-                              ) : (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => unblockUserMutation.mutate(userItem.id)}
-                                  disabled={unblockUserMutation.isPending}
-                                  className="text-green-600 hover:text-green-800"
-                                  title="إلغاء حظر المستخدم"
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                </Button>
-                              )}
+                              {/* Block/Unblock Button - Always show both options for clarity */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => blockUserMutation.mutate(userItem.id)}
+                                disabled={blockUserMutation.isPending || !userItem.isActive}
+                                className={`${userItem.isActive ? 'text-orange-600 hover:text-orange-800' : 'text-gray-400'}`}
+                                title={userItem.isActive ? "حظر المستخدم" : "المستخدم محظور"}
+                              >
+                                <Ban className="h-4 w-4" />
+                              </Button>
+                              
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => unblockUserMutation.mutate(userItem.id)}
+                                disabled={unblockUserMutation.isPending || userItem.isActive}
+                                className={`${!userItem.isActive ? 'text-green-600 hover:text-green-800' : 'text-gray-400'}`}
+                                title={!userItem.isActive ? "إلغاء حظر المستخدم" : "المستخدم نشط"}
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
 
                               {/* Delete Button */}
                               <AlertDialog>
