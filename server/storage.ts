@@ -229,6 +229,31 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(quotationRequests).orderBy(desc(quotationRequests.createdAt));
   }
 
+  async getAllQuotationRequestsWithClients(): Promise<any[]> {
+    const results = await db
+      .select({
+        id: quotationRequests.id,
+        requestNumber: quotationRequests.requestNumber,
+        clientId: quotationRequests.clientId,
+        requestDate: quotationRequests.requestDate,
+        expiryDate: quotationRequests.expiryDate,
+        status: quotationRequests.status,
+        responsibleEmployee: quotationRequests.responsibleEmployee,
+        customRequestNumber: quotationRequests.customRequestNumber,
+        notes: quotationRequests.notes,
+        createdAt: quotationRequests.createdAt,
+        createdBy: quotationRequests.createdBy,
+        updatedAt: quotationRequests.updatedAt,
+        // Client details
+        clientName: clients.name,
+      })
+      .from(quotationRequests)
+      .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+      .orderBy(desc(quotationRequests.createdAt));
+    
+    return results;
+  }
+
   async getQuotationRequest(id: string): Promise<QuotationRequest | undefined> {
     const [quotation] = await db.select().from(quotationRequests).where(eq(quotationRequests.id, id));
     return quotation || undefined;

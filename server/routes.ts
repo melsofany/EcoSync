@@ -242,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Quotation routes
   app.get("/api/quotations", requireAuth, async (req: Request, res: Response) => {
     try {
-      const quotations = await storage.getAllQuotationRequests();
+      const quotations = await storage.getAllQuotationRequestsWithClients();
       res.json(quotations);
     } catch (error) {
       console.error("Get quotations error:", error);
@@ -276,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/quotations/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const quotation = await storage.getQuotationRequest(id);
+      const quotation = await storage.getQuotationById(id);
       if (!quotation) {
         return res.status(404).json({ message: "Quotation not found" });
       }
