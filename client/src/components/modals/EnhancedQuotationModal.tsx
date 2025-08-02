@@ -310,7 +310,7 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
                   {...form.register("requestDate")}
                 />
                 {form.formState.errors.requestDate && (
-                  <p className="text-sm text-red-500">{form.formState.errors.requestDate.message}</p>
+                  <p className="text-sm text-red-500">{String(form.formState.errors.requestDate.message)}</p>
                 )}
               </div>
 
