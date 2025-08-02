@@ -302,21 +302,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: "processed",
           similarItems,
           aiProvider: "local_matching",
+          apiKeyConfigured: false,
         });
       }
 
-      // Placeholder for Deep Seek AI integration
-      // In production, this would call the Deep Seek API
-      const similarItems = await storage.findSimilarItems(description, partNumber);
-      
-      await logActivity(req, "ai_item_comparison", "item", undefined, `AI comparison for: ${description}`);
+      try {
+        // DeepSeek AI integration for item comparison
+        const prompt = `Analyze this item for similarity with existing items:
+        Description: ${description}
+        ${partNumber ? `Part Number: ${partNumber}` : ''}
+        
+        Compare with existing items and determine if this is a duplicate or new item.
+        Return similarity analysis and recommendations.`;
 
-      res.json({
-        status: "processed",
-        similarItems,
-        aiProvider: "deep_seek",
-        apiKeyConfigured: !!deepSeekApiKey,
-      });
+        const deepSeekResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${deepSeekApiKey}`,
+          },
+          body: JSON.stringify({
+            model: 'deepseek-chat',
+            messages: [
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            max_tokens: 1000,
+            temperature: 0.1,
+          }),
+        });
+
+        if (!deepSeekResponse.ok) {
+          throw new Error(`DeepSeek API error: ${deepSeekResponse.status}`);
+        }
+
+        const deepSeekResult = await deepSeekResponse.json();
+        const aiAnalysis = deepSeekResult.choices[0]?.message?.content || '';
+
+        // Also get local similar items for comparison
+        const similarItems = await storage.findSimilarItems(description, partNumber);
+        
+        await logActivity(req, "ai_item_comparison", "item", undefined, `DeepSeek AI analysis for: ${description}`);
+
+        return res.json({
+          status: "processed",
+          similarItems,
+          aiProvider: "deepseek",
+          apiKeyConfigured: true,
+          aiAnalysis,
+        });
+      } catch (error) {
+        console.error("DeepSeek API error:", error);
+        // Fallback to local matching if AI fails
+        const similarItems = await storage.findSimilarItems(description, partNumber);
+        return res.json({
+          status: "processed",
+          similarItems,
+          aiProvider: "local_matching_fallback",
+          apiKeyConfigured: true,
+          error: "AI service temporarily unavailable",
+        });
+      }
     } catch (error) {
       console.error("AI compare error:", error);
       res.status(500).json({ message: "Internal server error" });

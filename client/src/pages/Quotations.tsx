@@ -10,10 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import NewQuotationModal from "@/components/modals/NewQuotationModal";
+import EnhancedQuotationModal from "@/components/modals/EnhancedQuotationModal";
 
 export default function Quotations() {
   const [, setLocation] = useLocation();
   const [isNewQuotationModalOpen, setIsNewQuotationModalOpen] = useState(false);
+  const [isEnhancedQuotationModalOpen, setIsEnhancedQuotationModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     requestNumber: "",
     clientName: "",
@@ -84,10 +86,16 @@ export default function Quotations() {
           <h2 className="text-2xl font-bold text-gray-800">إدارة طلبات التسعير</h2>
           <p className="text-gray-600">إضافة وإدارة طلبات التسعير الواردة</p>
         </div>
-        <Button onClick={() => setIsNewQuotationModalOpen(true)}>
-          <Plus className="h-4 w-4 ml-2" />
-          طلب تسعير جديد
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsNewQuotationModalOpen(true)} variant="outline">
+            <Plus className="h-4 w-4 ml-2" />
+            طلب بسيط
+          </Button>
+          <Button onClick={() => setIsEnhancedQuotationModalOpen(true)}>
+            <Plus className="h-4 w-4 ml-2" />
+            طلب تسعير متكامل
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -222,6 +230,11 @@ export default function Quotations() {
       <NewQuotationModal
         isOpen={isNewQuotationModalOpen}
         onClose={() => setIsNewQuotationModalOpen(false)}
+      />
+      
+      <EnhancedQuotationModal
+        isOpen={isEnhancedQuotationModalOpen}
+        onClose={() => setIsEnhancedQuotationModalOpen(false)}
       />
     </div>
   );
