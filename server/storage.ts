@@ -595,7 +595,9 @@ export class DatabaseStorage implements IStorage {
   async getItemsRequiringPricing(): Promise<Item[]> {
     // Get all items that don't have active pricing yet
     const itemsWithoutPricing = await db
-      .select()
+      .select({
+        items: items
+      })
       .from(items)
       .leftJoin(
         supplierPricing,
@@ -604,7 +606,7 @@ export class DatabaseStorage implements IStorage {
           eq(supplierPricing.status, "active")
         )
       )
-      .where(eq(supplierPricing.itemId, null as any));
+      .where(isNull(supplierPricing.itemId));
 
     return itemsWithoutPricing.map(row => row.items);
   }
@@ -659,25 +661,27 @@ export class DatabaseStorage implements IStorage {
 
   // Get items ready for customer pricing (items with supplier pricing but no customer pricing)
   async getItemsReadyForCustomerPricing(quotationId?: string): Promise<any[]> {
-    let query = db
+    const baseQuery = db
       .select({
         item: items,
         supplierPricing: supplierPricing,
         hasCustomerPricing: customerPricing.id,
       })
       .from(items)
-      .leftJoin(supplierPricing, eq(items.id, supplierPricing.itemId))
+      .leftJoin(supplierPricing, and(
+        eq(items.id, supplierPricing.itemId),
+        eq(supplierPricing.status, "active")
+      ))
       .leftJoin(customerPricing, and(
         eq(items.id, customerPricing.itemId),
-        quotationId ? eq(customerPricing.quotationId, quotationId) : undefined
+        quotationId ? eq(customerPricing.quotationId, quotationId) : isNotNull(customerPricing.id)
       ))
       .where(and(
         isNotNull(supplierPricing.id), // Has supplier pricing
-        eq(supplierPricing.status, "active"), // Active supplier pricing
         isNull(customerPricing.id) // No customer pricing yet
       ));
 
-    return await query;
+    return await baseQuery;
   }
 
   // Pricing history operations
