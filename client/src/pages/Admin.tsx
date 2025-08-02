@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { hasRole } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import NewUserModal from "@/components/modals/NewUserModal";
 import { 
   Users, 
   Shield, 
@@ -42,6 +43,7 @@ export default function Admin() {
   const queryClient = useQueryClient();
   
   const [activeSection, setActiveSection] = useState<string>("");
+  const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     deepSeekApiKey: "",
     sessionTimeout: 30,
@@ -227,7 +229,11 @@ export default function Admin() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h4 className="font-semibold">إضافة مستخدم جديد</h4>
-                <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
+                <Button 
+                  size="sm" 
+                  className="bg-blue-500 hover:bg-blue-600"
+                  onClick={() => setIsNewUserModalOpen(true)}
+                >
                   <Plus className="h-4 w-4 ml-2" />
                   إضافة مستخدم
                 </Button>
@@ -547,6 +553,11 @@ export default function Admin() {
           </div>
         </CardContent>
       </Card>
+
+      <NewUserModal
+        isOpen={isNewUserModalOpen}
+        onClose={() => setIsNewUserModalOpen(false)}
+      />
     </div>
   );
 }
