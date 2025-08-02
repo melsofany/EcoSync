@@ -50,11 +50,13 @@ export const quotationRequests = pgTable("quotation_requests", {
 export const items = pgTable("items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   itemNumber: text("item_number").notNull().unique(), // ELEK00000001
+  kItemId: text("k_item_id").notNull().unique(), // K-generated ID 
   partNumber: text("part_number"),
   lineItem: text("line_item"),
   description: text("description").notNull(),
   unit: text("unit").notNull(), // Each/Piece/Meter/Carton/Feet/Kit/Packet/Reel/Set
   category: text("category"),
+  brand: text("brand"),
   aiStatus: text("ai_status").default("pending"), // "pending", "processed", "verified", "duplicate"
   aiMatchedItemId: varchar("ai_matched_item_id"),
   createdAt: timestamp("created_at").defaultNow(),

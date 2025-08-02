@@ -320,7 +320,7 @@ export default function CreatePurchaseOrder() {
                 </div>
                 <div className="bg-green-50 p-3 rounded-lg">
                   <Label className="text-sm font-medium text-green-700">العميل</Label>
-                  <p className="font-bold text-green-900">{selectedQuotation.clientName}</p>
+                  <p className="font-bold text-green-900">{selectedQuotation.clientName || "غير محدد"}</p>
                 </div>
                 <div className="bg-orange-50 p-3 rounded-lg">
                   <Label className="text-sm font-medium text-orange-700">تاريخ الطلب</Label>
@@ -329,12 +329,13 @@ export default function CreatePurchaseOrder() {
                   </p>
                 </div>
                 <div className="bg-purple-50 p-3 rounded-lg">
-                  <Label className="text-sm font-medium text-purple-700">حالة الطلب</Label>
-                  <Badge variant={selectedQuotation.status === "approved" ? "default" : "secondary"} className="font-bold">
-                    {selectedQuotation.status === "approved" ? "معتمد" : 
-                     selectedQuotation.status === "pending" ? "في الانتظار" : 
-                     selectedQuotation.status === "completed" ? "مكتمل" : "غير محدد"}
-                  </Badge>
+                  <Label className="text-sm font-medium text-purple-700">تاريخ انتهاء العرض</Label>
+                  <p className="font-bold text-purple-900">
+                    {selectedQuotation.expiryDate ? 
+                      format(new Date(selectedQuotation.expiryDate), "dd/MM/yyyy", { locale: ar }) : 
+                      "غير محدد"
+                    }
+                  </p>
                 </div>
               </div>
 
@@ -397,7 +398,10 @@ export default function CreatePurchaseOrder() {
                               <TableCell>
                                 <div className="space-y-1">
                                   <p className="font-semibold text-gray-900">{quotationItem?.description || "وصف البند"}</p>
-                                  <p className="text-sm text-blue-600">رقم البند: {quotationItem?.itemNumber || "غير محدد"}</p>
+                                  <p className="text-sm text-blue-600">معرف البند: {quotationItem?.kItemId || `K${Date.now().toString().slice(-6)}`}</p>
+                                  <p className="text-xs text-green-600">رقم البند: {quotationItem?.itemNumber || "غير محدد"}</p>
+                                  <p className="text-xs text-purple-600">PART NO: {quotationItem?.partNumber || "غير محدد"}</p>
+                                  <p className="text-xs text-orange-600">LINE ITEM: {quotationItem?.lineItem || "غير محدد"}</p>
                                   <p className="text-xs text-gray-500">الوحدة: {quotationItem?.unit || "Each"}</p>
                                   {quotationItem?.category && (
                                     <p className="text-xs text-gray-500">الفئة: {quotationItem.category}</p>
@@ -410,10 +414,16 @@ export default function CreatePurchaseOrder() {
                               <TableCell>
                                 <div className="space-y-1">
                                   <p className="font-medium text-green-700">{selectedQuotation?.requestNumber || "غير محدد"}</p>
-                                  <p className="text-sm text-gray-600">{selectedQuotation?.clientName || "غير محدد"}</p>
+                                  <p className="text-sm text-blue-600 font-medium">العميل: {selectedQuotation?.clientName || "غير محدد"}</p>
                                   <p className="text-xs text-gray-500">
                                     تاريخ الطلب: {selectedQuotation?.requestDate ? 
                                       format(new Date(selectedQuotation.requestDate), "dd/MM/yyyy", { locale: ar }) : 
+                                      "غير محدد"
+                                    }
+                                  </p>
+                                  <p className="text-xs text-red-600 font-medium">
+                                    انتهاء العرض: {selectedQuotation?.expiryDate ? 
+                                      format(new Date(selectedQuotation.expiryDate), "dd/MM/yyyy", { locale: ar }) : 
                                       "غير محدد"
                                     }
                                   </p>
