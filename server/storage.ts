@@ -694,19 +694,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPricingHistoryByItem(itemId: string, priceType?: string): Promise<PricingHistory[]> {
-    let query = db
-      .select()
-      .from(pricingHistory)
-      .where(eq(pricingHistory.itemId, itemId));
-
+    let whereConditions = [eq(pricingHistory.itemId, itemId)];
+    
     if (priceType) {
-      query = query.where(and(
-        eq(pricingHistory.itemId, itemId),
-        eq(pricingHistory.priceType, priceType)
-      ));
+      whereConditions.push(eq(pricingHistory.priceType, priceType));
     }
 
-    return await query.orderBy(desc(pricingHistory.createdAt));
+    return await db
+      .select()
+      .from(pricingHistory)
+      .where(and(...whereConditions))
+      .orderBy(desc(pricingHistory.createdAt));
   }
 
   // Combined pricing view for detailed analysis
