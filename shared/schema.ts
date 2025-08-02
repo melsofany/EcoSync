@@ -1,0 +1,176 @@
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, timestamp, integer, decimal, boolean } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// Users table
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  fullName: text("full_name").notNull(),
+  role: text("role").notNull(), // "manager", "it_admin", "data_entry", "purchasing"
+  isActive: boolean("is_active").default(true),
+  isOnline: boolean("is_online").default(false),
+  lastLoginAt: timestamp("last_login_at"),
+  lastActivityAt: timestamp("last_activity_at"),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Clients table
+export const clients = pgTable("clients", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  phone: text("phone"),
+  email: text("email"),
+  address: text("address"),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: varchar("created_by").references(() => users.id),
+});
+
+// Quotation requests table
+export const quotationRequests = pgTable("quotation_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requestNumber: text("request_number").notNull().unique(),
+  clientId: varchar("client_id").references(() => clients.id).notNull(),
+  requestDate: timestamp("request_date").defaultNow(),
+  expiryDate: timestamp("expiry_date"),
+  status: text("status").default("pending"), // "pending", "processing", "completed", "cancelled"
+  responsibleEmployee: text("responsible_employee"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Items table
+export const items = pgTable("items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemNumber: text("item_number").notNull().unique(), // ELEK00000001
+  partNumber: text("part_number"),
+  lineItem: text("line_item"),
+  description: text("description").notNull(),
+  unit: text("unit").notNull(), // Each/Piece/Meter/Carton/Feet/Kit/Packet/Reel/Set
+  category: text("category"),
+  aiStatus: text("ai_status").default("pending"), // "pending", "processed", "verified", "duplicate"
+  aiMatchedItemId: varchar("ai_matched_item_id").references(() => items.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+});
+
+// Quotation items table
+export const quotationItems = pgTable("quotation_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").references(() => quotationRequests.id).notNull(),
+  itemId: varchar("item_id").references(() => items.id).notNull(),
+  quantity: decimal("quantity").notNull(),
+  unitPrice: decimal("unit_price"),
+  totalPrice: decimal("total_price"),
+  supplierId: varchar("supplier_id").references(() => suppliers.id),
+  supplierQuoteDate: timestamp("supplier_quote_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Suppliers table
+export const suppliers = pgTable("suppliers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  contactPerson: text("contact_person"),
+  phone: text("phone"),
+  email: text("email"),
+  address: text("address"),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: varchar("created_by").references(() => users.id),
+});
+
+// Purchase orders table
+export const purchaseOrders = pgTable("purchase_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poNumber: text("po_number").notNull().unique(),
+  quotationId: varchar("quotation_id").references(() => quotationRequests.id).notNull(),
+  poDate: timestamp("po_date").defaultNow(),
+  status: text("status").default("pending"), // "pending", "confirmed", "delivered", "invoiced"
+  totalValue: decimal("total_value"),
+  deliveryStatus: boolean("delivery_status").default(false),
+  invoiceIssued: boolean("invoice_issued").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+});
+
+// Activity log table
+export const activityLog = pgTable("activity_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  action: text("action").notNull(),
+  entityType: text("entity_type"), // "quotation", "item", "purchase_order", etc.
+  entityId: varchar("entity_id"),
+  details: text("details"),
+  ipAddress: text("ip_address"),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// Insert schemas
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertClientSchema = createInsertSchema(clients).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertQuotationRequestSchema = createInsertSchema(quotationRequests).omit({
+  id: true,
+  requestNumber: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertItemSchema = createInsertSchema(items).omit({
+  id: true,
+  itemNumber: true,
+  createdAt: true,
+});
+
+export const insertQuotationItemSchema = createInsertSchema(quotationItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSupplierSchema = createInsertSchema(suppliers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPurchaseOrderSchema = createInsertSchema(purchaseOrders).omit({
+  id: true,
+  poNumber: true,
+  createdAt: true,
+});
+
+export const insertActivityLogSchema = createInsertSchema(activityLog).omit({
+  id: true,
+  timestamp: true,
+});
+
+// Types
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type Client = typeof clients.$inferSelect;
+export type InsertClient = z.infer<typeof insertClientSchema>;
+export type QuotationRequest = typeof quotationRequests.$inferSelect;
+export type InsertQuotationRequest = z.infer<typeof insertQuotationRequestSchema>;
+export type Item = typeof items.$inferSelect;
+export type InsertItem = z.infer<typeof insertItemSchema>;
+export type QuotationItem = typeof quotationItems.$inferSelect;
+export type InsertQuotationItem = z.infer<typeof insertQuotationItemSchema>;
+export type Supplier = typeof suppliers.$inferSelect;
+export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
+export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
+export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
+export type ActivityLog = typeof activityLog.$inferSelect;
+export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
