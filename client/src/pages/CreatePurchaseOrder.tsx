@@ -18,9 +18,18 @@ import { apiRequest } from "@/lib/queryClient";
 
 interface QuotationItem {
   id: string;
-  description: string;
-  itemNumber: string;
+  itemId?: string;
+  description?: string;
+  itemNumber?: string;
+  kItemId?: string;
+  partNumber?: string;
+  lineItem?: string;
+  unit?: string;
+  category?: string;
+  brand?: string;
   quantity: number;
+  unitPrice?: number;
+  totalPrice?: number;
   supplierPricing?: {
     id: string;
     unitPrice: string;
@@ -31,10 +40,13 @@ interface QuotationItem {
 interface Quotation {
   id: string;
   requestNumber: string;
-  clientName: string;
+  clientName?: string;
   requestDate: string;
+  expiryDate?: string;
   status: string;
-  items: QuotationItem[];
+  notes?: string;
+  createdAt?: string;
+  items?: QuotationItem[];
 }
 
 interface POItem {
@@ -90,8 +102,8 @@ export default function CreatePurchaseOrder() {
       const items: POItem[] = quotationItems.map((item: any) => ({
         itemId: item.id || item.itemId,
         quantity: item.quantity || 1,
-        unitPrice: 0, // Start with 0 so user must enter price
-        totalPrice: 0,
+        unitPrice: item.unitPrice || 0, // Use existing unit price if available
+        totalPrice: (item.quantity || 1) * (item.unitPrice || 0),
         notes: ""
       }));
       setPOItems(items);
@@ -441,9 +453,15 @@ export default function CreatePurchaseOrder() {
                                   <p className="text-xs text-gray-500">
                                     الكمية الأصلية: {quotationItem?.quantity || 1}
                                   </p>
-                                  <p className="text-xs text-blue-600">
-                                    أدخل السعر النهائي المتفق عليه
-                                  </p>
+                                  {quotationItem?.unitPrice && quotationItem.unitPrice > 0 ? (
+                                    <p className="text-xs text-green-600 font-medium">
+                                      السعر المحدد: {formatCurrency(quotationItem.unitPrice)}
+                                    </p>
+                                  ) : (
+                                    <p className="text-xs text-blue-600">
+                                      أدخل السعر النهائي المتفق عليه
+                                    </p>
+                                  )}
                                 </div>
                               </TableCell>
                               <TableCell>
