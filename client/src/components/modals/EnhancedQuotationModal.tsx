@@ -455,6 +455,15 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
                         </div>
 
                         <div className="space-y-2">
+                          <Label>العملة</Label>
+                          <Input
+                            value="EGP - جنيه مصري"
+                            disabled
+                            className="bg-gray-100 text-gray-600"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
                           <Label>التصنيف</Label>
                           <Input
                             {...form.register(`items.${index}.category`)}

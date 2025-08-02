@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { hasRole } from "@/lib/auth";
+import { formatEGP } from "@/lib/currency";
 import { 
   ArrowLeft, 
   Plus, 
@@ -316,7 +317,7 @@ export default function QuotationDetail() {
               <Label className="text-sm font-medium text-gray-600">إجمالي المبلغ</Label>
               <p className="text-lg font-semibold text-green-600 flex items-center space-x-1 space-x-reverse">
                 <Calculator className="h-4 w-4" />
-                <span>{calculateTotalAmount().toLocaleString()} ريال</span>
+                <span>{formatEGP(calculateTotalAmount())}</span>
               </p>
             </div>
             {quotation.notes && (
@@ -369,8 +370,8 @@ export default function QuotationDetail() {
                     <TableHead>الوصف</TableHead>
                     <TableHead>رقم القطعة</TableHead>
                     <TableHead>الكمية</TableHead>
-                    <TableHead>سعر الوحدة</TableHead>
-                    <TableHead>المبلغ الإجمالي</TableHead>
+                    <TableHead>سعر الوحدة (ج.م)</TableHead>
+                    <TableHead>المبلغ الإجمالي (ج.م)</TableHead>
                     <TableHead>ملاحظات</TableHead>
                     <TableHead>الإجراءات</TableHead>
                   </TableRow>
@@ -400,10 +401,10 @@ export default function QuotationDetail() {
                         {quotationItem.quantity}
                       </TableCell>
                       <TableCell>
-                        {quotationItem.unitPrice.toLocaleString()} ريال
+                        {formatEGP(quotationItem.unitPrice)}
                       </TableCell>
                       <TableCell className="font-bold text-green-600">
-                        {(quotationItem.quantity * quotationItem.unitPrice).toLocaleString()} ريال
+                        {formatEGP(quotationItem.quantity * quotationItem.unitPrice)}
                       </TableCell>
                       <TableCell>
                         {quotationItem.notes ? (
@@ -452,7 +453,7 @@ export default function QuotationDetail() {
                       <Calculator className="h-5 w-5 text-gray-600" />
                       <span className="text-lg font-medium text-gray-700">إجمالي المبلغ:</span>
                       <span className="text-xl font-bold text-green-600">
-                        {calculateTotalAmount().toLocaleString()} ريال
+                        {formatEGP(calculateTotalAmount())}
                       </span>
                     </div>
                   </div>
