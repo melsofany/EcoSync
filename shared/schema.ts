@@ -55,7 +55,7 @@ export const items = pgTable("items", {
   unit: text("unit").notNull(), // Each/Piece/Meter/Carton/Feet/Kit/Packet/Reel/Set
   category: text("category"),
   aiStatus: text("ai_status").default("pending"), // "pending", "processed", "verified", "duplicate"
-  aiMatchedItemId: varchar("ai_matched_item_id").references(() => items.id),
+  aiMatchedItemId: varchar("ai_matched_item_id"),
   createdAt: timestamp("created_at").defaultNow(),
   createdBy: varchar("created_by").references(() => users.id).notNull(),
 });
@@ -214,3 +214,6 @@ export type SupplierQuote = typeof supplierQuotes.$inferSelect;
 export type InsertSupplierQuote = z.infer<typeof insertSupplierQuoteSchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
+
+// Add the self-reference relation for items after the table is defined
+// This avoids the circular reference issue during table definition

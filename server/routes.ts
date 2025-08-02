@@ -264,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       validatedData.createdBy = req.session.user!.id;
       
       // Check for similar items using AI simulation
-      const similarItems = await storage.findSimilarItems(validatedData.description, validatedData.partNumber);
+      const similarItems = await storage.findSimilarItems(validatedData.description, validatedData.partNumber || undefined);
       
       let aiStatus = "processed";
       let aiMatchedItemId = null;
