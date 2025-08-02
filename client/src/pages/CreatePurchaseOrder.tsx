@@ -313,20 +313,54 @@ export default function CreatePurchaseOrder() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <Label className="text-sm font-medium">رقم الطلب</Label>
-                  <p className="font-semibold">{selectedQuotation.requestNumber}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <Label className="text-sm font-medium text-blue-700">رقم طلب التسعير</Label>
+                  <p className="font-bold text-blue-900">{selectedQuotation.requestNumber}</p>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium">العميل</Label>
-                  <p className="font-semibold">{selectedQuotation.clientName}</p>
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <Label className="text-sm font-medium text-green-700">العميل</Label>
+                  <p className="font-bold text-green-900">{selectedQuotation.clientName}</p>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium">تاريخ الطلب</Label>
-                  <p className="font-semibold">
+                <div className="bg-orange-50 p-3 rounded-lg">
+                  <Label className="text-sm font-medium text-orange-700">تاريخ الطلب</Label>
+                  <p className="font-bold text-orange-900">
                     {format(new Date(selectedQuotation.requestDate), "dd/MM/yyyy", { locale: ar })}
                   </p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <Label className="text-sm font-medium text-purple-700">حالة الطلب</Label>
+                  <Badge variant={selectedQuotation.status === "approved" ? "default" : "secondary"} className="font-bold">
+                    {selectedQuotation.status === "approved" ? "معتمد" : 
+                     selectedQuotation.status === "pending" ? "في الانتظار" : 
+                     selectedQuotation.status === "completed" ? "مكتمل" : "غير محدد"}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Additional quotation details */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                <h5 className="font-medium text-gray-700 mb-2">تفاصيل إضافية عن طلب التسعير</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">عدد البنود في الطلب: </span>
+                    <span className="font-semibold">{quotationItems?.length || 0}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">تاريخ الإنشاء: </span>
+                    <span className="font-semibold">
+                      {selectedQuotation.createdAt ? 
+                        format(new Date(selectedQuotation.createdAt), "dd/MM/yyyy HH:mm", { locale: ar }) : 
+                        "غير محدد"
+                      }
+                    </span>
+                  </div>
+                  {selectedQuotation.notes && (
+                    <div className="md:col-span-2">
+                      <span className="text-gray-600">ملاحظات الطلب: </span>
+                      <span className="font-medium">{selectedQuotation.notes}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -344,10 +378,11 @@ export default function CreatePurchaseOrder() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>البند</TableHead>
-                          <TableHead>المورد الحالي</TableHead>
+                          <TableHead>تفاصيل البند</TableHead>
+                          <TableHead>طلب التسعير</TableHead>
+                          <TableHead>المورد</TableHead>
                           <TableHead>السعر المتفق عليه *</TableHead>
-                          <TableHead>الكمية المطلوبة *</TableHead>
+                          <TableHead>الكمية *</TableHead>
                           <TableHead>الإجمالي</TableHead>
                           <TableHead>ملاحظات</TableHead>
                         </TableRow>
@@ -360,17 +395,45 @@ export default function CreatePurchaseOrder() {
                           return (
                             <TableRow key={index}>
                               <TableCell>
-                                <div>
-                                  <p className="font-medium">{quotationItem?.description || "وصف البند"}</p>
-                                  <p className="text-sm text-gray-500">{quotationItem?.itemNumber || "رقم البند"}</p>
+                                <div className="space-y-1">
+                                  <p className="font-semibold text-gray-900">{quotationItem?.description || "وصف البند"}</p>
+                                  <p className="text-sm text-blue-600">رقم البند: {quotationItem?.itemNumber || "غير محدد"}</p>
+                                  <p className="text-xs text-gray-500">الوحدة: {quotationItem?.unit || "Each"}</p>
+                                  {quotationItem?.category && (
+                                    <p className="text-xs text-gray-500">الفئة: {quotationItem.category}</p>
+                                  )}
+                                  {quotationItem?.brand && (
+                                    <p className="text-xs text-gray-500">الماركة: {quotationItem.brand}</p>
+                                  )}
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <div className="text-sm text-gray-600">
-                                  {quotationItem?.supplier || "سيتم تحديده لاحقاً"}
-                                  <div className="text-xs text-gray-400">
-                                    أدخل السعر المتفق عليه مع المورد
+                                <div className="space-y-1">
+                                  <p className="font-medium text-green-700">{selectedQuotation?.requestNumber || "غير محدد"}</p>
+                                  <p className="text-sm text-gray-600">{selectedQuotation?.clientName || "غير محدد"}</p>
+                                  <p className="text-xs text-gray-500">
+                                    تاريخ الطلب: {selectedQuotation?.requestDate ? 
+                                      format(new Date(selectedQuotation.requestDate), "dd/MM/yyyy", { locale: ar }) : 
+                                      "غير محدد"
+                                    }
+                                  </p>
+                                  <div className="flex items-center gap-1">
+                                    <Badge variant={selectedQuotation?.status === "approved" ? "default" : "secondary"} className="text-xs">
+                                      {selectedQuotation?.status === "approved" ? "معتمد" : 
+                                       selectedQuotation?.status === "pending" ? "في الانتظار" : "غير محدد"}
+                                    </Badge>
                                   </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium text-gray-700">سيتم تحديده بأمر الشراء</p>
+                                  <p className="text-xs text-gray-500">
+                                    الكمية الأصلية: {quotationItem?.quantity || 1}
+                                  </p>
+                                  <p className="text-xs text-blue-600">
+                                    أدخل السعر النهائي المتفق عليه
+                                  </p>
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -439,12 +502,24 @@ export default function CreatePurchaseOrder() {
                 {/* Total */}
                 {poItems.length > 0 && (
                   <div className="flex justify-end">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <span className="font-medium">إجمالي قيمة أمر الشراء:</span>
-                        <span className="text-2xl font-bold text-green-600">
-                          {formatCurrency(totalPOValue)}
-                        </span>
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg border">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">عدد البنود</p>
+                          <p className="text-xl font-bold text-blue-600">{poItems.length}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">إجمالي الكمية</p>
+                          <p className="text-xl font-bold text-orange-600">
+                            {poItems.reduce((sum, item) => sum + (item.quantity || 0), 0)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">إجمالي قيمة أمر الشراء</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            {formatCurrency(totalPOValue)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
