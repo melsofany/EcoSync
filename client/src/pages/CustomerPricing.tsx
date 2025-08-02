@@ -19,15 +19,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronDown, ChevronRight, Eye, Clock, Package, AlertCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, Eye, Clock, Package, AlertCircle, DollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import CustomerPricingModal from "@/components/modals/CustomerPricingModal";
 
 export default function CustomerPricing() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [selectedItemForPricing, setSelectedItemForPricing] = useState<any>(null);
 
   // Get items ready for customer pricing
   const { data: itemsReadyForPricing = [], isLoading } = useQuery<any[]>({
@@ -50,6 +53,11 @@ export default function CustomerPricing() {
     const detailedPricing = await response.json();
     setSelectedItem({ ...item, detailedPricing });
     setShowDetailModal(true);
+  };
+
+  const openPricingModal = (item: any) => {
+    setSelectedItemForPricing(item);
+    setShowPricingModal(true);
   };
 
   if (isLoading) {
@@ -122,17 +130,30 @@ export default function CustomerPricing() {
                           <Clock className="h-3 w-3" />
                           في انتظار التسعير
                         </Badge>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            showItemDetails(item);
-                          }}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          عرض التفاصيل
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openPricingModal(item);
+                            }}
+                          >
+                            <DollarSign className="h-4 w-4 mr-1" />
+                            إضافة تسعير
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              showItemDetails(item);
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            عرض التفاصيل
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CollapsibleTrigger>
@@ -260,6 +281,17 @@ export default function CustomerPricing() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Customer Pricing Modal */}
+      <CustomerPricingModal
+        isOpen={showPricingModal}
+        onClose={() => {
+          setShowPricingModal(false);
+          setSelectedItemForPricing(null);
+        }}
+        item={selectedItemForPricing}
+        quotationId="default" // يمكن تمرير معرف العرض الحقيقي هنا
+      />
     </div>
   );
 }
