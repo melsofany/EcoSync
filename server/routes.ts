@@ -187,6 +187,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete user
+  app.delete("/api/users/:userId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      // Get user details for logging before deletion
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Prevent deleting yourself
+      if (userId === req.session.user!.id) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+
+      await storage.deleteUser(userId);
+      await logActivity(req, "delete_user", "user", userId, `Deleted user: ${user.username}`);
+
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Delete user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Client management routes
   app.get("/api/clients", requireAuth, async (req: Request, res: Response) => {
     try {

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { hasRole } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
@@ -27,7 +28,9 @@ import {
   Plus,
   Trash2,
   Download,
-  RefreshCw
+  RefreshCw,
+  Edit,
+  CheckCircle
 } from "lucide-react";
 
 interface SystemSettings {
@@ -95,6 +98,26 @@ export default function Admin() {
     onError: (error: any) => {
       toast({
         title: "خطأ في إلغاء حظر المستخدم",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await apiRequest("DELETE", `/api/users/${userId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({
+        title: "تم حذف المستخدم",
+        description: "تم حذف المستخدم بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في حذف المستخدم",
         description: error.message,
         variant: "destructive",
       });
@@ -440,16 +463,75 @@ export default function Admin() {
                         </TableCell>
                         <TableCell>
                           {userItem.id !== user?.id && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => blockUserMutation.mutate(userItem.id)}
-                              disabled={blockUserMutation.isPending || !userItem.isActive}
-                              className="text-red-600 hover:text-red-800"
-                              title={userItem.isActive ? "حظر المستخدم" : "محظور"}
-                            >
-                              <Ban className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center space-x-2 space-x-reverse">
+                              {/* Edit Button */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {/* TODO: Add edit functionality */}}
+                                className="text-blue-600 hover:text-blue-800"
+                                title="تعديل المستخدم"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+
+                              {/* Block/Unblock Button */}
+                              {userItem.isActive ? (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => blockUserMutation.mutate(userItem.id)}
+                                  disabled={blockUserMutation.isPending}
+                                  className="text-orange-600 hover:text-orange-800"
+                                  title="حظر المستخدم"
+                                >
+                                  <Ban className="h-4 w-4" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => unblockUserMutation.mutate(userItem.id)}
+                                  disabled={unblockUserMutation.isPending}
+                                  className="text-green-600 hover:text-green-800"
+                                  title="إلغاء حظر المستخدم"
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                              )}
+
+                              {/* Delete Button */}
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-600 hover:text-red-800"
+                                    title="حذف المستخدم"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent dir="rtl">
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>تأكيد حذف المستخدم</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      هل أنت متأكد من حذف المستخدم "{userItem.fullName}"؟
+                                      هذا الإجراء لا يمكن التراجع عنه وسيتم حذف جميع بيانات المستخدم.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteUserMutation.mutate(userItem.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      حذف
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           )}
                         </TableCell>
                       </TableRow>
