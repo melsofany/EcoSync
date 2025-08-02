@@ -114,137 +114,188 @@ function ItemDetailedPricing({ item }: { item: any }) {
         </div>
       )}
 
-      {/* Complete pricing history */}
+      {/* Comprehensive pricing table like the image */}
       {detailedPricing && (
-        <div className="space-y-4">
-          {/* Supplier pricing history */}
-          {detailedPricing.supplierPricings && detailedPricing.supplierPricings.length > 0 && (
-            <div className="bg-white rounded-lg border p-4">
-              <h4 className="font-semibold mb-3">سجل أسعار الموردين</h4>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>المورد</TableHead>
-                    <TableHead>السعر</TableHead>
-                    <TableHead>تاريخ الورود</TableHead>
-                    <TableHead>أمر الشراء</TableHead>
-                    <TableHead>الحالة</TableHead>
+        <div className="bg-white rounded-lg border p-4 mt-4">
+          <h4 className="font-semibold mb-4">جدول التسعير المتكامل</h4>
+          <div className="overflow-x-auto">
+            <Table className="text-sm">
+              <TableHeader>
+                <TableRow className="bg-blue-50">
+                  <TableHead className="text-center font-bold">PROCESS NO</TableHead>
+                  <TableHead className="text-center font-bold">QUANTITY</TableHead>
+                  <TableHead className="text-center font-bold">DATE</TableHead>
+                  <TableHead className="text-center font-bold">PO</TableHead>
+                  <TableHead className="text-center font-bold">Category</TableHead>
+                  <TableHead className="text-center font-bold">REQ_DATE</TableHead>
+                  <TableHead className="text-center font-bold">PRICE</TableHead>
+                  <TableHead className="text-center font-bold">QTY</TableHead>
+                  <TableHead className="text-center font-bold">DATE</TableHead>
+                  <TableHead className="text-center font-bold">SPR</TableHead>
+                  <TableHead className="text-center font-bold">DESCRIPTION</TableHead>
+                  <TableHead className="text-center font-bold">PART NO</TableHead>
+                  <TableHead className="text-center font-bold">SUPPLIER</TableHead>
+                  <TableHead className="text-center font-bold">CUSTOMER</TableHead>
+                  <TableHead className="text-center font-bold">UOM</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {/* Supplier pricing entries */}
+                {detailedPricing.supplierPricings && detailedPricing.supplierPricings.map((pricing: any, index: number) => (
+                  <TableRow key={`supplier-${pricing.id}`} className="hover:bg-gray-50">
+                    <TableCell className="text-center">10500</TableCell>
+                    <TableCell className="text-center">{pricing.minimumOrderQuantity || 1}</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(pricing.priceReceivedDate), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {pricing.purchaseOrderId ? pricing.purchaseOrderId.slice(-8) : "-"}
+                    </TableCell>
+                    <TableCell className="text-center">SUPPLIER</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(pricing.priceReceivedDate), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center font-semibold text-green-600">
+                      {formatCurrency(Number(pricing.unitPrice))}
+                    </TableCell>
+                    <TableCell className="text-center">{pricing.minimumOrderQuantity || 1}</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={pricing.status === "active" ? "default" : "secondary"} className="text-xs">
+                        {pricing.status === "active" ? "نشط" : "غير نشط"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right max-w-xs">
+                      <div className="truncate" title={item.item?.description}>
+                        {item.item?.description || "وصف البند"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.item?.itemNumber || "رقم البند"}
+                    </TableCell>
+                    <TableCell className="text-center font-medium">
+                      {pricing.supplier?.name || "غير محدد"}
+                    </TableCell>
+                    <TableCell className="text-center text-gray-400">-</TableCell>
+                    <TableCell className="text-center">{item.item?.unit || "Each"}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {detailedPricing.supplierPricings.map((pricing: any) => (
-                    <TableRow key={pricing.id}>
-                      <TableCell>{pricing.supplier?.name || "غير محدد"}</TableCell>
-                      <TableCell className="font-semibold">
-                        {formatCurrency(Number(pricing.unitPrice))}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(pricing.priceReceivedDate), "dd/MM/yyyy", { locale: ar })}
-                      </TableCell>
-                      <TableCell>
-                        {pricing.purchaseOrderId ? (
-                          <Badge variant="default">رقم {pricing.purchaseOrderId.slice(-8)}</Badge>
-                        ) : (
-                          <Badge variant="secondary">لم يصدر</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={pricing.status === "active" ? "default" : "secondary"}>
-                          {pricing.status === "active" ? "نشط" : "غير نشط"}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-
-          {/* Customer pricing history */}
-          {detailedPricing.customerPricings && detailedPricing.customerPricings.length > 0 && (
-            <div className="bg-white rounded-lg border p-4">
-              <h4 className="font-semibold mb-3">سجل تسعير العملاء</h4>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>سعر التكلفة</TableHead>
-                    <TableHead>سعر البيع</TableHead>
-                    <TableHead>نسبة الربح</TableHead>
-                    <TableHead>الكمية</TableHead>
-                    <TableHead>الإجمالي</TableHead>
-                    <TableHead>الحالة</TableHead>
-                    <TableHead>التاريخ</TableHead>
+                ))}
+                
+                {/* Customer pricing entries */}
+                {detailedPricing.customerPricings && detailedPricing.customerPricings.map((pricing: any) => (
+                  <TableRow key={`customer-${pricing.id}`} className="hover:bg-blue-50 bg-blue-25">
+                    <TableCell className="text-center">10500</TableCell>
+                    <TableCell className="text-center">{pricing.quantity}</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {pricing.quotationId ? pricing.quotationId.slice(-8) : "-"}
+                    </TableCell>
+                    <TableCell className="text-center">CUSTOMER</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center font-semibold text-blue-600">
+                      {formatCurrency(Number(pricing.sellingPrice))}
+                    </TableCell>
+                    <TableCell className="text-center">{pricing.quantity}</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={pricing.profitMargin >= 20 ? "default" : pricing.profitMargin >= 0 ? "secondary" : "destructive"} className="text-xs">
+                        {pricing.profitMargin ? `${pricing.profitMargin.toFixed(1)}%` : "0%"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right max-w-xs">
+                      <div className="truncate" title={item.item?.description}>
+                        {item.item?.description || "وصف البند"} - تسعير العميل
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.item?.itemNumber || "رقم البند"}
+                    </TableCell>
+                    <TableCell className="text-center text-gray-400">-</TableCell>
+                    <TableCell className="text-center font-medium text-blue-600">
+                      عميل عام
+                    </TableCell>
+                    <TableCell className="text-center">{item.item?.unit || "Each"}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {detailedPricing.customerPricings && detailedPricing.customerPricings.map((pricing: any) => (
-                    <TableRow key={pricing.id}>
-                      <TableCell>{formatCurrency(Number(pricing.costPrice))}</TableCell>
-                      <TableCell className="font-semibold">
-                        {formatCurrency(Number(pricing.sellingPrice))}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={pricing.profitMargin >= 20 ? "default" : pricing.profitMargin >= 0 ? "secondary" : "destructive"}>
-                          {pricing.profitMargin ? `${pricing.profitMargin.toFixed(1)}%` : "0%"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{pricing.quantity}</TableCell>
-                      <TableCell className="font-semibold">
-                        {formatCurrency(Number(pricing.totalAmount))}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={pricing.status === "approved" ? "default" : pricing.status === "pending" ? "secondary" : "destructive"}>
-                          {pricing.status === "approved" ? "معتمد" : pricing.status === "pending" ? "في الانتظار" : "مرفوض"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-
-          {/* Full pricing history */}
-          {detailedPricing.pricingHistory && detailedPricing.pricingHistory.length > 0 && (
-            <div className="bg-white rounded-lg border p-4">
-              <h4 className="font-semibold mb-3">سجل تغييرات الأسعار</h4>
-              <Table>
-                <TableHeader>
+                ))}
+                
+                {/* If no data, show item basic info */}
+                {(!detailedPricing.supplierPricings || detailedPricing.supplierPricings.length === 0) && 
+                 (!detailedPricing.customerPricings || detailedPricing.customerPricings.length === 0) && (
                   <TableRow>
-                    <TableHead>نوع السعر</TableHead>
-                    <TableHead>السعر القديم</TableHead>
-                    <TableHead>السعر الجديد</TableHead>
-                    <TableHead>سبب التغيير</TableHead>
-                    <TableHead>التاريخ</TableHead>
+                    <TableCell className="text-center">10500</TableCell>
+                    <TableCell className="text-center">1</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center">-</TableCell>
+                    <TableCell className="text-center">ITEM</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center">-</TableCell>
+                    <TableCell className="text-center">1</TableCell>
+                    <TableCell className="text-center">
+                      {format(new Date(), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center">-</TableCell>
+                    <TableCell className="text-right max-w-xs">
+                      <div className="truncate" title={item.item?.description}>
+                        {item.item?.description || "وصف البند"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.item?.itemNumber || "رقم البند"}
+                    </TableCell>
+                    <TableCell className="text-center">غير محدد</TableCell>
+                    <TableCell className="text-center">غير محدد</TableCell>
+                    <TableCell className="text-center">{item.item?.unit || "Each"}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {detailedPricing.pricingHistory.map((history: any) => (
-                    <TableRow key={history.id}>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {history.priceType === "supplier" ? "مورد" : "عميل"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {history.oldPrice ? formatCurrency(Number(history.oldPrice)) : "-"}
-                      </TableCell>
-                      <TableCell className="font-semibold">
-                        {formatCurrency(Number(history.newPrice))}
-                      </TableCell>
-                      <TableCell>{history.changeReason || "-"}</TableCell>
-                      <TableCell>
-                        {format(new Date(history.createdAt), "dd/MM/yyyy HH:mm", { locale: ar })}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {/* Summary section */}
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="font-medium">إجمالي عروض الموردين:</span>
+                <p className="text-blue-600 font-bold">
+                  {detailedPricing.supplierPricings?.length || 0}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium">إجمالي تسعير العملاء:</span>
+                <p className="text-green-600 font-bold">
+                  {detailedPricing.customerPricings?.length || 0}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium">آخر سعر مورد:</span>
+                <p className="text-blue-600 font-bold">
+                  {detailedPricing.supplierPricings?.length > 0 
+                    ? formatCurrency(Number(detailedPricing.supplierPricings[0].unitPrice))
+                    : "-"}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium">آخر سعر عميل:</span>
+                <p className="text-green-600 font-bold">
+                  {detailedPricing.customerPricings?.length > 0 
+                    ? formatCurrency(Number(detailedPricing.customerPricings[0].sellingPrice))
+                    : "-"}
+                </p>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>
