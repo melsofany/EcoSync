@@ -118,7 +118,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
       {detailedPricing && (
         <div className="space-y-4">
           {/* Supplier pricing history */}
-          {detailedPricing.supplierPricings?.length > 0 && (
+          {detailedPricing.supplierPricings && detailedPricing.supplierPricings.length > 0 && (
             <div className="bg-white rounded-lg border p-4">
               <h4 className="font-semibold mb-3">سجل أسعار الموردين</h4>
               <Table>
@@ -161,7 +161,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           )}
 
           {/* Customer pricing history */}
-          {detailedPricing.customerPricings?.length > 0 && (
+          {detailedPricing.customerPricings && detailedPricing.customerPricings.length > 0 && (
             <div className="bg-white rounded-lg border p-4">
               <h4 className="font-semibold mb-3">سجل تسعير العملاء</h4>
               <Table>
@@ -177,7 +177,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {detailedPricing.customerPricings.map((pricing: any) => (
+                  {detailedPricing.customerPricings && detailedPricing.customerPricings.map((pricing: any) => (
                     <TableRow key={pricing.id}>
                       <TableCell>{formatCurrency(Number(pricing.costPrice))}</TableCell>
                       <TableCell className="font-semibold">
@@ -208,7 +208,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           )}
 
           {/* Full pricing history */}
-          {detailedPricing.pricingHistory?.length > 0 && (
+          {detailedPricing.pricingHistory && detailedPricing.pricingHistory.length > 0 && (
             <div className="bg-white rounded-lg border p-4">
               <h4 className="font-semibold mb-3">سجل تغييرات الأسعار</h4>
               <Table>
@@ -288,7 +288,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          quotationId: "default",
+          quotationId: null, // لا نربط بعرض سعر محدد
           itemId: item.item.id,
           supplierPricingId: item.supplierPricing?.id,
           costPrice: costPrice,
@@ -298,6 +298,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
           totalAmount,
           notes: formData.notes,
           currency: "EGP",
+          createdBy: "current-user-id", // سيتم تحديده لاحقاً من auth context
         }),
       });
 

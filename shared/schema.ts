@@ -139,7 +139,7 @@ export const supplierPricing = pgTable("supplier_pricing", {
 // Customer Pricing table (المرحلة الثانية - تسعير العملاء)
 export const customerPricing = pgTable("customer_pricing", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  quotationId: varchar("quotation_id").references(() => quotationRequests.id, { onDelete: "cascade" }).notNull(),
+  quotationId: varchar("quotation_id").references(() => quotationRequests.id, { onDelete: "cascade" }),
   itemId: varchar("item_id").references(() => items.id, { onDelete: "cascade" }).notNull(),
   supplierPricingId: varchar("supplier_pricing_id").references(() => supplierPricing.id),
   costPrice: decimal("cost_price", { precision: 12, scale: 2 }).notNull(), // سعر التكلفة من المورد
