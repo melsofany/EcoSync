@@ -8,6 +8,7 @@ import {
   purchaseOrders,
   purchaseOrderItems,
   supplierQuotes,
+  supplierPricing,
   activityLog,
   type User,
   type InsertUser,
@@ -27,6 +28,8 @@ import {
   type InsertPurchaseOrderItem,
   type SupplierQuote,
   type InsertSupplierQuote,
+  type SupplierPricing,
+  type InsertSupplierPricing,
   type ActivityLog,
   type InsertActivityLog,
 } from "@shared/schema";
@@ -113,6 +116,14 @@ export interface IStorage {
     totalClients: number;
     totalSuppliers: number;
   }>;
+
+  // Supplier pricing operations
+  createSupplierPricing(pricing: InsertSupplierPricing): Promise<SupplierPricing>;
+  getSupplierPricingByItem(itemId: string): Promise<SupplierPricing[]>;
+  getAllSupplierPricing(): Promise<SupplierPricing[]>;
+  updateSupplierPricing(id: string, updates: Partial<SupplierPricing>): Promise<SupplierPricing | undefined>;
+  getItemsRequiringPricing(): Promise<Item[]>;
+  getPricingHistoryForItem(itemId: string): Promise<SupplierPricing[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -537,6 +548,67 @@ export class DatabaseStorage implements IStorage {
       totalClients: clientsData.length,
       totalSuppliers: suppliersData.length,
     };
+  }
+
+  // Supplier pricing operations
+  async createSupplierPricing(pricingData: InsertSupplierPricing): Promise<SupplierPricing> {
+    const [pricing] = await db
+      .insert(supplierPricing)
+      .values({
+        ...pricingData,
+        priceReceivedDate: new Date(pricingData.priceReceivedDate),
+      })
+      .returning();
+    return pricing;
+  }
+
+  async getSupplierPricingByItem(itemId: string): Promise<SupplierPricing[]> {
+    return await db
+      .select()
+      .from(supplierPricing)
+      .where(eq(supplierPricing.itemId, itemId))
+      .orderBy(desc(supplierPricing.priceReceivedDate));
+  }
+
+  async getAllSupplierPricing(): Promise<SupplierPricing[]> {
+    return await db
+      .select()
+      .from(supplierPricing)
+      .orderBy(desc(supplierPricing.createdAt));
+  }
+
+  async updateSupplierPricing(id: string, updates: Partial<SupplierPricing>): Promise<SupplierPricing | undefined> {
+    const [pricing] = await db
+      .update(supplierPricing)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(supplierPricing.id, id))
+      .returning();
+    return pricing || undefined;
+  }
+
+  async getItemsRequiringPricing(): Promise<Item[]> {
+    // Get all items that don't have active pricing yet
+    const itemsWithoutPricing = await db
+      .select()
+      .from(items)
+      .leftJoin(
+        supplierPricing,
+        and(
+          eq(items.id, supplierPricing.itemId),
+          eq(supplierPricing.status, "active")
+        )
+      )
+      .where(eq(supplierPricing.itemId, null as any));
+
+    return itemsWithoutPricing.map(row => row.items);
+  }
+
+  async getPricingHistoryForItem(itemId: string): Promise<SupplierPricing[]> {
+    return await db
+      .select()
+      .from(supplierPricing)
+      .where(eq(supplierPricing.itemId, itemId))
+      .orderBy(desc(supplierPricing.priceReceivedDate));
   }
 }
 

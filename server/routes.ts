@@ -734,6 +734,66 @@ Respond in JSON format:
     }
   });
 
+  // Supplier pricing routes
+  app.post("/api/supplier-pricing", requireAuth, requireRole(["manager", "data_entry", "purchasing"]), async (req: Request, res: Response) => {
+    try {
+      const pricingData = {
+        ...req.body,
+        createdBy: req.session.user!.id,
+      };
+
+      const pricing = await storage.createSupplierPricing(pricingData);
+      await logActivity(req, "create_supplier_pricing", "pricing", pricing.id, `Added supplier pricing for item ${pricing.itemId}`);
+
+      res.status(201).json(pricing);
+    } catch (error) {
+      console.error("Create supplier pricing error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/supplier-pricing", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const pricing = await storage.getAllSupplierPricing();
+      res.json(pricing);
+    } catch (error) {
+      console.error("Get supplier pricing error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/supplier-pricing/item/:itemId", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      const pricing = await storage.getSupplierPricingByItem(itemId);
+      res.json(pricing);
+    } catch (error) {
+      console.error("Get supplier pricing by item error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/items-requiring-pricing", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const items = await storage.getItemsRequiringPricing();
+      res.json(items);
+    } catch (error) {
+      console.error("Get items requiring pricing error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/pricing-history/:itemId", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      const history = await storage.getPricingHistoryForItem(itemId);
+      res.json(history);
+    } catch (error) {
+      console.error("Get pricing history error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

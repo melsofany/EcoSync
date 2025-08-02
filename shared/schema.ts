@@ -114,7 +114,29 @@ export const purchaseOrderItems = pgTable("purchase_order_items", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Supplier quotes table - للتسعيرات المتعددة من نفس المورد
+// Enhanced Supplier pricing system
+export const supplierPricing = pgTable("supplier_pricing", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemId: varchar("item_id").references(() => items.id, { onDelete: "cascade" }).notNull(),
+  supplierId: varchar("supplier_id").references(() => suppliers.id, { onDelete: "cascade" }).notNull(),
+  unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
+  currency: text("currency").default("EGP").notNull(),
+  priceReceivedDate: timestamp("price_received_date").notNull(),
+  validityPeriod: integer("validity_period"), // days
+  minimumOrderQuantity: integer("minimum_order_quantity"),
+  deliveryTime: integer("delivery_time"), // days
+  paymentTerms: text("payment_terms"),
+  notes: text("notes"),
+  status: text("status").default("active").notNull(), // active, expired, superseded
+  quotationRequestId: varchar("quotation_request_id").references(() => quotationRequests.id),
+  purchaseOrderId: varchar("purchase_order_id").references(() => purchaseOrders.id),
+  isSelected: boolean("is_selected").default(false), // Whether this price was selected for PO
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Keep existing supplier quotes for backward compatibility  
 export const supplierQuotes = pgTable("supplier_quotes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   itemId: varchar("item_id").references(() => items.id).notNull(),
@@ -198,6 +220,15 @@ export const insertSupplierQuoteSchema = createInsertSchema(supplierQuotes).omit
   createdAt: true,
 });
 
+export const insertSupplierPricingSchema = createInsertSchema(supplierPricing).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  unitPrice: z.coerce.string().min(1, "السعر مطلوب"),
+  priceReceivedDate: z.string().min(1, "تاريخ ورود السعر مطلوب"),
+});
+
 export const insertActivityLogSchema = createInsertSchema(activityLog).omit({
   id: true,
   timestamp: true,
@@ -222,6 +253,8 @@ export type PurchaseOrderItem = typeof purchaseOrderItems.$inferSelect;
 export type InsertPurchaseOrderItem = z.infer<typeof insertPurchaseOrderItemSchema>;
 export type SupplierQuote = typeof supplierQuotes.$inferSelect;
 export type InsertSupplierQuote = z.infer<typeof insertSupplierQuoteSchema>;
+export type SupplierPricing = typeof supplierPricing.$inferSelect;
+export type InsertSupplierPricing = z.infer<typeof insertSupplierPricingSchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 

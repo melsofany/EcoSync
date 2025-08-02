@@ -12,7 +12,8 @@ import {
   LogOut,
   Circle,
   Users,
-  Truck
+  Truck,
+  DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       href: "/suppliers",
       icon: Truck,
       section: "suppliers",
+    },
+    {
+      title: "أسعار الموردين",
+      href: "/supplier-pricing",
+      icon: DollarSign,
+      section: "supplier-pricing",
     },
     {
       title: "أوامر الشراء",
