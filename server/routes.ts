@@ -367,6 +367,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete item route
+  app.delete("/api/items/:itemId", requireAuth, requireRole(["manager", "data_entry"]), async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      
+      // Get item details for logging
+      const item = await storage.getItemById(itemId);
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      await storage.deleteItem(itemId);
+      await logActivity(req, "delete_item", "item", itemId, `Deleted item: ${item.itemNumber} - ${item.description}`);
+
+      res.json({ message: "Item deleted successfully" });
+    } catch (error) {
+      console.error("Delete item error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // AI item comparison endpoint
   app.post("/api/items/ai-compare", requireAuth, async (req: Request, res: Response) => {
     try {

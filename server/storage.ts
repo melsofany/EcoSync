@@ -63,7 +63,9 @@ export interface IStorage {
   createItem(item: InsertItem): Promise<Item>;
   getAllItems(): Promise<Item[]>;
   getItem(id: string): Promise<Item | undefined>;
+  getItemById(id: string): Promise<Item | undefined>;
   updateItem(id: string, updates: Partial<Item>): Promise<Item | undefined>;
+  deleteItem(id: string): Promise<void>;
   getNextItemNumber(): Promise<string>;
   findSimilarItems(description: string, partNumber?: string): Promise<Item[]>;
 
@@ -272,6 +274,15 @@ export class DatabaseStorage implements IStorage {
   async getItem(id: string): Promise<Item | undefined> {
     const [item] = await db.select().from(items).where(eq(items.id, id));
     return item || undefined;
+  }
+
+  async getItemById(id: string): Promise<Item | undefined> {
+    const [item] = await db.select().from(items).where(eq(items.id, id));
+    return item || undefined;
+  }
+
+  async deleteItem(id: string): Promise<void> {
+    await db.delete(items).where(eq(items.id, id));
   }
 
   async updateItem(id: string, updates: Partial<Item>): Promise<Item | undefined> {

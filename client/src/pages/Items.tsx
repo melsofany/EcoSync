@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,16 +7,22 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Eye, Edit, Brain, Check, Clock } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Eye, Edit, Trash2, Check, Clock } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 import NewItemModal from "@/components/modals/NewItemModal";
 
 export default function Items() {
   const [isNewItemModalOpen, setIsNewItemModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
   const [filters, setFilters] = useState({
     partNumber: "",
     description: "",
     category: "",
   });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["/api/items"],
@@ -27,7 +33,7 @@ export default function Items() {
       pending: { label: "في الانتظار", variant: "secondary" as const, icon: Clock },
       processed: { label: "تم المعالجة", variant: "default" as const, icon: Check },
       verified: { label: "تم التحقق", variant: "default" as const, icon: Check },
-      duplicate: { label: "مكرر", variant: "destructive" as const, icon: Brain },
+      duplicate: { label: "مكرر", variant: "destructive" as const, icon: Check },
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -57,6 +63,48 @@ export default function Items() {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG');
+  };
+
+  // Handler functions for button actions
+  const handleViewItem = (item: any) => {
+    toast({
+      title: "عرض تفاصيل الصنف",
+      description: `عرض تفاصيل الصنف: ${item.itemNumber}`,
+    });
+    // TODO: Implement item details modal or navigate to details page
+  };
+
+  const handleEditItem = (item: any) => {
+    toast({
+      title: "تعديل الصنف",
+      description: `تعديل الصنف: ${item.itemNumber}`,
+    });
+    // TODO: Implement edit item modal
+  };
+
+  const deleteItemMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const response = await apiRequest("DELETE", `/api/items/${itemId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+      toast({
+        title: "تم حذف الصنف",
+        description: "تم حذف الصنف بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في حذف الصنف",
+        description: error.message || "حدث خطأ أثناء حذف الصنف",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteItem = (item: any) => {
+    setItemToDelete(item);
   };
 
   if (isLoading) {
@@ -194,15 +242,52 @@ export default function Items() {
                       <TableCell>{getAIStatusBadge(item.aiStatus)}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
-                          <Button variant="ghost" size="sm" title="عرض التفاصيل">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="عرض التفاصيل"
+                            onClick={() => handleViewItem(item)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" title="تعديل">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="تعديل"
+                            onClick={() => handleEditItem(item)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" title="إعادة فحص AI" className="text-purple-600 hover:text-purple-800">
-                            <Brain className="h-4 w-4" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                title="حذف"
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  هل أنت متأكد من حذف الصنف "{item.itemNumber}"؟ 
+                                  هذا الإجراء لا يمكن التراجع عنه.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => deleteItemMutation.mutate(item.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  حذف
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
