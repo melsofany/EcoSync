@@ -59,6 +59,7 @@ interface POItem {
 
 export default function CreatePurchaseOrder() {
   const [selectedQuotationId, setSelectedQuotationId] = useState("");
+  const [quotationSearchTerm, setQuotationSearchTerm] = useState("");
   const [poNumber, setPONumber] = useState("");
   const [useCustomPONumber, setUseCustomPONumber] = useState(false);
   const [poDate, setPODate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -84,6 +85,27 @@ export default function CreatePurchaseOrder() {
     queryKey: ["/api/quotations", selectedQuotationId, "items"],
     enabled: !!selectedQuotationId,
   });
+
+  // Filter quotations based on search term
+  const filteredQuotations = React.useMemo(() => {
+    if (!quotationSearchTerm) return quotations;
+    return quotations.filter((q: Quotation) => 
+      q.requestNumber.toLowerCase().includes(quotationSearchTerm.toLowerCase()) ||
+      (q.clientName && q.clientName.toLowerCase().includes(quotationSearchTerm.toLowerCase()))
+    );
+  }, [quotations, quotationSearchTerm]);
+
+  // Auto-select quotation if search term matches exactly
+  React.useEffect(() => {
+    if (quotationSearchTerm && quotations) {
+      const exactMatch = quotations.find((q: Quotation) => 
+        q.requestNumber.toLowerCase() === quotationSearchTerm.toLowerCase()
+      );
+      if (exactMatch && exactMatch.id !== selectedQuotationId) {
+        setSelectedQuotationId(exactMatch.id);
+      }
+    }
+  }, [quotationSearchTerm, quotations, selectedQuotationId]);
 
   // Generate automatic PO number
   React.useEffect(() => {
@@ -158,6 +180,7 @@ export default function CreatePurchaseOrder() {
 
   const resetForm = () => {
     setSelectedQuotationId("");
+    setQuotationSearchTerm("");
     setPONumber("");
     setUseCustomPONumber(false);
     setPODate(format(new Date(), "yyyy-MM-dd"));
@@ -242,18 +265,35 @@ export default function CreatePurchaseOrder() {
               {/* Quotation Selection */}
               <div className="space-y-2">
                 <Label htmlFor="quotation">طلب التسعير *</Label>
-                <Select value={selectedQuotationId} onValueChange={setSelectedQuotationId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر طلب التسعير" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {quotations.map((quotation) => (
-                      <SelectItem key={quotation.id} value={quotation.id}>
-                        {quotation.requestNumber} - {quotation.clientName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Input
+                    placeholder="أدخل رقم طلب التسعير (مثل: REQ00000001)"
+                    value={quotationSearchTerm}
+                    onChange={(e) => setQuotationSearchTerm(e.target.value)}
+                    className="text-right"
+                  />
+                  <Select 
+                    value={selectedQuotationId} 
+                    onValueChange={(value) => {
+                      setSelectedQuotationId(value);
+                      const selected = quotations?.find((q: any) => q.id === value);
+                      if (selected) {
+                        setQuotationSearchTerm(selected.requestNumber);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="أو اختر من القائمة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredQuotations?.map((quotation: any) => (
+                        <SelectItem key={quotation.id} value={quotation.id}>
+                          {quotation.requestNumber} - {quotation.clientName || "غير محدد"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* PO Date */}

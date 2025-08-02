@@ -857,7 +857,13 @@ Respond in JSON format:
   // Enhanced Purchase Orders endpoints
   app.post("/api/purchase-orders", requireAuth, requireRole(['manager', 'purchasing']), async (req: Request, res: Response) => {
     try {
-      const poData = { ...req.body, createdBy: req.session.user!.id };
+      const poData = {
+        ...req.body,
+        createdBy: req.session.user!.id,
+        poDate: new Date(req.body.poDate),
+        totalValue: parseFloat(req.body.totalValue || '0')
+      };
+      
       const purchaseOrder = await storage.createPurchaseOrder(poData);
       await logActivity(req, "create_purchase_order", "purchase_order", purchaseOrder.id, `Created purchase order ${purchaseOrder.poNumber}`);
       res.status(201).json(purchaseOrder);
