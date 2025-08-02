@@ -137,4 +137,60 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground));
   }
+
+  /* Responsive Design Utilities */
+  @media (max-width: 640px) {
+    /* Mobile-first specific adjustments */
+    .table-responsive {
+      font-size: 0.875rem;
+    }
+    
+    .dialog-content-mobile {
+      margin: 0;
+      width: 100vw;
+      max-width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+    }
+    
+    .mobile-hidden {
+      display: none;
+    }
+    
+    .mobile-full-width {
+      width: 100%;
+    }
+    
+    /* Touch-friendly buttons on mobile */
+    button {
+      min-height: 44px;
+    }
+    
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 1024px) {
+    /* Tablet adjustments */
+    .tablet-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1025px) {
+    /* Desktop adjustments */
+    .desktop-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* RTL Support Enhancements */
+  [dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+    margin-right: calc(var(--tw-space-x) * var(--tw-space-x-reverse));
+    margin-left: calc(var(--tw-space-x) * calc(1 - var(--tw-space-x-reverse)));
+  }
 }

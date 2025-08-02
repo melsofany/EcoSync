@@ -56,19 +56,19 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 lg:space-y-8">
       {/* Welcome Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+      <div className="text-center sm:text-right">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
           مرحباً، {user?.fullName}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-sm sm:text-base text-gray-600">
           نظرة عامة على أداء النظام اليوم
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card className="card-hover">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">

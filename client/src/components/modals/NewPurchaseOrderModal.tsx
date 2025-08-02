@@ -84,12 +84,12 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
     onClose();
   };
 
-  const selectedQuotation = quotations?.find(
+  const selectedQuotation = Array.isArray(quotations) ? quotations.find(
     (q: any) => q.id === form.watch("quotationId")
-  );
+  ) : null;
 
   const getClientName = (clientId: string) => {
-    const client = clients?.find((c: any) => c.id === clientId);
+    const client = Array.isArray(clients) ? clients.find((c: any) => c.id === clientId) : null;
     return client?.name || "غير محدد";
   };
 
@@ -98,13 +98,13 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
   };
 
   // Filter completed quotations for purchase orders
-  const availableQuotations = quotations?.filter(
+  const availableQuotations = Array.isArray(quotations) ? quotations.filter(
     (q: any) => q.status === "completed"
-  ) || [];
+  ) : [];
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>أمر شراء جديد</DialogTitle>
@@ -119,8 +119,8 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
           </div>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 lg:space-y-6 mt-4 lg:mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>رقم أمر الشراء (تلقائي)</Label>
               <Input
@@ -143,7 +143,7 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
               </div>
             </div>
 
-            <div className="md:col-span-2">
+            <div className="sm:col-span-2">
               <Label htmlFor="quotationId">طلب التسعير المرتبط *</Label>
               <Select
                 value={form.watch("quotationId")}
@@ -215,7 +215,7 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
                   <FileText className="h-5 w-5 text-blue-600" />
                   <h4 className="font-semibold text-blue-800">تفاصيل طلب التسعير</h4>
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">رقم الطلب:</span>
                     <span className="font-medium mr-2">{selectedQuotation.requestNumber}</span>
@@ -243,18 +243,20 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
             </Card>
           )}
 
-          <div className="flex justify-end space-x-3 space-x-reverse pt-6 border-t">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 sm:space-x-reverse pt-4 lg:pt-6 border-t">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={createPurchaseOrderMutation.isPending}
+              className="w-full sm:w-auto"
             >
               إلغاء
             </Button>
             <Button
               type="submit"
               disabled={createPurchaseOrderMutation.isPending || availableQuotations.length === 0}
+              className="w-full sm:w-auto"
             >
               {createPurchaseOrderMutation.isPending ? (
                 <>

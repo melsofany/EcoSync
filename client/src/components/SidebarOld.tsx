@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, useLogout } from "@/hooks/useAuth";
 import { canAccessSection } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -21,7 +22,7 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
-export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
+export default function Sidebar({ isOpen }: SidebarProps) {
   const [location] = useLocation();
   const { user } = useAuth();
   const logout = useLogout();
@@ -99,29 +100,30 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
-          onClick={onToggle} 
+          onClick={() => {}} 
         />
       )}
       
       {/* Sidebar */}
       <div className={cn(
         "bg-white shadow-lg border-l border-gray-200 transition-all duration-300 z-30",
-        "fixed lg:relative lg:translate-x-0 h-full flex flex-col",
-        isOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 lg:w-16"
+        "fixed lg:relative lg:translate-x-0 h-full",
+        isOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 lg:w-16",
+        "lg:block"
       )}>
         {/* Company Header */}
-        <div className="p-3 sm:p-4 lg:p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <Building className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
-            </div>
-            {isOpen && (
-              <div>
-                <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام الخديوي</h2>
-                <p className="text-xs text-gray-500">للتوريدات والمقاولات</p>
-              </div>
-            )}
+        <div className="p-4 lg:p-6 border-b border-gray-200">
+        <div className="flex items-center space-x-3 space-x-reverse">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+            {/* COMPANY LOGO: Place Al-Khedawi company logo here */}
+            <Building className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
           </div>
+          {isOpen && (
+            <div>
+              <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام الخديوي</h2>
+              <p className="text-xs text-gray-500">للتوريدات والمقاولات</p>
+            </div>
+          )}
         </div>
         
         {/* User Info */}
