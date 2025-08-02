@@ -119,7 +119,7 @@ export default function NewQuotationModal({ isOpen, onClose }: NewQuotationModal
                   <SelectValue placeholder="اختر العميل" />
                 </SelectTrigger>
                 <SelectContent>
-                  {clients?.map((client: any) => (
+                  {Array.isArray(clients) && clients.map((client: any) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.name}
                     </SelectItem>
