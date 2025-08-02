@@ -138,7 +138,7 @@ export default function Items() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 space-x-reverse">
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Brain className="h-6 w-6 text-purple-600" />
+                <Check className="h-6 w-6 text-purple-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-gray-800">تكامل Deep Seek AI</h3>
@@ -155,7 +155,7 @@ export default function Items() {
           </div>
           <div className="mt-4 p-3 bg-white rounded-lg border">
             <p className="text-sm text-gray-700 flex items-center">
-              <Brain className="h-4 w-4 text-blue-500 ml-2" />
+              <Check className="h-4 w-4 text-blue-500 ml-2" />
               سيتم مقارنة كل صنف جديد تلقائياً مع قاعدة البيانات الموجودة باستخدام الذكاء الاصطناعي
             </p>
           </div>
