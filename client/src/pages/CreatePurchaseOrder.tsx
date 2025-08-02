@@ -110,7 +110,8 @@ export default function CreatePurchaseOrder() {
     if (!useCustomPONumber) {
       const generatePONumber = () => {
         const timestamp = Date.now().toString().slice(-6);
-        return `PO-K${timestamp}`;
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `PO-K${timestamp}${random}`;
       };
       setPONumber(generatePONumber());
     }
@@ -120,9 +121,9 @@ export default function CreatePurchaseOrder() {
   React.useEffect(() => {
     if (quotationItems && Array.isArray(quotationItems)) {
       const items: POItem[] = quotationItems.map((item: any) => ({
-        itemId: item.id || item.itemId,
+        itemId: item.itemId, // Always use itemId, not the quotation_item id
         quantity: item.quantity || 1,
-        unitPrice: item.unitPrice || 0, // Use existing unit price if available
+        unitPrice: item.unitPrice || 0,
         totalPrice: (item.quantity || 1) * (item.unitPrice || 0),
         notes: ""
       }));

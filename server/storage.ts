@@ -730,11 +730,31 @@ export class DatabaseStorage implements IStorage {
   // Enhanced Purchase Order operations
   async createPurchaseOrder(poData: any): Promise<PurchaseOrder> {
     return await db.transaction(async (tx) => {
+      // Generate unique PO number if duplicate or not provided
+      let poNumber = poData.poNumber;
+      if (!poNumber) {
+        const timestamp = Date.now().toString().slice(-6);
+        const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        poNumber = `PO-K${timestamp}${random}`;
+      }
+      
+      // Check if PO number already exists and generate new one if needed
+      try {
+        const existing = await tx.select().from(purchaseOrders).where(eq(purchaseOrders.poNumber, poNumber));
+        if (existing.length > 0) {
+          const timestamp = Date.now().toString().slice(-6);
+          const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+          poNumber = `PO-K${timestamp}${random}`;
+        }
+      } catch (e) {
+        // Continue with the generated number
+      }
+
       // Create the purchase order
       const [purchaseOrder] = await tx
         .insert(purchaseOrders)
         .values({
-          poNumber: poData.poNumber,
+          poNumber: poNumber,
           quotationId: poData.quotationId,
           poDate: new Date(poData.poDate),
           totalValue: poData.totalValue.toString(),
@@ -752,17 +772,21 @@ export class DatabaseStorage implements IStorage {
           quantity: item.quantity.toString(),
           unitPrice: item.unitPrice.toString(),
           totalPrice: item.totalPrice.toString(),
-          notes: item.notes,
+          notes: item.notes || "",
         }));
 
         await tx.insert(purchaseOrderItems).values(poItems);
 
         // Update supplier pricing to mark as having PO
         for (const item of poData.items) {
-          await tx
-            .update(supplierPricing)
-            .set({ purchaseOrderId: purchaseOrder.id, isSelected: true })
-            .where(eq(supplierPricing.itemId, item.itemId));
+          try {
+            await tx
+              .update(supplierPricing)
+              .set({ purchaseOrderId: purchaseOrder.id, isSelected: true })
+              .where(eq(supplierPricing.itemId, item.itemId));
+          } catch (e) {
+            // Continue if supplier pricing doesn't exist
+          }
         }
       }
 
