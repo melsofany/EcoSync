@@ -21,7 +21,12 @@ import {
   Settings,
   Clock,
   Activity,
-  AlertTriangle
+  AlertTriangle,
+  ArrowRight,
+  Plus,
+  Trash2,
+  Download,
+  RefreshCw
 } from "lucide-react";
 
 interface SystemSettings {
@@ -36,6 +41,7 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  const [activeSection, setActiveSection] = useState<string>("");
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     deepSeekApiKey: "",
     sessionTimeout: 30,
@@ -155,8 +161,12 @@ export default function Admin() {
                 <p className="text-sm text-gray-600">{totalUsers} مستخدم مسجل</p>
               </div>
             </div>
-            <Button className="w-full bg-blue-500 hover:bg-blue-600">
-              إدارة المستخدمين
+            <Button 
+              className="w-full bg-blue-500 hover:bg-blue-600"
+              onClick={() => setActiveSection(activeSection === "users" ? "" : "users")}
+            >
+              {activeSection === "users" ? "إخفاء" : "إدارة"} المستخدمين
+              <ArrowRight className={`h-4 w-4 mr-2 transition-transform ${activeSection === "users" ? "rotate-90" : ""}`} />
             </Button>
           </CardContent>
         </Card>
@@ -172,8 +182,12 @@ export default function Admin() {
                 <p className="text-sm text-gray-600">4 أدوار مختلفة</p>
               </div>
             </div>
-            <Button className="w-full bg-green-500 hover:bg-green-600">
-              إدارة الصلاحيات
+            <Button 
+              className="w-full bg-green-500 hover:bg-green-600"
+              onClick={() => setActiveSection(activeSection === "roles" ? "" : "roles")}
+            >
+              {activeSection === "roles" ? "إخفاء" : "إدارة"} الصلاحيات
+              <ArrowRight className={`h-4 w-4 mr-2 transition-transform ${activeSection === "roles" ? "rotate-90" : ""}`} />
             </Button>
           </CardContent>
         </Card>
@@ -189,12 +203,139 @@ export default function Admin() {
                 <p className="text-sm text-gray-600">نسخ احتياطية وصيانة</p>
               </div>
             </div>
-            <Button className="w-full bg-purple-500 hover:bg-purple-600">
-              إدارة البيانات
+            <Button 
+              className="w-full bg-purple-500 hover:bg-purple-600"
+              onClick={() => setActiveSection(activeSection === "database" ? "" : "database")}
+            >
+              {activeSection === "database" ? "إخفاء" : "إدارة"} البيانات
+              <ArrowRight className={`h-4 w-4 mr-2 transition-transform ${activeSection === "database" ? "rotate-90" : ""}`} />
             </Button>
           </CardContent>
         </Card>
       </div>
+
+      {/* User Management Section */}
+      {activeSection === "users" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 space-x-reverse">
+              <Users className="h-5 w-5" />
+              <span>إدارة المستخدمين</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="font-semibold">إضافة مستخدم جديد</h4>
+                <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
+                  <Plus className="h-4 w-4 ml-2" />
+                  إضافة مستخدم
+                </Button>
+              </div>
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  يمكن لمدير تقنية المعلومات إضافة مستخدمين جدد وتعديل بياناتهم وحظرهم عند الحاجة.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Role Management Section */}
+      {activeSection === "roles" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 space-x-reverse">
+              <Shield className="h-5 w-5" />
+              <span>إدارة الأدوار والصلاحيات</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold text-blue-600 mb-2">مدير (Manager)</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>✓ جميع الصلاحيات</li>
+                  <li>✓ التقارير المالية</li>
+                  <li>✓ إدارة المستخدمين</li>
+                </ul>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold text-green-600 mb-2">مدير تقنية المعلومات</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>✓ إدارة المستخدمين</li>
+                  <li>✓ إعدادات النظام</li>
+                  <li>✓ النسخ الاحتياطية</li>
+                </ul>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold text-orange-600 mb-2">موظف إدخال البيانات</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>✓ إدخال طلبات التسعير</li>
+                  <li>✓ إدارة الأصناف</li>
+                  <li>✓ التقارير الأساسية</li>
+                </ul>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-semibold text-purple-600 mb-2">موظف المشتريات</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>✓ عرض التقارير</li>
+                  <li>✓ أوامر الشراء</li>
+                  <li>✗ لا يرى الأسعار</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Database Management Section */}
+      {activeSection === "database" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 space-x-reverse">
+              <Database className="h-5 w-5" />
+              <span>إدارة قاعدة البيانات</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold">النسخ الاحتياطية</h4>
+                <div className="space-y-2">
+                  <Button className="w-full bg-green-500 hover:bg-green-600">
+                    <Download className="h-4 w-4 ml-2" />
+                    إنشاء نسخة احتياطية الآن
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <RefreshCw className="h-4 w-4 ml-2" />
+                    استعادة من نسخة احتياطية
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-semibold">صيانة قاعدة البيانات</h4>
+                <div className="space-y-2">
+                  <Button variant="outline" className="w-full">
+                    <RefreshCw className="h-4 w-4 ml-2" />
+                    تحسين الأداء
+                  </Button>
+                  <Button variant="outline" className="w-full text-red-600 hover:text-red-800">
+                    <Trash2 className="h-4 w-4 ml-2" />
+                    مسح البيانات المؤقتة
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
+              <p className="text-sm text-yellow-700">
+                تحذير: عمليات إدارة قاعدة البيانات قد تؤثر على أداء النظام. تأكد من إنشاء نسخة احتياطية قبل القيام بأي تغييرات.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Active Users */}
       <Card>
