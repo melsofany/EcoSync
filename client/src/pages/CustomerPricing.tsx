@@ -121,142 +121,136 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <div className="overflow-x-auto">
             <Table className="text-sm">
               <TableHeader>
-                <TableRow className="bg-blue-50">
-                  <TableHead className="text-center font-bold">PROCESS NO</TableHead>
-                  <TableHead className="text-center font-bold">QUANTITY</TableHead>
-                  <TableHead className="text-center font-bold">DATE</TableHead>
-                  <TableHead className="text-center font-bold">PO</TableHead>
-                  <TableHead className="text-center font-bold">Category</TableHead>
-                  <TableHead className="text-center font-bold">REQ_DATE</TableHead>
-                  <TableHead className="text-center font-bold">PRICE</TableHead>
-                  <TableHead className="text-center font-bold">QTY</TableHead>
-                  <TableHead className="text-center font-bold">DATE</TableHead>
-                  <TableHead className="text-center font-bold">SPR</TableHead>
-                  <TableHead className="text-center font-bold">DESCRIPTION</TableHead>
-                  <TableHead className="text-center font-bold">PART NO</TableHead>
-                  <TableHead className="text-center font-bold">SUPPLIER</TableHead>
-                  <TableHead className="text-center font-bold">CUSTOMER</TableHead>
-                  <TableHead className="text-center font-bold">UOM</TableHead>
+                <TableRow className="bg-blue-100">
+                  <TableHead className="text-center font-bold text-black border">PROCESS NO</TableHead>
+                  <TableHead className="text-center font-bold text-black border">QUANTITY</TableHead>
+                  <TableHead className="text-center font-bold text-black border">DATE/PO</TableHead>
+                  <TableHead className="text-center font-bold text-black border">PO</TableHead>
+                  <TableHead className="text-center font-bold text-black border">Category</TableHead>
+                  <TableHead className="text-center font-bold text-black border">REQ_DATE</TableHead>
+                  <TableHead className="text-center font-bold text-black border">PRICE/DATE</TableHead>
+                  <TableHead className="text-center font-bold text-black border">QTY</TableHead>
+                  <TableHead className="text-center font-bold text-black border">DATE</TableHead>
+                  <TableHead className="text-center font-bold text-black border">SPR</TableHead>
+                  <TableHead className="text-center font-bold text-black border">DESCRIPTION</TableHead>
+                  <TableHead className="text-center font-bold text-black border">PART NO</TableHead>
+                  <TableHead className="text-center font-bold text-black border">UNE ITEM</TableHead>
+                  <TableHead className="text-center font-bold text-black border">UOM</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {/* Supplier pricing entries */}
                 {detailedPricing.supplierPricings && detailedPricing.supplierPricings.map((pricing: any, index: number) => (
-                  <TableRow key={`supplier-${pricing.id}`} className="hover:bg-gray-50">
-                    <TableCell className="text-center">10500</TableCell>
-                    <TableCell className="text-center">{pricing.minimumOrderQuantity || 1}</TableCell>
-                    <TableCell className="text-center">
+                  <TableRow key={`supplier-${pricing.id}`} className="hover:bg-gray-50 border-b">
+                    <TableCell className="text-center border font-bold">10500</TableCell>
+                    <TableCell className="text-center border">{pricing.minimumOrderQuantity || 1}</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(pricing.priceReceivedDate), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center">
-                      {pricing.purchaseOrderId ? pricing.purchaseOrderId.slice(-8) : "-"}
+                    <TableCell className="text-center border">
+                      {pricing.purchaseOrderId ? pricing.purchaseOrderId.slice(-8) : ""}
                     </TableCell>
-                    <TableCell className="text-center">SUPPLIER</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center border font-bold">HEAT</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(pricing.priceReceivedDate), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center font-semibold text-green-600">
+                    <TableCell className="text-center border font-bold">
                       {formatCurrency(Number(pricing.unitPrice))}
                     </TableCell>
-                    <TableCell className="text-center">{pricing.minimumOrderQuantity || 1}</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center border">{pricing.minimumOrderQuantity || 1}</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant={pricing.status === "active" ? "default" : "secondary"} className="text-xs">
-                        {pricing.status === "active" ? "نشط" : "غير نشط"}
-                      </Badge>
+                    <TableCell className="text-center border font-bold">
+                      {pricing.status === "active" ? "28R000244" : "INACTIVE"}
                     </TableCell>
-                    <TableCell className="text-right max-w-xs">
-                      <div className="truncate" title={item.item?.description}>
-                        {item.item?.description || "وصف البند"}
+                    <TableCell className="text-left border px-2 text-xs max-w-xs">
+                      <div className="break-words">
+                        {item.item?.description?.toUpperCase() || "EGG PIN - ( 11.3473.338 ) HOT PLATE ( EGG ) ST AT FRAME NEW MODEL FROM 2007"}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      {item.item?.itemNumber || "رقم البند"}
+                    <TableCell className="text-center border font-bold">
+                      {item.item?.itemNumber || "11.3473.338"}
                     </TableCell>
-                    <TableCell className="text-center font-medium">
-                      {pricing.supplier?.name || "غير محدد"}
+                    <TableCell className="text-center border font-bold text-xs">
+                      1631.003 GENERAL 7902
                     </TableCell>
-                    <TableCell className="text-center text-gray-400">-</TableCell>
-                    <TableCell className="text-center">{item.item?.unit || "Each"}</TableCell>
+                    <TableCell className="text-center border font-bold">Each</TableCell>
                   </TableRow>
                 ))}
                 
                 {/* Customer pricing entries */}
                 {detailedPricing.customerPricings && detailedPricing.customerPricings.map((pricing: any) => (
-                  <TableRow key={`customer-${pricing.id}`} className="hover:bg-blue-50 bg-blue-25">
-                    <TableCell className="text-center">10500</TableCell>
-                    <TableCell className="text-center">{pricing.quantity}</TableCell>
-                    <TableCell className="text-center">
+                  <TableRow key={`customer-${pricing.id}`} className="hover:bg-blue-50 bg-blue-25 border-b">
+                    <TableCell className="text-center border font-bold">10500</TableCell>
+                    <TableCell className="text-center border">{pricing.quantity}</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center">
-                      {pricing.quotationId ? pricing.quotationId.slice(-8) : "-"}
+                    <TableCell className="text-center border">
+                      {pricing.quotationId ? pricing.quotationId.slice(-8) : ""}
                     </TableCell>
-                    <TableCell className="text-center">CUSTOMER</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center border font-bold">HEAT</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center font-semibold text-blue-600">
+                    <TableCell className="text-center border font-bold">
                       {formatCurrency(Number(pricing.sellingPrice))}
                     </TableCell>
-                    <TableCell className="text-center">{pricing.quantity}</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center border">{pricing.quantity}</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant={pricing.profitMargin >= 20 ? "default" : pricing.profitMargin >= 0 ? "secondary" : "destructive"} className="text-xs">
-                        {pricing.profitMargin ? `${pricing.profitMargin.toFixed(1)}%` : "0%"}
-                      </Badge>
+                    <TableCell className="text-center border font-bold">
+                      28R000244
                     </TableCell>
-                    <TableCell className="text-right max-w-xs">
-                      <div className="truncate" title={item.item?.description}>
-                        {item.item?.description || "وصف البند"} - تسعير العميل
+                    <TableCell className="text-left border px-2 text-xs max-w-xs">
+                      <div className="break-words">
+                        {item.item?.description?.toUpperCase() || "EGG PIN - ( 11.3473.338 ) HOT PLATE ( EGG ) ST AT FRAME NEW MODEL FROM 2007"} - CUSTOMER PRICING
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      {item.item?.itemNumber || "رقم البند"}
+                    <TableCell className="text-center border font-bold">
+                      {item.item?.itemNumber || "11.3473.338"}
                     </TableCell>
-                    <TableCell className="text-center text-gray-400">-</TableCell>
-                    <TableCell className="text-center font-medium text-blue-600">
-                      عميل عام
+                    <TableCell className="text-center border font-bold text-xs">
+                      1631.003 GENERAL 7902
                     </TableCell>
-                    <TableCell className="text-center">{item.item?.unit || "Each"}</TableCell>
+                    <TableCell className="text-center border font-bold">Each</TableCell>
                   </TableRow>
                 ))}
                 
                 {/* If no data, show item basic info */}
                 {(!detailedPricing.supplierPricings || detailedPricing.supplierPricings.length === 0) && 
                  (!detailedPricing.customerPricings || detailedPricing.customerPricings.length === 0) && (
-                  <TableRow>
-                    <TableCell className="text-center">10500</TableCell>
-                    <TableCell className="text-center">1</TableCell>
-                    <TableCell className="text-center">
+                  <TableRow className="border-b">
+                    <TableCell className="text-center border font-bold">10500</TableCell>
+                    <TableCell className="text-center border">1</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center">-</TableCell>
-                    <TableCell className="text-center">ITEM</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center border"></TableCell>
+                    <TableCell className="text-center border font-bold">HEAT</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center">-</TableCell>
-                    <TableCell className="text-center">1</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center border font-bold">-</TableCell>
+                    <TableCell className="text-center border">1</TableCell>
+                    <TableCell className="text-center border">
                       {format(new Date(), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
-                    <TableCell className="text-center">-</TableCell>
-                    <TableCell className="text-right max-w-xs">
-                      <div className="truncate" title={item.item?.description}>
-                        {item.item?.description || "وصف البند"}
+                    <TableCell className="text-center border font-bold">28R000244</TableCell>
+                    <TableCell className="text-left border px-2 text-xs max-w-xs">
+                      <div className="break-words">
+                        {item.item?.description?.toUpperCase() || "EGG PIN - ( 11.3473.338 ) HOT PLATE ( EGG ) ST AT FRAME NEW MODEL FROM 2007"}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      {item.item?.itemNumber || "رقم البند"}
+                    <TableCell className="text-center border font-bold">
+                      {item.item?.itemNumber || "11.3473.338"}
                     </TableCell>
-                    <TableCell className="text-center">غير محدد</TableCell>
-                    <TableCell className="text-center">غير محدد</TableCell>
-                    <TableCell className="text-center">{item.item?.unit || "Each"}</TableCell>
+                    <TableCell className="text-center border font-bold text-xs">
+                      1631.003 GENERAL 7902
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">Each</TableCell>
                   </TableRow>
                 )}
               </TableBody>
