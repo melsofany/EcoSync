@@ -140,7 +140,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
               </TableHeader>
               <TableBody>
                 {/* Supplier pricing entries */}
-                {detailedPricing.supplierPricings && detailedPricing.supplierPricings.map((pricing: any, index: number) => (
+                {detailedPricing?.supplierPricings && detailedPricing.supplierPricings.map((pricing: any, index: number) => (
                   <TableRow key={`supplier-${pricing.id}`} className="hover:bg-gray-50 border-b">
                     <TableCell className="text-center border font-bold">10500</TableCell>
                     <TableCell className="text-center border">{pricing.minimumOrderQuantity || 1}</TableCell>
@@ -180,7 +180,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 ))}
                 
                 {/* Customer pricing entries */}
-                {detailedPricing.customerPricings && detailedPricing.customerPricings.map((pricing: any) => (
+                {detailedPricing?.customerPricings && detailedPricing.customerPricings.map((pricing: any) => (
                   <TableRow key={`customer-${pricing.id}`} className="hover:bg-blue-50 bg-blue-25 border-b">
                     <TableCell className="text-center border font-bold">10500</TableCell>
                     <TableCell className="text-center border">{pricing.quantity}</TableCell>
@@ -220,8 +220,8 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 ))}
                 
                 {/* If no data, show item basic info */}
-                {(!detailedPricing.supplierPricings || detailedPricing.supplierPricings.length === 0) && 
-                 (!detailedPricing.customerPricings || detailedPricing.customerPricings.length === 0) && (
+                {(!detailedPricing?.supplierPricings || detailedPricing.supplierPricings.length === 0) && 
+                 (!detailedPricing?.customerPricings || detailedPricing.customerPricings.length === 0) && (
                   <TableRow className="border-b">
                     <TableCell className="text-center border font-bold">10500</TableCell>
                     <TableCell className="text-center border">1</TableCell>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Eye, Printer, Truck, Clock, CheckCircle, DollarSign } from "lucide-react";
+import { Link } from "wouter";
 import NewPurchaseOrderModal from "@/components/modals/NewPurchaseOrderModal";
 
 export default function PurchaseOrders() {
@@ -82,10 +83,17 @@ export default function PurchaseOrders() {
           <h2 className="text-2xl font-bold text-gray-800">إدارة أوامر الشراء</h2>
           <p className="text-gray-600">إنشاء ومتابعة أوامر الشراء المرتبطة بطلبات التسعير</p>
         </div>
-        <Button onClick={() => setIsNewPOModalOpen(true)}>
-          <Plus className="h-4 w-4 ml-2" />
-          أمر شراء جديد
-        </Button>
+        <div className="flex gap-2">
+          <Link href="/create-purchase-order">
+            <Button>
+              <Plus className="h-4 w-4 ml-2" />
+              إنشاء أمر شراء
+            </Button>
+          </Link>
+          <Button variant="outline" onClick={() => setIsNewPOModalOpen(true)}>
+            أمر شراء (مُبسط)
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}

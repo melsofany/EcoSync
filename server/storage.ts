@@ -437,19 +437,6 @@ export class DatabaseStorage implements IStorage {
     return supplier || undefined;
   }
 
-  // Purchase order operations
-  async createPurchaseOrder(poData: InsertPurchaseOrder): Promise<PurchaseOrder> {
-    const poNumber = await this.getNextPONumber();
-    const [po] = await db
-      .insert(purchaseOrders)
-      .values({
-        ...poData,
-        poNumber,
-      })
-      .returning();
-    return po;
-  }
-
   async getAllPurchaseOrders(): Promise<PurchaseOrder[]> {
     return await db.select().from(purchaseOrders).orderBy(desc(purchaseOrders.createdAt));
   }
@@ -468,22 +455,6 @@ export class DatabaseStorage implements IStorage {
     return po || undefined;
   }
 
-  async getNextPONumber(): Promise<string> {
-    const year = new Date().getFullYear();
-    const lastPO = await db.select({ poNumber: purchaseOrders.poNumber })
-      .from(purchaseOrders)
-      .orderBy(desc(purchaseOrders.createdAt))
-      .limit(1);
-    
-    if (lastPO.length === 0) {
-      return `PO-${year}-0001`;
-    }
-    
-    const lastNumber = parseInt(lastPO[0].poNumber.split("-")[2]);
-    const nextNumber = (lastNumber + 1).toString().padStart(4, "0");
-    return `PO-${year}-${nextNumber}`;
-  }
-
   // Purchase order items
   async addPurchaseOrderItem(itemData: InsertPurchaseOrderItem): Promise<PurchaseOrderItem> {
     const [item] = await db
@@ -491,10 +462,6 @@ export class DatabaseStorage implements IStorage {
       .values(itemData)
       .returning();
     return item;
-  }
-
-  async getPurchaseOrderItems(poId: string): Promise<PurchaseOrderItem[]> {
-    return await db.select().from(purchaseOrderItems).where(eq(purchaseOrderItems.poId, poId));
   }
 
   // Supplier quotes
@@ -707,11 +674,96 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(pricingHistory.createdAt));
   }
 
+  // Enhanced Purchase Order operations
+  async createPurchaseOrder(poData: any): Promise<PurchaseOrder> {
+    return await db.transaction(async (tx) => {
+      // Create the purchase order
+      const [purchaseOrder] = await tx
+        .insert(purchaseOrders)
+        .values({
+          poNumber: poData.poNumber,
+          quotationId: poData.quotationId,
+          poDate: new Date(poData.poDate),
+          totalValue: poData.totalValue.toString(),
+          deliveryStatus: false,
+          invoiceIssued: false,
+          createdBy: poData.createdBy,
+        })
+        .returning();
+
+      // Create purchase order items
+      if (poData.items && poData.items.length > 0) {
+        const poItems = poData.items.map((item: any) => ({
+          poId: purchaseOrder.id,
+          itemId: item.itemId,
+          quantity: item.quantity.toString(),
+          unitPrice: item.unitPrice.toString(),
+          totalPrice: item.totalPrice.toString(),
+          notes: item.notes,
+        }));
+
+        await tx.insert(purchaseOrderItems).values(poItems);
+
+        // Update supplier pricing to mark as having PO
+        for (const item of poData.items) {
+          await tx
+            .update(supplierPricing)
+            .set({ purchaseOrderId: purchaseOrder.id, isSelected: true })
+            .where(eq(supplierPricing.itemId, item.itemId));
+        }
+      }
+
+      return purchaseOrder;
+    });
+  }
+
+  async getPurchaseOrderItems(poId: string): Promise<any[]> {
+    return await db
+      .select({
+        purchaseOrderItem: purchaseOrderItems,
+        item: items,
+      })
+      .from(purchaseOrderItems)
+      .leftJoin(items, eq(purchaseOrderItems.itemId, items.id))
+      .where(eq(purchaseOrderItems.poId, poId));
+  }
+
+  async updatePurchaseOrderStatus(id: string, status: string): Promise<PurchaseOrder | undefined> {
+    const [purchaseOrder] = await db
+      .update(purchaseOrders)
+      .set({ 
+        status: status as any,
+        deliveryStatus: status === "delivered",
+        invoiceIssued: status === "invoiced"
+      })
+      .where(eq(purchaseOrders.id, id))
+      .returning();
+    return purchaseOrder || undefined;
+  }
+
+  async getPurchaseOrdersForItem(itemId: string): Promise<any[]> {
+    return await db
+      .select({
+        purchaseOrder: purchaseOrders,
+        purchaseOrderItem: purchaseOrderItems,
+        quotation: quotationRequests,
+      })
+      .from(purchaseOrderItems)
+      .leftJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+      .leftJoin(quotationRequests, eq(purchaseOrders.quotationId, quotationRequests.id))
+      .where(eq(purchaseOrderItems.itemId, itemId))
+      .orderBy(desc(purchaseOrders.poDate));
+  }
+
   // Combined pricing view for detailed analysis
   async getDetailedPricingForItem(itemId: string): Promise<any> {
     const supplierPricings = await db
-      .select()
+      .select({
+        supplierPricing: supplierPricing,
+        supplier: suppliers,
+      })
       .from(supplierPricing)
+      .leftJoin(suppliers, eq(supplierPricing.supplierId, suppliers.id))
       .where(eq(supplierPricing.itemId, itemId))
       .orderBy(desc(supplierPricing.priceReceivedDate));
 
@@ -723,10 +775,17 @@ export class DatabaseStorage implements IStorage {
 
     const pricingHistoryData = await this.getPricingHistoryByItem(itemId);
 
+    // Get purchase orders for this item
+    const purchaseOrdersData = await this.getPurchaseOrdersForItem(itemId);
+
     return {
-      supplierPricings,
+      supplierPricings: supplierPricings.map(row => ({
+        ...row.supplierPricing,
+        supplier: row.supplier,
+      })),
       customerPricings,
       pricingHistory: pricingHistoryData,
+      purchaseOrders: purchaseOrdersData,
     };
   }
 }
