@@ -13,7 +13,8 @@ import {
   Circle,
   Users,
   Truck,
-  DollarSign
+  DollarSign,
+  TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -63,6 +64,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       href: "/supplier-pricing",
       icon: DollarSign,
       section: "supplier-pricing",
+    },
+    {
+      title: "تسعير العملاء",
+      href: "/customer-pricing",
+      icon: TrendingUp,
+      section: "customer-pricing",
     },
     {
       title: "أوامر الشراء",

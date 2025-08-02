@@ -9,6 +9,8 @@ import {
   purchaseOrderItems,
   supplierQuotes,
   supplierPricing,
+  customerPricing,
+  pricingHistory,
   activityLog,
   type User,
   type InsertUser,
@@ -30,11 +32,15 @@ import {
   type InsertSupplierQuote,
   type SupplierPricing,
   type InsertSupplierPricing,
+  type CustomerPricing,
+  type InsertCustomerPricing,
+  type PricingHistory,
+  type InsertPricingHistory,
   type ActivityLog,
   type InsertActivityLog,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, like, and } from "drizzle-orm";
+import { eq, desc, like, and, isNull, isNotNull } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -609,6 +615,117 @@ export class DatabaseStorage implements IStorage {
       .from(supplierPricing)
       .where(eq(supplierPricing.itemId, itemId))
       .orderBy(desc(supplierPricing.priceReceivedDate));
+  }
+
+  // Customer pricing operations (المرحلة الثانية - تسعير العملاء)
+  async createCustomerPricing(pricingData: InsertCustomerPricing): Promise<CustomerPricing> {
+    const [pricing] = await db
+      .insert(customerPricing)
+      .values(pricingData)
+      .returning();
+    return pricing;
+  }
+
+  async getCustomerPricingByQuotation(quotationId: string): Promise<CustomerPricing[]> {
+    return await db
+      .select()
+      .from(customerPricing)
+      .where(eq(customerPricing.quotationId, quotationId))
+      .orderBy(desc(customerPricing.createdAt));
+  }
+
+  async updateCustomerPricing(id: string, updates: Partial<CustomerPricing>): Promise<CustomerPricing | undefined> {
+    const [pricing] = await db
+      .update(customerPricing)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(customerPricing.id, id))
+      .returning();
+    return pricing || undefined;
+  }
+
+  async approveCustomerPricing(id: string, approvedBy: string): Promise<CustomerPricing | undefined> {
+    const [pricing] = await db
+      .update(customerPricing)
+      .set({ 
+        status: "approved", 
+        approvedBy, 
+        approvedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(customerPricing.id, id))
+      .returning();
+    return pricing || undefined;
+  }
+
+  // Get items ready for customer pricing (items with supplier pricing but no customer pricing)
+  async getItemsReadyForCustomerPricing(quotationId?: string): Promise<any[]> {
+    let query = db
+      .select({
+        item: items,
+        supplierPricing: supplierPricing,
+        hasCustomerPricing: customerPricing.id,
+      })
+      .from(items)
+      .leftJoin(supplierPricing, eq(items.id, supplierPricing.itemId))
+      .leftJoin(customerPricing, and(
+        eq(items.id, customerPricing.itemId),
+        quotationId ? eq(customerPricing.quotationId, quotationId) : undefined
+      ))
+      .where(and(
+        isNotNull(supplierPricing.id), // Has supplier pricing
+        eq(supplierPricing.status, "active"), // Active supplier pricing
+        isNull(customerPricing.id) // No customer pricing yet
+      ));
+
+    return await query;
+  }
+
+  // Pricing history operations
+  async createPricingHistory(historyData: InsertPricingHistory): Promise<PricingHistory> {
+    const [history] = await db
+      .insert(pricingHistory)
+      .values(historyData)
+      .returning();
+    return history;
+  }
+
+  async getPricingHistoryByItem(itemId: string, priceType?: string): Promise<PricingHistory[]> {
+    let query = db
+      .select()
+      .from(pricingHistory)
+      .where(eq(pricingHistory.itemId, itemId));
+
+    if (priceType) {
+      query = query.where(and(
+        eq(pricingHistory.itemId, itemId),
+        eq(pricingHistory.priceType, priceType)
+      ));
+    }
+
+    return await query.orderBy(desc(pricingHistory.createdAt));
+  }
+
+  // Combined pricing view for detailed analysis
+  async getDetailedPricingForItem(itemId: string): Promise<any> {
+    const supplierPricings = await db
+      .select()
+      .from(supplierPricing)
+      .where(eq(supplierPricing.itemId, itemId))
+      .orderBy(desc(supplierPricing.priceReceivedDate));
+
+    const customerPricings = await db
+      .select()
+      .from(customerPricing)
+      .where(eq(customerPricing.itemId, itemId))
+      .orderBy(desc(customerPricing.createdAt));
+
+    const pricingHistoryData = await this.getPricingHistoryByItem(itemId);
+
+    return {
+      supplierPricings,
+      customerPricings,
+      pricingHistory: pricingHistoryData,
+    };
   }
 }
 

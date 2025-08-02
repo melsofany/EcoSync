@@ -794,6 +794,66 @@ Respond in JSON format:
     }
   });
 
+  // Get items ready for customer pricing (Phase 2: Customer pricing)
+  app.get("/api/items-ready-for-customer-pricing", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const quotationId = req.query.quotationId as string;
+      const items = await storage.getItemsReadyForCustomerPricing(quotationId);
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching items ready for customer pricing:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get detailed pricing information for an item
+  app.get("/api/items/:itemId/detailed-pricing", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const detailedPricing = await storage.getDetailedPricingForItem(req.params.itemId);
+      res.json(detailedPricing);
+    } catch (error) {
+      console.error("Error fetching detailed pricing:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Customer pricing endpoints
+  app.post("/api/customer-pricing", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+    try {
+      const pricingData = { ...req.body, createdBy: req.session.user!.id };
+      const pricing = await storage.createCustomerPricing(pricingData);
+      await logActivity(req, "create_customer_pricing", "pricing", pricing.id, `Added customer pricing for item ${pricing.itemId}`);
+      res.json(pricing);
+    } catch (error) {
+      console.error("Error creating customer pricing:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/quotations/:quotationId/customer-pricing", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const pricing = await storage.getCustomerPricingByQuotation(req.params.quotationId);
+      res.json(pricing);
+    } catch (error) {
+      console.error("Error fetching customer pricing:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/customer-pricing/:id/approve", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+    try {
+      const pricing = await storage.approveCustomerPricing(req.params.id, req.session.user!.id);
+      if (!pricing) {
+        return res.status(404).json({ message: "Customer pricing not found" });
+      }
+      await logActivity(req, "approve_customer_pricing", "pricing", pricing.id, `Approved customer pricing for item ${pricing.itemId}`);
+      res.json(pricing);
+    } catch (error) {
+      console.error("Error approving customer pricing:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

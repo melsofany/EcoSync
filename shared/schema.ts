@@ -136,6 +136,40 @@ export const supplierPricing = pgTable("supplier_pricing", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Customer Pricing table (المرحلة الثانية - تسعير العملاء)
+export const customerPricing = pgTable("customer_pricing", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quotationId: varchar("quotation_id").references(() => quotationRequests.id, { onDelete: "cascade" }).notNull(),
+  itemId: varchar("item_id").references(() => items.id, { onDelete: "cascade" }).notNull(),
+  supplierPricingId: varchar("supplier_pricing_id").references(() => supplierPricing.id),
+  costPrice: decimal("cost_price", { precision: 12, scale: 2 }).notNull(), // سعر التكلفة من المورد
+  profitMargin: decimal("profit_margin", { precision: 5, scale: 2 }), // هامش الربح %
+  sellingPrice: decimal("selling_price", { precision: 12, scale: 2 }).notNull(), // سعر البيع للعميل
+  currency: text("currency").default("EGP").notNull(),
+  quantity: integer("quantity").notNull(),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull(),
+  notes: text("notes"),
+  status: text("status").default("pending").notNull(), // pending, approved, rejected
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Pricing History table (سجل تاريخ التسعير)
+export const pricingHistory = pgTable("pricing_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemId: varchar("item_id").references(() => items.id, { onDelete: "cascade" }).notNull(),
+  priceType: text("price_type").notNull(), // supplier, customer
+  referenceId: varchar("reference_id").notNull(), // supplierPricingId أو customerPricingId
+  oldPrice: decimal("old_price", { precision: 12, scale: 2 }),
+  newPrice: decimal("new_price", { precision: 12, scale: 2 }).notNull(),
+  changeReason: text("change_reason"),
+  changedBy: varchar("changed_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Keep existing supplier quotes for backward compatibility  
 export const supplierQuotes = pgTable("supplier_quotes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -229,6 +263,17 @@ export const insertSupplierPricingSchema = createInsertSchema(supplierPricing).o
   priceReceivedDate: z.string().min(1, "تاريخ ورود السعر مطلوب"),
 });
 
+export const insertCustomerPricingSchema = createInsertSchema(customerPricing).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPricingHistorySchema = createInsertSchema(pricingHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertActivityLogSchema = createInsertSchema(activityLog).omit({
   id: true,
   timestamp: true,
@@ -255,6 +300,10 @@ export type SupplierQuote = typeof supplierQuotes.$inferSelect;
 export type InsertSupplierQuote = z.infer<typeof insertSupplierQuoteSchema>;
 export type SupplierPricing = typeof supplierPricing.$inferSelect;
 export type InsertSupplierPricing = z.infer<typeof insertSupplierPricingSchema>;
+export type CustomerPricing = typeof customerPricing.$inferSelect;
+export type InsertCustomerPricing = z.infer<typeof insertCustomerPricingSchema>;
+export type PricingHistory = typeof pricingHistory.$inferSelect;
+export type InsertPricingHistory = z.infer<typeof insertPricingHistorySchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 
