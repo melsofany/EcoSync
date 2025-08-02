@@ -95,9 +95,12 @@ export default function Items() {
       });
     },
     onError: (error: any) => {
+      console.error('Delete item error:', error);
       toast({
         title: "خطأ في حذف الصنف",
-        description: error.message || "حدث خطأ أثناء حذف الصنف",
+        description: error.message?.includes('foreign key') 
+          ? "لا يمكن حذف هذا الصنف لأنه مرتبط بعروض أسعار موجودة" 
+          : error.message || "حدث خطأ أثناء حذف الصنف",
         variant: "destructive",
       });
     },

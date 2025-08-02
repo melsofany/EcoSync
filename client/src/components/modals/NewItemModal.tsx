@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { X, Brain, AlertCircle } from "lucide-react";
+import { X, Check, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const itemSchema = z.object({
@@ -246,7 +246,7 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
             <Card className="bg-purple-50 border-purple-200">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2 space-x-reverse mb-3">
-                  <Brain className="h-5 w-5 text-purple-600" />
+                  <Check className="h-5 w-5 text-purple-600" />
                   <h4 className="font-semibold text-purple-800">
                     {isCheckingAI ? "جاري فحص التشابه..." : "نتائج فحص التشابه"}
                   </h4>
@@ -306,7 +306,7 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
                       </div>
                     ) : (
                       <div className="flex items-center space-x-2 space-x-reverse">
-                        <Brain className="h-4 w-4 text-green-600" />
+                        <Check className="h-4 w-4 text-green-600" />
                         <span className="text-sm text-green-700">
                           لم يتم العثور على أصناف مشابهة - يمكن إضافة الصنف بأمان
                         </span>

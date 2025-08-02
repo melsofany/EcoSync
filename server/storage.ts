@@ -282,6 +282,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteItem(id: string): Promise<void> {
+    // First delete related quotation items to avoid foreign key constraint violation
+    await db.delete(quotationItems).where(eq(quotationItems.itemId, id));
+    
+    // Then delete the item itself
     await db.delete(items).where(eq(items.id, id));
   }
 
