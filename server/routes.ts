@@ -367,6 +367,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update item route
+  app.patch("/api/items/:itemId", requireAuth, requireRole(["manager", "data_entry"]), async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      const updates = req.body;
+      
+      // Get existing item to verify it exists
+      const existingItem = await storage.getItemById(itemId);
+      if (!existingItem) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      const updatedItem = await storage.updateItem(itemId, updates);
+      await logActivity(req, "update_item", "item", itemId, `Updated item: ${existingItem.itemNumber} - ${updates.description || existingItem.description}`);
+
+      res.json(updatedItem);
+    } catch (error) {
+      console.error("Update item error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Delete item route
   app.delete("/api/items/:itemId", requireAuth, requireRole(["manager", "data_entry"]), async (req: Request, res: Response) => {
     try {
