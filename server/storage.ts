@@ -53,7 +53,9 @@ export interface IStorage {
   createQuotationRequest(request: InsertQuotationRequest): Promise<QuotationRequest>;
   getAllQuotationRequests(): Promise<QuotationRequest[]>;
   getQuotationRequest(id: string): Promise<QuotationRequest | undefined>;
+  getQuotationById(id: string): Promise<QuotationRequest | undefined>;
   updateQuotationRequest(id: string, updates: Partial<QuotationRequest>): Promise<QuotationRequest | undefined>;
+  deleteQuotation(id: string): Promise<void>;
   getNextRequestNumber(): Promise<string>;
 
   // Item operations
@@ -211,6 +213,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(quotationRequests.id, id))
       .returning();
     return quotation || undefined;
+  }
+
+  async getQuotationById(id: string): Promise<QuotationRequest | undefined> {
+    const [quotation] = await db.select().from(quotationRequests).where(eq(quotationRequests.id, id));
+    return quotation || undefined;
+  }
+
+  async deleteQuotation(id: string): Promise<void> {
+    // First delete related quotation items
+    await db.delete(quotationItems).where(eq(quotationItems.quotationId, id));
+    
+    // Then delete the quotation itself
+    await db.delete(quotationRequests).where(eq(quotationRequests.id, id));
   }
 
   async getNextRequestNumber(): Promise<string> {

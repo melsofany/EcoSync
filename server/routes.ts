@@ -165,6 +165,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user (block/unblock)
+  app.patch("/api/users/:userId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { isActive } = req.body;
+      
+      const updatedUser = await storage.updateUser(userId, { isActive });
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      await logActivity(req, isActive ? "activate_user" : "deactivate_user", "user", userId, 
+        `User ${updatedUser.username} was ${isActive ? 'activated' : 'deactivated'}`);
+
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Update user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Client management routes
   app.get("/api/clients", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -479,6 +501,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(item);
     } catch (error) {
       console.error("Add quotation item error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Delete entire quotation
+  app.delete("/api/quotations/:quotationId", requireAuth, requireRole(["manager"]), async (req: Request, res: Response) => {
+    try {
+      const { quotationId } = req.params;
+      
+      // Get quotation details for logging
+      const quotation = await storage.getQuotationById(quotationId);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+
+      await storage.deleteQuotation(quotationId);
+      await logActivity(req, "delete_quotation", "quotation", quotationId, `Deleted quotation: ${quotation.requestNumber}`);
+
+      res.json({ message: "Quotation deleted successfully" });
+    } catch (error) {
+      console.error("Delete quotation error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

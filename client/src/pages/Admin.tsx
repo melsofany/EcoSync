@@ -53,12 +53,12 @@ export default function Admin() {
 
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ["/api/users"],
-    enabled: hasRole(user, ["manager", "it_admin"]),
+    enabled: user ? hasRole(user, ["manager", "it_admin"]) : false,
   });
 
   const { data: activities } = useQuery({
     queryKey: ["/api/activity"],
-    enabled: hasRole(user, ["manager", "it_admin"]),
+    enabled: user ? hasRole(user, ["manager", "it_admin"]) : false,
   });
 
   const blockUserMutation = useMutation({
@@ -100,7 +100,7 @@ export default function Admin() {
     },
   });
 
-  if (!hasRole(user, ["manager", "it_admin"])) {
+  if (!user || !hasRole(user, ["manager", "it_admin"])) {
     return (
       <div className="flex items-center justify-center h-64">
         <Card className="w-full max-w-md">
@@ -139,8 +139,9 @@ export default function Admin() {
     });
   };
 
-  const onlineUsers = users?.filter((u: any) => u.isOnline) || [];
-  const totalUsers = users?.length || 0;
+  const usersArray = Array.isArray(users) ? users : [];
+  const onlineUsers = usersArray.filter((u: any) => u.isOnline) || [];
+  const totalUsers = usersArray.length || 0;
 
   return (
     <div className="space-y-8">
@@ -376,14 +377,14 @@ export default function Admin() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users?.length === 0 ? (
+                  {usersArray.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                         لا يوجد مستخدمون
                       </TableCell>
                     </TableRow>
                   ) : (
-                    users?.map((userItem: any) => (
+                    usersArray.map((userItem: any) => (
                       <TableRow key={userItem.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3 space-x-reverse">

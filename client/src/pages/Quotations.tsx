@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,12 +8,20 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { hasRole } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import NewQuotationModal from "@/components/modals/NewQuotationModal";
 import EnhancedQuotationModal from "@/components/modals/EnhancedQuotationModal";
 
 export default function Quotations() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isNewQuotationModalOpen, setIsNewQuotationModalOpen] = useState(false);
   const [isEnhancedQuotationModalOpen, setIsEnhancedQuotationModalOpen] = useState(false);
   const [filters, setFilters] = useState({
@@ -30,6 +38,37 @@ export default function Quotations() {
   const { data: clients } = useQuery({
     queryKey: ["/api/clients"],
   });
+
+  // Delete quotation mutation
+  const deleteQuotationMutation = useMutation({
+    mutationFn: async (quotationId: string) => {
+      await apiRequest("DELETE", `/api/quotations/${quotationId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
+      toast({
+        title: "تم حذف طلب التسعير",
+        description: "تم حذف طلب التسعير بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في حذف طلب التسعير",
+        description: error.message || "حدث خطأ أثناء حذف طلب التسعير",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Edit quotation function
+  const handleEditQuotation = (quotationId: string) => {
+    setLocation(`/quotations/${quotationId}/edit`);
+  };
+
+  // Delete quotation function
+  const handleDeleteQuotation = async (quotationId: string) => {
+    deleteQuotationMutation.mutate(quotationId);
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -191,15 +230,54 @@ export default function Quotations() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => setLocation(`/quotations/${quotation.id}`)}
+                            title="عرض التفاصيل"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-800">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          
+                          {user && hasRole(user, ["manager", "data_entry"]) && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleEditQuotation(quotation.id)}
+                              title="تعديل"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
+                          
+                          {user && hasRole(user, ["manager"]) && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-800"
+                                  title="حذف"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent dir="rtl">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    هل أنت متأكد من حذف طلب التسعير رقم {quotation.requestNumber}؟
+                                    هذا الإجراء لا يمكن التراجع عنه.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteQuotation(quotation.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    حذف
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
