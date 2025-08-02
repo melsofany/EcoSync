@@ -51,6 +51,7 @@ export default function QuotationDetail() {
   const params = useParams();
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  const safeUser = user || null;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -224,7 +225,7 @@ export default function QuotationDetail() {
     );
   }
 
-  if (!quotation) {
+  if (!quotation || !quotation.id) {
     return (
       <div className="text-center py-8">
         <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -257,7 +258,7 @@ export default function QuotationDetail() {
           </div>
         </div>
         <div className="flex items-center space-x-3 space-x-reverse">
-          {hasRole(user, ["manager", "data_entry"]) && (
+          {hasRole(safeUser, ["manager", "data_entry"]) && (
             <>
               <Button
                 variant="outline"
@@ -284,33 +285,33 @@ export default function QuotationDetail() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>معلومات طلب التسعير</span>
-            {getStatusBadge(quotation.status)}
+            {getStatusBadge((quotation as any)?.status)}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <Label className="text-sm font-medium text-gray-600">رقم الطلب</Label>
-              <p className="text-lg font-semibold text-gray-800">{quotation.requestNumber}</p>
+              <p className="text-lg font-semibold text-gray-800">{(quotation as any)?.requestNumber}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">اسم العميل</Label>
-              <p className="text-lg font-semibold text-gray-800">{getClientName(quotation.clientId)}</p>
+              <p className="text-lg font-semibold text-gray-800">{getClientName((quotation as any)?.clientId)}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">تاريخ الطلب</Label>
-              <p className="text-lg font-semibold text-gray-800">{formatDate(quotation.requestDate)}</p>
+              <p className="text-lg font-semibold text-gray-800">{formatDate((quotation as any)?.requestDate)}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">تاريخ الانتهاء</Label>
               <p className="text-lg font-semibold text-gray-800">
-                {quotation.expiryDate ? formatDate(quotation.expiryDate) : "غير محدد"}
+                {(quotation as any)?.expiryDate ? formatDate((quotation as any)?.expiryDate) : "غير محدد"}
               </p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">الموظف المسؤول</Label>
               <p className="text-lg font-semibold text-gray-800">
-                {quotation.responsibleEmployee || "غير محدد"}
+                {(quotation as any)?.responsibleEmployee || "غير محدد"}
               </p>
             </div>
             <div>
@@ -320,10 +321,10 @@ export default function QuotationDetail() {
                 <span>{formatEGP(calculateTotalAmount())}</span>
               </p>
             </div>
-            {quotation.notes && (
+            {(quotation as any)?.notes && (
               <div className="md:col-span-3">
                 <Label className="text-sm font-medium text-gray-600">ملاحظات</Label>
-                <p className="text-gray-800 bg-gray-50 p-3 rounded-md">{quotation.notes}</p>
+                <p className="text-gray-800 bg-gray-50 p-3 rounded-md">{(quotation as any)?.notes}</p>
               </div>
             )}
           </div>
@@ -354,7 +355,7 @@ export default function QuotationDetail() {
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد أصناف</h3>
               <p className="text-gray-600 mb-4">لم يتم إضافة أصناف لهذا الطلب بعد</p>
-              {hasRole(user, ["manager", "data_entry"]) && (
+              {hasRole(safeUser, ["manager", "data_entry"]) && (
                 <Button onClick={() => setIsAddItemModalOpen(true)}>
                   <Plus className="h-4 w-4 ml-2" />
                   إضافة أول صنف
@@ -417,7 +418,7 @@ export default function QuotationDetail() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
-                          {hasRole(user, ["manager", "data_entry"]) && (
+                          {hasRole(safeUser, ["manager", "data_entry"]) && (
                             <>
                               <Button
                                 variant="ghost"
@@ -483,7 +484,7 @@ export default function QuotationDetail() {
       <StatusUpdateModal
         isOpen={isStatusUpdateModalOpen}
         onClose={() => setIsStatusUpdateModalOpen(false)}
-        currentStatus={quotation.status}
+        currentStatus={(quotation as any)?.status}
         onUpdateStatus={(status) => updateQuotationStatusMutation.mutate({ status })}
         isUpdating={updateQuotationStatusMutation.isPending}
       />
@@ -637,7 +638,7 @@ function AddItemModal({
                 </SelectTrigger>
                 <SelectContent>
                   {allItems.map((item: any) => (
-                    <SelectItem key={item.id} value={item.id}>
+                    <SelectItem key={item.id} value={item.id || ""}>
                       {item.itemNumber} - {item.description}
                     </SelectItem>
                   ))}
@@ -656,7 +657,7 @@ function AddItemModal({
             </div>
 
             <div>
-              <Label>سعر الوحدة (ريال)</Label>
+              <Label>سعر الوحدة (ج.م)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -669,7 +670,7 @@ function AddItemModal({
             <div>
               <Label>المبلغ الإجمالي</Label>
               <Input
-                value={`${(quantity * unitPrice).toLocaleString()} ريال`}
+                value={formatEGP(quantity * unitPrice)}
                 disabled
                 className="bg-gray-50"
               />
@@ -762,10 +763,7 @@ function StatusUpdateModal({ isOpen, onClose, currentStatus, onUpdateStatus, isU
               <SelectContent>
                 {statusOptions.map((status) => (
                   <SelectItem key={status.value} value={status.value}>
-                    <div>
-                      <div className="font-medium">{status.label}</div>
-                      <div className="text-xs text-gray-500">{status.description}</div>
-                    </div>
+                    {status.label}
                   </SelectItem>
                 ))}
               </SelectContent>
