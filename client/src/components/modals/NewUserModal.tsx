@@ -43,7 +43,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
       username: "",
       password: "",
       fullName: "",
-      role: "",
+      role: undefined,
       isActive: true,
     },
   });

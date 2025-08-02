@@ -1,4 +1,14 @@
 import {
+  users,
+  clients,
+  quotationRequests,
+  items, 
+  quotationItems,
+  suppliers,
+  purchaseOrders,
+  purchaseOrderItems,
+  supplierQuotes,
+  activityLog,
   type User,
   type InsertUser,
   type Client,
@@ -13,10 +23,15 @@ import {
   type InsertSupplier,
   type PurchaseOrder,
   type InsertPurchaseOrder,
+  type PurchaseOrderItem,
+  type InsertPurchaseOrderItem,
+  type SupplierQuote,
+  type InsertSupplierQuote,
   type ActivityLog,
   type InsertActivityLog,
 } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, desc, like, and } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -32,6 +47,7 @@ export interface IStorage {
   createClient(client: InsertClient): Promise<Client>;
   getAllClients(): Promise<Client[]>;
   getClient(id: string): Promise<Client | undefined>;
+  updateClient(id: string, updates: Partial<Client>): Promise<Client | undefined>;
 
   // Quotation operations
   createQuotationRequest(request: InsertQuotationRequest): Promise<QuotationRequest>;
@@ -48,15 +64,18 @@ export interface IStorage {
   getNextItemNumber(): Promise<string>;
   findSimilarItems(description: string, partNumber?: string): Promise<Item[]>;
 
-  // Quotation item operations
-  createQuotationItem(item: InsertQuotationItem): Promise<QuotationItem>;
+  // Quotation items
+  addQuotationItem(item: InsertQuotationItem): Promise<QuotationItem>;
   getQuotationItems(quotationId: string): Promise<QuotationItem[]>;
+  removeQuotationItem(itemId: string): Promise<void>;
   updateQuotationItem(id: string, updates: Partial<QuotationItem>): Promise<QuotationItem | undefined>;
+  deleteQuotationItem(id: string): Promise<boolean>;
 
   // Supplier operations
   createSupplier(supplier: InsertSupplier): Promise<Supplier>;
   getAllSuppliers(): Promise<Supplier[]>;
   getSupplier(id: string): Promise<Supplier | undefined>;
+  updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier | undefined>;
 
   // Purchase order operations
   createPurchaseOrder(po: InsertPurchaseOrder): Promise<PurchaseOrder>;
@@ -65,357 +84,409 @@ export interface IStorage {
   updatePurchaseOrder(id: string, updates: Partial<PurchaseOrder>): Promise<PurchaseOrder | undefined>;
   getNextPONumber(): Promise<string>;
 
-  // Activity log operations
+  // Purchase order items
+  addPurchaseOrderItem(item: InsertPurchaseOrderItem): Promise<PurchaseOrderItem>;
+  getPurchaseOrderItems(poId: string): Promise<PurchaseOrderItem[]>;
+
+  // Supplier quotes
+  addSupplierQuote(quote: InsertSupplierQuote): Promise<SupplierQuote>;
+  getSupplierQuotes(itemId: string): Promise<SupplierQuote[]>;
+  updateSupplierQuote(id: string, updates: Partial<SupplierQuote>): Promise<SupplierQuote | undefined>;
+
+  // Activity logging
   logActivity(activity: InsertActivityLog): Promise<ActivityLog>;
-  getActivityLog(userId?: string): Promise<ActivityLog[]>;
+  getActivities(limit?: number): Promise<ActivityLog[]>;
+
+  // Statistics
+  getStatistics(): Promise<{
+    totalQuotations: number;
+    pendingQuotations: number;
+    completedQuotations: number;
+    totalItems: number;
+    totalPurchaseOrders: number;
+    pendingPurchaseOrders: number;
+    totalClients: number;
+    totalSuppliers: number;
+  }>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User> = new Map();
-  private clients: Map<string, Client> = new Map();
-  private quotationRequests: Map<string, QuotationRequest> = new Map();
-  private items: Map<string, Item> = new Map();
-  private quotationItems: Map<string, QuotationItem> = new Map();
-  private suppliers: Map<string, Supplier> = new Map();
-  private purchaseOrders: Map<string, PurchaseOrder> = new Map();
-  private activityLogs: Map<string, ActivityLog> = new Map();
-
-  private requestCounter = 1;
-  private itemCounter = 1;
-  private poCounter = 1;
-
-  constructor() {
-    this.initializeDefaultData();
-  }
-
-  private async initializeDefaultData() {
-    // Create default users
-    const adminUser: InsertUser = {
-      username: "admin",
-      password: await bcrypt.hash("admin123", 10),
-      fullName: "مدير النظام",
-      role: "manager",
-      isActive: true,
-    };
-
-    const itUser: InsertUser = {
-      username: "it_admin",
-      password: await bcrypt.hash("it123", 10),
-      fullName: "مدير تقنية المعلومات",
-      role: "it_admin",
-      isActive: true,
-    };
-
-    const dataEntryUser: InsertUser = {
-      username: "data_entry",
-      password: await bcrypt.hash("data123", 10),
-      fullName: "موظف إدخال البيانات",
-      role: "data_entry",
-      isActive: true,
-    };
-
-    const purchasingUser: InsertUser = {
-      username: "purchasing",
-      password: await bcrypt.hash("purchase123", 10),
-      fullName: "موظف المشتريات",
-      role: "purchasing",
-      isActive: true,
-    };
-
-    await this.createUser(adminUser);
-    await this.createUser(itUser);
-    await this.createUser(dataEntryUser);
-    await this.createUser(purchasingUser);
-  }
-
+export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const now = new Date();
-    const user: User = {
-      ...insertUser,
-      id,
-      isOnline: false,
-      lastLoginAt: null,
-      lastActivityAt: null,
-      ipAddress: null,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.users.set(id, user);
+  async createUser(userData: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
     return user;
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-
-    const updatedUser: User = {
-      ...user,
-      ...updates,
-      updatedAt: new Date(),
-    };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const [user] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
+    return await db.select().from(users).orderBy(desc(users.createdAt));
   }
 
   async updateUserOnlineStatus(id: string, isOnline: boolean, ipAddress?: string): Promise<void> {
-    const user = this.users.get(id);
-    if (user) {
-      const updates: Partial<User> = {
+    await db
+      .update(users)
+      .set({
         isOnline,
         lastActivityAt: new Date(),
-      };
-      if (ipAddress) {
-        updates.ipAddress = ipAddress;
-      }
-      if (isOnline) {
-        updates.lastLoginAt = new Date();
-      }
-      await this.updateUser(id, updates);
-    }
+        ...(ipAddress && { ipAddress }),
+        ...(isOnline && { lastLoginAt: new Date() }),
+      })
+      .where(eq(users.id, id));
   }
 
   // Client operations
-  async createClient(insertClient: InsertClient): Promise<Client> {
-    const id = randomUUID();
-    const client: Client = {
-      ...insertClient,
-      id,
-      createdAt: new Date(),
-    };
-    this.clients.set(id, client);
+  async createClient(clientData: InsertClient): Promise<Client> {
+    const [client] = await db
+      .insert(clients)
+      .values(clientData)
+      .returning();
     return client;
   }
 
   async getAllClients(): Promise<Client[]> {
-    return Array.from(this.clients.values());
+    return await db.select().from(clients).orderBy(desc(clients.createdAt));
   }
 
   async getClient(id: string): Promise<Client | undefined> {
-    return this.clients.get(id);
+    const [client] = await db.select().from(clients).where(eq(clients.id, id));
+    return client || undefined;
+  }
+
+  async updateClient(id: string, updates: Partial<Client>): Promise<Client | undefined> {
+    const [client] = await db
+      .update(clients)
+      .set(updates)
+      .where(eq(clients.id, id))
+      .returning();
+    return client || undefined;
   }
 
   // Quotation operations
-  async createQuotationRequest(insertRequest: InsertQuotationRequest): Promise<QuotationRequest> {
-    const id = randomUUID();
+  async createQuotationRequest(requestData: InsertQuotationRequest): Promise<QuotationRequest> {
     const requestNumber = await this.getNextRequestNumber();
-    const now = new Date();
-    
-    const request: QuotationRequest = {
-      ...insertRequest,
-      id,
-      requestNumber,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.quotationRequests.set(id, request);
-    return request;
+    const [quotation] = await db
+      .insert(quotationRequests)
+      .values({
+        ...requestData,
+        requestNumber,
+      })
+      .returning();
+    return quotation;
   }
 
   async getAllQuotationRequests(): Promise<QuotationRequest[]> {
-    return Array.from(this.quotationRequests.values());
+    return await db.select().from(quotationRequests).orderBy(desc(quotationRequests.createdAt));
   }
 
   async getQuotationRequest(id: string): Promise<QuotationRequest | undefined> {
-    return this.quotationRequests.get(id);
+    const [quotation] = await db.select().from(quotationRequests).where(eq(quotationRequests.id, id));
+    return quotation || undefined;
   }
 
   async updateQuotationRequest(id: string, updates: Partial<QuotationRequest>): Promise<QuotationRequest | undefined> {
-    const request = this.quotationRequests.get(id);
-    if (!request) return undefined;
-
-    const updatedRequest: QuotationRequest = {
-      ...request,
-      ...updates,
-      updatedAt: new Date(),
-    };
-    this.quotationRequests.set(id, updatedRequest);
-    return updatedRequest;
+    const [quotation] = await db
+      .update(quotationRequests)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(quotationRequests.id, id))
+      .returning();
+    return quotation || undefined;
   }
 
   async getNextRequestNumber(): Promise<string> {
-    const number = this.requestCounter.toString().padStart(8, '0');
-    this.requestCounter++;
-    return `REQ${number}`;
+    const lastRequest = await db.select({ requestNumber: quotationRequests.requestNumber })
+      .from(quotationRequests)
+      .orderBy(desc(quotationRequests.createdAt))
+      .limit(1);
+    
+    if (lastRequest.length === 0) {
+      return "REQ00000001";
+    }
+    
+    const lastNumber = parseInt(lastRequest[0].requestNumber.replace("REQ", ""));
+    const nextNumber = (lastNumber + 1).toString().padStart(8, "0");
+    return `REQ${nextNumber}`;
   }
 
   // Item operations
-  async createItem(insertItem: InsertItem): Promise<Item> {
-    const id = randomUUID();
+  async createItem(itemData: InsertItem): Promise<Item> {
     const itemNumber = await this.getNextItemNumber();
-    
-    const item: Item = {
-      ...insertItem,
-      id,
-      itemNumber,
-      createdAt: new Date(),
-    };
-    this.items.set(id, item);
+    const [item] = await db
+      .insert(items)
+      .values({
+        ...itemData,
+        itemNumber,
+      })
+      .returning();
     return item;
   }
 
   async getAllItems(): Promise<Item[]> {
-    return Array.from(this.items.values());
+    return await db.select().from(items).orderBy(desc(items.createdAt));
   }
 
   async getItem(id: string): Promise<Item | undefined> {
-    return this.items.get(id);
+    const [item] = await db.select().from(items).where(eq(items.id, id));
+    return item || undefined;
   }
 
   async updateItem(id: string, updates: Partial<Item>): Promise<Item | undefined> {
-    const item = this.items.get(id);
-    if (!item) return undefined;
-
-    const updatedItem: Item = {
-      ...item,
-      ...updates,
-    };
-    this.items.set(id, updatedItem);
-    return updatedItem;
+    const [item] = await db
+      .update(items)
+      .set(updates)
+      .where(eq(items.id, id))
+      .returning();
+    return item || undefined;
   }
 
   async getNextItemNumber(): Promise<string> {
-    const number = this.itemCounter.toString().padStart(8, '0');
-    this.itemCounter++;
-    return `ELEK${number}`;
+    const lastItem = await db.select({ itemNumber: items.itemNumber })
+      .from(items)
+      .orderBy(desc(items.createdAt))
+      .limit(1);
+    
+    if (lastItem.length === 0) {
+      return "ELEK00000001";
+    }
+    
+    const lastNumber = parseInt(lastItem[0].itemNumber.replace("ELEK", ""));
+    const nextNumber = (lastNumber + 1).toString().padStart(8, "0");
+    return `ELEK${nextNumber}`;
   }
 
   async findSimilarItems(description: string, partNumber?: string): Promise<Item[]> {
-    // Simple similarity matching - in production this would use AI
-    const items = Array.from(this.items.values());
-    return items.filter(item => {
-      const descMatch = item.description.toLowerCase().includes(description.toLowerCase()) ||
-                       description.toLowerCase().includes(item.description.toLowerCase());
-      const partMatch = partNumber && item.partNumber && 
-                       (item.partNumber.toLowerCase().includes(partNumber.toLowerCase()) ||
-                        partNumber.toLowerCase().includes(item.partNumber.toLowerCase()));
-      return descMatch || partMatch;
-    });
+    if (partNumber) {
+      return await db.select().from(items).where(
+        and(
+          like(items.description, `%${description}%`),
+          like(items.partNumber, `%${partNumber}%`)
+        )
+      ).limit(10);
+    } else {
+      return await db.select().from(items)
+        .where(like(items.description, `%${description}%`))
+        .limit(10);
+    }
   }
 
-  // Quotation item operations
-  async createQuotationItem(insertItem: InsertQuotationItem): Promise<QuotationItem> {
-    const id = randomUUID();
-    const item: QuotationItem = {
-      ...insertItem,
-      id,
-      createdAt: new Date(),
-    };
-    this.quotationItems.set(id, item);
+  // Quotation items
+  async addQuotationItem(itemData: InsertQuotationItem): Promise<QuotationItem> {
+    const [item] = await db
+      .insert(quotationItems)
+      .values(itemData)
+      .returning();
     return item;
   }
 
   async getQuotationItems(quotationId: string): Promise<QuotationItem[]> {
-    return Array.from(this.quotationItems.values()).filter(
-      item => item.quotationId === quotationId
-    );
+    return await db.select().from(quotationItems).where(eq(quotationItems.quotationId, quotationId));
+  }
+
+  async removeQuotationItem(itemId: string): Promise<void> {
+    await db.delete(quotationItems).where(eq(quotationItems.id, itemId));
   }
 
   async updateQuotationItem(id: string, updates: Partial<QuotationItem>): Promise<QuotationItem | undefined> {
-    const item = this.quotationItems.get(id);
-    if (!item) return undefined;
+    const [item] = await db
+      .update(quotationItems)
+      .set(updates)
+      .where(eq(quotationItems.id, id))
+      .returning();
+    return item || undefined;
+  }
 
-    const updatedItem: QuotationItem = {
-      ...item,
-      ...updates,
-    };
-    this.quotationItems.set(id, updatedItem);
-    return updatedItem;
+  async deleteQuotationItem(id: string): Promise<boolean> {
+    const result = await db.delete(quotationItems).where(eq(quotationItems.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   // Supplier operations
-  async createSupplier(insertSupplier: InsertSupplier): Promise<Supplier> {
-    const id = randomUUID();
-    const supplier: Supplier = {
-      ...insertSupplier,
-      id,
-      createdAt: new Date(),
-    };
-    this.suppliers.set(id, supplier);
+  async createSupplier(supplierData: InsertSupplier): Promise<Supplier> {
+    const [supplier] = await db
+      .insert(suppliers)
+      .values(supplierData)
+      .returning();
     return supplier;
   }
 
   async getAllSuppliers(): Promise<Supplier[]> {
-    return Array.from(this.suppliers.values());
+    return await db.select().from(suppliers).orderBy(desc(suppliers.createdAt));
   }
 
   async getSupplier(id: string): Promise<Supplier | undefined> {
-    return this.suppliers.get(id);
+    const [supplier] = await db.select().from(suppliers).where(eq(suppliers.id, id));
+    return supplier || undefined;
+  }
+
+  async updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier | undefined> {
+    const [supplier] = await db
+      .update(suppliers)
+      .set(updates)
+      .where(eq(suppliers.id, id))
+      .returning();
+    return supplier || undefined;
   }
 
   // Purchase order operations
-  async createPurchaseOrder(insertPO: InsertPurchaseOrder): Promise<PurchaseOrder> {
-    const id = randomUUID();
+  async createPurchaseOrder(poData: InsertPurchaseOrder): Promise<PurchaseOrder> {
     const poNumber = await this.getNextPONumber();
-    
-    const po: PurchaseOrder = {
-      ...insertPO,
-      id,
-      poNumber,
-      createdAt: new Date(),
-    };
-    this.purchaseOrders.set(id, po);
+    const [po] = await db
+      .insert(purchaseOrders)
+      .values({
+        ...poData,
+        poNumber,
+      })
+      .returning();
     return po;
   }
 
   async getAllPurchaseOrders(): Promise<PurchaseOrder[]> {
-    return Array.from(this.purchaseOrders.values());
+    return await db.select().from(purchaseOrders).orderBy(desc(purchaseOrders.createdAt));
   }
 
   async getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined> {
-    return this.purchaseOrders.get(id);
+    const [po] = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, id));
+    return po || undefined;
   }
 
   async updatePurchaseOrder(id: string, updates: Partial<PurchaseOrder>): Promise<PurchaseOrder | undefined> {
-    const po = this.purchaseOrders.get(id);
-    if (!po) return undefined;
-
-    const updatedPO: PurchaseOrder = {
-      ...po,
-      ...updates,
-    };
-    this.purchaseOrders.set(id, updatedPO);
-    return updatedPO;
+    const [po] = await db
+      .update(purchaseOrders)
+      .set(updates)
+      .where(eq(purchaseOrders.id, id))
+      .returning();
+    return po || undefined;
   }
 
   async getNextPONumber(): Promise<string> {
-    const number = this.poCounter.toString().padStart(4, '0');
-    this.poCounter++;
-    return `PO-2024-${number}`;
+    const year = new Date().getFullYear();
+    const lastPO = await db.select({ poNumber: purchaseOrders.poNumber })
+      .from(purchaseOrders)
+      .orderBy(desc(purchaseOrders.createdAt))
+      .limit(1);
+    
+    if (lastPO.length === 0) {
+      return `PO-${year}-0001`;
+    }
+    
+    const lastNumber = parseInt(lastPO[0].poNumber.split("-")[2]);
+    const nextNumber = (lastNumber + 1).toString().padStart(4, "0");
+    return `PO-${year}-${nextNumber}`;
   }
 
-  // Activity log operations
-  async logActivity(insertActivity: InsertActivityLog): Promise<ActivityLog> {
-    const id = randomUUID();
-    const activity: ActivityLog = {
-      ...insertActivity,
-      id,
-      timestamp: new Date(),
-    };
-    this.activityLogs.set(id, activity);
+  // Purchase order items
+  async addPurchaseOrderItem(itemData: InsertPurchaseOrderItem): Promise<PurchaseOrderItem> {
+    const [item] = await db
+      .insert(purchaseOrderItems)
+      .values(itemData)
+      .returning();
+    return item;
+  }
+
+  async getPurchaseOrderItems(poId: string): Promise<PurchaseOrderItem[]> {
+    return await db.select().from(purchaseOrderItems).where(eq(purchaseOrderItems.poId, poId));
+  }
+
+  // Supplier quotes
+  async addSupplierQuote(quoteData: InsertSupplierQuote): Promise<SupplierQuote> {
+    const [quote] = await db
+      .insert(supplierQuotes)
+      .values(quoteData)
+      .returning();
+    return quote;
+  }
+
+  async getSupplierQuotes(itemId: string): Promise<SupplierQuote[]> {
+    return await db.select().from(supplierQuotes)
+      .where(and(eq(supplierQuotes.itemId, itemId), eq(supplierQuotes.isActive, true)))
+      .orderBy(desc(supplierQuotes.createdAt));
+  }
+
+  async updateSupplierQuote(id: string, updates: Partial<SupplierQuote>): Promise<SupplierQuote | undefined> {
+    const [quote] = await db
+      .update(supplierQuotes)
+      .set(updates)
+      .where(eq(supplierQuotes.id, id))
+      .returning();
+    return quote || undefined;
+  }
+
+  // Activity logging
+  async logActivity(activityData: InsertActivityLog): Promise<ActivityLog> {
+    const [activity] = await db
+      .insert(activityLog)
+      .values(activityData)
+      .returning();
     return activity;
   }
 
-  async getActivityLog(userId?: string): Promise<ActivityLog[]> {
-    const activities = Array.from(this.activityLogs.values());
-    if (userId) {
-      return activities.filter(activity => activity.userId === userId);
-    }
-    return activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  async getActivities(limit: number = 50): Promise<ActivityLog[]> {
+    return await db.select().from(activityLog)
+      .orderBy(desc(activityLog.timestamp))
+      .limit(limit);
+  }
+
+  // Statistics
+  async getStatistics() {
+    const quotations = await db.select().from(quotationRequests);
+    const itemsData = await db.select().from(items);
+    const clientsData = await db.select().from(clients);
+    const suppliersData = await db.select().from(suppliers);
+    const purchaseOrdersData = await db.select().from(purchaseOrders);
+
+    return {
+      totalQuotations: quotations.length,
+      pendingQuotations: quotations.filter(q => q.status === "pending").length,
+      completedQuotations: quotations.filter(q => q.status === "completed").length,
+      totalItems: itemsData.length,
+      totalPurchaseOrders: purchaseOrdersData.length,
+      pendingPurchaseOrders: purchaseOrdersData.filter(po => po.status === "pending").length,
+      totalClients: clientsData.length,
+      totalSuppliers: suppliersData.length,
+    };
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
+
+// Create default admin user if it doesn't exist
+export async function initializeDatabase() {
+  try {
+    const adminUser = await storage.getUserByUsername("admin");
+    
+    if (!adminUser) {
+      const hashedPassword = await bcrypt.hash("admin123", 10);
+      await storage.createUser({
+        username: "admin",
+        password: hashedPassword,
+        fullName: "مدير النظام",
+        role: "manager",
+        isActive: true,
+      });
+      
+      console.log("✅ Default admin user created: username=admin, password=admin123");
+    }
+  } catch (error) {
+    console.error("❌ Error initializing database:", error);
+  }
+}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Plus, Eye, Edit, Trash2 } from "lucide-react";
 import NewQuotationModal from "@/components/modals/NewQuotationModal";
 
 export default function Quotations() {
+  const [, setLocation] = useLocation();
   const [isNewQuotationModalOpen, setIsNewQuotationModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     requestNumber: "",
@@ -46,20 +48,20 @@ export default function Quotations() {
     );
   };
 
-  const filteredQuotations = quotations?.filter((quotation: any) => {
+  const filteredQuotations = quotations && Array.isArray(quotations) ? quotations.filter((quotation: any) => {
     return (
       (!filters.requestNumber || quotation.requestNumber.includes(filters.requestNumber)) &&
-      (!filters.status || quotation.status === filters.status) &&
+      (!filters.status || filters.status === "all" || quotation.status === filters.status) &&
       (!filters.date || quotation.requestDate?.startsWith(filters.date))
     );
-  }) || [];
+  }) : [];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG');
   };
 
   const getClientName = (clientId: string) => {
-    const client = clients?.find((c: any) => c.id === clientId);
+    const client = clients && Array.isArray(clients) ? clients.find((c: any) => c.id === clientId) : null;
     return client?.name || "غير محدد";
   };
 
@@ -120,7 +122,7 @@ export default function Quotations() {
                   <SelectValue placeholder="جميع الحالات" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع الحالات</SelectItem>
+                  <SelectItem value="all">جميع الحالات</SelectItem>
                   <SelectItem value="pending">في الانتظار</SelectItem>
                   <SelectItem value="processing">قيد المعالجة</SelectItem>
                   <SelectItem value="completed">مكتمل</SelectItem>
@@ -177,7 +179,11 @@ export default function Quotations() {
                       <TableCell>{quotation.responsibleEmployee || "غير محدد"}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
-                          <Button variant="ghost" size="sm">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setLocation(`/quotations/${quotation.id}`)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="sm">

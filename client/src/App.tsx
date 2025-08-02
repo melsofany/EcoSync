@@ -8,10 +8,13 @@ import Login from "@/pages/Login";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Quotations from "@/pages/Quotations";
+import QuotationDetail from "@/pages/QuotationDetail";
 import Items from "@/pages/Items";
 import PurchaseOrders from "@/pages/PurchaseOrders";
 import Reports from "@/pages/Reports";
 import Admin from "@/pages/Admin";
+import Clients from "@/pages/Clients";
+import Suppliers from "@/pages/Suppliers";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -38,7 +41,10 @@ function Router() {
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/quotations" component={Quotations} />
+        <Route path="/quotations/:id" component={QuotationDetail} />
         <Route path="/items" component={Items} />
+        <Route path="/clients" component={Clients} />
+        <Route path="/suppliers" component={Suppliers} />
         <Route path="/purchase-orders" component={PurchaseOrders} />
         <Route path="/reports" component={Reports} />
         <Route path="/admin" component={Admin} />

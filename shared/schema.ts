@@ -99,6 +99,32 @@ export const purchaseOrders = pgTable("purchase_orders", {
   createdBy: varchar("created_by").references(() => users.id).notNull(),
 });
 
+// Purchase order items table
+export const purchaseOrderItems = pgTable("purchase_order_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poId: varchar("po_id").references(() => purchaseOrders.id).notNull(),
+  itemId: varchar("item_id").references(() => items.id).notNull(),
+  quantity: decimal("quantity").notNull(),
+  unitPrice: decimal("unit_price").notNull(),
+  totalPrice: decimal("total_price").notNull(),
+  supplierId: varchar("supplier_id").references(() => suppliers.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Supplier quotes table - للتسعيرات المتعددة من نفس المورد
+export const supplierQuotes = pgTable("supplier_quotes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  itemId: varchar("item_id").references(() => items.id).notNull(),
+  supplierId: varchar("supplier_id").references(() => suppliers.id).notNull(),
+  unitPrice: decimal("unit_price").notNull(),
+  quoteDate: timestamp("quote_date").defaultNow(),
+  validUntil: timestamp("valid_until"),
+  notes: text("notes"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+});
+
 // Activity log table
 export const activityLog = pgTable("activity_log", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -152,6 +178,16 @@ export const insertPurchaseOrderSchema = createInsertSchema(purchaseOrders).omit
   createdAt: true,
 });
 
+export const insertPurchaseOrderItemSchema = createInsertSchema(purchaseOrderItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSupplierQuoteSchema = createInsertSchema(supplierQuotes).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertActivityLogSchema = createInsertSchema(activityLog).omit({
   id: true,
   timestamp: true,
@@ -172,5 +208,9 @@ export type Supplier = typeof suppliers.$inferSelect;
 export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
 export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
 export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
+export type PurchaseOrderItem = typeof purchaseOrderItems.$inferSelect;
+export type InsertPurchaseOrderItem = z.infer<typeof insertPurchaseOrderItemSchema>;
+export type SupplierQuote = typeof supplierQuotes.$inferSelect;
+export type InsertSupplierQuote = z.infer<typeof insertSupplierQuoteSchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;

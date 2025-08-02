@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema } from "@shared/schema";
+import { storage, initializeDatabase } from "./storage";
+import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
 
@@ -18,6 +18,8 @@ declare module "express-session" {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize database with default data
+  await initializeDatabase();
   // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
@@ -174,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/clients", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+  app.post("/api/clients", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
       const validatedData = insertClientSchema.parse(req.body);
       validatedData.createdBy = req.session.user!.id;
@@ -211,6 +213,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(quotation);
     } catch (error) {
       console.error("Create quotation error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Single quotation routes
+  app.get("/api/quotations/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const quotation = await storage.getQuotationRequest(id);
+      if (!quotation) {
+        return res.status(404).json({ message: "Quotation not found" });
+      }
+      res.json(quotation);
+    } catch (error) {
+      console.error("Get quotation error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/quotations/:id", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      const quotation = await storage.updateQuotationRequest(id, { status });
+      await logActivity(req, "update_quotation", "quotation", id, `Updated quotation status to: ${status}`);
+
+      res.json(quotation);
+    } catch (error) {
+      console.error("Update quotation error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -323,13 +355,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { role } = req.session.user!;
       let activities;
 
-      if (role === "manager" || role === "it_admin") {
-        // Managers and IT admins can see all activities
-        activities = await storage.getActivityLog();
-      } else {
-        // Other users can only see their own activities
-        activities = await storage.getActivityLog(req.session.user!.id);
-      }
+      // All authenticated users can see activities (filtered by role in frontend if needed)
+      activities = await storage.getActivities(50);
 
       res.json(activities);
     } catch (error) {
@@ -338,25 +365,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Supplier routes
+  app.get("/api/suppliers", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const suppliers = await storage.getAllSuppliers();
+      res.json(suppliers);
+    } catch (error) {
+      console.error("Get suppliers error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/suppliers", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertSupplierSchema.parse(req.body);
+      validatedData.createdBy = req.session.user!.id;
+      
+      const supplier = await storage.createSupplier(validatedData);
+      await logActivity(req, "create_supplier", "supplier", supplier.id, `Created supplier: ${supplier.name}`);
+
+      res.status(201).json(supplier);
+    } catch (error) {
+      console.error("Create supplier error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Quotation items routes
+  app.get("/api/quotations/:quotationId/items", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { quotationId } = req.params;
+      const items = await storage.getQuotationItems(quotationId);
+      res.json(items);
+    } catch (error) {
+      console.error("Get quotation items error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/quotations/:quotationId/items", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const { quotationId } = req.params;
+      const validatedData = insertQuotationItemSchema.parse(req.body);
+      validatedData.quotationId = quotationId;
+      
+      const item = await storage.addQuotationItem(validatedData);
+      await logActivity(req, "add_quotation_item", "quotation_item", item.id, `Added item to quotation: ${quotationId}`);
+
+      res.status(201).json(item);
+    } catch (error) {
+      console.error("Add quotation item error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/quotations/:quotationId/items/:itemId", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const { quotationId, itemId } = req.params;
+      
+      await storage.removeQuotationItem(itemId);
+      await logActivity(req, "remove_quotation_item", "quotation_item", itemId, `Removed item from quotation: ${quotationId}`);
+
+      res.json({ message: "Item removed successfully" });
+    } catch (error) {
+      console.error("Remove quotation item error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Supplier quotes routes
+  app.get("/api/items/:itemId/quotes", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      const quotes = await storage.getSupplierQuotes(itemId);
+      res.json(quotes);
+    } catch (error) {
+      console.error("Get supplier quotes error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/items/:itemId/quotes", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      const validatedData = insertSupplierQuoteSchema.parse(req.body);
+      validatedData.itemId = itemId;
+      validatedData.createdBy = req.session.user!.id;
+      
+      const quote = await storage.addSupplierQuote(validatedData);
+      await logActivity(req, "add_supplier_quote", "supplier_quote", quote.id, `Added supplier quote for item: ${itemId}`);
+
+      res.status(201).json(quote);
+    } catch (error) {
+      console.error("Add supplier quote error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Purchase order items routes
+  app.get("/api/purchase-orders/:poId/items", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { poId } = req.params;
+      const items = await storage.getPurchaseOrderItems(poId);
+      res.json(items);
+    } catch (error) {
+      console.error("Get PO items error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/purchase-orders/:poId/items", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const { poId } = req.params;
+      const validatedData = insertPurchaseOrderItemSchema.parse(req.body);
+      validatedData.poId = poId;
+      
+      const item = await storage.addPurchaseOrderItem(validatedData);
+      await logActivity(req, "add_po_item", "purchase_order_item", item.id, `Added item to PO: ${poId}`);
+
+      res.status(201).json(item);
+    } catch (error) {
+      console.error("Add PO item error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Statistics endpoint
   app.get("/api/statistics", requireAuth, async (req: Request, res: Response) => {
     try {
-      const quotations = await storage.getAllQuotationRequests();
-      const purchaseOrders = await storage.getAllPurchaseOrders();
-      const items = await storage.getAllItems();
-      const users = await storage.getAllUsers();
-
-      const stats = {
-        totalQuotations: quotations.length,
-        pendingQuotations: quotations.filter(q => q.status === "pending").length,
-        completedQuotations: quotations.filter(q => q.status === "completed").length,
-        totalPurchaseOrders: purchaseOrders.length,
-        confirmedPurchaseOrders: purchaseOrders.filter(po => po.status === "confirmed").length,
-        totalItems: items.length,
-        activeUsers: users.filter(u => u.isOnline).length,
-        totalUsers: users.length,
-      };
-
+      const stats = await storage.getStatistics();
       res.json(stats);
     } catch (error) {
       console.error("Get statistics error:", error);

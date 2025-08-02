@@ -11,7 +11,9 @@ import {
   Settings,
   Building,
   LogOut,
-  Circle
+  Circle,
+  Users,
+  Truck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +45,18 @@ export default function Sidebar({ isOpen }: SidebarProps) {
       href: "/items",
       icon: Package,
       section: "items",
+    },
+    {
+      title: "إدارة العملاء",
+      href: "/clients",
+      icon: Users,
+      section: "clients",
+    },
+    {
+      title: "إدارة الموردين",
+      href: "/suppliers",
+      icon: Truck,
+      section: "suppliers",
     },
     {
       title: "أوامر الشراء",

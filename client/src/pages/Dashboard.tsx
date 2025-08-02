@@ -75,12 +75,12 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">طلبات التسعير</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {stats?.totalQuotations || 0}
+                  {(stats as any)?.totalQuotations || 0}
                 </p>
-                <p className="text-xs text-green-600 mt-1 flex items-center">
+                <div className="text-xs text-green-600 mt-1 flex items-center">
                   <TrendingUp className="h-3 w-3 ml-1" />
                   نمو مستمر
-                </p>
+                </div>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <FileText className="h-6 w-6 text-blue-600" />
@@ -95,12 +95,12 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">أوامر الشراء</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {stats?.totalPurchaseOrders || 0}
+                  {(stats as any)?.totalPurchaseOrders || 0}
                 </p>
-                <p className="text-xs text-green-600 mt-1 flex items-center">
+                <div className="text-xs text-green-600 mt-1 flex items-center">
                   <TrendingUp className="h-3 w-3 ml-1" />
                   أداء ممتاز
-                </p>
+                </div>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <ShoppingCart className="h-6 w-6 text-green-600" />
@@ -115,12 +115,12 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">الأصناف المسجلة</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {stats?.totalItems || 0}
+                  {(stats as any)?.totalItems || 0}
                 </p>
-                <p className="text-xs text-blue-600 mt-1 flex items-center">
+                <div className="text-xs text-blue-600 mt-1 flex items-center">
                   <TrendingUp className="h-3 w-3 ml-1" />
                   زيادة مستمرة
-                </p>
+                </div>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <Package className="h-6 w-6 text-purple-600" />
@@ -135,12 +135,12 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">المستخدمون النشطون</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {stats?.activeUsers || 0}
+                  {(stats as any)?.activeUsers || 0}
                 </p>
-                <p className="text-xs text-gray-600 mt-1 flex items-center">
+                <div className="text-xs text-gray-600 mt-1 flex items-center">
                   <div className="w-2 h-2 bg-green-400 rounded-full ml-1"></div>
                   متصل الآن
-                </p>
+                </div>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                 <Users className="h-6 w-6 text-orange-600" />
@@ -162,7 +162,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {activities?.slice(0, 5).map((activity: any) => (
+              {activities && Array.isArray(activities) ? activities.slice(0, 5).map((activity: any) => (
                 <div key={activity.id} className="flex items-center space-x-3 space-x-reverse">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getActionColor(activity.action)}`}>
                     {getActionIcon(activity.action)}
@@ -176,7 +176,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-              )) || (
+              )) : (
                 <div className="text-center text-gray-500 py-4">
                   لا توجد أنشطة حديثة
                 </div>
@@ -194,13 +194,13 @@ export default function Dashboard() {
                 <span>المستخدمون المتصلون</span>
               </div>
               <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                {stats?.activeUsers || 0} متصل
+                {(stats as any)?.activeUsers || 0} متصل
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {users?.filter((u: any) => u.isOnline).map((onlineUser: any) => (
+              {users && Array.isArray(users) ? users.filter((u: any) => u.isOnline).map((onlineUser: any) => (
                 <div key={onlineUser.id} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3 space-x-reverse">
                     <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
@@ -227,7 +227,7 @@ export default function Dashboard() {
                     </span>
                   </div>
                 </div>
-              )) || (
+              )) : (
                 <div className="text-center text-gray-500 py-4">
                   لا يوجد مستخدمون متصلون
                 </div>
