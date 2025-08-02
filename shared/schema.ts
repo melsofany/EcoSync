@@ -35,10 +35,11 @@ export const quotationRequests = pgTable("quotation_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   requestNumber: text("request_number").notNull().unique(),
   clientId: varchar("client_id").references(() => clients.id).notNull(),
-  requestDate: timestamp("request_date").defaultNow(),
-  expiryDate: timestamp("expiry_date"),
+  requestDate: text("request_date").notNull(), // Changed to text for easier form handling
+  expiryDate: text("expiry_date"), // Changed to text for easier form handling
   status: text("status").default("pending"), // "pending", "processing", "completed", "cancelled"
   responsibleEmployee: text("responsible_employee"),
+  customRequestNumber: text("custom_request_number"), // Added field for client's request number
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
   createdBy: varchar("created_by").references(() => users.id).notNull(),
@@ -154,6 +155,9 @@ export const insertQuotationRequestSchema = createInsertSchema(quotationRequests
   requestNumber: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  requestDate: z.string().min(1, "تاريخ الطلب مطلوب"),
+  expiryDate: z.string().optional(),
 });
 
 export const insertItemSchema = createInsertSchema(items).omit({

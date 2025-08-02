@@ -32,6 +32,7 @@ const enhancedQuotationSchema = z.object({
   clientId: z.string().min(1, "اختيار العميل مطلوب"),
   customRequestNumber: z.string().optional(),
   responsibleEmployee: z.string().optional(),
+  requestDate: z.string().min(1, "تاريخ الطلب مطلوب"), // Added request date
   expiryDate: z.string().optional(),
   notes: z.string().optional(),
   items: z.array(quotationItemSchema).min(1, "يجب إضافة بند واحد على الأقل"),
@@ -79,6 +80,7 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
       clientId: "",
       customRequestNumber: "",
       responsibleEmployee: "",
+      requestDate: new Date().toISOString().split('T')[0], // Default to today
       expiryDate: "",
       notes: "",
       items: [
@@ -161,6 +163,7 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
       const quotationData = {
         clientId: data.clientId,
         responsibleEmployee: data.responsibleEmployee,
+        requestDate: data.requestDate,
         expiryDate: data.expiryDate,
         notes: data.notes,
         customRequestNumber: data.customRequestNumber,
@@ -188,6 +191,17 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
           unitPrice: 0, // Will be filled by purchasing department
           totalPrice: 0,
         });
+
+        // Trigger AI analysis for each item automatically
+        try {
+          await apiRequest("POST", "/api/items/ai-compare", {
+            description: itemData.description,
+            partNumber: itemData.partNumber || undefined,
+          });
+        } catch (aiError) {
+          console.log("AI analysis failed for item:", itemData.description);
+          // Continue with quotation creation even if AI fails
+        }
       }
 
       return quotation;
@@ -277,7 +291,7 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
                   </SelectContent>
                 </Select>
                 {form.formState.errors.clientId && (
-                  <p className="text-sm text-red-500">{form.formState.errors.clientId.message}</p>
+                  <p className="text-sm text-red-500">{String(form.formState.errors.clientId.message)}</p>
                 )}
               </div>
 
@@ -290,11 +304,14 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="responsibleEmployee">الموظف المسؤول</Label>
+                <Label htmlFor="requestDate">تاريخ طلب التسعير الوارد *</Label>
                 <Input
-                  {...form.register("responsibleEmployee")}
-                  placeholder="اسم الموظف المسؤول"
+                  type="date"
+                  {...form.register("requestDate")}
                 />
+                {form.formState.errors.requestDate && (
+                  <p className="text-sm text-red-500">{form.formState.errors.requestDate.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -302,6 +319,14 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
                 <Input
                   type="date"
                   {...form.register("expiryDate")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="responsibleEmployee">الموظف المسؤول</Label>
+                <Input
+                  {...form.register("responsibleEmployee")}
+                  placeholder="اسم الموظف المسؤول"
                 />
               </div>
 
