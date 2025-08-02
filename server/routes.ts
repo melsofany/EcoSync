@@ -147,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+  app.post("/api/users", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
       const validatedData = insertUserSchema.parse(req.body);
       validatedData.password = await bcrypt.hash(validatedData.password, 10);
