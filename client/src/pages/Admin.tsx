@@ -81,6 +81,26 @@ export default function Admin() {
     },
   });
 
+  const unblockUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await apiRequest("PATCH", `/api/users/${userId}`, { isActive: true });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({
+        title: "تم إلغاء حظر المستخدم",
+        description: "تم إلغاء حظر المستخدم بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في إلغاء حظر المستخدم",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const saveSettingsMutation = useMutation({
     mutationFn: async (settings: SystemSettings) => {
       await apiRequest("POST", "/api/admin/settings", settings);
