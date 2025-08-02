@@ -154,12 +154,12 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
                 </SelectTrigger>
                 <SelectContent>
                   {availableQuotations.length === 0 ? (
-                    <SelectItem value="" disabled>
+                    <SelectItem value="no-quotations" disabled>
                       لا توجد طلبات تسعير مكتملة
                     </SelectItem>
                   ) : (
                     availableQuotations.map((quotation: any) => (
-                      <SelectItem key={quotation.id} value={quotation.id}>
+                      <SelectItem key={quotation.id} value={quotation.id || "unknown"}>
                         {quotation.requestNumber} - {getClientName(quotation.clientId)}
                       </SelectItem>
                     ))
