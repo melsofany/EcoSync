@@ -188,9 +188,10 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
         // Add item to quotation
         await apiRequest("POST", `/api/quotations/${quotation.id}/items`, {
           itemId: item.id,
-          quantity: itemData.quantity,
-          unitPrice: 0, // Will be filled by purchasing department
-          totalPrice: 0,
+          quantity: itemData.quantity.toString(),
+          unitPrice: "0", // Will be filled by purchasing department
+          totalPrice: "0",
+          currency: "EGP",
         });
 
         // Trigger AI analysis for each item automatically

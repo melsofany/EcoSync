@@ -171,6 +171,10 @@ export const insertItemSchema = createInsertSchema(items).omit({
 export const insertQuotationItemSchema = createInsertSchema(quotationItems).omit({
   id: true,
   createdAt: true,
+}).extend({
+  quantity: z.coerce.string(),
+  unitPrice: z.coerce.string().optional(),
+  totalPrice: z.coerce.string().optional(),
 });
 
 export const insertSupplierSchema = createInsertSchema(suppliers).omit({

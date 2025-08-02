@@ -468,8 +468,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/quotations/:quotationId/items", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
     try {
       const { quotationId } = req.params;
-      const validatedData = insertQuotationItemSchema.parse(req.body);
-      validatedData.quotationId = quotationId;
+      const validatedData = insertQuotationItemSchema.parse({
+        ...req.body,
+        quotationId: quotationId,
+      });
       
       const item = await storage.addQuotationItem(validatedData);
       await logActivity(req, "add_quotation_item", "quotation_item", item.id, `Added item to quotation: ${quotationId}`);
