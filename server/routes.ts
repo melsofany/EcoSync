@@ -546,10 +546,35 @@ Respond in JSON format:
 
   app.post("/api/purchase-orders", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
     try {
-      const validatedData = insertPurchaseOrderSchema.parse(req.body);
-      validatedData.createdBy = req.session.user!.id;
+      // Transform the data to match schema requirements
+      const poData = {
+        poNumber: req.body.poNumber,
+        quotationId: req.body.quotationId,
+        poDate: new Date(req.body.poDate),
+        totalValue: req.body.totalValue.toString(), // Convert to string as expected by schema
+        notes: req.body.notes || "",
+        status: "pending",
+        createdBy: req.session.user!.id,
+      };
+      
+      const validatedData = insertPurchaseOrderSchema.parse(poData);
       
       const purchaseOrder = await storage.createPurchaseOrder(validatedData);
+      
+      // Add items to the purchase order
+      if (req.body.items && Array.isArray(req.body.items)) {
+        for (const item of req.body.items) {
+          await storage.addPurchaseOrderItem({
+            poId: purchaseOrder.id,
+            itemId: item.itemId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice.toString(),
+            totalPrice: item.totalPrice.toString(),
+            notes: item.notes || ""
+          });
+        }
+      }
+      
       await logActivity(req, "create_purchase_order", "purchase_order", purchaseOrder.id, `Created PO: ${purchaseOrder.poNumber}`);
 
       res.status(201).json(purchaseOrder);

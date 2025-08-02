@@ -242,8 +242,10 @@ export const insertSupplierSchema = createInsertSchema(suppliers).omit({
 
 export const insertPurchaseOrderSchema = createInsertSchema(purchaseOrders).omit({
   id: true,
-  poNumber: true,
   createdAt: true,
+}).extend({
+  poDate: z.date().optional(),
+  totalValue: z.string().optional(),
 });
 
 export const insertPurchaseOrderItemSchema = createInsertSchema(purchaseOrderItems).omit({

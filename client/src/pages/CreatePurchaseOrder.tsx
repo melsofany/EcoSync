@@ -230,7 +230,7 @@ export default function CreatePurchaseOrder() {
     const poData = {
       poNumber: poNumber.trim(),
       quotationId: selectedQuotationId,
-      poDate: new Date(poDate).toISOString(),
+      poDate: poDate, // Send as string, server will convert
       totalValue: totalPOValue,
       notes,
       items: poItems,
