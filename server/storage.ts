@@ -243,9 +243,32 @@ export class DatabaseStorage implements IStorage {
     return quotation || undefined;
   }
 
-  async getQuotationById(id: string): Promise<QuotationRequest | undefined> {
-    const [quotation] = await db.select().from(quotationRequests).where(eq(quotationRequests.id, id));
-    return quotation || undefined;
+  async getQuotationById(id: string): Promise<any | undefined> {
+    const results = await db
+      .select({
+        id: quotationRequests.id,
+        requestNumber: quotationRequests.requestNumber,
+        clientId: quotationRequests.clientId,
+        requestDate: quotationRequests.requestDate,
+        expiryDate: quotationRequests.expiryDate,
+        status: quotationRequests.status,
+        responsibleEmployee: quotationRequests.responsibleEmployee,
+        customRequestNumber: quotationRequests.customRequestNumber,
+        notes: quotationRequests.notes,
+        createdAt: quotationRequests.createdAt,
+        createdBy: quotationRequests.createdBy,
+        updatedAt: quotationRequests.updatedAt,
+        // Client details
+        clientName: clients.name,
+        clientPhone: clients.phone,
+        clientEmail: clients.email,
+        clientAddress: clients.address,
+      })
+      .from(quotationRequests)
+      .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+      .where(eq(quotationRequests.id, id));
+    
+    return results[0] || undefined;
   }
 
   async deleteQuotation(id: string): Promise<void> {
@@ -377,16 +400,21 @@ export class DatabaseStorage implements IStorage {
         supplierId: quotationItems.supplierId,
         supplierQuoteDate: quotationItems.supplierQuoteDate,
         createdAt: quotationItems.createdAt,
-        item: {
-          id: items.id,
-          itemNumber: items.itemNumber,
-          description: items.description,
-          partNumber: items.partNumber,
-          category: items.category,
-        }
+        // Complete item details
+        itemNumber: items.itemNumber,
+        kItemId: items.kItemId,
+        partNumber: items.partNumber,
+        lineItem: items.lineItem,
+        description: items.description,
+        unit: items.unit,
+        category: items.category,
+        brand: items.brand,
+        // Supplier details
+        supplierName: suppliers.name,
       })
       .from(quotationItems)
       .leftJoin(items, eq(quotationItems.itemId, items.id))
+      .leftJoin(suppliers, eq(quotationItems.supplierId, suppliers.id))
       .where(eq(quotationItems.quotationId, quotationId));
     
     return results;
