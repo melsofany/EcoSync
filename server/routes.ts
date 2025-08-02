@@ -204,8 +204,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/quotations", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
     try {
-      const validatedData = insertQuotationRequestSchema.parse(req.body);
-      validatedData.createdBy = req.session.user!.id;
+      const userId = req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const validatedData = insertQuotationRequestSchema.parse({
+        ...req.body,
+        createdBy: userId,
+      });
       
       const quotation = await storage.createQuotationRequest(validatedData);
       await logActivity(req, "create_quotation", "quotation", quotation.id, `Created quotation: ${quotation.requestNumber}`);
