@@ -95,17 +95,15 @@ export default function CreatePurchaseOrder() {
     );
   }, [quotations, quotationSearchTerm]);
 
-  // Auto-select quotation if search term matches exactly
+  // Clear search term when quotation is selected
   React.useEffect(() => {
-    if (quotationSearchTerm && quotations) {
-      const exactMatch = quotations.find((q: Quotation) => 
-        q.requestNumber.toLowerCase() === quotationSearchTerm.toLowerCase()
-      );
-      if (exactMatch && exactMatch.id !== selectedQuotationId) {
-        setSelectedQuotationId(exactMatch.id);
+    if (selectedQuotationId && quotations) {
+      const selected = quotations.find((q: Quotation) => q.id === selectedQuotationId);
+      if (selected) {
+        setQuotationSearchTerm("");
       }
     }
-  }, [quotationSearchTerm, quotations, selectedQuotationId]);
+  }, [selectedQuotationId, quotations]);
 
   // Generate automatic PO number
   React.useEffect(() => {
@@ -265,35 +263,41 @@ export default function CreatePurchaseOrder() {
               {/* Quotation Selection */}
               <div className="space-y-2">
                 <Label htmlFor="quotation">طلب التسعير *</Label>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="أدخل رقم طلب التسعير (مثل: REQ00000001)"
-                    value={quotationSearchTerm}
-                    onChange={(e) => setQuotationSearchTerm(e.target.value)}
-                    className="text-right"
-                  />
-                  <Select 
-                    value={selectedQuotationId} 
-                    onValueChange={(value) => {
-                      setSelectedQuotationId(value);
-                      const selected = quotations?.find((q: any) => q.id === value);
-                      if (selected) {
-                        setQuotationSearchTerm(selected.requestNumber);
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="أو اختر من القائمة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredQuotations?.map((quotation: any) => (
-                        <SelectItem key={quotation.id} value={quotation.id}>
-                          {quotation.requestNumber} - {quotation.clientName || "غير محدد"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select 
+                  value={selectedQuotationId} 
+                  onValueChange={setSelectedQuotationId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="اكتب لبحث أو اختر طلب التسعير..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <div className="p-2">
+                      <Input
+                        placeholder="ابحث برقم الطلب أو اسم العميل..."
+                        value={quotationSearchTerm}
+                        onChange={(e) => setQuotationSearchTerm(e.target.value)}
+                        className="text-right mb-2"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    {filteredQuotations?.map((quotation: any) => (
+                      <SelectItem key={quotation.id} value={quotation.id}>
+                        <div className="text-right w-full">
+                          <span className="font-medium">{quotation.requestNumber}</span>
+                          <span className="text-gray-500 ml-2">- {quotation.clientName || "غير محدد"}</span>
+                          <div className="text-xs text-gray-400">
+                            {quotation.requestDate && format(new Date(quotation.requestDate), "dd/MM/yyyy", { locale: ar })}
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    {filteredQuotations?.length === 0 && quotationSearchTerm && (
+                      <div className="p-2 text-center text-gray-500">
+                        لا توجد نتائج للبحث "{quotationSearchTerm}"
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* PO Date */}
