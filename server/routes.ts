@@ -647,8 +647,8 @@ Respond in JSON format:
     }
   });
 
-  // Export routes - only for managers
-  app.get("/api/export/:table", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+  // Export routes - only for IT admins
+  app.get("/api/export/:table", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
     try {
       const { table } = req.params;
       const { format = 'json' } = req.query;

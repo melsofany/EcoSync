@@ -50,11 +50,11 @@ Preferred communication style: Simple, everyday language.
 ## Recent Critical Updates (August 3, 2025)
 
 ### Database Export System (August 3, 2025)
-- **✅ Manager Export Feature**: Added comprehensive database export functionality for managers only
+- **✅ IT Admin Export Feature**: Added comprehensive database export functionality for IT administrators only
 - **✅ Excel Format**: Exports data as .xlsx files using XLSX library for easy viewing in Excel/Google Sheets
 - **✅ Multiple Tables**: Support for exporting quotations, items, purchase orders, clients, suppliers, users, and activity logs
-- **✅ Security**: Export endpoints restricted to manager role with proper authentication and activity logging
-- **✅ Dashboard Integration**: Export buttons integrated into manager dashboard with progress indicators
+- **✅ Security**: Export endpoints restricted to it_admin role with proper authentication and activity logging
+- **✅ Dashboard Integration**: Export buttons integrated into IT admin dashboard with progress indicators
 - **✅ File Naming**: Automatic filename generation with date stamps (e.g., items_2025-08-03.xlsx)
 - **✅ Activity Tracking**: All export operations logged for audit trail with record counts
 

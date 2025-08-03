@@ -337,8 +337,8 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Data Export Section - Only for Managers */}
-      {user?.role === 'manager' && (
+      {/* Data Export Section - Only for IT Admins */}
+      {user?.role === 'it_admin' && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 space-x-reverse">
