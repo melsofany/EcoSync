@@ -24,7 +24,7 @@ interface PreviewData {
   requestNumber: string;
   customRequestNumber: string;
   requestDate: string;
-  responseDate: string;
+  expiryDate: string;
   quantity: number;
   priceToClient: number;
   description: string;
@@ -183,14 +183,11 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           <Alert>
             <Download className="h-4 w-4" />
             <AlertDescription>
-              <strong>الكشف التلقائي للبيانات:</strong>
-              <br />النظام يحدد تلقائياً نوع البيانات في كل عمود بناءً على المحتوى:
-              <br />• اسم العميل: EDC، ABC، XYZ إلخ
-              <br />• رقم الطلب: 25R009802، 25R009808 إلخ
-              <br />• رقم القطعة: الأرقام الطويلة مثل 2503244
-              <br />• رقم البند: الأرقام مع نقاط مثل 1854.002.CARIER.7519
-              <br />• التوصيف: النصوص التي تحتوي على "P/N"
-              <br />• التواريخ: يتم تحويلها من تنسيق Excel تلقائياً
+              <strong>هيكل ملف Excel المطلوب (من اليمين لليسار):</strong>
+              <br />B: وحدة القياس | C: رقم البند (LINE ITEM) | D: رقم القطعة | E: التوصيف | F: رقم الطلب
+              <br />G: تاريخ الطلب | H: الكمية | I: السعر للعميل | J: تاريخ انتهاء العرض | K: اسم العميل
+              <br /><em>مثال: Each | 1854.002.CARIER.7519 | 2503244 | COMPLETE PC BOARD | 25R009802 | 2025-07-26 | 100 | 1500 | 2025-08-26 | EDC</em>
+              <br /><strong>ملاحظة:</strong> معرف البند P- يتم توليده تلقائياً بعد مطابقة البنود بالذكاء الاصطناعي
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -241,13 +238,13 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                     <th className="px-3 py-2 text-right">اسم العميل</th>
                     <th className="px-3 py-2 text-right">رقم الطلب</th>
                     <th className="px-3 py-2 text-right">تاريخ الطلب</th>
-                    <th className="px-3 py-2 text-right">تاريخ الرد</th>
+                    <th className="px-3 py-2 text-right">تاريخ انتهاء العرض</th>
                     <th className="px-3 py-2 text-right">التوصيف</th>
                     <th className="px-3 py-2 text-right">رقم القطعة</th>
                     <th className="px-3 py-2 text-right">رقم البند</th>
                     <th className="px-3 py-2 text-right">الكمية</th>
+                    <th className="px-3 py-2 text-right">السعر</th>
                     <th className="px-3 py-2 text-right">وحدة القياس</th>
-                    <th className="px-3 py-2 text-right">رقم السطر</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -259,7 +256,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                         {row.customRequestNumber}
                       </td>
                       <td className="px-3 py-2" dir="ltr">{row.requestDate}</td>
-                      <td className="px-3 py-2" dir="ltr">{row.responseDate}</td>
+                      <td className="px-3 py-2" dir="ltr">{row.expiryDate}</td>
                       <td className="px-3 py-2 max-w-xs truncate" title={row.description}>
                         {row.description}
                       </td>
@@ -270,8 +267,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                         {row.lineItem}
                       </td>
                       <td className="px-3 py-2">{row.quantity}</td>
+                      <td className="px-3 py-2 font-semibold text-green-600">
+                        {row.priceToClient}
+                      </td>
                       <td className="px-3 py-2">{row.unit}</td>
-                      <td className="px-3 py-2">{row.lineNumber}</td>
                     </tr>
                   ))}
                 </tbody>

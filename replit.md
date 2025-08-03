@@ -58,18 +58,19 @@ Preferred communication style: Simple, everyday language.
 - **✅ File Naming**: Automatic filename generation with date stamps (e.g., items_2025-08-03.xlsx)
 - **✅ Activity Tracking**: All export operations logged for audit trail with record counts
 
-### Excel Import System (August 3, 2025)
+### Excel Import System (August 3, 2025) - Final Column Structure
 - **✅ IT Admin Import Feature**: Added Excel import functionality for quotation requests, restricted to IT administrators only
 - **✅ File Upload**: Support for .xlsx and .xls file formats with comprehensive file validation
 - **✅ Data Preview**: Shows imported data under actual database column headers for verification before import
-- **✅ Column Mapping**: Maps Excel columns by position - B(UOM), C(LINE ITEM), D(PART NO), E(Description), F(Request Number), G(Request Date), H(Quantity), I(Client Price), J(Expiry Date), K(Client Name)
+- **✅ Final Column Mapping**: Correct RTL Excel structure - B(UOM), C(LINE ITEM), D(PART NO), E(DESCRIPTION), F(RFQ NO), G(RFQ DATE), H(QTY), I(CLIENT PRICE), J(EXPIRY DATE), K(CLIENT NAME)
 - **✅ Approval Workflow**: Two-step process with preview and confirmation to ensure data accuracy
 - **✅ Error Handling**: Comprehensive error reporting for failed imports with detailed error messages
 - **✅ Automatic Client Creation**: Creates new clients automatically if they don't exist in the database
 - **✅ Item Management**: Creates items and links them to quotations with proper categorization
 - **✅ Activity Logging**: All import operations tracked with detailed success/error statistics
 - **✅ Client Pricing Integration**: Imports client pricing data from column I for immediate quotation pricing
-- **✅ P-Number Generation**: Auto-generates P-format item numbers using AI matching for duplicate detection
+- **✅ P-Number Generation**: Auto-generates P-format item numbers, with AI matching for duplicate detection planned
+- **✅ RTL Support**: Excel sheet direction from right to left as specified by user
 
 ## Recent Critical Updates (August 3, 2025)
 

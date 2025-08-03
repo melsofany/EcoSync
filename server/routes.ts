@@ -717,92 +717,49 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
-      // Debug the actual Excel structure by looking at raw data
-      console.log('Raw Excel data sample:', excelData.slice(0, 2));
-      
+      // Map Excel columns according to user specification (RTL direction)
+      // B=UOM, C=LINE ITEM, D=PART NO, E=DESCRIPTION, F=RFQ NO, G=RFQ DATE, H=QTY, I=CLIENT PRICE, J=EXPIRY DATE, K=CLIENT NAME
       const mappedData = excelData.map((row: any, index: number) => {
         // Get all keys to access by position
         const rowKeys = Object.keys(row);
-        console.log(`Row ${index + 1} keys:`, rowKeys);
-        console.log(`Row ${index + 1} values:`, rowKeys.map(key => row[key]));
         
-        // Let's try to understand the actual structure from the Excel file
-        // Based on the images we saw earlier, the correct order should be:
-        // Col 1: Empty/Status, Col 2: Client (EDC), Col 3: Response Date, Col 4: Quantity, Col 5: Request Date, etc.
-        
-        const col1 = rowKeys.length > 0 ? row[rowKeys[0]] || '' : '';
-        const col2 = rowKeys.length > 1 ? row[rowKeys[1]] || '' : '';
-        const col3 = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';
-        const col4 = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';
-        const col5 = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';
-        const col6 = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';
-        const col7 = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';
-        const col8 = rowKeys.length > 7 ? row[rowKeys[7]] || '' : '';
-        const col9 = rowKeys.length > 8 ? row[rowKeys[8]] || '' : '';
-        const col10 = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';
-        
-        // Try to identify which column contains what based on data patterns
-        let clientName = 'غير محدد';
-        let sourceFile = '';
-        let partNumber = '';
-        let lineItem = '';
-        let quantity = 0;
-        let description = '';
-        let unit = 'Each';
-        let requestDate = '';
-        
-        // Look for patterns to identify correct columns
-        for (let i = 0; i < rowKeys.length; i++) {
-          const value = row[rowKeys[i]];
+        // Map columns correctly according to user specification
+        const unit = rowKeys.length > 1 ? row[rowKeys[1]] || 'Each' : 'Each';              // B: UOM (الوحدة)
+        const lineItem = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                   // C: LINE ITEM
+        const partNumber = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';                 // D: PART NO
+        const description = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';                // E: DESCRIPTION (التوصيف)
+        const rfqNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                  // F: RFQ NO (رقم الطلب)
+        const rfqDate = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                    // G: RFQ DATE (تاريخ الطلب)
+        const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // H: QTY (الكمية)
+        const clientPrice = rowKeys.length > 8 ? parseFloat(row[rowKeys[8]]) || 0 : 0;      // I: CLIENT PRICE (السعر الخاص بالعميل)
+        const expiryDate = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // J: EXPIRY DATE (تاريخ انتهاء العرض)
+        const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // K: CLIENT NAME (اسم العميل)
+
+        // Format dates properly (convert Excel serial dates if needed)
+        const formatDate = (dateValue: any) => {
+          if (!dateValue) return '';
           
-          // Look for client names (EDC pattern)
-          if (typeof value === 'string' && value === 'EDC') {
-            clientName = value;
-          }
-          
-          // Look for request numbers (25R pattern)
-          if (typeof value === 'string' && value.match(/^25R\d+$/)) {
-            sourceFile = value;
-          }
-          
-          // Look for part numbers (numeric values that look like part numbers)
-          if (typeof value === 'string' && value.match(/^\d{6,}$/)) {
-            partNumber = value;
-          }
-          
-          // Look for line items (contains dots and letters)
-          if (typeof value === 'string' && value.match(/\d+\.\d+\.[A-Z]+\.\d+/)) {
-            lineItem = value;
-          }
-          
-          // Look for quantities (small numbers)
-          if (typeof value === 'number' && value > 0 && value < 1000) {
-            quantity = value;
-          }
-          
-          // Look for descriptions (long text with P/N)
-          if (typeof value === 'string' && value.includes('P/N')) {
-            description = value;
-          }
-          
-          // Look for dates (convert Excel serial dates)
-          if (typeof value === 'number' && value > 40000 && value < 50000) {
+          // If it's a number (Excel serial date), convert it
+          if (typeof dateValue === 'number') {
             const excelEpoch = new Date(1900, 0, 1);
-            const jsDate = new Date(excelEpoch.getTime() + (value - 2) * 24 * 60 * 60 * 1000);
-            requestDate = jsDate.toISOString().split('T')[0];
+            const jsDate = new Date(excelEpoch.getTime() + (dateValue - 2) * 24 * 60 * 60 * 1000);
+            return jsDate.toISOString().split('T')[0];
           }
-        }
+          
+          // If it's already a string, return as is
+          return dateValue.toString();
+        };
 
         return {
           rowIndex: index + 1,
-          // Database fields mapping using pattern recognition
-          clientName: clientName,
-          requestNumber: sourceFile || `REQ-${Date.now()}-${index + 1}`,
-          customRequestNumber: sourceFile,
-          requestDate: requestDate || '',
-          responseDate: '', // No response date in this format
+          // Database fields mapping according to specification
+          clientName: clientName || 'غير محدد',
+          requestNumber: rfqNumber || `REQ-${Date.now()}-${index + 1}`,
+          customRequestNumber: rfqNumber,
+          requestDate: formatDate(rfqDate),
+          expiryDate: formatDate(expiryDate),
           quantity: quantity,
-          priceToClient: 0, // No price in this format
+          priceToClient: clientPrice,
           description: description,
           partNumber: partNumber,
           lineItem: lineItem,
@@ -820,12 +777,16 @@ Respond in JSON format:
         previewData: mappedData,
         totalRows: mappedData.length,
         mapping: {
-          'تلقائي': 'تم اكتشاف البيانات تلقائياً باستخدام التعرف على الأنماط',
-          'EDC': 'اسم العميل',
-          '25R*': 'رقم الطلب',
-          'P/N': 'التوصيف',
-          'أرقام': 'رقم القطعة وأرقام البنود',
-          'تواريخ': 'تم تحويل التواريخ من Excel'
+          'B': 'وحدة القياس (UOM)',
+          'C': 'رقم البند (LINE ITEM)',
+          'D': 'رقم القطعة (PART NO)',
+          'E': 'التوصيف (DESCRIPTION)',
+          'F': 'رقم الطلب (RFQ NO)',
+          'G': 'تاريخ الطلب (RFQ DATE)',
+          'H': 'الكمية (QTY)',
+          'I': 'السعر للعميل (CLIENT PRICE)',
+          'J': 'تاريخ انتهاء العرض (EXPIRY DATE)',
+          'K': 'اسم العميل (CLIENT NAME)'
         }
       });
     } catch (error) {
@@ -864,7 +825,7 @@ Respond in JSON format:
           const quotationData = {
             clientId: client?.id || '',
             requestDate: row.requestDate,
-            expiryDate: row.responseDate, // Response Date as expiry
+            expiryDate: row.expiryDate,
             customRequestNumber: row.customRequestNumber,
             status: row.status as any,
             createdBy: req.session.user!.id,
@@ -888,7 +849,7 @@ Respond in JSON format:
 
             const item = await storage.createItem(itemData);
 
-            // Link item to quotation
+            // Link item to quotation with price
             await storage.addItemToQuotation(quotation.id, {
               itemId: item.id,
               quantity: row.quantity,
