@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { hasRole } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import NewUserModal from "@/components/modals/NewUserModal";
+import SimpleUserModal from "@/components/modals/SimpleUserModal";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { 
   Users, 
@@ -685,7 +685,7 @@ export default function Admin() {
         </CardContent>
       </Card>
 
-      <NewUserModal
+      <SimpleUserModal
         isOpen={isNewUserModalOpen}
         onClose={() => setIsNewUserModalOpen(false)}
       />
