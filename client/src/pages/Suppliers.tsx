@@ -58,21 +58,24 @@ export default function Suppliers() {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
     },
     onError: (error: any) => {
-      console.log("Delete supplier error object:", error);
-      console.log("Error details:", error?.details);
-      console.log("Error message:", error?.message);
-      
       let errorMessage = "حدث خطأ أثناء حذف المورد";
       
-      // Try different ways to get the Arabic error message
+      // Check for Arabic details first
       if (error?.details) {
         errorMessage = error.details;
-      } else if (error?.message?.includes("لا يمكن حذف المورد")) {
+      } 
+      // Check for Arabic message
+      else if (error?.serverError?.details) {
+        errorMessage = error.serverError.details;
+      }
+      // Check if it's a constraint error and provide Arabic message
+      else if (error?.message?.includes("Cannot delete supplier") || 
+               error?.message?.includes("pricing record")) {
         errorMessage = "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.";
-      } else if (error?.message?.includes("Cannot delete supplier")) {
+      }
+      // Check for Arabic message in error
+      else if (error?.message?.includes("لا يمكن حذف المورد")) {
         errorMessage = "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.";
-      } else if (error?.message && !error.message.includes("400") && !error.message.includes("BAD REQUEST")) {
-        errorMessage = error.message;
       }
       
       toast({

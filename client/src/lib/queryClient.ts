@@ -2,37 +2,19 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    let errorMessage = res.statusText;
-    let errorDetails = null;
     try {
-      // Clone the response to avoid "body stream already read" error
-      const responseClone = res.clone();
-      const errorData = await responseClone.json();
-      errorMessage = errorData.message || res.statusText;
-      errorDetails = errorData.details;
-      const error = new Error(errorMessage);
+      // Try to parse JSON response first
+      const errorData = await res.json();
+      const error = new Error(errorData.message || res.statusText);
       (error as any).status = res.status;
-      (error as any).error = errorData.error;
-      (error as any).details = errorDetails;
-      (error as any).existingItem = errorData.existingItem;
-      (error as any).response = res;
-      console.log("Error object created:", error, "Details:", errorDetails);
+      (error as any).details = errorData.details;
+      (error as any).serverError = errorData;
       throw error;
     } catch (parseError) {
-      // If JSON parsing fails, try to get text
-      try {
-        const responseClone = res.clone();
-        const text = await responseClone.text();
-        const error = new Error(`${res.status}: ${text || res.statusText}`);
-        (error as any).response = res;
-        console.log("Text parse error object:", error);
-        throw error;
-      } catch (textError) {
-        const error = new Error(`${res.status}: ${res.statusText}`);
-        (error as any).response = res;
-        console.log("Final fallback error object:", error);
-        throw error;
-      }
+      // If JSON parsing fails, create simple error
+      const error = new Error(`HTTP ${res.status}: ${res.statusText}`);
+      (error as any).status = res.status;
+      throw error;
     }
   }
 }
