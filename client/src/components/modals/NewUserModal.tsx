@@ -216,7 +216,10 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                          const nextElement = e.currentTarget.nextElementSibling;
+                          if (nextElement) {
+                            nextElement.classList.remove('hidden');
+                          }
                         }}
                       />
                     ) : null}
