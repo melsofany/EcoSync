@@ -63,8 +63,14 @@ export default function PurchaseOrders() {
 
   const getQuotationNumber = (quotationId: string) => {
     const quotation = quotations?.find((q: any) => q.id === quotationId);
-    return quotation?.requestNumber || "غير محدد";
+    return quotation?.customRequestNumber || quotation?.requestNumber || "غير محدد";
   };
+
+  // Get purchase order items
+  const { data: poItems } = useQuery({
+    queryKey: ["/api/purchase-orders", selectedPO?.id, "items"],
+    enabled: !!selectedPO?.id,
+  });
 
   // Handle viewing purchase order details
   const handleViewDetails = (po: any) => {
@@ -376,6 +382,74 @@ export default function PurchaseOrders() {
                 </div>
               </div>
               
+              {/* Purchase Order Items */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-4">أصناف أمر الشراء</h3>
+                {poItems && poItems.length > 0 ? (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-gray-50">
+                          <TableHead className="text-right">الوصف</TableHead>
+                          <TableHead className="text-right">رقم القطعة</TableHead>
+                          <TableHead className="text-right">LINE ITEM</TableHead>
+                          <TableHead className="text-right">الكمية</TableHead>
+                          <TableHead className="text-right">سعر الوحدة</TableHead>
+                          <TableHead className="text-right">المجموع</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {poItems.map((item: any, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell className="max-w-xs">
+                              <div className="text-sm">
+                                {item.description?.split('\n').map((line: string, lineIndex: number) => (
+                                  <div key={lineIndex} className="mb-1">
+                                    {line.trim()}
+                                  </div>
+                                ))}
+                              </div>
+                              {item.lineItem && (
+                                <div className="text-xs text-blue-600 mt-1 font-mono">
+                                  LINE: {item.lineItem}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm font-mono">
+                              {item.kItemId || 'غير محدد'}
+                            </TableCell>
+                            <TableCell className="text-xs font-mono text-blue-600">
+                              {item.lineItem || 'غير محدد'}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              {Number(item.quantity).toLocaleString('ar-EG')}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {formatCurrency(item.unitPrice)}
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-green-600">
+                              {formatCurrency(item.totalPrice)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <div className="bg-gray-50 px-4 py-3 border-t">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold">إجمالي أمر الشراء:</span>
+                        <span className="font-bold text-xl text-green-600">
+                          {formatCurrency(selectedPO.totalValue)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    لا توجد أصناف لهذا الأمر
+                  </div>
+                )}
+              </div>
+
               {selectedPO.notes && (
                 <div>
                   <label className="text-sm font-medium text-gray-600">ملاحظات</label>
