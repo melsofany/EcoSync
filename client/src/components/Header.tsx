@@ -47,7 +47,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               نظام إدارة التوريدات
             </h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1 hidden sm:block">
-              مرحباً بك في نظام الخديوي للتوريدات العمومية والمقاولات
+              مرحباً بك في نظام قرطبة للتوريدات
             </p>
           </div>
         </div>

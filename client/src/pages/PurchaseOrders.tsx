@@ -93,7 +93,7 @@ export default function PurchaseOrders() {
           <p><strong>حالة التسليم:</strong> ${po.deliveryStatus ? 'تم التسليم' : 'لم يتم التسليم'}</p>
         </div>
         <div style="margin-top: 30px; text-align: center; color: #666;">
-          <p>الخديوي للتوريدات العمومية والمقاولات</p>
+          <p>قرطبة للتوريدات</p>
           <p>تم الطباعة في: ${new Date().toLocaleDateString('ar-EG')}</p>
         </div>
       </div>

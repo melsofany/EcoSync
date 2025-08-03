@@ -120,8 +120,8 @@ export default function Sidebar({ isOpen }: SidebarProps) {
           </div>
           {isOpen && (
             <div>
-              <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام الخديوي</h2>
-              <p className="text-xs text-gray-500">للتوريدات والمقاولات</p>
+              <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام قرطبة</h2>
+              <p className="text-xs text-gray-500">للتوريدات</p>
             </div>
           )}
         </div>

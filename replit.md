@@ -2,7 +2,7 @@
 
 ## Overview
 
-A comprehensive business management system for قرطبة للتوريدات. This web application manages quotation requests, item cataloging, purchase orders, and administrative operations with role-based access control. The system integrates AI-powered item analysis through DeepSeek API to identify duplicate items and enhance data quality. Built as a demand-based procurement system without inventory management.
+A comprehensive business management system for قرطبة للتوريدات (Qurtoba Supplies). This web application manages quotation requests, item cataloging, purchase orders, and administrative operations with role-based access control. The system integrates AI-powered item analysis through DeepSeek API to identify duplicate items and enhance data quality. Built as a demand-based procurement system without inventory management.
 
 ## User Preferences
 

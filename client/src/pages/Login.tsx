@@ -125,7 +125,7 @@ export default function Login() {
           </div>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            النسخة 1.0 - جميع الحقوق محفوظة © 2024
+            النسخة 1.0 - جميع الحقوق محفوظة لقرطبة للتوريدات © 2025
           </div>
         </CardContent>
       </Card>
