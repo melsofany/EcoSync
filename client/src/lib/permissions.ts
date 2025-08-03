@@ -46,9 +46,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, RolePermissions> = {
   data_entry: {
     quotations: { read: true, create: true, update: true, delete: false, export: false, import: false },
     items: { read: true, create: true, update: true, delete: false, export: false, import: false },
-    purchaseOrders: { read: true, create: true, update: true, delete: false, export: false },
-    clients: { read: true, create: true, update: true, delete: false, export: false },
-    suppliers: { read: true, create: true, update: true, delete: false, export: false },
+    purchaseOrders: { read: false, create: false, update: false, delete: false, export: false },
+    clients: { read: false, create: false, update: false, delete: false, export: false },
+    suppliers: { read: false, create: false, update: false, delete: false, export: false },
     users: { read: false, create: false, update: false, delete: false },
     reports: { read: true, create: false, update: false, delete: false, export: false },
     systemSettings: { read: false, create: false, update: false, delete: false }

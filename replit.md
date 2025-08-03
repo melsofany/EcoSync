@@ -2,7 +2,7 @@
 
 ## Overview
 
-A comprehensive web application for قرطبة للتوريدات (Qurtoba Supplies) managing quotation requests, item cataloging, purchase orders, and administrative operations. It features role-based access control and AI-powered item analysis for duplicate detection. The system is designed as a demand-based procurement system without inventory management, aiming to streamline supply chain processes and improve data quality.
+A comprehensive web application for قرطبة للتوريدات (Qurtoba Supplies) managing quotation requests, item cataloging, purchase orders, and administrative operations. It features role-based access control, real-time notification system, and AI-powered item analysis for duplicate detection. The system is designed as a demand-based procurement system without inventory management, aiming to streamline supply chain processes and improve data quality.
 
 ## User Preferences
 
@@ -65,6 +65,14 @@ Preferred communication style: Simple, everyday language.
 - **XLSX**: For Excel file operations (import/export).
 
 ## Recent Updates
+
+### Real-time Notification System (2025-08-03)
+- **Complete Notification Infrastructure**: Database table, API endpoints, and interactive UI components
+- **Interactive Bell Icon**: Real-time unread count with automatic polling every 30 seconds
+- **Rich Notification Panel**: Dropdown interface with color-coded notifications, read/unread status, and action buttons
+- **Welcome Notifications**: Automatic welcome message on user login with personalized greeting
+- **Admin Notifications**: System-wide announcements for permission updates and important changes
+- **Role-based Permissions Update**: Data entry employees now limited to quotation entry, item management, and basic reports only
 
 ### Enhanced Excel Import System (2025-08-03)
 - **Complete Data Visibility**: Full scrollable preview showing ALL imported records (not just first 5) with vertical and horizontal scrollbars
