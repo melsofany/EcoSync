@@ -708,7 +708,9 @@ Respond in JSON format:
       res.json({ message: "Supplier deleted successfully" });
     } catch (error: any) {
       console.error("Delete supplier error:", error);
+      console.log("Full error details:", JSON.stringify(error, null, 2));
       if (error.message && error.message.includes("Cannot delete supplier")) {
+        console.log("Sending Arabic error response for supplier");
         return res.status(400).json({ 
           message: "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.", 
           details: "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.",

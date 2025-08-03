@@ -58,6 +58,11 @@ export default function Suppliers() {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
     },
     onError: (error: any) => {
+      console.log("Frontend delete supplier error:", error);
+      console.log("Error message:", error?.message);
+      console.log("Error details:", error?.details);
+      console.log("Server error:", error?.serverError);
+      
       // Use the message directly from server since it's already in Arabic
       const errorMessage = error?.message || "حدث خطأ أثناء حذف المورد";
       
