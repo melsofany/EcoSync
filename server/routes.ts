@@ -745,77 +745,124 @@ Respond in JSON format:
 
       console.log(`Filtered ${excelData.length} rows down to ${filteredData.length} data rows`);
 
-      // Map Excel columns according to user specification (RTL direction)
-      // B=UOM, C=LINE ITEM, D=PART NO, E=DESCRIPTION, F=RFQ NO, G=RFQ DATE, H=QTY, I=CLIENT PRICE, J=EXPIRY DATE, K=CLIENT NAME
+      // تحليل ذكي للبيانات وربطها بقاعدة البيانات
       const mappedData = filteredData.map((row: any, index: number) => {
-        // Get all keys to access by position
         const rowKeys = Object.keys(row);
-        // console.log(`Row ${index} keys:`, rowKeys, 'Values:', Object.values(row));
+        const rowValues = Object.values(row);
         
-        // الهيكل الفعلي المُكتشف من اللوج - الملف الحالي لا يحتوي على عمود السعر:
-        // [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Response Date, Done]
-        // ليس [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Unnamed: 8, Response Date, العميل, Done]
+        // تحليل البيانات وتحديد النوع لكل عمود
+        const analyzedData = {
+          lineNumber: 0,
+          unit: 'Each',
+          lineItem: '',
+          partNumber: '',
+          description: '',
+          rfqNumber: '',
+          rfqDate: '',
+          quantity: 0,
+          clientPrice: 0,
+          expiryDate: '',
+          clientName: 'غير محدد'
+        };
         
-        // تحديد الهيكل بناءً على عدد الأعمدة الفعلي
-        if (rowKeys.length === 10) {
-          // الهيكل: [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Response Date, Done]
-          var lineNumber = row[rowKeys[0]] || 0;
-          var unit = row[rowKeys[1]] || 'Each';
-          var lineItem = row[rowKeys[2]] || '';
-          var partNumber = row[rowKeys[3]] || '';
-          var description = row[rowKeys[4]] || '';
-          var rfqNumber = row[rowKeys[5]] || '';
-          var rfqDate = row[rowKeys[6]] || '';
-          var quantity = parseInt(row[rowKeys[7]]) || 0;
-          var expiryDate = row[rowKeys[8]] || '';  // Response Date
-          var status = row[rowKeys[9]] || '';      // Done
-          var clientName = 'غير محدد';             // ليس موجود في هذا الملف
-          var priceColumn = null;                  // ليس موجود في هذا الملف
-        } else if (rowKeys.length === 12) {
-          // الهيكل: [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Unnamed: 8, Response Date, العميل, Done]
-          var lineNumber = row[rowKeys[0]] || 0;
-          var unit = row[rowKeys[1]] || 'Each';
-          var lineItem = row[rowKeys[2]] || '';
-          var partNumber = row[rowKeys[3]] || '';
-          var description = row[rowKeys[4]] || '';
-          var rfqNumber = row[rowKeys[5]] || '';
-          var rfqDate = row[rowKeys[6]] || '';
-          var quantity = parseInt(row[rowKeys[7]]) || 0;
-          var priceColumn = row[rowKeys[8]];       // Unnamed: 8 (السعر)
-          var expiryDate = row[rowKeys[9]] || '';  // Response Date
-          var clientName = row[rowKeys[10]] || ''; // العميل
-          var status = row[rowKeys[11]] || '';     // Done
-        } else {
-          // هيكل غير معروف - استخدم القيم الافتراضية
-          var lineNumber = 0;
-          var unit = 'Each';
-          var lineItem = '';
-          var partNumber = '';
-          var description = '';
-          var rfqNumber = '';
-          var rfqDate = '';
-          var quantity = 0;
-          var priceColumn = null;
-          var expiryDate = '';
-          var clientName = 'غير محدد';
-          var status = '';
-        }
-        
-        // استخراج السعر - فقط إذا كان عمود السعر موجود وصحيح
-        let clientPrice = 0;
-        
-        if (priceColumn !== null && priceColumn !== undefined && priceColumn !== '' && 
-            priceColumn !== 'NaN' && !isNaN(parseFloat(priceColumn))) {
-          const parsedPrice = parseFloat(priceColumn);
-          // سعر معقول بين 1 و 50000 وليس تاريخ Excel أو سنة
-          if (parsedPrice > 0 && parsedPrice <= 50000 && parsedPrice < 2000) {
-            clientPrice = parsedPrice;
+        // فحص كل عمود وتحديد نوعه بناءً على المحتوى
+        rowKeys.forEach((key, colIndex) => {
+          const value = row[key];
+          const strValue = String(value || '').trim();
+          
+          // تخطي القيم الفارغة أو NaN
+          if (!strValue || strValue === 'nan' || strValue === 'NaN') return;
+          
+          // رقم الصف (أرقام صغيرة 1-1000)
+          if (key.toLowerCase().includes('line') || key.toLowerCase().includes('no')) {
+            const num = parseInt(strValue);
+            if (!isNaN(num) && num > 0 && num <= 1000) {
+              analyzedData.lineNumber = num;
+            }
           }
-        }
+          
+          // وحدة القياس (Each, PC, Meter, etc.)
+          else if (key.toLowerCase().includes('uom') || 
+                   ['each', 'pc', 'meter', 'pcs', 'piece', 'قطعة', 'متر'].includes(strValue.toLowerCase())) {
+            analyzedData.unit = strValue;
+          }
+          
+          // رقم البند (يحتوي على نقاط وأرقام مثل 1854.002.CARIER.7519)
+          else if (key.toLowerCase().includes('line item') || key.toLowerCase().includes('item') ||
+                   /^\d{4}\.\d{3}\.[A-Z]+\.\d{4}$/.test(strValue)) {
+            analyzedData.lineItem = strValue;
+          }
+          
+          // رقم القطعة (أرقام وحروف)
+          else if (key.toLowerCase().includes('part') || key.toLowerCase().includes('p/n')) {
+            if (!/^\d{4}\.\d{3}\.[A-Z]+\.\d{4}$/.test(strValue)) { // ليس رقم بند
+              analyzedData.partNumber = strValue;
+            }
+          }
+          
+          // التوصيف (نص طويل يحتوي على تفاصيل)
+          else if (key.toLowerCase().includes('description') || key.toLowerCase().includes('desc') ||
+                   strValue.length > 50) {
+            analyzedData.description = strValue;
+          }
+          
+          // رقم الطلب/RFQ (يبدأ بأرقام وحروف مثل 25R009802)
+          else if (key.toLowerCase().includes('source') || key.toLowerCase().includes('rfq') ||
+                   /^[0-9]{2}[A-Z]\d{6}$/.test(strValue)) {
+            analyzedData.rfqNumber = strValue;
+          }
+          
+          // التواريخ (تحتوي على 2025 أو تنسيق تاريخ)
+          else if (key.toLowerCase().includes('date') || 
+                   strValue.includes('2025') || strValue.includes('-')) {
+            if (key.toLowerCase().includes('request')) {
+              analyzedData.rfqDate = strValue;
+            } else if (key.toLowerCase().includes('response') || key.toLowerCase().includes('expiry')) {
+              analyzedData.expiryDate = strValue;
+            }
+          }
+          
+          // الكمية (أرقام صغيرة 1-1000 وليست أرقام التواريخ)
+          else if (key.toLowerCase().includes('quantity') || key.toLowerCase().includes('qty')) {
+            const num = parseInt(strValue);
+            if (!isNaN(num) && num > 0 && num <= 1000) {
+              analyzedData.quantity = num;
+            }
+          }
+          
+          // السعر (أرقام متوسطة 1-50000 وليست تواريخ)
+          else if (key.toLowerCase().includes('price') || key.toLowerCase().includes('unnamed: 8')) {
+            const num = parseFloat(strValue);
+            if (!isNaN(num) && num > 0 && num <= 50000 && num < 2000) {
+              analyzedData.clientPrice = num;
+            }
+          }
+          
+          // اسم العميل (نص عربي أو انجليزي)
+          else if (key.includes('العميل') || key.toLowerCase().includes('client')) {
+            analyzedData.clientName = strValue;
+          }
+          
+          // إذا لم نحدد العمود، جرب التخمين من القيمة
+          else {
+            const num = parseFloat(strValue);
+            
+            // أرقام صغيرة = كمية محتملة
+            if (!isNaN(num) && num > 0 && num <= 100 && Number.isInteger(num) && !analyzedData.quantity) {
+              analyzedData.quantity = num;
+            }
+            // أرقام متوسطة = سعر محتمل
+            else if (!isNaN(num) && num > 50 && num <= 10000 && !analyzedData.clientPrice) {
+              analyzedData.clientPrice = num;
+            }
+            // نص طويل = توصيف محتمل
+            else if (strValue.length > 30 && !analyzedData.description) {
+              analyzedData.description = strValue;
+            }
+          }
+        });
         
-        // console.log(`Row ${index} - Price: ${clientPrice}, Columns: ${rowKeys.length}, LINE ITEM: ${lineItem}`);
-        
-        console.log(`Row ${index} - Final price: ${clientPrice}, LINE ITEM: ${lineItem}`);
+        console.log(`Row ${index}: LINE ITEM: ${analyzedData.lineItem}, PRICE: ${analyzedData.clientPrice}, QTY: ${analyzedData.quantity}`);
 
         // Format dates properly (convert Excel serial dates if needed)
         const formatDate = (dateValue: any) => {
@@ -834,22 +881,18 @@ Respond in JSON format:
 
         return {
           rowIndex: index + 1,
-          // Database fields mapping according to actual data structure
-          clientName: clientName && clientName !== 'done' ? clientName : 'غير محدد',
-          requestNumber: rfqNumber || `REQ-${Date.now()}-${index + 1}`,
-          customRequestNumber: rfqNumber,
-          requestDate: formatDate(rfqDate),
-          expiryDate: formatDate(expiryDate),
-          quantity: quantity,
-          priceToClient: clientPrice,
-          description: description,
-          partNumber: partNumber,
-          lineItem: lineItem,
-          unit: unit,
-          lineNumber: lineNumber || (index + 1),
-          status: 'pending',
-          // Excel original data for reference
-          excelData: row
+          // ربط البيانات المُحللة بحقول قاعدة البيانات
+          clientName: analyzedData.clientName || 'غير محدد',
+          requestNumber: analyzedData.rfqNumber || `REQ-${Date.now()}-${index + 1}`,
+          customRequestNumber: analyzedData.rfqNumber,
+          requestDate: formatDate(analyzedData.rfqDate),
+          expiryDate: formatDate(analyzedData.expiryDate),
+          description: analyzedData.description || 'بدون توصيف',
+          partNumber: analyzedData.partNumber || '',
+          lineItem: analyzedData.lineItem || '',
+          quantity: analyzedData.quantity || 0,
+          unit: analyzedData.unit || 'Each',
+          priceToClient: analyzedData.clientPrice || 0,
         };
       });
 
