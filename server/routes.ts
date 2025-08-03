@@ -778,114 +778,75 @@ Respond in JSON format:
           clientName: 'غير محدد'
         };
         
-        // فحص كل عمود وتحديد نوعه بناءً على المحتوى والفهرس
+        // قراءة البيانات حسب الهيكل المحدد من المستخدم
+        // A=Line No(0), B=UOM(1), C=LINE ITEM(2), D=PART NO(3), E=Description(4), F=RFQ(5), G=RequestDate(6), H=Qty(7), I=Price(8), J=ExpiryDate(9), K=Client(10)
         rowKeys.forEach((key, colIndex) => {
           const value = row[key];
           const strValue = String(value || '').trim();
           
-          // console.log(`  Column ${colIndex} (${key}): ${strValue}`);
-          
           // تخطي القيم الفارغة أو NaN
           if (!strValue || strValue === 'nan' || strValue === 'NaN') return;
           
-          // رقم الصف (أرقام صغيرة 1-1000)
-          if (key.toLowerCase().includes('line') || key.toLowerCase().includes('no')) {
-            const num = parseInt(strValue);
-            if (!isNaN(num) && num > 0 && num <= 1000) {
-              analyzedData.lineNumber = num;
-            }
-          }
-          
-          // وحدة القياس (Each, PC, Meter, etc.)
-          else if (key.toLowerCase().includes('uom') || 
-                   ['each', 'pc', 'meter', 'pcs', 'piece', 'قطعة', 'متر'].includes(strValue.toLowerCase())) {
-            analyzedData.unit = strValue;
-          }
-          
-          // رقم البند - العمود 2 أو بناءً على الاسم
-          else if (colIndex === 2 || key.toLowerCase().includes('line item') || key.toLowerCase().includes('item')) {
-            analyzedData.lineItem = strValue;
-          }
-          
-          // رقم القطعة - العمود 3 أو بناءً على الاسم
-          else if (colIndex === 3 || key.toLowerCase().includes('part') || key.toLowerCase().includes('p/n')) {
-            if (!/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue)) { // ليس رقم بند
-              analyzedData.partNumber = strValue;
-            }
-          }
-          
-          // التوصيف - العمود 4 أو بناءً على المحتوى
-          else if (colIndex === 4 || key.toLowerCase().includes('description') || key.toLowerCase().includes('desc') ||
-                   strValue.length > 50) {
-            analyzedData.description = strValue;
-          }
-          
-          // رقم الطلب/RFQ - العمود 5 أو بناءً على النمط
-          else if (colIndex === 5 || key.toLowerCase().includes('source') || key.toLowerCase().includes('rfq') ||
-                   /^[0-9]{2}[A-Z]\d{6}$/.test(strValue)) {
-            analyzedData.rfqNumber = strValue;
-          }
-          
-          // التواريخ (Excel serial numbers أو تنسيق تاريخ)
-          else if (key.toLowerCase().includes('date')) {
-            if (key.toLowerCase().includes('request')) {
-              analyzedData.rfqDate = strValue;
-            } else if (key.toLowerCase().includes('response') || key.toLowerCase().includes('expiry')) {
-              analyzedData.expiryDate = strValue;
-            }
-          }
-          // أرقام التواريخ التسلسلية في Excel (45000+)
-          else if (!isNaN(parseFloat(strValue)) && parseFloat(strValue) > 40000 && parseFloat(strValue) < 50000) {
-            if (!analyzedData.rfqDate) {
-              analyzedData.rfqDate = strValue;
-            } else if (!analyzedData.expiryDate) {
-              analyzedData.expiryDate = strValue;
-            }
-          }
-          
-          // الكمية - العمود 7 أو بناءً على الاسم
-          else if (colIndex === 7 || key.toLowerCase().includes('quantity') || key.toLowerCase().includes('qty')) {
-            const num = parseInt(strValue);
-            if (!isNaN(num) && num >= 0 && num <= 10000) {
-              analyzedData.quantity = num;
-            }
-          }
-          
-          // السعر (أرقام متوسطة 1-50000 وليست تواريخ)
-          else if (key.toLowerCase().includes('price') || key.toLowerCase().includes('unnamed: 8')) {
-            const num = parseFloat(strValue);
-            if (!isNaN(num) && num > 0 && num <= 50000 && num < 2000) {
-              analyzedData.clientPrice = num;
-            }
-          }
-          
-          // اسم العميل - العمود 10 أو بناءً على الاسم  
-          else if (colIndex === 10 || key.includes('العميل') || key.toLowerCase().includes('client')) {
-            if (strValue.toLowerCase() !== 'done' && strValue.toLowerCase() !== 'nan') {
-              analyzedData.clientName = strValue;
-            }
-          }
-          
-          // إذا لم نحدد العمود، جرب التخمين من القيمة
-          else {
-            const num = parseFloat(strValue);
-            
-            // أرقام صغيرة = كمية محتملة
-            if (!isNaN(num) && num > 0 && num <= 100 && Number.isInteger(num) && !analyzedData.quantity) {
-              analyzedData.quantity = num;
-            }
-            // أرقام متوسطة = سعر محتمل
-            else if (!isNaN(num) && num > 50 && num <= 10000 && !analyzedData.clientPrice) {
-              analyzedData.clientPrice = num;
-            }
-            // نص طويل = توصيف محتمل، أو رقم بند بنقاط
-            else if (strValue.length > 30 && !analyzedData.description) {
-              analyzedData.description = strValue;
-            }
-            // فحص إضافي لرقم البند بالنمط
-            else if (/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue) && !analyzedData.lineItem) {
+          // تحديد المحتوى بناءً على فهرس العمود حسب المواصفات
+          switch (colIndex) {
+            case 0: // العمود A - رقم الصف (Line No)
+              const lineNum = parseInt(strValue);
+              if (!isNaN(lineNum) && lineNum > 0) {
+                analyzedData.lineNumber = lineNum;
+              }
+              break;
+              
+            case 1: // العمود B - وحدة القياس (UOM)
+              analyzedData.unit = strValue;
+              break;
+              
+            case 2: // العمود C - رقم البند (LINE ITEM)
               analyzedData.lineItem = strValue;
-            }
+              break;
+              
+            case 3: // العمود D - رقم القطعة (PART NO)
+              analyzedData.partNumber = strValue;
+              break;
+              
+            case 4: // العمود E - التوصيف (Description)
+              analyzedData.description = strValue;
+              break;
+              
+            case 5: // العمود F - رقم الطلب (Source File/RFQ)
+              analyzedData.rfqNumber = strValue;
+              break;
+              
+            case 6: // العمود G - تاريخ الطلب (Request Date)
+              analyzedData.rfqDate = strValue;
+              break;
+              
+            case 7: // العمود H - الكمية (Quantity)
+              const qty = parseInt(strValue);
+              if (!isNaN(qty) && qty >= 0) {
+                analyzedData.quantity = qty;
+              }
+              break;
+              
+            case 8: // العمود I - السعر (Price) - قد يكون فارغ
+              const price = parseFloat(strValue);
+              if (!isNaN(price) && price >= 0) {
+                analyzedData.clientPrice = price;
+              }
+              break;
+              
+            case 9: // العمود J - تاريخ انتهاء العرض (Response/Expiry Date)
+              analyzedData.expiryDate = strValue;
+              break;
+              
+            case 10: // العمود K - اسم العميل
+              if (strValue.toLowerCase() !== 'done' && strValue.toLowerCase() !== 'nan') {
+                analyzedData.clientName = strValue;
+              }
+              break;
+              
+            default:
+              // أعمدة إضافية - تجاهل أو تسجيل للمتابعة
+              break;
           }
         });
         
