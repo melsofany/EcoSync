@@ -34,7 +34,7 @@ export const clients = pgTable("clients", {
 export const quotationRequests = pgTable("quotation_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   requestNumber: text("request_number").notNull().unique(),
-  clientId: varchar("client_id").references(() => clients.id).notNull(),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
   requestDate: text("request_date").notNull(), // Changed to text for easier form handling
   expiryDate: text("expiry_date"), // Changed to text for easier form handling
   status: text("status").default("pending"), // "pending", "processing", "completed", "cancelled"
@@ -121,7 +121,7 @@ export const purchaseOrderItems = pgTable("purchase_order_items", {
 export const supplierPricing = pgTable("supplier_pricing", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   itemId: varchar("item_id").references(() => items.id, { onDelete: "cascade" }).notNull(),
-  supplierId: varchar("supplier_id").references(() => suppliers.id, { onDelete: "cascade" }).notNull(),
+  supplierId: varchar("supplier_id").references(() => suppliers.id, { onDelete: "set null" }),
   unitPrice: decimal("unit_price", { precision: 12, scale: 2 }).notNull(),
   currency: text("currency").default("EGP").notNull(),
   priceReceivedDate: timestamp("price_received_date").notNull(),
