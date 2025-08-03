@@ -67,6 +67,8 @@ export default function QuotationDetail() {
     enabled: !!quotationId,
   });
 
+
+
   // Fetch quotation items
   const { data: quotationItems, isLoading: itemsLoading } = useQuery({
     queryKey: ["/api/quotations", quotationId, "items"],
@@ -225,7 +227,7 @@ export default function QuotationDetail() {
     );
   }
 
-  if (!quotation || !quotation.id) {
+  if (!quotation || !(quotation as any)?.id) {
     return (
       <div className="text-center py-8">
         <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
