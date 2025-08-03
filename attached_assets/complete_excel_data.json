@@ -108220,21 +108220,21 @@
     }
   ],
   "suppliers": [
-    "Hesham\nMohamed Rezk",
-    "Mohamed Saied",
     "YOUSSEF SHAWKY",
-    "Ahmed Mahmoud",
-    "Omar AbdelMaaboud",
-    "Hesham\nMohamed",
-    "Hesham Mohamed Rezk",
-    "Ehab Gamal",
-    "Mohammed Magdy",
-    "Galal ElDeen",
-    "Mahmoud Ibrahim",
-    "Sherine Magdy",
+    "Hesham\nMohamed Rezk",
     "Norhan Safwat",
+    "Mohammed Magdy",
+    "Hesham Mohamed Rezk",
+    "Mahmoud Ibrahim",
     "Waleed Tawheed",
-    "Magy Magdy"
+    "Magy Magdy",
+    "Ehab Gamal",
+    "Sherine Magdy",
+    "Omar AbdelMaaboud",
+    "Galal ElDeen",
+    "Hesham\nMohamed",
+    "Ahmed Mahmoud",
+    "Mohamed Saied"
   ],
   "total_items": 4919,
   "duplicate_candidates": [
@@ -126754,15 +126754,6 @@
       "part_number": "BST-RMR16-WP-LED",
       "clean_description": "P/N : BST-RMR16-WP-LED, EMERGENCY LIGHT - WET LOCATION LISTED - LED MR16 LAMPS WATERPROOF , 60 HZ"
     }
-  ],
-  "batches": 5,
-  "categories": [
-    "DONE",
-    "ELEC",
-    "MECH",
-    "PVC",
-    "HEAT",
-    "GENRAL"
   ],
   "statistics": {
     "total_items": 4919,

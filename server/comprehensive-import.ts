@@ -26,7 +26,7 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
     const adminUserId = '4964161e-b3a1-4e10-ac5b-9b728913bb6f';
     
     // Read complete processed data
-    const dataPath = join(process.cwd(), '..', 'attached_assets', 'complete_excel_data.json');
+    const dataPath = join(process.cwd(), 'attached_assets', 'complete_excel_data.json');
     const rawData = readFileSync(dataPath, 'utf-8');
     const completeData = JSON.parse(rawData);
     
