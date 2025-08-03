@@ -49,7 +49,7 @@ export const quotationRequests = pgTable("quotation_requests", {
 // Items table
 export const items = pgTable("items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  itemNumber: text("item_number").notNull().unique(), // ELEK00000001
+  itemNumber: text("item_number").notNull().unique().default(sql`generate_p_number()`), // P-000001
   kItemId: text("k_item_id").notNull().unique(), // K-generated ID 
   partNumber: text("part_number"),
   normalizedPartNumber: text("normalized_part_number"), // معرف البند الموحد

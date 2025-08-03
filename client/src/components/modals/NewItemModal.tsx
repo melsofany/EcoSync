@@ -159,7 +159,7 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
                 className="bg-gray-50 text-gray-500"
               />
               <p className="text-xs text-gray-500 mt-1">
-                سيتم توليد رقم صنف فريد تلقائياً (ELEK00000001)
+                سيتم توليد رقم صنف فريد تلقائياً (P-000001)
               </p>
             </div>
 
