@@ -62,41 +62,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden" dir="rtl">
-      {/* Animated Background */}
-      <div className="absolute inset-0 z-0">
-        {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
-        
-        {/* Animated containers */}
-        <div className="absolute inset-0 opacity-20">
-          {/* Moving containers */}
-          <div className="container-animation container-1"></div>
-          <div className="container-animation container-2"></div>
-          <div className="container-animation container-3"></div>
-          <div className="container-animation container-4"></div>
-          
-          {/* Warehouse structure */}
-          <div className="warehouse-structure"></div>
-          
-          {/* Moving trucks */}
-          <div className="truck-animation truck-1"></div>
-          <div className="truck-animation truck-2"></div>
-          
-          {/* Crane animation */}
-          <div className="crane-animation"></div>
-          
-          {/* Grid pattern */}
-          <div className="grid-pattern"></div>
-        </div>
-        
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/50"></div>
-      </div>
-      
-      {/* Content */}
-      <div className="relative z-10 w-full flex justify-center">
-        <Card className="w-full max-w-md shadow-2xl bg-white/95 backdrop-blur-sm border-0">
+    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden logistics-background" dir="rtl">
+      <Card className="w-full max-w-md shadow-2xl bg-white/95 backdrop-blur-sm border-0 relative z-10">
         <CardContent className="pt-8 pb-8 px-8">
           <div className="text-center mb-8">
             {/* Company Logo */}
@@ -240,8 +207,7 @@ export default function Login() {
             النسخة 1.0 - جميع الحقوق محفوظة لقرطبة للتوريدات © 2025
           </div>
         </CardContent>
-        </Card>
-      </div>
+      </Card>
     </div>
   );
 }
