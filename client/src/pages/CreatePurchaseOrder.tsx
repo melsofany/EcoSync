@@ -122,7 +122,7 @@ export default function CreatePurchaseOrder() {
   React.useEffect(() => {
     if (quotationItems && Array.isArray(quotationItems)) {
       const items: POItem[] = quotationItems.map((item: any) => ({
-        itemId: item.itemId, // Always use itemId, not the quotation_item id
+        itemId: item.itemId, // Always use itemId from quotation_items table
         quantity: item.quantity || 1,
         unitPrice: item.unitPrice || 0,
         totalPrice: (item.quantity || 1) * (item.unitPrice || 0),
@@ -459,14 +459,14 @@ export default function CreatePurchaseOrder() {
                       <TableBody>
                         {poItems.map((poItem, index) => {
                           const quotationItem = quotationItems?.find(
-                            (item: any) => (item.id || item.itemId) === poItem.itemId
+                            (item: any) => item.itemId === poItem.itemId
                           );
                           return (
                             <TableRow key={index}>
                               <TableCell>
                                 <div className="space-y-1">
                                   <p className="font-semibold text-gray-900">{quotationItem?.description || "وصف البند"}</p>
-                                  <p className="text-sm text-blue-600">معرف البند: {quotationItem?.kItemId || `K${Date.now().toString().slice(-6)}`}</p>
+                                  <p className="text-sm text-blue-600">معرف البند: {quotationItem?.kItemId || "غير محدد"}</p>
                                   <p className="text-xs text-green-600">رقم البند: {quotationItem?.itemNumber || "غير محدد"}</p>
                                   <p className="text-xs text-purple-600">PART NO: {quotationItem?.partNumber || "غير محدد"}</p>
                                   <p className="text-xs text-orange-600">LINE ITEM: {quotationItem?.lineItem || "غير محدد"}</p>
