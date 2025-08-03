@@ -148,71 +148,107 @@ function ItemDetailedPricing({ item }: { item: any }) {
         )}
       </div>
 
+      {/* إحصائيات سريعة */}
+      {comprehensiveData && comprehensiveData.length > 0 && (
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold mb-3 text-blue-800">ملخص إحصائيات البند</h4>
+          <div className="grid grid-cols-4 gap-4 text-sm">
+            <div className="bg-white rounded-lg p-3 border border-blue-200">
+              <label className="font-medium text-gray-600">إجمالي طلبات التسعير:</label>
+              <p className="text-purple-700 font-bold text-lg">{comprehensiveData.length}</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-green-200">
+              <label className="font-medium text-gray-600">إجمالي الكمية المطلوبة:</label>
+              <p className="text-green-700 font-bold text-lg">
+                {comprehensiveData.reduce((sum, row) => sum + (Number(row.rfq_qty) || 0), 0)}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-orange-200">
+              <label className="font-medium text-gray-600">أوامر الشراء المكتملة:</label>
+              <p className="text-orange-700 font-bold text-lg">
+                {comprehensiveData.filter(row => row.po_number).length}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg p-3 border border-red-200">
+              <label className="font-medium text-gray-600">متوسط السعر:</label>
+              <p className="text-red-700 font-bold text-lg">
+                {formatCurrency(Number(item.supplierPrice || 0))}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* جدول البيانات المرتبطة مشابه للإكسيل */}
-      <div className="bg-white rounded-lg border">
-        <h4 className="font-semibold p-4 bg-gray-50 border-b flex items-center gap-2">
-          <Package className="h-4 w-4" />
-          جدول البيانات التفصيلية للبند
-        </h4>
+      <div className="bg-white rounded-lg border shadow-lg">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-lg">
+          <h4 className="font-bold text-lg flex items-center gap-2">
+            <Package className="h-5 w-5" />
+            جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
+          </h4>
+          <p className="text-blue-100 text-sm mt-1">
+            عرض شامل لجميع طلبات التسعير وأوامر الشراء المرتبطة بـ LINE ITEM: {item.lineItem}
+          </p>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="border p-2 text-right">TOTAL PO</th>
-                <th className="border p-2 text-right">PRICE/PO</th>
-                <th className="border p-2 text-right">Quantity/PO</th>
-                <th className="border p-2 text-right">DATE/PO</th>
-                <th className="border p-2 text-right">PO</th>
-                <th className="border p-2 text-right">Category</th>
-                <th className="border p-2 text-right">RES.DATE</th>
-                <th className="border p-2 text-right">PRICE/RFQ</th>
-                <th className="border p-2 text-right">QTY</th>
-                <th className="border p-2 text-right">DATE/RFQ</th>
-                <th className="border p-2 text-right">RFQ</th>
-                <th className="border p-2 text-right">DESCRIPTION</th>
-                <th className="border p-2 text-right">PART NO</th>
-                <th className="border p-2 text-right">LINE ITEM</th>
-                <th className="border p-2 text-right">UOM</th>
+          <table className="w-full text-xs border-collapse">
+            <thead>
+              <tr className="bg-blue-600 text-white">
+                <th className="border border-gray-400 p-2 text-center font-bold">TOTAL PO</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">PRICE/PO</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">Quantity/PO</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">DATE/PO</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">PO</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">Category</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">RES.DATE</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">PRICE/RFQ</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">QTY</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">DATE/RFQ</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">RFQ</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">DESCRIPTION</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">PART NO</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">LINE ITEM</th>
+                <th className="border border-gray-400 p-2 text-center font-bold">UOM</th>
               </tr>
             </thead>
             <tbody>
               {/* عرض البيانات الشاملة من قاعدة البيانات */}
               {comprehensiveData && comprehensiveData.length > 0 ? (
                 comprehensiveData.map((row: any, index: number) => (
-                  <tr key={index} className={`hover:bg-gray-50 ${row.po_number ? 'bg-green-50' : 'bg-yellow-50'}`}>
-                    <td className="border p-2 text-center font-bold text-green-600">
+                  <tr key={index} className={`hover:bg-blue-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${row.po_number ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-yellow-500'}`}>
+                    <td className="border border-gray-300 p-2 text-center font-bold text-green-700">
                       {row.po_total ? formatCurrency(Number(row.po_total)) : "-"}
                     </td>
-                    <td className="border p-2 text-center font-bold">
+                    <td className="border border-gray-300 p-2 text-center font-bold text-green-700">
                       {row.po_price ? formatCurrency(Number(row.po_price)) : "-"}
                     </td>
-                    <td className="border p-2 text-center">{row.po_quantity || "-"}</td>
-                    <td className="border p-2 text-center">
+                    <td className="border border-gray-300 p-2 text-center text-green-700 font-semibold">{row.po_quantity || "-"}</td>
+                    <td className="border border-gray-300 p-2 text-center text-green-700">
                       {row.po_date ? row.po_date.split('T')[0] : "-"}
                     </td>
-                    <td className="border p-2 text-center font-bold text-blue-600">
+                    <td className="border border-gray-300 p-2 text-center font-bold text-blue-700">
                       {row.po_number || "-"}
                     </td>
-                    <td className="border p-2 text-center">{row.category || "ELEC"}</td>
-                    <td className="border p-2 text-center">
+                    <td className="border border-gray-300 p-2 text-center font-semibold">{row.category || "ELEC"}</td>
+                    <td className="border border-gray-300 p-2 text-center">
                       {row.res_date ? row.res_date.split('T')[0] : "-"}
                     </td>
-                    <td className="border p-2 text-center font-bold text-red-600">
+                    <td className="border border-gray-300 p-2 text-center font-bold text-red-600">
                       {formatCurrency(Number(item.supplierPrice || 0))}
                     </td>
-                    <td className="border p-2 text-center">{row.rfq_qty || item.quantity}</td>
-                    <td className="border p-2 text-center">
+                    <td className="border border-gray-300 p-2 text-center font-semibold">{row.rfq_qty || item.quantity}</td>
+                    <td className="border border-gray-300 p-2 text-center">
                       {row.rfq_date ? row.rfq_date.split('T')[0] : "-"}
                     </td>
-                    <td className="border p-2 text-center font-bold text-purple-600">
+                    <td className="border border-gray-300 p-2 text-center font-bold text-purple-700">
                       {row.rfq_number || item.requestNumber}
                     </td>
-                    <td className="border p-2 text-right max-w-xs truncate" title={row.description}>
+                    <td className="border border-gray-300 p-2 text-left max-w-xs truncate font-medium" title={row.description}>
                       {row.description || item.description}
                     </td>
-                    <td className="border p-2 text-center">{row.part_no || item.partNumber || "-"}</td>
-                    <td className="border p-2 text-center text-blue-600">{row.line_item || item.lineItem}</td>
-                    <td className="border p-2 text-center">{row.uom || item.unit}</td>
+                    <td className="border border-gray-300 p-2 text-center font-semibold text-blue-600">{row.part_no || item.partNumber || "-"}</td>
+                    <td className="border border-gray-300 p-2 text-center font-bold text-blue-800">{row.line_item || item.lineItem}</td>
+                    <td className="border border-gray-300 p-2 text-center">{row.uom || item.unit}</td>
                   </tr>
                 ))
               ) : (
@@ -242,6 +278,27 @@ function ItemDetailedPricing({ item }: { item: any }) {
             </tbody>
           </table>
         </div>
+        
+        {/* إضافة معلومات إضافية أسفل الجدول */}
+        {comprehensiveData && comprehensiveData.length > 0 && (
+          <div className="bg-gray-50 p-4 rounded-b-lg border-t">
+            <div className="flex justify-between items-center text-sm text-gray-600">
+              <div className="flex gap-6">
+                <span className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+                  طلبات التسعير (RFQ)
+                </span>
+                <span className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded"></div>
+                  أوامر الشراء (PO)
+                </span>
+              </div>
+              <div className="text-gray-700 font-medium">
+                إجمالي السجلات: {comprehensiveData.length} سجل
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ملخص سريع للبيانات */}
