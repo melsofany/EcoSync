@@ -1700,9 +1700,18 @@ Respond in JSON format:
       );
 
       // فلترة البيانات الصالحة - السماح بالبنود بدون رقم قطعة
-      const validData = processedData.filter(row => 
-        row.lineItem && row.description && row.quantity > 0
-      );
+      const validData = processedData.filter((row, index) => {
+        const isValid = row.lineItem && row.description && row.quantity > 0;
+        if (!isValid) {
+          console.log(`❌ Row ${index + 1} rejected:`, {
+            lineItem: row.lineItem || 'missing',
+            description: row.description || 'missing', 
+            quantity: row.quantity,
+            reason: !row.lineItem ? 'no lineItem' : !row.description ? 'no description' : 'quantity <= 0'
+          });
+        }
+        return isValid;
+      });
 
       console.log(`✅ Processed ${processedData.length} rows, ${validData.length} valid`);
       
