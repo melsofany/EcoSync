@@ -191,6 +191,7 @@ export default function Items() {
   const [showItemDetails, setShowItemDetails] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [filters, setFilters] = useState({
+    itemNumber: "",
     partNumber: "",
     lineItem: "",
     description: "",
@@ -230,6 +231,7 @@ export default function Items() {
 
   const filteredItems = items && Array.isArray(items) ? items.filter((item: any) => {
     return (
+      (!filters.itemNumber || item.itemNumber?.includes(filters.itemNumber)) &&
       (!filters.partNumber || item.partNumber?.includes(filters.partNumber)) &&
       (!filters.lineItem || item.lineItem?.includes(filters.lineItem)) &&
       (!filters.description || item.description.includes(filters.description)) &&
@@ -341,12 +343,21 @@ export default function Items() {
           <CardTitle>البحث والتصفية</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <Label htmlFor="itemNumber">رقم الصنف</Label>
+              <Input
+                id="itemNumber"
+                placeholder="P-000001"
+                value={filters.itemNumber}
+                onChange={(e) => setFilters({ ...filters, itemNumber: e.target.value })}
+              />
+            </div>
             <div>
               <Label htmlFor="partNumber">رقم القطعة (PART NO)</Label>
               <Input
                 id="partNumber"
-                placeholder="P-000001"
+                placeholder="Part Number"
                 value={filters.partNumber}
                 onChange={(e) => setFilters({ ...filters, partNumber: e.target.value })}
               />
