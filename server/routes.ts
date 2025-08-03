@@ -842,14 +842,33 @@ Respond in JSON format:
     }
   });
 
-  // Get historical pricing data for an item from Excel sheets
+  // Get comprehensive historical data for an item from database
   app.get("/api/items/:itemId/historical-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
       const { itemId } = req.params;
-      const historicalData = await storage.getItemHistoricalPricing(itemId);
+      
+      // Get the item first to find its LINE ITEM code
+      const item = await storage.getItemById(itemId);
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      const lineItem = item.lineItem;
+      
+      if (!lineItem) {
+        return res.json([]);
+      }
+
+      console.log('Getting comprehensive historical data for LINE ITEM:', lineItem);
+      
+      // Get comprehensive historical data from quotations and purchase orders
+      const historicalData = await storage.getComprehensiveHistoricalData(lineItem);
+      
+      console.log(`Found ${historicalData.length} comprehensive historical records for LINE ITEM: ${lineItem}`);
+      
       res.json(historicalData);
     } catch (error) {
-      console.error("Get item historical pricing error:", error);
+      console.error("Error fetching comprehensive historical data:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

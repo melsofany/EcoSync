@@ -1044,6 +1044,73 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Get comprehensive historical data for an item from both quotations and purchase orders
+  async getComprehensiveHistoricalData(lineItem: string) {
+    console.log('Getting comprehensive historical data for LINE ITEM:', lineItem);
+
+    // Get quotation data with client information
+    const quotationData = await this.db
+      .select({
+        clientName: quotations.clientName,
+        kItemId: quotationItems.kItemId,
+        description: quotationItems.description,
+        lineItem: quotationItems.lineItem,
+        partNumber: quotationItems.partNumber,
+        rfqNumber: quotations.requestNumber,
+        rfqDate: quotations.requestDate,
+        rfqQuantity: quotationItems.quantity,
+        responseDate: quotations.requestDate, // Using same date for now
+        poNumber: sql<string>`NULL`,
+        poDate: sql<string>`NULL`,
+        poQuantity: sql<string>`NULL`,
+        poPrice: sql<string>`NULL`,
+        poTotal: sql<string>`NULL`,
+        sourceType: sql<string>`'quotation'`,
+        unitPrice: quotationItems.unitPrice,
+        currency: quotationItems.currency,
+      })
+      .from(quotationItems)
+      .innerJoin(quotations, eq(quotationItems.quotationId, quotations.id))
+      .where(eq(quotationItems.lineItem, lineItem))
+      .orderBy(desc(quotations.requestDate));
+
+    // Get purchase order data
+    const purchaseOrderData = await this.db
+      .select({
+        clientName: sql<string>`'Internal Order'`, // POs are internal
+        kItemId: purchaseOrderItems.kItemId,
+        description: purchaseOrderItems.description,
+        lineItem: purchaseOrderItems.lineItem,
+        partNumber: purchaseOrderItems.partNumber,
+        rfqNumber: sql<string>`NULL`,
+        rfqDate: sql<string>`NULL`,
+        rfqQuantity: sql<string>`NULL`,
+        responseDate: sql<string>`NULL`,
+        poNumber: purchaseOrders.poNumber,
+        poDate: purchaseOrders.poDate,
+        poQuantity: purchaseOrderItems.quantity,
+        poPrice: purchaseOrderItems.unitPrice,
+        poTotal: purchaseOrderItems.totalPrice,
+        sourceType: sql<string>`'purchase_order'`,
+        unitPrice: purchaseOrderItems.unitPrice,
+        currency: purchaseOrderItems.currency,
+      })
+      .from(purchaseOrderItems)
+      .innerJoin(purchaseOrders, eq(purchaseOrderItems.purchaseOrderId, purchaseOrders.id))
+      .where(eq(purchaseOrderItems.lineItem, lineItem))
+      .orderBy(desc(purchaseOrders.poDate));
+
+    // Combine and sort all data
+    const allData = [...quotationData, ...purchaseOrderData].sort((a, b) => {
+      const dateA = new Date(a.rfqDate || a.poDate || 0);
+      const dateB = new Date(b.rfqDate || b.poDate || 0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    console.log(`Found ${allData.length} comprehensive records for LINE ITEM: ${lineItem}`);
+    return allData;
+  }
+
   async getNextPONumber(): Promise<string> {
     try {
       // Get the highest PO number from the database
