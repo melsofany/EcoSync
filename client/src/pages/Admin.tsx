@@ -186,6 +186,10 @@ export default function Admin() {
 
   const isValidImageUrl = (url: string) => {
     if (!url) return false;
+    // Allow local public-objects URLs and external image URLs
+    if (url.startsWith('/public-objects/')) {
+      return true;
+    }
     // Check if URL is a direct image link
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
     const lowercaseUrl = url.toLowerCase();

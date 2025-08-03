@@ -72,8 +72,13 @@ export function ProfileImageUploader({ currentImage, onImageChange, className }:
       const bucketName = pathParts[1];
       const objectPath = pathParts.slice(2).join('/');
       
-      // Convert to public URL format
-      const publicImageUrl = `/public-objects/${objectPath.replace('public/', '')}`;
+      // Convert to public URL format - remove the bucket name from the path
+      const relativePath = objectPath.replace('public/', '');
+      const publicImageUrl = `/public-objects/${relativePath}`;
+      
+      console.log('Upload URL:', uploadURL);
+      console.log('Object path:', objectPath);
+      console.log('Public URL:', publicImageUrl);
       
       setPreviewUrl(publicImageUrl);
       onImageChange(publicImageUrl);
