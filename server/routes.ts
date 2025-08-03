@@ -852,18 +852,24 @@ Respond in JSON format:
         
         // console.log(`Row ${index}: LINE ITEM: ${analyzedData.lineItem}, PRICE: ${analyzedData.clientPrice}, QTY: ${analyzedData.quantity}`);
 
-        // Format dates properly (convert Excel serial dates if needed)
+        // تحويل التواريخ من Excel التسلسلية إلى تاريخ مقروء
         const formatDate = (dateValue: any) => {
           if (!dateValue) return '';
           
-          // If it's a number (Excel serial date), convert it
-          if (typeof dateValue === 'number') {
-            const excelEpoch = new Date(1900, 0, 1);
-            const jsDate = new Date(excelEpoch.getTime() + (dateValue - 2) * 24 * 60 * 60 * 1000);
+          // إذا كان رقم (تاريخ Excel التسلسلي)
+          if (typeof dateValue === 'number' && dateValue > 1) {
+            // Excel يبدأ العد من 1900/1/1، لكن هناك خطأ في حساب Excel للسنة الكبيسة
+            const excelEpoch = new Date(1899, 11, 30); // 30 ديسمبر 1899
+            const jsDate = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
             return jsDate.toISOString().split('T')[0];
           }
           
-          // If it's already a string, return as is
+          // إذا كان نص تاريخ ISO، استخرج التاريخ فقط
+          if (typeof dateValue === 'string' && dateValue.includes('T')) {
+            return dateValue.split('T')[0];
+          }
+          
+          // إذا كان نص عادي، أرجعه كما هو
           return dateValue.toString();
         };
 
