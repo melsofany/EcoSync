@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Bell, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const { user } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -53,23 +55,22 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
-          {/* Notifications */}
-          <div className="relative">
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 rounded-full p-0 flex items-center justify-center text-xs"
-              >
-                3
-              </Badge>
-            </Button>
-          </div>
-
-          {/* Current Time */}
-          <div className="text-xs sm:text-sm text-gray-500 text-center hidden sm:block">
-            <div className="font-medium">{formatTime(currentTime)}</div>
-            <div className="text-xs">{formatDate(currentTime)}</div>
+          {/* User Info and Time */}
+          <div className="flex items-center space-x-3 space-x-reverse">
+            <UserAvatar 
+              user={user || { fullName: 'مستخدم', profileImage: null }} 
+              size="sm" 
+            />
+            <div className="text-right">
+              <div className="text-sm font-medium text-gray-800">
+                {user?.fullName || 'مستخدم'}
+              </div>
+              <div className="text-xs text-gray-500 flex items-center space-x-1 space-x-reverse">
+                <span>{formatTime(currentTime)}</span>
+                <span>-</span>
+                <span>{formatDate(currentTime)}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
