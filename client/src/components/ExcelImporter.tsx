@@ -46,18 +46,50 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
   const [previewData, setPreviewData] = useState<PreviewData[]>([]);
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [showPreview, setShowPreview] = useState(false);
+  const [showColumnMapping, setShowColumnMapping] = useState(false);
+  const [availableColumns, setAvailableColumns] = useState<any[]>([]);
+  const [requiredFields, setRequiredFields] = useState<any[]>([]);
+  const [excelData, setExcelData] = useState<any[]>([]);
+  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
 
-  const previewMutation = useMutation({
+  // مرحلة 1: تحليل الملف وعرض الأعمدة
+  const analyzeMutation = useMutation({
     mutationFn: async (excelData: any[]) => {
-      const response = await apiRequest("POST", "/api/import/quotations/preview", {
+      const response = await apiRequest("POST", "/api/import/quotations/analyze", {
         excelData
       });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setAvailableColumns(data.availableColumns);
+      setRequiredFields(data.requiredFields);
+      setExcelData(excelData);
+      setShowColumnMapping(true);
+      toast({
+        title: "تم تحليل الملف بنجاح",
+        description: `تم العثور على ${data.totalRows} سجل - حدد مطابقة الأعمدة`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في تحليل الملف",
+        description: error.message || "تأكد من أن الملف بالصيغة الصحيحة",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // مرحلة 2: معاينة البيانات بناءً على المطابقة
+  const previewMutation = useMutation({
+    mutationFn: async (params: { excelData: any[], columnMapping: Record<string, string> }) => {
+      const response = await apiRequest("POST", "/api/import/quotations/preview", params);
       return response.json();
     },
     onSuccess: (data) => {
       setPreviewData(data.previewData);
       setMapping(data.mapping);
       setShowPreview(true);
+      setShowColumnMapping(false);
       toast({
         title: "تم تحليل الملف بنجاح",
         description: `تم العثور على ${data.totalRows} سجل للمعاينة`,
@@ -123,7 +155,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
           
-          previewMutation.mutate(jsonData);
+          analyzeMutation.mutate(jsonData);
         } catch (error) {
           toast({
             title: "خطأ في قراءة الملف",
@@ -150,6 +182,32 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
     setShowPreview(false);
     setPreviewData([]);
     setSelectedFile(null);
+    setShowColumnMapping(false);
+    setColumnMapping({});
+  };
+
+  const handleColumnMappingSubmit = () => {
+    // التحقق من أن جميع الحقول المطلوبة محددة
+    const requiredMappings = requiredFields.filter(field => field.required);
+    const missingFields = requiredMappings.filter(field => !columnMapping[field.field]);
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "حقول مطلوبة مفقودة",
+        description: `يجب تحديد الأعمدة لجميع الحقول المطلوبة`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    previewMutation.mutate({ excelData, columnMapping });
+  };
+
+  const handleColumnSelect = (fieldName: string, columnLetter: string) => {
+    setColumnMapping(prev => ({
+      ...prev,
+      [fieldName]: columnLetter
+    }));
   };
 
   return (
@@ -172,11 +230,11 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
             />
             <Button
               onClick={handlePreview}
-              disabled={!selectedFile || previewMutation.isPending}
+              disabled={!selectedFile || analyzeMutation.isPending}
               className="flex items-center space-x-2 space-x-reverse"
             >
               <Eye className="h-4 w-4" />
-              <span>{previewMutation.isPending ? "جاري التحليل..." : "معاينة"}</span>
+              <span>{analyzeMutation.isPending ? "جاري التحليل..." : "تحليل الملف"}</span>
             </Button>
           </div>
 
@@ -192,6 +250,91 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           </Alert>
         </CardContent>
       </Card>
+
+      {/* Column Mapping Section */}
+      {showColumnMapping && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 space-x-reverse">
+              <Database className="h-5 w-5" />
+              <span>مطابقة أعمدة الملف</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                حدد العمود المطابق لكل حقل من حقول قاعدة البيانات. الحقول المطلوبة مطلوب تحديدها.
+              </AlertDescription>
+            </Alert>
+
+            {/* Available Columns Display */}
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold text-gray-800 mb-3">الأعمدة المتاحة في الملف:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                {availableColumns.map((col) => (
+                  <div key={col.letter} className="text-sm bg-white p-3 rounded border">
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                      <span className="font-bold text-white bg-blue-600 px-2 py-1 rounded text-xs min-w-[24px] text-center">
+                        {col.letter}
+                      </span>
+                      <span className="font-medium text-gray-700">{col.name}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-gray-500 truncate">
+                      مثال: {col.sampleData}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Field Mapping */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-800">تحديد مطابقة الحقول:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {requiredFields.map((field) => (
+                  <div key={field.field} className="space-y-2">
+                    <label className="flex items-center space-x-2 space-x-reverse text-sm font-medium">
+                      <span>{field.label}</span>
+                      {field.required && <span className="text-red-500">*</span>}
+                    </label>
+                    <select
+                      value={columnMapping[field.field] || ''}
+                      onChange={(e) => handleColumnSelect(field.field, e.target.value)}
+                      className="w-full p-2 border rounded-md text-sm"
+                    >
+                      <option value="">اختر العمود...</option>
+                      {availableColumns.map((col) => (
+                        <option key={col.letter} value={col.letter}>
+                          {col.letter} - {col.name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="text-xs text-gray-500">{field.description}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex space-x-4 space-x-reverse">
+              <Button
+                onClick={handleColumnMappingSubmit}
+                disabled={previewMutation.isPending}
+                className="flex items-center space-x-2 space-x-reverse"
+              >
+                <Eye className="h-4 w-4" />
+                <span>{previewMutation.isPending ? "جاري المعاينة..." : "معاينة البيانات"}</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+              >
+                إلغاء
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Preview Section */}
       {showPreview && previewData.length > 0 && (
