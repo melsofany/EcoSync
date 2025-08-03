@@ -49,8 +49,56 @@ function ItemDetailedPricing({ item }: { item: any }) {
 
   return (
     <div className="space-y-4">
+      {/* معلومات البند الأساسية */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-semibold mb-3 flex items-center gap-2">
+          <Package className="h-4 w-4" />
+          تفاصيل البند
+        </h4>
+        <div className="grid grid-cols-4 gap-4 text-sm">
+          <div>
+            <label className="font-medium">معرف البند:</label>
+            <p className="text-blue-600">{item.itemNumber}</p>
+          </div>
+          <div>
+            <label className="font-medium">LINE ITEM:</label>
+            <p className="text-blue-600">{item.lineItem || "غير محدد"}</p>
+          </div>
+          <div>
+            <label className="font-medium">PART NO:</label>
+            <p className="text-blue-600">{item.partNumber || "غير محدد"}</p>
+          </div>
+          <div>
+            <label className="font-medium">الوحدة:</label>
+            <p className="text-blue-600">{item.unit}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* معلومات طلب التسعير */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h4 className="font-semibold mb-3 flex items-center gap-2">
+          <Clock className="h-4 w-4" />
+          معلومات طلب التسعير (RFQ)
+        </h4>
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <label className="font-medium">رقم طلب التسعير:</label>
+            <p className="text-yellow-700 font-bold">{item.requestNumber}</p>
+          </div>
+          <div>
+            <label className="font-medium">تاريخ الطلب:</label>
+            <p className="text-yellow-700">تاريخ غير محدد</p>
+          </div>
+          <div>
+            <label className="font-medium">الكمية المطلوبة:</label>
+            <p className="text-yellow-700 font-bold">{item.quantity}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Basic supplier pricing info - show data from item passed as prop */}
-      <div className="bg-muted/30 rounded-lg p-4">
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <h4 className="font-semibold mb-3 flex items-center gap-2">
           <DollarSign className="h-4 w-4" />
           معلومات التسعير الحالي
@@ -63,20 +111,8 @@ function ItemDetailedPricing({ item }: { item: any }) {
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium">تاريخ ورود السعر:</label>
-            <p className="text-sm">
-              {item.requestNumber ? `طلب رقم: ${item.requestNumber}` : "غير محدد"}
-            </p>
-          </div>
-          <div>
             <label className="text-sm font-medium">المورد:</label>
             <p className="text-sm">{item.supplierName || "غير محدد"}</p>
-          </div>
-          <div>
-            <label className="text-sm font-medium">حالة أمر الشراء:</label>
-            <Badge variant="secondary">
-              لم يصدر أمر شراء
-            </Badge>
           </div>
         </div>
         
@@ -98,6 +134,65 @@ function ItemDetailedPricing({ item }: { item: any }) {
             />
           </div>
         )}
+      </div>
+
+      {/* معلومات أوامر الشراء المرتبطة */}
+      {detailedPricing?.purchaseOrders && detailedPricing.purchaseOrders.length > 0 && (
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            أوامر الشراء المرتبطة (PO)
+          </h4>
+          <div className="space-y-3">
+            {detailedPricing.purchaseOrders.map((po: any, index: number) => (
+              <div key={index} className="bg-white rounded-lg p-3 border">
+                <div className="grid grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <label className="font-medium">رقم أمر الشراء:</label>
+                    <p className="text-purple-700 font-bold">{po.poNumber || "غير محدد"}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium">تاريخ الأمر:</label>
+                    <p className="text-purple-700">{po.orderDate || "غير محدد"}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium">الكمية:</label>
+                    <p className="text-purple-700 font-bold">{po.quantity || "غير محدد"}</p>
+                  </div>
+                  <div>
+                    <label className="font-medium">إجمالي القيمة:</label>
+                    <p className="text-purple-700 font-bold">{formatCurrency(Number(po.totalValue || 0))}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ملخص سريع للبيانات */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h4 className="font-semibold mb-3">ملخص البيانات المرتبطة</h4>
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="text-center">
+            <p className="font-medium">عدد عروض الموردين</p>
+            <p className="text-2xl font-bold text-blue-600">
+              {detailedPricing?.supplierPricings?.length || 1}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="font-medium">عدد أوامر الشراء</p>
+            <p className="text-2xl font-bold text-purple-600">
+              {detailedPricing?.purchaseOrders?.length || 0}
+            </p>
+          </div>
+          <div className="text-center">
+            <p className="font-medium">عدد تسعيرات العملاء</p>
+            <p className="text-2xl font-bold text-green-600">
+              {detailedPricing?.customerPricings?.length || 0}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
