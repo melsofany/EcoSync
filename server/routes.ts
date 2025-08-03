@@ -772,36 +772,43 @@ Respond in JSON format:
         const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // العميل
         const status = rowKeys.length > 11 ? row[rowKeys[11]] || '' : '';                   // Done/Status
         
-        // استخراج السعر من العمود الثامن (Unnamed: 8)
+        // محاولة استخراج السعر من العمود I (Unnamed: 8) إذا كان موجود
         let clientPrice = 0;
         
-        if (priceColumn !== undefined && priceColumn !== null && priceColumn !== '') {
-          const numPrice = parseFloat(priceColumn);
-          if (!isNaN(numPrice) && numPrice > 0) {
-            clientPrice = numPrice;
-          }
+        // أولاً، تحقق من العمود I المخصص للسعر
+        if (priceColumn !== undefined && priceColumn !== null && priceColumn !== '' && 
+            !isNaN(parseFloat(priceColumn)) && parseFloat(priceColumn) > 0) {
+          clientPrice = parseFloat(priceColumn);
+          console.log(`Row ${index} - Found price in column I: ${clientPrice}`);
         }
         
-        // إذا لم نجد سعر في العمود المخصص، ابحث في باقي الأعمدة
+        // إذا لم نجد سعر في العمود I، ابحث في كامل البيانات عن أي سعر معقول
+        // ولكن تجنب التواريخ وأرقام الصفوف والكميات
         if (clientPrice === 0) {
+          // البحث عن أي قيمة رقمية معقولة كسعر
           for (let i = 0; i < rowKeys.length; i++) {
             const value = row[rowKeys[i]];
             const numValue = parseFloat(value);
             
-            // تحقق من كون القيمة سعر معقول
-            if (!isNaN(numValue) && numValue >= 10 && numValue <= 50000) {
-              // تجنب أرقام الصفوف والكميات والتواريخ
-              const isLineNumber = (numValue <= 100 && Number.isInteger(numValue));
-              const isDate = (numValue > 40000 && numValue < 50000); // Excel date range
-              const isQuantity = (value === quantity);
+            if (!isNaN(numValue) && numValue > 0) {
+              // تجنب التواريخ Excel (45000+)، أرقام الصفوف الصغيرة، والكميات الصغيرة
+              const isExcelDate = (numValue >= 45000);
+              const isSmallInteger = (Number.isInteger(numValue) && numValue <= 1000);
+              const isQuantity = (numValue === quantity);
               
-              if (!isLineNumber && !isDate && !isQuantity) {
+              // ابحث عن أسعار معقولة (بين 50 و 50000)
+              if (!isExcelDate && !isQuantity && numValue >= 50 && numValue <= 50000) {
                 clientPrice = numValue;
-                console.log(`Row ${index} - Found price: ${clientPrice} in column ${rowKeys[i]}`);
+                console.log(`Row ${index} - Found potential price: ${clientPrice} in column ${rowKeys[i]}`);
                 break;
               }
             }
           }
+        }
+        
+        // إذا ما زال السعر 0، فهذا يعني أن السعر غير متوفر في البيانات
+        if (clientPrice === 0) {
+          console.log(`Row ${index} - No price found in data, will be set during pricing phase`);
         }
         
         console.log(`Row ${index} - Final price: ${clientPrice}, LINE ITEM: ${lineItem}`);

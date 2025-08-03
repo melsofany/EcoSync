@@ -183,11 +183,11 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           <Alert>
             <Download className="h-4 w-4" />
             <AlertDescription>
-              <strong>التنسيق المحدث لملف Excel:</strong>
-              <br />Line No | UOM | LINE ITEM | PART NO | Description | Source File | Request Date | Quantity | <strong>السعر (العمود I)</strong> | Response Date | العميل | Done
-              <br /><strong>السعر:</strong> يُقرأ من العمود I (Unnamed: 8) أو يُبحث عنه في البيانات تلقائياً
-              <br /><em>البيانات المُستوردة: رقم البند، رقم القطعة، التوصيف، الكمية، السعر، العميل</em>
-              <br /><strong>معرف P-:</strong> يتم توليده تلقائياً بعد معالجة البيانات
+              <strong>تنسيق ملف Excel المدعوم:</strong>
+              <br />Line No | UOM | LINE ITEM | PART NO | Description | Source File | Request Date | Quantity | <strong>السعر (العمود I اختياري)</strong> | Response Date | العميل | Done
+              <br /><strong>السعر:</strong> إذا كان متوفر في العمود I، يُقرأ تلقائياً. إذا لم يكن متوفر، يُحدد لاحقاً في نظام التسعير
+              <br /><em>البيانات المُستوردة: رقم البند، رقم القطعة، التوصيف، الكمية، العميل، التواريخ</em>
+              <br /><strong>ملاحظة:</strong> معرف P- يتم توليده تلقائياً بعد معالجة البيانات
             </AlertDescription>
           </Alert>
         </CardContent>
