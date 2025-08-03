@@ -16,15 +16,20 @@ const userSchema = z.object({
   username: z.string().min(3, "اسم المستخدم يجب أن يكون 3 أحرف على الأقل"),
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
   fullName: z.string().min(1, "الاسم الكامل مطلوب"),
-  email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
+  email: z.string().optional().refine((val) => {
+    if (!val || val.trim() === '') return true;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  }, {
+    message: "البريد الإلكتروني غير صحيح"
+  }),
   phone: z.string().refine((val) => {
     if (!val || val.trim() === '') return true;
     return /^[0-9+\-\s()]{7,20}$/.test(val.replace(/\s/g, ''));
   }, {
     message: "رقم الهاتف غير صحيح"
-  }).optional().or(z.literal("")),
+  }).optional(),
   profileImage: z.string().optional(),
-  role: z.string().min(1, "الدور مطلوب"),
+  role: z.string().min(1, "يجب اختيار دور للمستخدم"),
   isActive: z.boolean().default(true),
 });
 
@@ -55,7 +60,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
       email: "",
       phone: "",
       profileImage: "",
-      role: undefined,
+      role: "",
       isActive: true,
     },
   });
@@ -208,10 +213,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden shadow-lg">
                     {form.watch("profileImage") ? (
                       <img 
-                        src={form.watch("profileImage").startsWith('/profile-images/') 
-                          ? form.watch("profileImage") 
-                          : form.watch("profileImage")
-                        } 
+                        src={form.watch("profileImage")} 
                         alt="صورة المستخدم" 
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -237,7 +239,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                   <div className="flex-1 space-y-2">
                     <div className="flex gap-2">
                       <ProfileImageUploader
-                        currentImageUrl={form.watch("profileImage")}
+                        currentImageUrl={form.watch("profileImage") || ""}
                         onImageUploaded={(imageUrl) => {
                           form.setValue("profileImage", imageUrl);
                         }}
@@ -265,7 +267,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                         أو أدخل رابط الصورة يدوياً
                       </summary>
                       <Input
-                        id="profileImage"
+                        id="profileImageUrl"
                         type="url"
                         placeholder="https://example.com/image.jpg"
                         className="mt-2"
