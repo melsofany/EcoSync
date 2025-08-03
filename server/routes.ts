@@ -276,8 +276,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Delete client error:", error);
       if (error.message && error.message.includes("Cannot delete client")) {
         return res.status(400).json({ 
-          message: "لا يمكن حذف العميل", 
-          details: "هذا العميل مرتبط بطلبات تسعير موجودة. يجب حذف الطلبات أولاً." 
+          message: "هذا العميل مرتبط بطلبات تسعير موجودة. يجب حذف الطلبات أولاً.", 
+          details: "هذا العميل مرتبط بطلبات تسعير موجودة. يجب حذف الطلبات أولاً.",
+          error: "CLIENT_HAS_QUOTATIONS"
         });
       }
       res.status(500).json({ message: "Internal server error" });
@@ -709,8 +710,9 @@ Respond in JSON format:
       console.error("Delete supplier error:", error);
       if (error.message && error.message.includes("Cannot delete supplier")) {
         return res.status(400).json({ 
-          message: "لا يمكن حذف المورد", 
-          details: "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً." 
+          message: "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.", 
+          details: "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.",
+          error: "SUPPLIER_HAS_PRICING_RECORDS"
         });
       }
       res.status(500).json({ message: "Internal server error" });

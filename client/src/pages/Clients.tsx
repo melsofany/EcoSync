@@ -57,25 +57,8 @@ export default function Clients() {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
     },
     onError: (error: any) => {
-      let errorMessage = "حدث خطأ أثناء حذف العميل";
-      
-      // Check for Arabic details first
-      if (error?.details) {
-        errorMessage = error.details;
-      } 
-      // Check for Arabic message in server error
-      else if (error?.serverError?.details) {
-        errorMessage = error.serverError.details;
-      }
-      // Check if it's a constraint error and provide Arabic message
-      else if (error?.message?.includes("Cannot delete client") || 
-               error?.message?.includes("quotation")) {
-        errorMessage = "هذا العميل مرتبط بطلبات تسعير موجودة. يجب حذف الطلبات أولاً.";
-      }
-      // Check for Arabic message
-      else if (error?.message?.includes("لا يمكن حذف العميل")) {
-        errorMessage = "هذا العميل مرتبط بطلبات تسعير موجودة. يجب حذف الطلبات أولاً.";
-      }
+      // Use the message directly from server since it's already in Arabic
+      const errorMessage = error?.message || "حدث خطأ أثناء حذف العميل";
       
       toast({
         title: "خطأ في الحذف",

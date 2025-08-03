@@ -58,25 +58,8 @@ export default function Suppliers() {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
     },
     onError: (error: any) => {
-      let errorMessage = "حدث خطأ أثناء حذف المورد";
-      
-      // Check for Arabic details first
-      if (error?.details) {
-        errorMessage = error.details;
-      } 
-      // Check for Arabic message
-      else if (error?.serverError?.details) {
-        errorMessage = error.serverError.details;
-      }
-      // Check if it's a constraint error and provide Arabic message
-      else if (error?.message?.includes("Cannot delete supplier") || 
-               error?.message?.includes("pricing record")) {
-        errorMessage = "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.";
-      }
-      // Check for Arabic message in error
-      else if (error?.message?.includes("لا يمكن حذف المورد")) {
-        errorMessage = "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.";
-      }
+      // Use the message directly from server since it's already in Arabic
+      const errorMessage = error?.message || "حدث خطأ أثناء حذف المورد";
       
       toast({
         title: "خطأ في الحذف",
