@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { X, User, Lock, Shield, Mail, Phone, Camera, Upload } from "lucide-react";
+import ProfileImageUploader from "@/components/ProfileImageUploader";
 
 const userSchema = z.object({
   username: z.string().min(3, "اسم المستخدم يجب أن يكون 3 أحرف على الأقل"),
@@ -197,28 +198,72 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
             <div className="md:col-span-2">
               <Label htmlFor="profileImage">الصورة الشخصية</Label>
               <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                <div className="flex items-center gap-4">
+                  {/* Profile Image Preview */}
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden shadow-lg">
                     {form.watch("profileImage") ? (
                       <img 
-                        src={form.watch("profileImage")} 
+                        src={form.watch("profileImage").startsWith('/profile-images/') 
+                          ? form.watch("profileImage") 
+                          : form.watch("profileImage")
+                        } 
                         alt="صورة المستخدم" 
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
                       />
-                    ) : (
-                      <Camera className="h-8 w-8 text-gray-400" />
+                    ) : null}
+                    {!form.watch("profileImage") && (
+                      <div className="text-white text-xl font-bold">
+                        {form.watch("fullName") 
+                          ? form.watch("fullName").split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+                          : <Camera className="h-8 w-8" />
+                        }
+                      </div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <Input
-                      id="profileImage"
-                      type="url"
-                      placeholder="رابط الصورة الشخصية (اختياري)"
-                      {...form.register("profileImage")}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      يمكنك إدخال رابط الصورة أو تركه فارغاً
-                    </p>
+
+                  {/* Upload Controls */}
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <ProfileImageUploader
+                        currentImageUrl={form.watch("profileImage")}
+                        onImageUploaded={(imageUrl) => {
+                          form.setValue("profileImage", imageUrl);
+                        }}
+                      />
+                      {form.watch("profileImage") && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => form.setValue("profileImage", "")}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          إزالة
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div className="text-xs text-gray-500">
+                      يمكنك رفع صورة شخصية من جهازك (حد أقصى 5 ميجابايت)
+                    </div>
+                    
+                    {/* Manual URL Input (Alternative) */}
+                    <details className="text-sm">
+                      <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
+                        أو أدخل رابط الصورة يدوياً
+                      </summary>
+                      <Input
+                        id="profileImage"
+                        type="url"
+                        placeholder="https://example.com/image.jpg"
+                        className="mt-2"
+                        {...form.register("profileImage")}
+                      />
+                    </details>
                   </div>
                 </div>
               </div>
@@ -292,7 +337,8 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                 {form.watch("role") === "data_entry" && (
                   <ul className="space-y-1">
                     <li>• إدخال طلبات التسعير</li>
-                    <li>• إدارة الأصناف والعملاء</li>
+                    <li>• إدارة الأصناف</li>
+                    <li>• التقارير الأساسية</li>
                     <li>• عرض التقارير الأساسية</li>
                     <li>• إنشاء أوامر الشراء</li>
                   </ul>

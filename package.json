@@ -48,6 +48,7 @@
     "@types/memoizee": "^0.4.12",
     "@types/xlsx": "^0.0.35",
     "@uppy/aws-s3": "^4.3.2",
+    "@uppy/aws-s3-multipart": "^4.1.2",
     "@uppy/core": "^4.5.2",
     "@uppy/dashboard": "^4.4.2",
     "@uppy/drag-drop": "^4.2.2",
