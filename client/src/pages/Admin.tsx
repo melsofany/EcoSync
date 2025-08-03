@@ -183,8 +183,12 @@ export default function Admin() {
   };
 
   const usersArray = Array.isArray(users) ? users : [];
-  const onlineUsers = usersArray.filter((u: any) => u.isOnline) || [];
+  const onlineUsers = usersArray.filter((u: any) => u.isOnline === true);
   const totalUsers = usersArray.length || 0;
+  
+  // Debug: log users online status
+  console.log('Users array:', usersArray.map(u => ({ name: u.fullName, isOnline: u.isOnline })));
+  console.log('Online users count:', onlineUsers.length);
 
   return (
     <div className="space-y-8">
