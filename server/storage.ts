@@ -884,6 +884,7 @@ export class DatabaseStorage implements IStorage {
 
   // Combined pricing view for detailed analysis
   async getDetailedPricingForItem(itemId: string): Promise<any> {
+    // Get supplier pricing for this specific item only
     const supplierPricings = await db
       .select({
         supplierPricing: supplierPricing,
@@ -891,18 +892,30 @@ export class DatabaseStorage implements IStorage {
       })
       .from(supplierPricing)
       .leftJoin(suppliers, eq(supplierPricing.supplierId, suppliers.id))
-      .where(eq(supplierPricing.itemId, itemId))
+      .where(and(
+        eq(supplierPricing.itemId, itemId),
+        eq(supplierPricing.status, "active")
+      ))
       .orderBy(desc(supplierPricing.priceReceivedDate));
 
+    // Get customer pricing for this specific item only
     const customerPricings = await db
       .select()
       .from(customerPricing)
-      .where(eq(customerPricing.itemId, itemId))
+      .where(and(
+        eq(customerPricing.itemId, itemId),
+        eq(customerPricing.status, "active")
+      ))
       .orderBy(desc(customerPricing.createdAt));
 
-    const pricingHistoryData = await this.getPricingHistoryByItem(itemId);
+    // Get pricing history for this specific item only
+    const pricingHistoryData = await db
+      .select()
+      .from(pricingHistory)
+      .where(eq(pricingHistory.itemId, itemId))
+      .orderBy(desc(pricingHistory.createdAt));
 
-    // Get purchase orders for this item
+    // Get purchase orders for this specific item only
     const purchaseOrdersData = await this.getPurchaseOrdersForItem(itemId);
 
     return {

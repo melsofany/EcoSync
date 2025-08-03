@@ -59,7 +59,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
 
   return (
     <div className="space-y-4">
-      {/* Basic supplier pricing info */}
+      {/* Basic supplier pricing info - show data from item passed as prop */}
       <div className="bg-muted/30 rounded-lg p-4">
         <h4 className="font-semibold mb-3 flex items-center gap-2">
           <DollarSign className="h-4 w-4" />
@@ -75,17 +75,12 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <div>
             <label className="text-sm font-medium">تاريخ ورود السعر:</label>
             <p className="text-sm">
-              {item.supplierPricing?.priceReceivedDate &&
-                format(
-                  new Date(item.supplierPricing.priceReceivedDate),
-                  "dd/MM/yyyy",
-                  { locale: ar }
-                )}
+              {item.requestNumber ? `طلب رقم: ${item.requestNumber}` : "غير محدد"}
             </p>
           </div>
           <div>
             <label className="text-sm font-medium">المورد:</label>
-            <p className="text-sm">{item.supplierPricing?.supplier?.name || "غير محدد"}</p>
+            <p className="text-sm">{item.supplierName || "غير محدد"}</p>
           </div>
           <div>
             <label className="text-sm font-medium">حالة أمر الشراء:</label>

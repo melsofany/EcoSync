@@ -16,7 +16,7 @@ import Admin from "@/pages/Admin";
 import Clients from "@/pages/Clients";
 import Suppliers from "@/pages/Suppliers";
 import SupplierPricing from "@/pages/SupplierPricing";
-import CustomerPricing from "@/pages/CustomerPricing";
+import CustomerPricing from "@/pages/CustomerPricingNew";
 import CreatePurchaseOrder from "@/pages/CreatePurchaseOrder";
 import NotFound from "@/pages/not-found";
 
