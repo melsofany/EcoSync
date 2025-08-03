@@ -1043,36 +1043,44 @@ export class DatabaseStorage implements IStorage {
 
     // Get comprehensive data for ALL unified items
     const comprehensiveData = await db.execute(sql`
-      SELECT DISTINCT
-        qi.unit_price as customer_price,
-        qi.quantity as qty,
-        qr.custom_request_number as rfq_number,
-        qr.request_date as rfq_date,
-        qr.status as rfq_status,
-        i.part_number,
-        i.line_item,
-        i.description,
-        i.unit as uom,
-        i.category,
+      SELECT 
+        -- معلومات العميل والبند
+        COALESCE(c.name, 'EDC') as client_name,
+        i.item_number as item_id, 
+        i.description as description,
+        COALESCE(i.line_item, '') as line_item,
+        COALESCE(i.part_number, '') as part_no,
         
-        -- Purchase Order data
-        po.po_number,
-        po.po_date,
-        poi.quantity as po_quantity,
-        poi.unit_price as po_price,
-        poi.total_price as po_total,
-        po.status as po_status
+        -- معلومات طلب التسعير (تصحيح رقم الطلب والسعر)
+        COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
+        qr.request_date as rfq_date,
+        qi.quantity as rfq_qty,
+        COALESCE(qr.expiry_date, '') as res_date,
+        qi.unit_price as customer_price,
+        
+        -- معلومات أمر الشراء
+        COALESCE(po.po_number, '') as po_number,
+        COALESCE(po.po_date::text, '') as po_date, 
+        COALESCE(poi.quantity::text, '') as po_quantity,
+        COALESCE(poi.unit_price::text, '') as po_price,
+        COALESCE((poi.quantity * poi.unit_price)::text, '') as po_total,
+        
+        -- معلومات إضافية
+        COALESCE(i.category, 'ELEC') as category,
+        i.unit as uom
         
       FROM items i
       LEFT JOIN quotation_items qi ON i.id = qi.item_id
-      LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id
+      LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id  
+      LEFT JOIN clients c ON qr.client_id = c.id
       LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
       LEFT JOIN purchase_orders po ON poi.po_id = po.id
+      
       WHERE i.normalized_part_number = ${normalizedPartNumber}
-      ORDER BY qr.request_date DESC, po.po_date DESC
+      ORDER BY qr.request_date DESC, i.line_item, po.po_date DESC
     `);
 
-    return comprehensiveData;
+    return comprehensiveData.rows as any[];
   }
 
   // Get comprehensive data for an item similar to Excel table format

@@ -842,10 +842,10 @@ Respond in JSON format:
     }
   });
 
-  // Get comprehensive item data like Excel table
+  // Get comprehensive item data like Excel table (unified version)
   app.get("/api/items/:itemId/comprehensive-data", requireAuth, async (req: Request, res: Response) => {
     try {
-      const comprehensiveData = await storage.getComprehensiveItemData(req.params.itemId);
+      const comprehensiveData = await storage.getItemComprehensiveDataUnified(req.params.itemId);
       res.json(comprehensiveData);
     } catch (error) {
       console.error("Error fetching comprehensive item data:", error);
