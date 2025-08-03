@@ -30,27 +30,34 @@ import { useToast } from "@/hooks/use-toast";
 // Component to show detailed pricing info for an item
 function ItemDetailedPricing({ item }: { item: any }) {
   const [detailedPricing, setDetailedPricing] = useState<any>(null);
+  const [historicalPricing, setHistoricalPricing] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPricingForm, setShowPricingForm] = useState(false);
 
-  // Fetch detailed pricing when component mounts
+  // Fetch detailed pricing and historical data when component mounts
   React.useEffect(() => {
-    const fetchDetailedPricing = async () => {
+    const fetchPricingData = async () => {
       if (!item?.id) return;
       
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/items/${item.id}/detailed-pricing`);
-        const data = await response.json();
-        setDetailedPricing(data);
+        // Fetch detailed pricing
+        const detailedResponse = await fetch(`/api/items/${item.id}/detailed-pricing`);
+        const detailedData = await detailedResponse.json();
+        setDetailedPricing(detailedData);
+
+        // Fetch historical pricing from Excel sheets
+        const historicalResponse = await fetch(`/api/items/${item.id}/historical-pricing`);
+        const historicalData = await historicalResponse.json();
+        setHistoricalPricing(historicalData);
       } catch (error) {
-        console.error('Error fetching detailed pricing:', error);
+        console.error('Error fetching pricing data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDetailedPricing();
+    fetchPricingData();
   }, [item?.id]);
 
   if (isLoading) {
@@ -106,6 +113,36 @@ function ItemDetailedPricing({ item }: { item: any }) {
       {showPricingForm && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <CustomerPricingForm item={item} onSuccess={() => setShowPricingForm(false)} />
+        </div>
+      )}
+
+      {/* Historical Pricing Summary from Excel */}
+      {historicalPricing && historicalPricing.length > 0 && (
+        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <h4 className="font-semibold mb-3 flex items-center gap-2 text-blue-800">
+            <Package className="h-4 w-4" />
+            البيانات التاريخية من الشيت (LINE ITEM: {historicalPricing[0]?.lineItem})
+          </h4>
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <label className="text-blue-700 font-medium">إجمالي الطلبات:</label>
+              <p className="font-semibold">{historicalPricing.length}</p>
+            </div>
+            <div>
+              <label className="text-blue-700 font-medium">إجمالي الكمية:</label>
+              <p className="font-semibold">
+                {historicalPricing.reduce((sum, p) => sum + Number(p.quantity || 0), 0).toLocaleString('ar-EG')}
+              </p>
+            </div>
+            <div>
+              <label className="text-blue-700 font-medium">آخر سعر:</label>
+              <p className="font-semibold text-green-600">
+                {historicalPricing[0]?.unitPrice 
+                  ? formatCurrency(Number(historicalPricing[0].unitPrice), historicalPricing[0].currency)
+                  : "غير محدد"}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -213,10 +250,53 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     <TableCell className="text-center border font-bold">Each</TableCell>
                   </TableRow>
                 ))}
+
+                {/* Historical pricing from Excel sheets */}
+                {historicalPricing && historicalPricing.map((pricing: any, index: number) => (
+                  <TableRow key={`historical-${index}`} className="hover:bg-yellow-50 bg-yellow-25 border-b">
+                    <TableCell className="text-center border font-bold">
+                      {pricing.requestNumber || pricing.kItemId}
+                    </TableCell>
+                    <TableCell className="text-center border">{pricing.quantity}</TableCell>
+                    <TableCell className="text-center border">
+                      {format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center border">
+                      {pricing.requestNumber || "N/A"}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">{pricing.clientName?.slice(0, 8)}</TableCell>
+                    <TableCell className="text-center border">
+                      {format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">
+                      {formatCurrency(Number(pricing.unitPrice || 0), pricing.currency)}
+                    </TableCell>
+                    <TableCell className="text-center border">{pricing.quantity}</TableCell>
+                    <TableCell className="text-center border">
+                      {format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold text-blue-600">
+                      شيت أصلي
+                    </TableCell>
+                    <TableCell className="text-left border px-2 text-xs max-w-xs">
+                      <div className="break-words">
+                        {pricing.description?.toUpperCase()}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">
+                      {pricing.partNumber || pricing.kItemId}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold text-xs text-blue-600">
+                      {pricing.lineItem}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">Each</TableCell>
+                  </TableRow>
+                ))}
                 
                 {/* If no data, show item basic info */}
                 {(!detailedPricing?.supplierPricings || detailedPricing.supplierPricings.length === 0) && 
-                 (!detailedPricing?.customerPricings || detailedPricing.customerPricings.length === 0) && (
+                 (!detailedPricing?.customerPricings || detailedPricing.customerPricings.length === 0) &&
+                 (!historicalPricing || historicalPricing.length === 0) && (
                   <TableRow className="border-b">
                     <TableCell className="text-center border font-bold">10500</TableCell>
                     <TableCell className="text-center border">1</TableCell>
