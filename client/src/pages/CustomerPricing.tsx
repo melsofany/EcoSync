@@ -48,8 +48,14 @@ function ItemDetailedPricing({ item }: { item: any }) {
 
         // Fetch historical pricing from Excel sheets
         const historicalResponse = await fetch(`/api/items/${item.id}/historical-pricing`);
-        const historicalData = await historicalResponse.json();
-        setHistoricalPricing(historicalData);
+        if (historicalResponse.ok) {
+          const historicalData = await historicalResponse.json();
+          console.log('Historical data received:', historicalData);
+          setHistoricalPricing(historicalData);
+        } else {
+          console.error('Failed to fetch historical data:', historicalResponse.status);
+          setHistoricalPricing([]);
+        }
       } catch (error) {
         console.error('Error fetching pricing data:', error);
       } finally {
