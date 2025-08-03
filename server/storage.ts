@@ -818,6 +818,8 @@ export class DatabaseStorage implements IStorage {
         quantity: quotationItems.quantity,
         quotationStatus: quotationRequests.status,
         requestNumber: quotationRequests.requestNumber,
+        requestDate: quotationRequests.requestDate,
+        expiryDate: quotationRequests.expiryDate,
         supplierPrice: supplierPricing.unitPrice,
         supplierName: suppliers.name,
       })

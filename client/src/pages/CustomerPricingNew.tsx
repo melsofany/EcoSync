@@ -81,14 +81,18 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <Clock className="h-4 w-4" />
           معلومات طلب التسعير (RFQ)
         </h4>
-        <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-4 gap-4 text-sm">
           <div>
             <label className="font-medium">رقم طلب التسعير:</label>
             <p className="text-yellow-700 font-bold">{item.requestNumber}</p>
           </div>
           <div>
             <label className="font-medium">تاريخ الطلب:</label>
-            <p className="text-yellow-700">تاريخ غير محدد</p>
+            <p className="text-yellow-700">{item.requestDate || "تاريخ غير محدد"}</p>
+          </div>
+          <div>
+            <label className="font-medium">تاريخ انتهاء العرض:</label>
+            <p className="text-yellow-700">{item.expiryDate || "تاريخ غير محدد"}</p>
           </div>
           <div>
             <label className="font-medium">الكمية المطلوبة:</label>
