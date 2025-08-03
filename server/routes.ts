@@ -765,10 +765,12 @@ Respond in JSON format:
           clientName: 'غير محدد'
         };
         
-        // فحص كل عمود وتحديد نوعه بناءً على المحتوى
+        // فحص كل عمود وتحديد نوعه بناءً على المحتوى والفهرس
         rowKeys.forEach((key, colIndex) => {
           const value = row[key];
           const strValue = String(value || '').trim();
+          
+          console.log(`  Column ${colIndex} (${key}): ${strValue}`);
           
           // تخطي القيم الفارغة أو NaN
           if (!strValue || strValue === 'nan' || strValue === 'NaN') return;
@@ -787,30 +789,31 @@ Respond in JSON format:
             analyzedData.unit = strValue;
           }
           
-          // رقم البند (نمط محدد: أرقام.أرقام.حروف.أرقام مثل 1854.002.CARIER.7519)
-          else if (key.toLowerCase().includes('line item') || key.toLowerCase().includes('item')) {
+          // رقم البند - فحص بالفهرس والمحتوى
+          if (colIndex === 2 || key.toLowerCase().includes('line item') || key.toLowerCase().includes('item')) {
+            // العمود 2 هو LINE ITEM حسب البيانات المُكتشفة
             analyzedData.lineItem = strValue;
           }
-          // فحص نمط رقم البند بالتعبير النمطي
+          // فحص إضافي بالنمط
           else if (/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue)) {
             analyzedData.lineItem = strValue;
           }
           
-          // رقم القطعة (أرقام وحروف ولكن ليس رقم بند)
-          else if (key.toLowerCase().includes('part') || key.toLowerCase().includes('p/n')) {
+          // رقم القطعة - العمود 3 أو بناءً على الاسم
+          else if (colIndex === 3 || key.toLowerCase().includes('part') || key.toLowerCase().includes('p/n')) {
             if (!/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue)) { // ليس رقم بند
               analyzedData.partNumber = strValue;
             }
           }
           
-          // التوصيف (نص طويل يحتوي على تفاصيل)
-          else if (key.toLowerCase().includes('description') || key.toLowerCase().includes('desc') ||
+          // التوصيف - العمود 4 أو بناءً على المحتوى
+          else if (colIndex === 4 || key.toLowerCase().includes('description') || key.toLowerCase().includes('desc') ||
                    strValue.length > 50) {
             analyzedData.description = strValue;
           }
           
-          // رقم الطلب/RFQ (يبدأ بأرقام وحروف مثل 25R009802)
-          else if (key.toLowerCase().includes('source') || key.toLowerCase().includes('rfq') ||
+          // رقم الطلب/RFQ - العمود 5 أو بناءً على النمط
+          else if (colIndex === 5 || key.toLowerCase().includes('source') || key.toLowerCase().includes('rfq') ||
                    /^[0-9]{2}[A-Z]\d{6}$/.test(strValue)) {
             analyzedData.rfqNumber = strValue;
           }
@@ -832,10 +835,10 @@ Respond in JSON format:
             }
           }
           
-          // الكمية (أرقام صغيرة 1-1000 وليست أرقام التواريخ)
-          else if (key.toLowerCase().includes('quantity') || key.toLowerCase().includes('qty')) {
+          // الكمية - العمود 7 أو بناءً على الاسم
+          else if (colIndex === 7 || key.toLowerCase().includes('quantity') || key.toLowerCase().includes('qty')) {
             const num = parseInt(strValue);
-            if (!isNaN(num) && num > 0 && num <= 1000) {
+            if (!isNaN(num) && num >= 0 && num <= 10000) {
               analyzedData.quantity = num;
             }
           }
@@ -848,8 +851,8 @@ Respond in JSON format:
             }
           }
           
-          // اسم العميل (نص عربي أو انجليزي وليس "done")
-          else if (key.includes('العميل') || key.toLowerCase().includes('client')) {
+          // اسم العميل - العمود 10 أو بناءً على الاسم
+          else if (colIndex === 10 || key.includes('العميل') || key.toLowerCase().includes('client')) {
             if (strValue.toLowerCase() !== 'done' && strValue.toLowerCase() !== 'nan') {
               analyzedData.clientName = strValue;
             }
