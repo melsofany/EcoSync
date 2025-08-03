@@ -40,7 +40,7 @@ import {
   type InsertActivityLog,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, like, and, isNull, isNotNull } from "drizzle-orm";
+import { eq, desc, like, and, isNull, isNotNull, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -758,67 +758,47 @@ export class DatabaseStorage implements IStorage {
 
   // Get items ready for customer pricing (items with supplier pricing but no customer pricing)
   async getItemHistoricalPricing(itemId: string): Promise<any[]> {
-    // Get historical pricing data for an item from original Excel sheets
-    const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
-    if (!item.length) return [];
+    try {
+      // Get historical pricing data for an item from original Excel sheets
+      const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
+      if (!item.length) return [];
 
-    const lineItem = item[0].lineItem;
-    if (!lineItem) return [];
+      const lineItem = item[0].lineItem;
+      if (!lineItem) return [];
 
-    // Get ALL items with the same LINE ITEM from Excel sheets (quotations and purchase orders)
-    const quotationData = await db
-      .select({
-        kItemId: items.kItemId,
-        description: items.description,
-        lineItem: items.lineItem,
-        partNumber: items.partNumber,
-        unitPrice: quotationItems.unitPrice,
-        totalPrice: quotationItems.totalPrice,
-        quantity: quotationItems.quantity,
-        currency: quotationItems.currency,
-        requestNumber: quotationRequests.customRequestNumber,
-        requestDate: quotationRequests.requestDate,
-        clientName: clients.name,
-        sourceType: 'quotation' as string,
-        unit: items.unit,
-        category: items.category,
-      })
-      .from(items)
-      .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
-      .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
-      .innerJoin(clients, eq(quotationRequests.clientId, clients.id))
-      .where(eq(items.lineItem, lineItem))
-      .orderBy(desc(quotationRequests.requestDate));
+      console.log(`Searching for LINE ITEM: ${lineItem}`);
 
-    // Get purchase order data for the same LINE ITEM
-    const purchaseOrderData = await db
-      .select({
-        kItemId: items.kItemId,
-        description: items.description,
-        lineItem: items.lineItem,
-        partNumber: items.partNumber,
-        unitPrice: purchaseOrderItems.unitPrice,
-        totalPrice: purchaseOrderItems.totalPrice,
-        quantity: purchaseOrderItems.quantity,
-        currency: purchaseOrderItems.currency,
-        requestNumber: quotationRequests.customRequestNumber,
-        requestDate: purchaseOrders.poDate,
-        clientName: clients.name,
-        sourceType: 'purchase_order' as string,
-        unit: items.unit,
-        category: items.category,
-        poNumber: purchaseOrders.poNumber,
-      })
-      .from(items)
-      .innerJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
-      .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
-      .innerJoin(quotationRequests, eq(purchaseOrders.quotationId, quotationRequests.id))
-      .innerJoin(clients, eq(quotationRequests.clientId, clients.id))
-      .where(eq(items.lineItem, lineItem))
-      .orderBy(desc(purchaseOrders.poDate));
+      // Use Drizzle ORM query instead of raw SQL
+      const historicalData = await db
+        .select({
+          kItemId: items.kItemId,
+          description: items.description,
+          lineItem: items.lineItem,
+          partNumber: items.partNumber,
+          unit: items.unit,
+          category: items.category,
+          unitPrice: quotationItems.unitPrice,
+          totalPrice: quotationItems.totalPrice,
+          quantity: quotationItems.quantity,
+          currency: quotationItems.currency,
+          requestNumber: quotationRequests.customRequestNumber,
+          requestDate: quotationRequests.requestDate,
+          clientName: clients.name,
+          sourceType: sql<string>`'quotation'`.as('sourceType'),
+        })
+        .from(items)
+        .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
+        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+        .innerJoin(clients, eq(quotationRequests.clientId, clients.id))
+        .where(eq(items.lineItem, lineItem))
+        .orderBy(desc(quotationRequests.requestDate));
 
-    // Combine and return all data
-    return [...quotationData, ...purchaseOrderData];
+      console.log(`Found ${historicalData.length} historical records for LINE ITEM: ${lineItem}`);
+      return historicalData;
+    } catch (error) {
+      console.error('Error fetching historical pricing:', error);
+      return [];
+    }
   }
 
   async getItemsReadyForCustomerPricing(): Promise<any[]> {
