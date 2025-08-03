@@ -867,22 +867,42 @@ Respond in JSON format:
           return dateValue.toString();
         };
 
+        // إرجاع البيانات بالشكل المطابق لقاعدة البيانات
         return {
+          // بيانات صف Excel للعرض
           rowIndex: index + 1,
-          // نقل كامل للبيانات المُحللة بناءً على هيكل قاعدة البيانات
-          clientName: analyzedData.clientName || 'غير محدد',
+          lineNumber: analyzedData.lineNumber || (index + 1),
+          
+          // بيانات الطلب (quotationRequests table)
           requestNumber: analyzedData.rfqNumber || `REQ-${Date.now()}-${index + 1}`,
-          customRequestNumber: analyzedData.rfqNumber,
+          customRequestNumber: analyzedData.rfqNumber, // رقم الطلب من العميل
           requestDate: formatDate(analyzedData.rfqDate),
           expiryDate: formatDate(analyzedData.expiryDate),
-          description: analyzedData.description || 'بدون توصيف',
-          partNumber: analyzedData.partNumber || '',
-          lineItem: analyzedData.lineItem || '',
-          quantity: analyzedData.quantity || 0,
-          unit: analyzedData.unit || 'Each',
-          priceToClient: analyzedData.clientPrice || 0,
           status: 'pending',
-          lineNumber: analyzedData.lineNumber || (index + 1)
+          
+          // بيانات العميل (clients table)
+          clientName: analyzedData.clientName || 'غير محدد',
+          
+          // بيانات البند (items table)
+          // معرف البند P- سيتم توليده تلقائياً عبر الذكاء الاصطناعي
+          itemNumber: '', // سيتم توليده: P-000001, P-000002, etc.
+          kItemId: '', // سيتم توليده: K-generated ID
+          partNumber: analyzedData.partNumber || '',
+          lineItem: analyzedData.lineItem || '', // رقم البند من Excel
+          description: analyzedData.description || 'بدون توصيف',
+          unit: analyzedData.unit || 'Each',
+          category: '', // سيتم تحديده بالذكاء الاصطناعي
+          brand: '', // سيتم استخراجه من التوصيف
+          
+          // بيانات العرض (quotationItems table)
+          quantity: analyzedData.quantity || 0,
+          unitPrice: analyzedData.clientPrice || 0,
+          totalPrice: (analyzedData.quantity || 0) * (analyzedData.clientPrice || 0),
+          currency: 'EGP',
+          
+          // حالة الذكاء الاصطناعي
+          aiStatus: 'pending', // سيتم المعالجة بعد الرفع
+          aiMatchedItemId: null
         };
       });
 
