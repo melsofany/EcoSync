@@ -8,6 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -21,11 +29,37 @@ import { useToast } from "@/hooks/use-toast";
 
 // Component to show detailed pricing info for an item
 function ItemDetailedPricing({ item }: { item: any }) {
+  const [detailedPricing, setDetailedPricing] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPricingForm, setShowPricingForm] = useState(false);
+
+  // Fetch detailed pricing when component mounts
+  React.useEffect(() => {
+    const fetchDetailedPricing = async () => {
+      if (!item?.id) return;
+      
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/items/${item.id}/detailed-pricing`);
+        const data = await response.json();
+        setDetailedPricing(data);
+      } catch (error) {
+        console.error('Error fetching detailed pricing:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDetailedPricing();
+  }, [item?.id]);
+
+  if (isLoading) {
+    return <div className="bg-muted/30 rounded-lg p-4 text-center">جاري تحميل التفاصيل...</div>;
+  }
 
   return (
     <div className="space-y-4">
-      {/* Basic supplier pricing info */}
+      {/* Basic supplier pricing info - show data from item passed as prop */}
       <div className="bg-muted/30 rounded-lg p-4">
         <h4 className="font-semibold mb-3 flex items-center gap-2">
           <DollarSign className="h-4 w-4" />
@@ -41,7 +75,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <div>
             <label className="text-sm font-medium">رقم الطلب:</label>
             <p className="text-sm">
-              {item.requestNumber || "غير محدد"}
+              {item.requestNumber ? `طلب رقم: ${item.requestNumber}` : "غير محدد"}
             </p>
           </div>
           <div>
@@ -49,8 +83,10 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <p className="text-sm">{item.supplierName || "غير محدد"}</p>
           </div>
           <div>
-            <label className="text-sm font-medium">الكمية:</label>
-            <p className="text-sm">{item.quantity}</p>
+            <label className="text-sm font-medium">حالة أمر الشراء:</label>
+            <Badge variant="secondary">
+              لم يصدر أمر شراء
+            </Badge>
           </div>
         </div>
         
@@ -74,32 +110,143 @@ function ItemDetailedPricing({ item }: { item: any }) {
         )}
       </div>
 
-      {/* Current item information */}
-      <div className="mt-4">
-        <h5 className="font-semibold mb-2 flex items-center gap-2">
-          معلومات البند
-        </h5>
-        <div className="bg-blue-50 rounded-lg p-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <span className="font-medium">البند:</span>
-              <p className="font-bold">{item.description}</p>
-            </div>
-            <div>
-              <span className="font-medium">K-ID:</span>
-              <p className="font-bold text-blue-600">{item.kItemId}</p>
-            </div>
-            <div>
-              <span className="font-medium">رقم البند:</span>
-              <p className="font-bold">{item.itemNumber}</p>
-            </div>
-            <div>
-              <span className="font-medium">الوحدة:</span>
-              <p className="font-bold">{item.unit}</p>
+      {/* Enhanced detailed pricing table */}
+      {detailedPricing && (
+        <div className="mt-4">
+          <h5 className="font-semibold mb-2 flex items-center gap-2">
+            جدول التسعير المتكامل
+          </h5>
+          <div className="overflow-x-auto border rounded-lg">
+            <Table className="w-full border-collapse border border-gray-300">
+              <TableHeader>
+                <TableRow className="bg-gray-100 border-b">
+                  <TableHead className="text-center font-bold text-black border">PROCESS NO</TableHead>
+                  <TableHead className="text-center font-bold text-black border">QUANTITY</TableHead>
+                  <TableHead className="text-center font-bold text-black border">DATE/PO</TableHead>
+                  <TableHead className="text-center font-bold text-black border">PO</TableHead>
+                  <TableHead className="text-center font-bold text-black border">Category</TableHead>
+                  <TableHead className="text-center font-bold text-black border">REQ_DATE</TableHead>
+                  <TableHead className="text-center font-bold text-black border">PRICE/DATE</TableHead>
+                  <TableHead className="text-center font-bold text-black border">QTY</TableHead>
+                  <TableHead className="text-center font-bold text-black border">DATE</TableHead>
+                  <TableHead className="text-center font-bold text-black border">SPR</TableHead>
+                  <TableHead className="text-center font-bold text-black border">DESCRIPTION</TableHead>
+                  <TableHead className="text-center font-bold text-black border">PART NO</TableHead>
+                  <TableHead className="text-center font-bold text-black border">LINE ITEM</TableHead>
+                  <TableHead className="text-center font-bold text-black border">UOM</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {/* Current item supplier pricing - using correct item data */}
+                <TableRow className="hover:bg-gray-50 border-b">
+                  <TableCell className="text-center border font-bold">10500</TableCell>
+                  <TableCell className="text-center border">{item.quantity || 1}</TableCell>
+                  <TableCell className="text-center border">
+                    {format(new Date(), "dd/MM/yyyy", { locale: ar })}
+                  </TableCell>
+                  <TableCell className="text-center border">-</TableCell>
+                  <TableCell className="text-center border font-bold">SUPPLIES</TableCell>
+                  <TableCell className="text-center border">
+                    {format(new Date(), "dd/MM/yyyy", { locale: ar })}
+                  </TableCell>
+                  <TableCell className="text-center border font-bold">
+                    {formatCurrency(Number(item.supplierPrice || 0))}
+                  </TableCell>
+                  <TableCell className="text-center border">{item.quantity || 1}</TableCell>
+                  <TableCell className="text-center border">
+                    {format(new Date(), "dd/MM/yyyy", { locale: ar })}
+                  </TableCell>
+                  <TableCell className="text-center border font-bold">
+                    {item.kItemId?.replace('K', '28R')}
+                  </TableCell>
+                  <TableCell className="text-left border px-2 text-xs max-w-xs">
+                    <div className="break-words">
+                      {item.description?.toUpperCase()}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center border font-bold">
+                    {item.partNumber || item.itemNumber}
+                  </TableCell>
+                  <TableCell className="text-center border font-bold text-xs">
+                    {item.lineItem || `${item.itemNumber} GENERAL`}
+                  </TableCell>
+                  <TableCell className="text-center border font-bold">{item.unit}</TableCell>
+                </TableRow>
+                
+                {/* Customer pricing entries if exist */}
+                {detailedPricing?.customerPricings && detailedPricing.customerPricings.map((pricing: any) => (
+                  <TableRow key={`customer-${pricing.id}`} className="hover:bg-blue-50 bg-blue-25 border-b">
+                    <TableCell className="text-center border font-bold">10500</TableCell>
+                    <TableCell className="text-center border">{pricing.quantity}</TableCell>
+                    <TableCell className="text-center border">
+                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center border">-</TableCell>
+                    <TableCell className="text-center border font-bold">SUPPLIES</TableCell>
+                    <TableCell className="text-center border">
+                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">
+                      {formatCurrency(Number(pricing.sellingPrice))}
+                    </TableCell>
+                    <TableCell className="text-center border">{pricing.quantity}</TableCell>
+                    <TableCell className="text-center border">
+                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">
+                      {item.kItemId?.replace('K', '28R')}
+                    </TableCell>
+                    <TableCell className="text-left border px-2 text-xs max-w-xs">
+                      <div className="break-words">
+                        {item.description?.toUpperCase()} - CUSTOMER PRICING
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">
+                      {item.partNumber || item.itemNumber}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold text-xs">
+                      {item.lineItem || `${item.itemNumber} GENERAL`}
+                    </TableCell>
+                    <TableCell className="text-center border font-bold">{item.unit}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {/* Summary section with correct data */}
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-4 gap-4 text-sm">
+              <div>
+                <span className="font-medium">إجمالي عروض الموردين:</span>
+                <p className="text-blue-600 font-bold">
+                  1
+                </p>
+              </div>
+              <div>
+                <span className="font-medium">إجمالي تسعير العملاء:</span>
+                <p className="text-green-600 font-bold">
+                  {detailedPricing?.customerPricings?.length || 0}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium">آخر سعر مورد:</span>
+                <p className="text-blue-600 font-bold">
+                  {formatCurrency(Number(item.supplierPrice || 0))}
+                </p>
+              </div>
+              <div>
+                <span className="font-medium">آخر سعر عميل:</span>
+                <p className="text-green-600 font-bold">
+                  {detailedPricing?.customerPricings?.length > 0 
+                    ? formatCurrency(Number(detailedPricing.customerPricings[0].sellingPrice))
+                    : "-"}
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
