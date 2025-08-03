@@ -119,8 +119,9 @@ export default function Quotations() {
   };
 
   const filteredQuotations = quotations && Array.isArray(quotations) ? quotations.filter((quotation: any) => {
+    const displayNumber = quotation.customRequestNumber || quotation.requestNumber;
     return (
-      (!filters.requestNumber || quotation.requestNumber.includes(filters.requestNumber)) &&
+      (!filters.requestNumber || displayNumber.includes(filters.requestNumber)) &&
       (!filters.status || filters.status === "all" || quotation.status === filters.status) &&
       (!filters.date || quotation.requestDate?.startsWith(filters.date))
     );
@@ -177,7 +178,7 @@ export default function Quotations() {
               <Label htmlFor="requestNumber">رقم الطلب</Label>
               <Input
                 id="requestNumber"
-                placeholder="REQ00000001"
+                placeholder="25R004164"
                 value={filters.requestNumber}
                 onChange={(e) => setFilters({ ...filters, requestNumber: e.target.value })}
               />
@@ -245,7 +246,7 @@ export default function Quotations() {
                 ) : (
                   filteredQuotations.map((quotation: any) => (
                     <TableRow key={quotation.id} className="hover:bg-gray-50">
-                      <TableCell className="font-medium">{quotation.requestNumber}</TableCell>
+                      <TableCell className="font-medium">{quotation.customRequestNumber || quotation.requestNumber}</TableCell>
                       <TableCell>{getClientName(quotation.clientId)}</TableCell>
                       <TableCell>{formatDate(quotation.requestDate)}</TableCell>
                       <TableCell>
