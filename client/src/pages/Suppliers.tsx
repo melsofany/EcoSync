@@ -48,7 +48,20 @@ export default function Suppliers() {
   // Delete supplier mutation
   const deleteSupplierMutation = useMutation({
     mutationFn: async (supplierId: string) => {
-      return apiRequest("DELETE", `/api/suppliers/${supplierId}`);
+      const response = await fetch(`/api/suppliers/${supplierId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        if (response.status === 400) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "لا يمكن حذف هذا المورد");
+        }
+        throw new Error("حدث خطأ في الخادم");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -58,17 +71,9 @@ export default function Suppliers() {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
     },
     onError: (error: any) => {
-      console.log("Frontend delete supplier error:", error);
-      console.log("Error message:", error?.message);
-      console.log("Error details:", error?.details);
-      console.log("Server error:", error?.serverError);
-      
-      // Use the message directly from server since it's already in Arabic
-      const errorMessage = error?.message || "حدث خطأ أثناء حذف المورد";
-      
       toast({
         title: "خطأ في الحذف",
-        description: errorMessage,
+        description: error.message || "حدث خطأ أثناء حذف المورد",
         variant: "destructive",
       });
     }

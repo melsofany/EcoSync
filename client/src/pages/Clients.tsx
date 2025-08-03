@@ -47,7 +47,20 @@ export default function Clients() {
   // Delete client mutation
   const deleteClientMutation = useMutation({
     mutationFn: async (clientId: string) => {
-      return apiRequest("DELETE", `/api/clients/${clientId}`);
+      const response = await fetch(`/api/clients/${clientId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        if (response.status === 400) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "لا يمكن حذف هذا العميل");
+        }
+        throw new Error("حدث خطأ في الخادم");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -57,12 +70,9 @@ export default function Clients() {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
     },
     onError: (error: any) => {
-      // Use the message directly from server since it's already in Arabic
-      const errorMessage = error?.message || "حدث خطأ أثناء حذف العميل";
-      
       toast({
         title: "خطأ في الحذف",
-        description: errorMessage,
+        description: error.message || "حدث خطأ أثناء حذف العميل",
         variant: "destructive",
       });
     }
