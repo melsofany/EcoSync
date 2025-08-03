@@ -95,9 +95,22 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
       setMapping(data.mapping);
       setShowPreview(true);
       setShowColumnMapping(false);
+      
+      // تحقق من وجود بيانات ونجاح النسخ
+      const hasValidData = data.previewData && data.previewData.length > 0 && 
+        data.previewData.some((row: any) => 
+          row.clientName !== 'غير محدد' || 
+          row.lineItem !== '' || 
+          row.partNumber !== '' || 
+          row.quantity > 0
+        );
+      
       toast({
-        title: "تم تحليل الملف بنجاح",
-        description: `تم العثور على ${data.totalRows} سجل للمعاينة`,
+        title: hasValidData ? "تم تحليل الملف بنجاح" : "تحذير: لا توجد بيانات صالحة",
+        description: hasValidData 
+          ? `تم العثور على ${data.totalRows} سجل للمعاينة`
+          : "تحقق من مطابقة الأعمدة - قد تكون أسماء الأعمدة مختلفة",
+        variant: hasValidData ? "default" : "destructive"
       });
     },
     onError: (error: any) => {
@@ -272,9 +285,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
             <AlertDescription>
               <strong>🎯 نظام مطابقة الأعمدة الجديد:</strong>
               <br /><strong>المرحلة 1:</strong> رفع الملف والضغط على "تحليل الملف"
-              <br /><strong>المرحلة 2:</strong> تحديد مطابقة الأعمدة (العميل = K، رقم البند = C، إلخ)
-              <br /><strong>المرحلة 3:</strong> معاينة البيانات والتأكيد
-              <br /><strong>✅ يدعم أي ترتيب أعمدة:</strong> حدد بنفسك أي عمود يطابق أي حقل
+              <br /><strong>المرحلة 2:</strong> تحديد مطابقة الأعمدة بأسمائها الحقيقية (مثل: العميل = "العميل "، رقم البند = "LINE ITEM")
+              <br /><strong>المرحلة 3:</strong> معاينة البيانات والتأكيد (النسخ المباشر بدون Fill Down)
+              <br />⚠️ <strong>هام:</strong> استخدم أسماء الأعمدة الكاملة كما تظهر في Excel، وليس الحروف فقط
+              <br />📋 <strong>مثال:</strong> "LINE ITEM" و "PART NO" و "العميل " (بمسافة)
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -384,7 +398,13 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  لا توجد بيانات للمعاينة. تحقق من الملف والأعمدة المحددة.
+                  <strong>لا توجد بيانات للمعاينة!</strong>
+                  <br />
+                  <strong>السبب المحتمل:</strong> أسماء الأعمدة في ملف Excel مختلفة عن المتوقع
+                  <br />
+                  <strong>الحل:</strong> تأكد من مطابقة الأعمدة الصحيحة في المرحلة السابقة
+                  <br />
+                  <em>مثال: إذا كان العمود يسمى "LINE ITEM" اختره بدلاً من "C"</em>
                 </AlertDescription>
               </Alert>
             ) : (
