@@ -227,10 +227,11 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
               <div>
                 <h4 className="font-semibold mb-2">معاينة البيانات (أول 5 سجلات):</h4>
                 <div className="overflow-x-auto overflow-y-auto max-h-96 border rounded-lg">
-                  <table className="w-full text-sm border-collapse border border-gray-300 min-w-[1200px]">
+                  <table className="w-full text-sm border-collapse border border-gray-300 min-w-[1300px]">
                     <thead>
                       <tr className="bg-gray-100 sticky top-0">
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[60px]">الصف</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[120px]">رقم الطلب</th>
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[100px]">العميل</th>
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[180px]">رقم البند</th>
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[120px]">رقم القطعة</th>
@@ -244,6 +245,9 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
                       {previewData.slice(0, 5).map((row, index) => (
                         <tr key={index} className={index % 2 === 0 ? "bg-white hover:bg-blue-50" : "bg-gray-50 hover:bg-blue-50"}>
                           <td className="border border-gray-300 p-3 text-center font-medium">{row.rowIndex}</td>
+                          <td className="border border-gray-300 p-3 font-mono text-indigo-600 text-sm">
+                            {row.requestNumber || row.customRequestNumber || 'غير محدد'}
+                          </td>
                           <td className="border border-gray-300 p-3 font-medium text-purple-700">{row.clientName}</td>
                           <td className="border border-gray-300 p-3 font-mono text-blue-600 text-xs">{row.lineItem}</td>
                           <td className="border border-gray-300 p-3 font-mono text-gray-700">{row.partNumber}</td>
