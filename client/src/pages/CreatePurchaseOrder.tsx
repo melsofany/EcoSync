@@ -81,7 +81,7 @@ export default function CreatePurchaseOrder() {
   });
 
   // Get quotation items separately
-  const { data: quotationItems } = useQuery({
+  const { data: quotationItems = [] } = useQuery<any[]>({
     queryKey: ["/api/quotations", selectedQuotationId, "items"],
     enabled: !!selectedQuotationId,
   });
@@ -91,6 +91,7 @@ export default function CreatePurchaseOrder() {
     if (!quotationSearchTerm) return quotations;
     return quotations.filter((q: Quotation) => 
       q.requestNumber.toLowerCase().includes(quotationSearchTerm.toLowerCase()) ||
+      (q.customRequestNumber && q.customRequestNumber.toLowerCase().includes(quotationSearchTerm.toLowerCase())) ||
       (q.clientName && q.clientName.toLowerCase().includes(quotationSearchTerm.toLowerCase()))
     );
   }, [quotations, quotationSearchTerm]);
@@ -284,7 +285,12 @@ export default function CreatePurchaseOrder() {
                     {filteredQuotations?.map((quotation: any) => (
                       <SelectItem key={quotation.id} value={quotation.id}>
                         <div className="text-right w-full">
-                          <span className="font-medium">{quotation.requestNumber}</span>
+                          <span className="font-medium">
+                            {quotation.customRequestNumber || quotation.requestNumber}
+                          </span>
+                          {quotation.customRequestNumber && quotation.customRequestNumber !== quotation.requestNumber && (
+                            <span className="text-xs text-blue-600 ml-2">({quotation.requestNumber})</span>
+                          )}
                           <span className="text-gray-500 ml-2">- {quotation.clientName || "غير محدد"}</span>
                           <div className="text-xs text-gray-400">
                             {quotation.requestDate && format(new Date(quotation.requestDate), "dd/MM/yyyy", { locale: ar })}
@@ -373,7 +379,12 @@ export default function CreatePurchaseOrder() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <Label className="text-sm font-medium text-blue-700">رقم طلب التسعير</Label>
-                  <p className="font-bold text-blue-900">{selectedQuotation.requestNumber}</p>
+                  <p className="font-bold text-blue-900">
+                    {selectedQuotation.customRequestNumber || selectedQuotation.requestNumber}
+                  </p>
+                  {selectedQuotation.customRequestNumber && selectedQuotation.customRequestNumber !== selectedQuotation.requestNumber && (
+                    <p className="text-xs text-blue-600 mt-1">رقم النظام: {selectedQuotation.requestNumber}</p>
+                  )}
                 </div>
                 <div className="bg-green-50 p-3 rounded-lg">
                   <Label className="text-sm font-medium text-green-700">العميل</Label>
@@ -470,7 +481,9 @@ export default function CreatePurchaseOrder() {
                               </TableCell>
                               <TableCell>
                                 <div className="space-y-1">
-                                  <p className="font-medium text-green-700">{selectedQuotation?.requestNumber || "غير محدد"}</p>
+                                  <p className="font-medium text-green-700">
+                                    {selectedQuotation?.customRequestNumber || selectedQuotation?.requestNumber || "غير محدد"}
+                                  </p>
                                   <p className="text-sm text-blue-600 font-medium">العميل: {selectedQuotation?.clientName || "غير محدد"}</p>
                                   <p className="text-xs text-gray-500">
                                     تاريخ الطلب: {selectedQuotation?.requestDate ? 

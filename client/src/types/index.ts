@@ -2,6 +2,7 @@
 export interface Quotation {
   id: string;
   requestNumber: string;
+  customRequestNumber?: string;
   clientId: string;
   clientName?: string;
   requestDate: string;
