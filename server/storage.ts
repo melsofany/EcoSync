@@ -910,16 +910,19 @@ export class DatabaseStorage implements IStorage {
         description: items.description,
         lineItem: items.lineItem,
         kItemId: items.kItemId,
-        notes: items.notes,
         category: items.category,
         unit: items.unit,
       })
       .from(purchaseOrderItems)
       .leftJoin(items, eq(purchaseOrderItems.itemId, items.id))
-      .where(eq(purchaseOrderItems.poId, poId))
-      .orderBy(items.lineItem);
+      .where(eq(purchaseOrderItems.poId, poId));
     
-    return result;
+    // Sort by lineItem in JavaScript to avoid Drizzle orderBy issues
+    return result.sort((a, b) => {
+      const lineA = a.lineItem || '';
+      const lineB = b.lineItem || '';
+      return lineA.localeCompare(lineB);
+    });
   }
 
   async updatePurchaseOrderStatus(id: string, status: string): Promise<PurchaseOrder | undefined> {
