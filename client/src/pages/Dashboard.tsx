@@ -303,7 +303,7 @@ export default function Dashboard() {
                 <span>المستخدمون المتصلون</span>
               </div>
               <span className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">
-                {(stats as any)?.activeUsers || 0} متصل
+                {users && Array.isArray(users) ? users.filter((u: any) => u.isOnline).length : 0} متصل
               </span>
             </CardTitle>
           </CardHeader>
@@ -312,11 +312,10 @@ export default function Dashboard() {
               {users && Array.isArray(users) ? users.filter((u: any) => u.isOnline).map((onlineUser: any) => (
                 <div key={onlineUser.id} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3 space-x-reverse">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-medium">
-                        {getInitials(onlineUser.fullName)}
-                      </span>
-                    </div>
+                    <UserAvatar 
+                      user={onlineUser} 
+                      size="sm" 
+                    />
                     <div>
                       <p className="text-sm font-medium text-gray-800">
                         {onlineUser.fullName}
