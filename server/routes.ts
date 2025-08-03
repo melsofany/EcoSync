@@ -717,23 +717,23 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
-      // Map Excel columns to database fields based on correct structure
-      // B=UNIT, C=LINE ITEM, D=PART NO, E=DESCRIPTION, F=RFQ NO, G=RFQ DATE, H=QTY, I=PRICE, J=EXPIRY DATE, K=CLIENT NAME
+      // Map Excel columns to database fields based on image structure
+      // B=UOM, C=LINE ITEM, D=PART NO, E=DESCRIPTION, F=Source File, G=Request Date, H=Quantity, I=PRICE TO CLIENT, J=Response Date, K=العميل
       const mappedData = excelData.map((row: any, index: number) => {
         // Get all keys to access by position
         const rowKeys = Object.keys(row);
         
-        // Map columns correctly
-        const unit = rowKeys.length > 1 ? row[rowKeys[1]] || 'Each' : 'Each';              // B: UNIT
+        // Map columns correctly based on the image
+        const unit = rowKeys.length > 1 ? row[rowKeys[1]] || 'Each' : 'Each';              // B: UOM
         const lineItem = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                   // C: LINE ITEM
         const partNumber = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';                 // D: PART NO
         const description = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';                // E: DESCRIPTION
-        const rfqNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                  // F: RFQ NO
-        const rfqDate = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                    // G: RFQ DATE
-        const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // H: QTY
-        const price = rowKeys.length > 8 ? parseFloat(row[rowKeys[8]]) || 0 : 0;            // I: PRICE
-        const expiryDate = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // J: EXPIRY DATE
-        const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // K: CLIENT NAME
+        const sourceFile = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                 // F: Source File (رقم الطلب)
+        const requestDate = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                // G: Request Date
+        const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // H: Quantity
+        const priceToClient = rowKeys.length > 8 ? parseFloat(row[rowKeys[8]]) || 0 : 0;    // I: PRICE TO CLIENT
+        const responseDate = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';               // J: Response Date
+        const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // K: العميل
 
         // Format dates properly (convert Excel serial dates if needed)
         const formatDate = (dateValue: any) => {
@@ -754,12 +754,12 @@ Respond in JSON format:
           rowIndex: index + 1,
           // Database fields mapping
           clientName: clientName || 'غير محدد',
-          requestNumber: rfqNumber || `REQ-${Date.now()}-${index + 1}`,
-          customRequestNumber: rfqNumber,
-          requestDate: formatDate(rfqDate),
-          expiryDate: formatDate(expiryDate),
+          requestNumber: sourceFile || `REQ-${Date.now()}-${index + 1}`,
+          customRequestNumber: sourceFile,
+          requestDate: formatDate(requestDate),
+          responseDate: formatDate(responseDate),
           quantity,
-          price,
+          priceToClient,
           description,
           partNumber,
           lineItem,
@@ -776,16 +776,16 @@ Respond in JSON format:
         previewData: mappedData,
         totalRows: mappedData.length,
         mapping: {
-          'B': 'وحدة القياس (UNIT)',
+          'B': 'وحدة القياس (UOM)',
           'C': 'رقم البند (LINE ITEM)',
           'D': 'رقم القطعة (PART NO)',
           'E': 'التوصيف (DESCRIPTION)',
-          'F': 'رقم الطلب (RFQ NO)',
-          'G': 'تاريخ الطلب (RFQ DATE)',
-          'H': 'الكمية (QTY)',
-          'I': 'السعر (PRICE)',
-          'J': 'تاريخ انتهاء العرض (EXPIRY DATE)',
-          'K': 'اسم العميل (CLIENT NAME)'
+          'F': 'ملف المصدر (Source File)',
+          'G': 'تاريخ الطلب (Request Date)',
+          'H': 'الكمية (Quantity)',
+          'I': 'السعر للعميل (PRICE TO CLIENT)',
+          'J': 'تاريخ الرد (Response Date)',
+          'K': 'اسم العميل (العميل)'
         }
       });
     } catch (error) {
@@ -824,11 +824,11 @@ Respond in JSON format:
           const quotationData = {
             clientId: client?.id || '',
             requestDate: row.requestDate,
-            expiryDate: row.expiryDate,
+            expiryDate: row.responseDate, // Response Date as expiry
             customRequestNumber: row.customRequestNumber,
             status: row.status as any,
             createdBy: req.session.user!.id,
-            notes: `Imported from Excel - Price: ${row.price}`,
+            notes: `Imported from Excel - Price: ${row.priceToClient}`,
           };
 
           const quotation = await storage.createQuotationRequest(quotationData);
@@ -852,8 +852,8 @@ Respond in JSON format:
             await storage.addItemToQuotation(quotation.id, {
               itemId: item.id,
               quantity: row.quantity,
-              unitPrice: row.price,
-              totalPrice: row.quantity * row.price
+              unitPrice: row.priceToClient,
+              totalPrice: row.quantity * row.priceToClient
             });
           }
 
