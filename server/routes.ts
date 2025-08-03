@@ -4,6 +4,7 @@ import { storage, initializeDatabase } from "./storage";
 import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
 import { autoMapExcelColumns, processExcelRowForQuotation } from "./simpleExcelImport";
 import { sendEmail, generatePasswordResetEmail } from "./emailService";
+import { ObjectStorageService } from "./objectStorage";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import { randomBytes } from "crypto";
@@ -600,6 +601,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Item deleted successfully" });
     } catch (error) {
       console.error("Delete item error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Profile image upload endpoint
+  app.post("/api/profile-images/upload", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Profile image upload error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Profile image update endpoint
+  app.put("/api/profile-images/update", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { imageURL } = req.body;
+      const userId = req.user?.id;
+
+      if (!imageURL) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const profileImagePath = await objectStorageService.trySetObjectEntityAclPolicy(
+        imageURL,
+        {
+          owner: userId,
+          visibility: "private", // Profile images should be private
+        }
+      );
+
+      // Update user profile with new image path
+      const updatedUser = await storage.updateUser(userId, { profileImage: profileImagePath });
+      await logActivity(req, "update_profile_image", "user", userId, "Updated profile image");
+
+      res.json({ profileImagePath });
+    } catch (error) {
+      console.error("Profile image update error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
