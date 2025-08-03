@@ -709,12 +709,68 @@ Respond in JSON format:
   });
 
   // Excel import routes - only for IT admins
-  app.post("/api/import/quotations/preview", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+  // مرحلة 1: تحليل الملف وعرض الأعمدة المتاحة
+  app.post("/api/import/quotations/analyze", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
       const { excelData } = req.body;
       
       if (!Array.isArray(excelData) || excelData.length === 0) {
         return res.status(400).json({ message: "Invalid Excel data" });
+      }
+
+      // استخراج أعمدة الملف
+      const firstRow = excelData[0];
+      const availableColumns = Object.keys(firstRow).map((key, index) => ({
+        letter: String.fromCharCode(65 + index), // A, B, C, etc.
+        index: index,
+        name: key,
+        sampleData: String(firstRow[key] || '').substring(0, 30)
+      }));
+
+      // عرض عينة من البيانات (أول 3 صفوف)
+      const sampleRows = excelData.slice(0, 3).map((row, index) => ({
+        rowNumber: index + 1,
+        data: availableColumns.map(col => ({
+          column: col.letter,
+          value: String(row[col.name] || '').substring(0, 30)
+        }))
+      }));
+
+      res.json({
+        availableColumns,
+        sampleRows,
+        totalRows: excelData.length,
+        requiredFields: [
+          { field: 'lineItem', label: 'رقم البند', description: 'مثال: 1854.002.CARIER.7519', required: true },
+          { field: 'partNumber', label: 'رقم القطعة', description: 'مثال: 2503244', required: true },
+          { field: 'description', label: 'التوصيف', description: 'وصف المنتج', required: true },
+          { field: 'quantity', label: 'الكمية', description: 'رقم', required: true },
+          { field: 'unit', label: 'وحدة القياس', description: 'مثال: Each, Pcs', required: true },
+          { field: 'requestDate', label: 'تاريخ الطلب', description: 'تاريخ أو رقم Excel', required: true },
+          { field: 'expiryDate', label: 'تاريخ انتهاء العرض', description: 'تاريخ أو رقم Excel', required: true },
+          { field: 'clientName', label: 'اسم العميل', description: 'اسم الشركة أو العميل', required: true },
+          { field: 'rfqNumber', label: 'رقم الطلب', description: 'رقم طلب الشراء', required: true },
+          { field: 'unitPrice', label: 'سعر الوحدة', description: 'سعر اختياري', required: false }
+        ]
+      });
+
+    } catch (error) {
+      console.error("Error analyzing Excel file:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // مرحلة 2: معاينة البيانات بناءً على مطابقة الأعمدة المحددة
+  app.post("/api/import/quotations/preview", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { excelData, columnMapping } = req.body;
+      
+      if (!Array.isArray(excelData) || excelData.length === 0) {
+        return res.status(400).json({ message: "Invalid Excel data" });
+      }
+
+      if (!columnMapping || typeof columnMapping !== 'object') {
+        return res.status(400).json({ message: "Column mapping is required" });
       }
 
       // فلترة وتنظيف البيانات
@@ -778,8 +834,7 @@ Respond in JSON format:
           clientName: 'غير محدد'
         };
         
-        // قراءة البيانات حسب الهيكل المحدد من المستخدم
-        // A=Line No(0), B=UOM(1), C=LINE ITEM(2), D=PART NO(3), E=Description(4), F=RFQ(5), G=RequestDate(6), H=Qty(7), I=Price(8), J=ExpiryDate(9), K=Client(10)
+        // قراءة البيانات باستخدام المطابقة المحددة من المستخدم
         rowKeys.forEach((key, colIndex) => {
           const value = row[key];
           const strValue = String(value || '').trim();
@@ -787,36 +842,44 @@ Respond in JSON format:
           // تخطي القيم الفارغة أو NaN
           if (!strValue || strValue === 'nan' || strValue === 'NaN') return;
           
-          // تحديد المحتوى بناءً على فهرس العمود حسب المواصفات
-          switch (colIndex) {
-            case 0: // العمود A - رقم الصف (Line No)
-              const lineNum = parseInt(strValue);
-              if (!isNaN(lineNum) && lineNum > 0) {
-                analyzedData.lineNumber = lineNum;
-              }
+          // تحديد نوع البيانات بناءً على المطابقة المحددة من المستخدم
+          const columnLetter = String.fromCharCode(65 + colIndex); // A, B, C, etc.
+          
+          // البحث عن نوع البيانات المطابق لهذا العمود
+          let fieldType = null;
+          for (const [field, mappedColumn] of Object.entries(columnMapping)) {
+            if (mappedColumn === columnLetter) {
+              fieldType = field;
               break;
-              
-            case 1: // العمود B - وحدة القياس (UOM)
-              analyzedData.unit = strValue;
-              break;
-              
-            case 2: // العمود C - رقم البند (LINE ITEM)
+            }
+          }
+          
+          // معالجة البيانات حسب النوع المحدد
+          switch (fieldType) {
+            case 'lineItem':
               analyzedData.lineItem = strValue;
               break;
               
-            case 3: // العمود D - رقم القطعة (PART NO)
+            case 'partNumber':
               analyzedData.partNumber = strValue;
               break;
               
-            case 4: // العمود E - التوصيف (Description)
+            case 'description':
               analyzedData.description = strValue;
               break;
               
-            case 5: // العمود F - رقم الطلب (Source File/RFQ)
-              analyzedData.rfqNumber = strValue;
+            case 'quantity':
+              const qty = parseInt(strValue);
+              if (!isNaN(qty) && qty >= 0) {
+                analyzedData.quantity = qty;
+              }
               break;
               
-            case 6: // العمود G - تاريخ الطلب (Request Date)
+            case 'unit':
+              analyzedData.unit = strValue;
+              break;
+              
+            case 'requestDate':
               // تحويل فوري للأرقام التسلسلية
               const numValue = parseFloat(strValue);
               if (!isNaN(numValue) && numValue > 40000 && numValue < 50000) {
@@ -826,21 +889,7 @@ Respond in JSON format:
               }
               break;
               
-            case 7: // العمود H - الكمية (Quantity)
-              const qty = parseInt(strValue);
-              if (!isNaN(qty) && qty >= 0) {
-                analyzedData.quantity = qty;
-              }
-              break;
-              
-            case 8: // العمود I - السعر (Price) - قد يكون فارغ
-              const price = parseFloat(strValue);
-              if (!isNaN(price) && price >= 0) {
-                analyzedData.clientPrice = price;
-              }
-              break;
-              
-            case 9: // العمود J - تاريخ انتهاء العرض (Response/Expiry Date)
+            case 'expiryDate':
               // تحويل فوري للأرقام التسلسلية
               const expiryNum = parseFloat(strValue);
               if (!isNaN(expiryNum) && expiryNum > 40000 && expiryNum < 50000) {
@@ -850,14 +899,25 @@ Respond in JSON format:
               }
               break;
               
-            case 10: // العمود K - اسم العميل
+            case 'clientName':
               if (strValue.toLowerCase() !== 'done' && strValue.toLowerCase() !== 'nan') {
                 analyzedData.clientName = strValue;
               }
               break;
               
+            case 'rfqNumber':
+              analyzedData.rfqNumber = strValue;
+              break;
+              
+            case 'unitPrice':
+              const price = parseFloat(strValue);
+              if (!isNaN(price) && price >= 0) {
+                analyzedData.clientPrice = price;
+              }
+              break;
+              
             default:
-              // أعمدة إضافية - تجاهل أو تسجيل للمتابعة
+              // عمود غير محدد في المطابقة - تجاهل
               break;
           }
         });
