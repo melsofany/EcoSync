@@ -1041,11 +1041,12 @@ export class DatabaseStorage implements IStorage {
           COALESCE(i.line_item, '') as line_item,
           COALESCE(i.part_number, '') as part_no,
           
-          -- معلومات طلب التسعير
-          qr.request_number as rfq_number,
+          -- معلومات طلب التسعير (تصحيح رقم الطلب والسعر)
+          COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
           qr.request_date as rfq_date,
           qi.quantity as rfq_qty,
           COALESCE(qr.expiry_date, '') as res_date,
+          qi.unit_price as customer_price,
           
           -- معلومات أمر الشراء
           COALESCE(po.po_number, '') as po_number,
@@ -1066,7 +1067,7 @@ export class DatabaseStorage implements IStorage {
       LEFT JOIN purchase_orders po ON poi.po_id = po.id
       
       WHERE (i.line_item = ${lineItem} OR i.part_number = ${partNumber} OR i.id = ${itemId})
-      ORDER BY qr.request_number, po.po_date DESC
+      ORDER BY qr.request_date DESC, po.po_date DESC
     `);
 
     return comprehensiveData.rows as any[];

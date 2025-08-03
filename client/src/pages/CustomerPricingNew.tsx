@@ -234,7 +234,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       {row.res_date ? row.res_date.split('T')[0] : "-"}
                     </td>
                     <td className="border border-gray-300 p-2 text-center font-bold text-red-600">
-                      {formatCurrency(Number(item.supplierPrice || 0))}
+                      {row.customer_price ? formatCurrency(Number(row.customer_price)) : formatCurrency(Number(item.supplierPrice || 0))}
                     </td>
                     <td className="border border-gray-300 p-2 text-center font-semibold">{row.rfq_qty || item.quantity}</td>
                     <td className="border border-gray-300 p-2 text-center">
