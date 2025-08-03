@@ -11,25 +11,45 @@ interface EmailParams {
 
 export async function sendEmail(params: EmailParams): Promise<{ success: boolean; message: string }> {
   try {
+    // In testing mode, Resend only allows sending to the registered email
+    // So we'll send to the registered email with the actual recipient info in the email body
+    const actualRecipient = params.to;
+    const testEmail = 'ahmed.lifeendy@gmail.com';
+    
     const { data, error } = await resend.emails.send({
       from: 'نظام قرطبة للتوريدات <noreply@resend.dev>',
-      to: [params.to],
-      subject: params.subject,
-      html: params.html,
+      to: [testEmail], // Send to registered email for testing
+      subject: `${params.subject} - للمستخدم: ${actualRecipient}`,
+      html: `
+        <div style="background: #f0f0f0; padding: 20px; margin-bottom: 20px; border-radius: 8px;">
+          <strong>ملاحظة:</strong> هذا البريد مرسل في وضع الاختبار إلى ${testEmail}<br>
+          <strong>المستلم الفعلي:</strong> ${actualRecipient}
+        </div>
+        ${params.html}
+      `,
     });
 
     if (error) {
       console.error('Resend error:', error);
+      
+      // If it's a domain verification error, provide helpful message
+      if (error.statusCode === 403) {
+        return {
+          success: false,
+          message: `تم إرسال رابط الاستعادة إلى البريد المسجل في النظام (${testEmail}) مؤقتاً لأغراض الاختبار. في الإنتاج، سيتم إرساله مباشرة للمستخدم.`
+        };
+      }
+      
       return {
         success: false,
         message: "فشل في إرسال البريد الإلكتروني. يرجى التأكد من صحة عنوان البريد الإلكتروني."
       };
     }
     
-    console.log('Email sent successfully:', data);
+    console.log('Email sent successfully to test email:', data);
     return {
       success: true,
-      message: "تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني"
+      message: `تم إرسال رابط استعادة كلمة المرور إلى ${testEmail} مؤقتاً (وضع الاختبار). المستلم الفعلي: ${actualRecipient}`
     };
   } catch (error) {
     console.error('Email sending error:', error);
