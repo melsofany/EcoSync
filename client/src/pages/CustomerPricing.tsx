@@ -691,43 +691,62 @@ export default function CustomerPricing() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              {itemsArray.map((item: any) => (
-                <Collapsible
-                  key={item.id}
-                  open={openItems.has(item.id)}
-                  onOpenChange={() => toggleItem(item.id)}
-                >
-                  <CollapsibleTrigger className="w-full">
-                    <div className="flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-lg border transition-colors">
-                      <div className="flex items-center space-x-3 space-x-reverse">
-                        {openItems.has(item.id) ? (
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <div className="text-right">
-                          <p className="font-medium">{item.description}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {item.kItemId} | رقم البند: {item.itemNumber} | الوحدة: {item.unit}
-                          </p>
+              {itemsArray.map((item: any) => {
+                const isOpen = openItems.has(item.id);
+                console.log('Rendering item:', item.id, 'isOpen:', isOpen);
+                return (
+                  <Collapsible
+                    key={item.id}
+                    open={isOpen}
+                    onOpenChange={() => {
+                      console.log('Toggle item clicked:', item.id);
+                      toggleItem(item.id);
+                    }}
+                  >
+                    <CollapsibleTrigger className="w-full">
+                      <div className="flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-lg border transition-colors">
+                        <div className="flex items-center space-x-3 space-x-reverse">
+                          {isOpen ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                          <div className="text-right">
+                            <p className="font-medium">{item.description}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.kItemId} | رقم البند: {item.itemNumber} | الوحدة: {item.unit}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3 space-x-reverse">
+                          <Badge variant="outline" className="gap-1">
+                            <Clock className="h-3 w-3" />
+                            في انتظار التسعير
+                          </Badge>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3 space-x-reverse">
-                        <Badge variant="outline" className="gap-1">
-                          <Clock className="h-3 w-3" />
-                          في انتظار التسعير
-                        </Badge>
-                      </div>
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    {console.log('Rendering ItemDetailedPricing for item:', item.id)}
-                    <ItemDetailedPricing item={item} />
-                  </CollapsibleContent>
-                </Collapsible>
-              ))}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      {console.log('Rendering ItemDetailedPricing for item:', item.id)}
+                      <ItemDetailedPricing item={item} />
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })}
             </CardContent>
           </Card>
+
+          {/* Force show ItemDetailedPricing for debugging */}
+          {itemsArray.length > 0 && (
+            <Card className="border-red-200 bg-red-50">
+              <CardHeader>
+                <CardTitle className="text-red-700">DEBUG: Force Show Item Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ItemDetailedPricing item={itemsArray[0]} />
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>
