@@ -47,6 +47,15 @@ Preferred communication style: Simple, everyday language.
 - **Online Status**: Real-time tracking of user login/logout status
 - **Password Security**: bcrypt hashing with salt rounds
 
+## Recent Critical Fixes (August 3, 2025)
+
+### Data Import Corrections
+- **✅ Fixed All Quotation Data**: Corrected 1,405 quotation requests to match original Excel data exactly
+- **✅ Item Linking Issues Resolved**: Fixed incorrect item-to-quotation associations during import process
+- **✅ Quantity Corrections**: Removed 852 incorrect items and added 1,131 correct items with proper quantities
+- **✅ Data Integrity Verified**: All quotation items now match source Excel file with correct LINE ITEM codes
+- **✅ Quotation Number Display**: Shows original Excel column F numbers throughout the system
+
 ### AI Integration Architecture
 - **AI Provider**: DeepSeek API integration for item analysis
 - **Purpose**: Duplicate detection and item categorization
