@@ -260,15 +260,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:userId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const { isActive } = req.body;
+      const updateData = req.body;
       
-      const updatedUser = await storage.updateUser(userId, { isActive });
+      // Validate email format if provided
+      if (updateData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updateData.email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Validate phone format if provided (Saudi format)
+      if (updateData.phone && !/^(05|5)(5|0|3|6|4|9|1|8|7)([0-9]{7})$/.test(updateData.phone.replace(/\s/g, ''))) {
+        return res.status(400).json({ message: "Invalid phone number format" });
+      }
+
+      const updatedUser = await storage.updateUser(userId, updateData);
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      await logActivity(req, isActive ? "activate_user" : "deactivate_user", "user", userId, 
-        `User ${updatedUser.username} was ${isActive ? 'activated' : 'deactivated'}`);
+      // Determine activity based on what was updated
+      let activityAction = "update_user";
+      let activityDetails = `User ${updatedUser.username} was updated`;
+      
+      if (updateData.hasOwnProperty('isActive')) {
+        activityAction = updateData.isActive ? "activate_user" : "deactivate_user";
+        activityDetails = `User ${updatedUser.username} was ${updateData.isActive ? 'activated' : 'deactivated'}`;
+      }
+
+      await logActivity(req, activityAction, "user", userId, activityDetails);
 
       const { password: _, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);

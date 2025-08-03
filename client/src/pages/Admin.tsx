@@ -13,6 +13,7 @@ import { hasRole } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import NewUserModal from "@/components/modals/NewUserModal";
+import EditUserModal from "@/components/modals/EditUserModal";
 import { 
   Users, 
   Shield, 
@@ -47,6 +48,8 @@ export default function Admin() {
   
   const [activeSection, setActiveSection] = useState<string>("");
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     deepSeekApiKey: "",
     sessionTimeout: 30,
@@ -123,6 +126,33 @@ export default function Admin() {
       });
     },
   });
+
+  const editUserMutation = useMutation({
+    mutationFn: async ({ userId, userData }: { userId: string; userData: any }) => {
+      await apiRequest("PATCH", `/api/users/${userId}`, userData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setIsEditUserModalOpen(false);
+      setEditingUser(null);
+      toast({
+        title: "تم تحديث المستخدم",
+        description: "تم تحديث بيانات المستخدم بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في تحديث المستخدم",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEditUser = (userItem: any) => {
+    setEditingUser(userItem);
+    setIsEditUserModalOpen(true);
+  };
 
   const saveSettingsMutation = useMutation({
     mutationFn: async (settings: SystemSettings) => {
@@ -468,7 +498,7 @@ export default function Admin() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {/* TODO: Add edit functionality */}}
+                                onClick={() => handleEditUser(userItem)}
                                 className="text-blue-600 hover:text-blue-800"
                                 title="تعديل المستخدم"
                               >
@@ -658,6 +688,18 @@ export default function Admin() {
       <NewUserModal
         isOpen={isNewUserModalOpen}
         onClose={() => setIsNewUserModalOpen(false)}
+      />
+
+      {/* Edit User Modal */}
+      <EditUserModal 
+        isOpen={isEditUserModalOpen} 
+        onClose={() => {
+          setIsEditUserModalOpen(false);
+          setEditingUser(null);
+        }}
+        user={editingUser}
+        onSubmit={(userData) => editUserMutation.mutate({ userId: editingUser.id, userData })}
+        isLoading={editUserMutation.isPending}
       />
     </div>
   );
