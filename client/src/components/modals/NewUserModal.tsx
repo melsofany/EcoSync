@@ -17,7 +17,12 @@ const userSchema = z.object({
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
   fullName: z.string().min(1, "الاسم الكامل مطلوب"),
   email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
-  phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل").optional().or(z.literal("")),
+  phone: z.string().refine((val) => {
+    if (!val || val.trim() === '') return true;
+    return /^[0-9+\-\s()]{7,20}$/.test(val.replace(/\s/g, ''));
+  }, {
+    message: "رقم الهاتف غير صحيح"
+  }).optional().or(z.literal("")),
   profileImage: z.string().optional(),
   role: z.string().min(1, "الدور مطلوب"),
   isActive: z.boolean().default(true),
@@ -182,7 +187,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="01234567890"
+                  placeholder="01xxxxxxxxx"
                   className="pl-10"
                   {...form.register("phone")}
                 />

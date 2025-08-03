@@ -232,6 +232,14 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  phone: z.string().optional().refine((val) => {
+    if (!val || val.trim() === '') return true;
+    // Accept any phone number format with basic validation
+    return /^[0-9+\-\s()]{7,20}$/.test(val.replace(/\s/g, ''));
+  }, {
+    message: "رقم الهاتف غير صحيح"
+  })
 });
 
 export const insertClientSchema = createInsertSchema(clients).omit({
