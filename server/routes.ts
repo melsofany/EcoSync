@@ -802,13 +802,8 @@ Respond in JSON format:
             analyzedData.unit = strValue;
           }
           
-          // رقم البند - فحص بالفهرس والمحتوى
-          if (colIndex === 2 || key.toLowerCase().includes('line item') || key.toLowerCase().includes('item')) {
-            // العمود 2 هو LINE ITEM حسب البيانات المُكتشفة
-            analyzedData.lineItem = strValue;
-          }
-          // فحص إضافي بالنمط
-          else if (/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue)) {
+          // رقم البند - العمود 2 أو بناءً على الاسم
+          else if (colIndex === 2 || key.toLowerCase().includes('line item') || key.toLowerCase().includes('item')) {
             analyzedData.lineItem = strValue;
           }
           
@@ -864,7 +859,7 @@ Respond in JSON format:
             }
           }
           
-          // اسم العميل - العمود 10 أو بناءً على الاسم
+          // اسم العميل - العمود 10 أو بناءً على الاسم  
           else if (colIndex === 10 || key.includes('العميل') || key.toLowerCase().includes('client')) {
             if (strValue.toLowerCase() !== 'done' && strValue.toLowerCase() !== 'nan') {
               analyzedData.clientName = strValue;
@@ -887,7 +882,7 @@ Respond in JSON format:
             else if (strValue.length > 30 && !analyzedData.description) {
               analyzedData.description = strValue;
             }
-            // فحص إضافي لرقم البند إذا لم نجده بعد
+            // فحص إضافي لرقم البند بالنمط
             else if (/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue) && !analyzedData.lineItem) {
               analyzedData.lineItem = strValue;
             }
