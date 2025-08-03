@@ -12,7 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { DollarSign } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { DollarSign, ChevronDown, ChevronRight, Clock, Package, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 
@@ -327,13 +329,13 @@ export default function CustomerPricing() {
             <CardContent className="space-y-2">
               {itemsArray.map((item: any) => {
                 const isOpen = openItems.has(item.id);
-                console.log('Rendering item:', item.id, 'isOpen:', isOpen);
+
                 return (
                   <Collapsible
                     key={item.id}
                     open={isOpen}
                     onOpenChange={() => {
-                      console.log('Toggle item clicked:', item.id);
+
                       toggleItem(item.id);
                     }}
                   >
@@ -361,7 +363,7 @@ export default function CustomerPricing() {
                       </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="px-4 pb-4">
-                      {console.log('Rendering ItemDetailedPricing for item:', item.id)}
+
                       <ItemDetailedPricing item={item} />
                     </CollapsibleContent>
                   </Collapsible>
@@ -370,20 +372,7 @@ export default function CustomerPricing() {
             </CardContent>
           </Card>
 
-          {/* Force show ItemDetailedPricing for debugging */}
-          {itemsArray.length > 0 && (
-            <Card className="border-red-200 bg-red-50">
-              <CardHeader>
-                <CardTitle className="text-red-700">DEBUG: Force Show Item Details</CardTitle>
-                <p className="text-sm text-red-600">
-                  هذا القسم يعرض تفاصيل البند مباشرة لاختبار البيانات التاريخية من Excel
-                </p>
-              </CardHeader>
-              <CardContent>
-                <ItemDetailedPricing item={itemsArray[0]} />
-              </CardContent>
-            </Card>
-          )}
+
         </div>
       )}
     </div>
