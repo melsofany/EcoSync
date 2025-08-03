@@ -177,7 +177,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2">
+        <nav className="flex-1 p-3 lg:p-4 space-y-2 lg:space-y-3">
           {menuItems.map((item) => {
             if (!canAccessSection(user, item.section)) {
               return null;
@@ -189,20 +189,20 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             return (
               <Link key={item.href} href={item.href}>
                 <div className={cn(
-                  "flex items-center space-x-3 space-x-reverse p-3 lg:p-4 rounded-lg transition-colors group relative",
+                  "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 group relative border-2",
                   isActive 
-                    ? "bg-primary text-white shadow-md" 
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-800"
+                    ? "bg-primary text-white shadow-lg border-primary-600 transform scale-[1.02]" 
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent hover:border-gray-200 hover:shadow-sm"
                 )}>
-                  <Icon className="h-5 w-5 lg:h-6 lg:w-6 flex-shrink-0" />
+                  <Icon className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
                   {isOpen && (
-                    <span className="font-medium text-sm lg:text-lg">
+                    <span className="font-semibold text-base lg:text-lg leading-tight">
                       {item.title}
                     </span>
                   )}
                   {!isOpen && isActive && (
-                    <div className="absolute right-2 w-2 h-2 bg-primary rounded-full">
-                      <Circle className="h-2 w-2 fill-current" />
+                    <div className="absolute right-2 w-3 h-3 bg-white rounded-full shadow-sm">
+                      <Circle className="h-3 w-3 fill-current text-primary" />
                     </div>
                   )}
                 </div>
@@ -212,17 +212,17 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         </nav>
 
         {/* Logout */}
-        <div className="p-2 lg:p-4 border-t border-gray-200">
+        <div className="p-3 lg:p-4 border-t border-gray-200">
           <div
             onClick={() => logout.mutate()}
             className={cn(
-              "flex items-center space-x-3 space-x-reverse p-2 lg:p-3 rounded-lg transition-colors cursor-pointer",
-              "text-red-600 hover:bg-red-50 hover:text-red-700",
+              "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
+              "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm",
               logout.isPending && "opacity-50 cursor-not-allowed"
             )}
           >
-            <LogOut className="h-4 w-4 lg:h-5 lg:w-5 flex-shrink-0" />
-            {isOpen && <span className="font-medium text-sm lg:text-base">تسجيل الخروج</span>}
+            <LogOut className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
+            {isOpen && <span className="font-semibold text-base lg:text-lg leading-tight">تسجيل الخروج</span>}
           </div>
         </div>
       </div>
