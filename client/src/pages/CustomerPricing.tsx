@@ -548,6 +548,8 @@ export default function CustomerPricing() {
     queryKey: ["/api/items-ready-for-customer-pricing"],
   });
 
+  const itemsArray = Array.isArray(itemsNeedingPricing) ? itemsNeedingPricing : [];
+
   const toggleItem = (itemId: string) => {
     const newOpenItems = new Set(openItems);
     if (newOpenItems.has(itemId)) {
@@ -580,7 +582,7 @@ export default function CustomerPricing() {
         </p>
       </div>
 
-      {!itemsNeedingPricing || itemsNeedingPricing.length === 0 ? (
+      {!itemsArray || itemsArray.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
             <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -596,14 +598,14 @@ export default function CustomerPricing() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5" />
-                البنود التي تحتاج تسعير للعملاء ({itemsNeedingPricing.length})
+                البنود التي تحتاج تسعير للعملاء ({itemsArray.length})
               </CardTitle>
               <CardDescription>
                 اضغط على أي بند لعرض تفاصيله وإضافة تسعير العميل
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              {itemsNeedingPricing.map((item: any) => (
+              {itemsArray.map((item: any) => (
                 <Collapsible
                   key={item.id}
                   open={openItems.has(item.id)}
