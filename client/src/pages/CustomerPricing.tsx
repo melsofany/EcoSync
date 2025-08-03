@@ -30,11 +30,10 @@ import { useToast } from "@/hooks/use-toast";
 // Component to show detailed pricing info for an item
 function ItemDetailedPricing({ item }: { item: any }) {
   const [detailedPricing, setDetailedPricing] = useState<any>(null);
-  const [historicalPricing, setHistoricalPricing] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showPricingForm, setShowPricingForm] = useState(false);
 
-  // Fetch detailed pricing and historical data when component mounts
+  // Fetch only detailed pricing data when component mounts
   React.useEffect(() => {
     const fetchPricingData = async () => {
       if (!item?.id) {
@@ -42,99 +41,26 @@ function ItemDetailedPricing({ item }: { item: any }) {
         return;
       }
       
-      console.log('=== FETCHING PRICING DATA ===');
-      console.log('Item ID:', item.id);
-      console.log('Item object:', item);
       setIsLoading(true);
       
       try {
-        // Fetch detailed pricing
-        console.log('Calling detailed pricing API...');
+        // Fetch detailed pricing only
         const detailedResponse = await fetch(`/api/items/${item.id}/detailed-pricing`);
         const detailedData = await detailedResponse.json();
-        console.log('Detailed pricing data received:', detailedData);
         setDetailedPricing(detailedData);
-
-        // Fetch historical pricing from Excel sheets - FORCE THIS CALL
-        console.log('=== CALLING HISTORICAL PRICING API ===');
-        console.log('URL:', `/api/items/${item.id}/historical-pricing`);
-        
-        const historicalResponse = await fetch(`/api/items/${item.id}/historical-pricing`);
-        console.log('Historical response status:', historicalResponse.status);
-        console.log('Historical response headers:', Object.fromEntries(historicalResponse.headers));
-        
-        if (historicalResponse.ok) {
-          const historicalData = await historicalResponse.json();
-          console.log('=== HISTORICAL DATA SUCCESS ===');
-          console.log('Raw response:', historicalData);
-          console.log('Data type:', typeof historicalData);
-          console.log('Is array:', Array.isArray(historicalData));
-          console.log('Length:', historicalData?.length);
-          console.log('First item:', historicalData?.[0]);
-          
-          const processedData = Array.isArray(historicalData) ? historicalData : [];
-          console.log('Setting state with processed data:', processedData);
-          setHistoricalPricing(processedData);
-        } else {
-          const errorText = await historicalResponse.text();
-          console.error('=== HISTORICAL DATA ERROR ===');
-          console.error('Status:', historicalResponse.status);
-          console.error('Error text:', errorText);
-          setHistoricalPricing([]);
-        }
       } catch (error) {
-        console.error('=== FETCH ERROR ===', error);
-        setHistoricalPricing([]);
+        console.error('Fetch error:', error);
       } finally {
         setIsLoading(false);
-        console.log('=== FETCH COMPLETE ===');
       }
     };
 
-    console.log('useEffect triggered for item:', item?.id);
     fetchPricingData();
   }, [item?.id]);
-
-  // Fetch comprehensive historical data from database
-  React.useEffect(() => {
-    console.log('COMPREHENSIVE FETCH: Component mounted, item:', item);
-    if (item?.id) {
-      const fetchComprehensiveData = async () => {
-        console.log('COMPREHENSIVE FETCH: Calling comprehensive historical API for item:', item.id);
-        try {
-          const response = await fetch(`/api/items/${item.id}/historical-pricing`);
-          console.log('COMPREHENSIVE FETCH: Response received:', response.status);
-          if (response.ok) {
-            const data = await response.json();
-            console.log('COMPREHENSIVE FETCH: Data received:', data);
-            console.log('COMPREHENSIVE FETCH: Data details:', JSON.stringify(data, null, 2));
-            setHistoricalPricing(Array.isArray(data) ? data : []);
-          } else {
-            console.error('COMPREHENSIVE FETCH: Failed with status:', response.status);
-            setHistoricalPricing([]);
-          }
-        } catch (error) {
-          console.error('COMPREHENSIVE FETCH: Error:', error);
-          setHistoricalPricing([]);
-        }
-      };
-      
-      // Call immediately
-      fetchComprehensiveData();
-    }
-  }, [item]);
-
-  console.log('ItemDetailedPricing render:', { item, isLoading, historicalPricing: historicalPricing?.length });
 
   if (isLoading) {
     return <div className="bg-muted/30 rounded-lg p-4 text-center">جاري تحميل التفاصيل...</div>;
   }
-
-  console.log('ItemDetailedPricing rendering with data:', { 
-    detailedPricing: !!detailedPricing, 
-    historicalLength: historicalPricing?.length,
-    itemId: item?.id 
-  });
 
   return (
     <div className="space-y-4">
