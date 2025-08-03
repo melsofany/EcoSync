@@ -1023,6 +1023,58 @@ export class DatabaseStorage implements IStorage {
     return purchaseOrderData;
   }
 
+  // Get comprehensive data for an item using unified identifier (NEW)
+  async getItemComprehensiveDataUnified(itemId: string): Promise<any[]> {
+    const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
+    if (!item.length) return [];
+
+    const normalizedPartNumber = item[0].normalizedPartNumber;
+    
+    if (!normalizedPartNumber) {
+      // Fallback to old method if no unified identifier
+      return this.getComprehensiveItemData(itemId);
+    }
+
+    // Get ALL items with same unified identifier
+    const unifiedItems = await db.select().from(items)
+      .where(eq(items.normalizedPartNumber, normalizedPartNumber));
+
+    const allItemIds = unifiedItems.map(item => item.id);
+
+    // Get comprehensive data for ALL unified items
+    const comprehensiveData = await db.execute(sql`
+      SELECT DISTINCT
+        qi.unit_price as customer_price,
+        qi.quantity as qty,
+        qr.custom_request_number as rfq_number,
+        qr.request_date as rfq_date,
+        qr.status as rfq_status,
+        i.part_number,
+        i.line_item,
+        i.description,
+        i.unit as uom,
+        i.category,
+        
+        -- Purchase Order data
+        po.po_number,
+        po.po_date,
+        poi.quantity as po_quantity,
+        poi.unit_price as po_price,
+        poi.total_price as po_total,
+        po.status as po_status
+        
+      FROM items i
+      LEFT JOIN quotation_items qi ON i.id = qi.item_id
+      LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id
+      LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
+      LEFT JOIN purchase_orders po ON poi.po_id = po.id
+      WHERE i.normalized_part_number = ${normalizedPartNumber}
+      ORDER BY qr.request_date DESC, po.po_date DESC
+    `);
+
+    return comprehensiveData;
+  }
+
   // Get comprehensive data for an item similar to Excel table format
   async getComprehensiveItemData(itemId: string): Promise<any[]> {
     const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);

@@ -79,12 +79,13 @@ Preferred communication style: Simple, everyday language.
 - **✅ No Historical Data**: Eliminated all historical pricing displays as requested by user
 - **✅ User Satisfaction**: Interface now meets user requirements for simplicity
 
-### AI Integration Architecture
-- **AI Provider**: DeepSeek API integration for item analysis
-- **Purpose**: Duplicate detection and item categorization
-- **Processing Flow**: Items are sent to AI after entry for similarity analysis
-- **Data Enhancement**: AI results stored alongside item data for decision making
-- **Fallback Handling**: System continues operation if AI service is unavailable
+### Intelligent Item Matching System
+- **Approach**: Manual intelligent analysis without external AI dependencies
+- **Purpose**: Duplicate detection and item unification using advanced text matching
+- **Core Features**: Part number normalization, description similarity analysis, keyword extraction
+- **Processing Flow**: Items analyzed using custom algorithms for pattern recognition
+- **Unification System**: Creates normalized identifiers for grouping similar items
+- **Performance**: High-confidence matching with detailed similarity scoring
 
 ### System Features
 - **Multi-role Dashboard**: Customized views based on user permissions

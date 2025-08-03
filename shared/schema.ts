@@ -52,6 +52,7 @@ export const items = pgTable("items", {
   itemNumber: text("item_number").notNull().unique(), // ELEK00000001
   kItemId: text("k_item_id").notNull().unique(), // K-generated ID 
   partNumber: text("part_number"),
+  normalizedPartNumber: text("normalized_part_number"), // معرف البند الموحد
   lineItem: text("line_item"),
   description: text("description").notNull(),
   unit: text("unit").notNull(), // Each/Piece/Meter/Carton/Feet/Kit/Packet/Reel/Set
