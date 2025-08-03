@@ -431,14 +431,37 @@ export default function Admin() {
                       <TableRow key={userItem.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3 space-x-reverse">
-                            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs font-medium">
-                                {getInitials(userItem.fullName)}
-                              </span>
+                            <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
+                              {userItem.profileImage ? (
+                                <img 
+                                  src={userItem.profileImage} 
+                                  alt={userItem.fullName}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    // إذا فشل تحميل الصورة، إظهار الحروف الأولى
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const parent = target.parentElement;
+                                    if (parent) {
+                                      parent.innerHTML = `<span class="text-white text-xs font-medium">${getInitials(userItem.fullName)}</span>`;
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                <span className="text-white text-xs font-medium">
+                                  {getInitials(userItem.fullName)}
+                                </span>
+                              )}
                             </div>
                             <div>
                               <p className="font-medium text-gray-800">{userItem.fullName}</p>
                               <p className="text-sm text-gray-500">@{userItem.username}</p>
+                              {userItem.email && (
+                                <p className="text-xs text-gray-400">{userItem.email}</p>
+                              )}
+                              {userItem.phone && (
+                                <p className="text-xs text-gray-400">{userItem.phone}</p>
+                              )}
                             </div>
                           </div>
                         </TableCell>
