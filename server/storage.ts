@@ -986,17 +986,90 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPurchaseOrdersForItem(itemId: string): Promise<any[]> {
-    return await db
+    // First get the item to find its LINE ITEM for comprehensive search
+    const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
+    if (!item.length) return [];
+
+    const lineItem = item[0].lineItem;
+    
+    // Get purchase orders for items with same LINE ITEM (comprehensive approach)
+    const purchaseOrderData = await db
       .select({
-        purchaseOrder: purchaseOrders,
-        purchaseOrderItem: purchaseOrderItems,
-        quotation: quotationRequests,
+        // Purchase Order details
+        poNumber: purchaseOrders.poNumber,
+        poDate: purchaseOrders.poDate,
+        poStatus: purchaseOrders.status,
+        totalValue: purchaseOrders.totalValue,
+        
+        // Purchase Order Item details
+        quantity: purchaseOrderItems.quantity,
+        unitPrice: purchaseOrderItems.unitPrice,
+        totalPrice: purchaseOrderItems.totalPrice,
+        currency: purchaseOrderItems.currency,
+        
+        // Item details
+        itemId: items.id,
+        description: items.description,
+        partNumber: items.partNumber,
+        itemLineItem: items.lineItem,
+        unit: items.unit,
       })
       .from(purchaseOrderItems)
-      .leftJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
-      .leftJoin(quotationRequests, eq(purchaseOrders.quotationId, quotationRequests.id))
-      .where(eq(purchaseOrderItems.itemId, itemId))
+      .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+      .innerJoin(items, eq(purchaseOrderItems.itemId, items.id))
+      .where(eq(items.lineItem, lineItem))
       .orderBy(desc(purchaseOrders.poDate));
+
+    return purchaseOrderData;
+  }
+
+  // Get comprehensive data for an item similar to Excel table format
+  async getComprehensiveItemData(itemId: string): Promise<any[]> {
+    const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
+    if (!item.length) return [];
+
+    const lineItem = item[0].lineItem;
+    const partNumber = item[0].partNumber;
+    
+    // Get comprehensive data combining quotations and purchase orders
+    const comprehensiveData = await db.execute(sql`
+      SELECT 
+          -- معلومات العميل والبند
+          COALESCE(c.name, 'EDC') as client_name,
+          i.item_number as item_id, 
+          i.description as description,
+          COALESCE(i.line_item, '') as line_item,
+          COALESCE(i.part_number, '') as part_no,
+          
+          -- معلومات طلب التسعير
+          qr.request_number as rfq_number,
+          qr.request_date as rfq_date,
+          qi.quantity as rfq_qty,
+          COALESCE(qr.expiry_date, '') as res_date,
+          
+          -- معلومات أمر الشراء
+          COALESCE(po.po_number, '') as po_number,
+          COALESCE(po.po_date::text, '') as po_date, 
+          COALESCE(poi.quantity::text, '') as po_quantity,
+          COALESCE(poi.unit_price::text, '') as po_price,
+          COALESCE((poi.quantity * poi.unit_price)::text, '') as po_total,
+          
+          -- معلومات إضافية
+          COALESCE(i.category, 'ELEC') as category,
+          i.unit as uom
+          
+      FROM quotation_items qi
+      LEFT JOIN items i ON qi.item_id = i.id
+      LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id  
+      LEFT JOIN clients c ON qr.client_id = c.id
+      LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
+      LEFT JOIN purchase_orders po ON poi.po_id = po.id
+      
+      WHERE (i.line_item = ${lineItem} OR i.part_number = ${partNumber} OR i.id = ${itemId})
+      ORDER BY qr.request_number, po.po_date DESC
+    `);
+
+    return comprehensiveData.rows as any[];
   }
 
   // Combined pricing view for detailed analysis

@@ -842,6 +842,17 @@ Respond in JSON format:
     }
   });
 
+  // Get comprehensive item data like Excel table
+  app.get("/api/items/:itemId/comprehensive-data", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const comprehensiveData = await storage.getComprehensiveItemData(req.params.itemId);
+      res.json(comprehensiveData);
+    } catch (error) {
+      console.error("Error fetching comprehensive item data:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
 
 
   // Customer pricing endpoints

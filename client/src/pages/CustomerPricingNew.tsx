@@ -23,6 +23,9 @@ function ItemDetailedPricing({ item }: { item: any }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPricingForm, setShowPricingForm] = useState(false);
 
+  // State for comprehensive data
+  const [comprehensiveData, setComprehensiveData] = useState<any[]>([]);
+
   // Fetch detailed pricing when component mounts
   React.useEffect(() => {
     const fetchDetailedPricing = async () => {
@@ -33,6 +36,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
         const response = await fetch(`/api/items/${item.id}/detailed-pricing`);
         const data = await response.json();
         setDetailedPricing(data);
+
+        // Also fetch comprehensive data
+        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data`);
+        const comprehensiveResult = await comprehensiveResponse.json();
+        setComprehensiveData(comprehensiveResult);
       } catch (error) {
         console.error('Error fetching detailed pricing:', error);
       } finally {
@@ -140,39 +148,101 @@ function ItemDetailedPricing({ item }: { item: any }) {
         )}
       </div>
 
-      {/* معلومات أوامر الشراء المرتبطة */}
-      {detailedPricing?.purchaseOrders && detailedPricing.purchaseOrders.length > 0 && (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <h4 className="font-semibold mb-3 flex items-center gap-2">
-            <Package className="h-4 w-4" />
-            أوامر الشراء المرتبطة (PO)
-          </h4>
-          <div className="space-y-3">
-            {detailedPricing.purchaseOrders.map((po: any, index: number) => (
-              <div key={index} className="bg-white rounded-lg p-3 border">
-                <div className="grid grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <label className="font-medium">رقم أمر الشراء:</label>
-                    <p className="text-purple-700 font-bold">{po.poNumber || "غير محدد"}</p>
-                  </div>
-                  <div>
-                    <label className="font-medium">تاريخ الأمر:</label>
-                    <p className="text-purple-700">{po.orderDate || "غير محدد"}</p>
-                  </div>
-                  <div>
-                    <label className="font-medium">الكمية:</label>
-                    <p className="text-purple-700 font-bold">{po.quantity || "غير محدد"}</p>
-                  </div>
-                  <div>
-                    <label className="font-medium">إجمالي القيمة:</label>
-                    <p className="text-purple-700 font-bold">{formatCurrency(Number(po.totalValue || 0))}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* جدول البيانات المرتبطة مشابه للإكسيل */}
+      <div className="bg-white rounded-lg border">
+        <h4 className="font-semibold p-4 bg-gray-50 border-b flex items-center gap-2">
+          <Package className="h-4 w-4" />
+          جدول البيانات التفصيلية للبند
+        </h4>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border p-2 text-right">TOTAL PO</th>
+                <th className="border p-2 text-right">PRICE/PO</th>
+                <th className="border p-2 text-right">Quantity/PO</th>
+                <th className="border p-2 text-right">DATE/PO</th>
+                <th className="border p-2 text-right">PO</th>
+                <th className="border p-2 text-right">Category</th>
+                <th className="border p-2 text-right">RES.DATE</th>
+                <th className="border p-2 text-right">PRICE/RFQ</th>
+                <th className="border p-2 text-right">QTY</th>
+                <th className="border p-2 text-right">DATE/RFQ</th>
+                <th className="border p-2 text-right">RFQ</th>
+                <th className="border p-2 text-right">DESCRIPTION</th>
+                <th className="border p-2 text-right">PART NO</th>
+                <th className="border p-2 text-right">LINE ITEM</th>
+                <th className="border p-2 text-right">UOM</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* عرض البيانات الشاملة من قاعدة البيانات */}
+              {comprehensiveData && comprehensiveData.length > 0 ? (
+                comprehensiveData.map((row: any, index: number) => (
+                  <tr key={index} className={`hover:bg-gray-50 ${row.po_number ? 'bg-green-50' : 'bg-yellow-50'}`}>
+                    <td className="border p-2 text-center font-bold text-green-600">
+                      {row.po_total ? formatCurrency(Number(row.po_total)) : "-"}
+                    </td>
+                    <td className="border p-2 text-center font-bold">
+                      {row.po_price ? formatCurrency(Number(row.po_price)) : "-"}
+                    </td>
+                    <td className="border p-2 text-center">{row.po_quantity || "-"}</td>
+                    <td className="border p-2 text-center">
+                      {row.po_date ? row.po_date.split('T')[0] : "-"}
+                    </td>
+                    <td className="border p-2 text-center font-bold text-blue-600">
+                      {row.po_number || "-"}
+                    </td>
+                    <td className="border p-2 text-center">{row.category || "ELEC"}</td>
+                    <td className="border p-2 text-center">
+                      {row.res_date ? row.res_date.split('T')[0] : "-"}
+                    </td>
+                    <td className="border p-2 text-center font-bold text-red-600">
+                      {formatCurrency(Number(item.supplierPrice || 0))}
+                    </td>
+                    <td className="border p-2 text-center">{row.rfq_qty || item.quantity}</td>
+                    <td className="border p-2 text-center">
+                      {row.rfq_date ? row.rfq_date.split('T')[0] : "-"}
+                    </td>
+                    <td className="border p-2 text-center font-bold text-purple-600">
+                      {row.rfq_number || item.requestNumber}
+                    </td>
+                    <td className="border p-2 text-right max-w-xs truncate" title={row.description}>
+                      {row.description || item.description}
+                    </td>
+                    <td className="border p-2 text-center">{row.part_no || item.partNumber || "-"}</td>
+                    <td className="border p-2 text-center text-blue-600">{row.line_item || item.lineItem}</td>
+                    <td className="border p-2 text-center">{row.uom || item.unit}</td>
+                  </tr>
+                ))
+              ) : (
+                /* صف RFQ الأساسي إذا لم توجد بيانات شاملة */
+                <tr className="hover:bg-gray-50 bg-yellow-50">
+                  <td className="border p-2 text-center">-</td>
+                  <td className="border p-2 text-center">-</td>
+                  <td className="border p-2 text-center">-</td>
+                  <td className="border p-2 text-center">-</td>
+                  <td className="border p-2 text-center">-</td>
+                  <td className="border p-2 text-center">{item.category || "ELEC"}</td>
+                  <td className="border p-2 text-center">{item.expiryDate?.split('T')[0] || "-"}</td>
+                  <td className="border p-2 text-center font-bold text-red-600">
+                    {formatCurrency(Number(item.supplierPrice || 0))}
+                  </td>
+                  <td className="border p-2 text-center">{item.quantity}</td>
+                  <td className="border p-2 text-center">{item.requestDate?.split('T')[0] || "-"}</td>
+                  <td className="border p-2 text-center font-bold text-purple-600">{item.requestNumber}</td>
+                  <td className="border p-2 text-right max-w-xs truncate" title={item.description}>
+                    {item.description}
+                  </td>
+                  <td className="border p-2 text-center">{item.partNumber || "-"}</td>
+                  <td className="border p-2 text-center text-blue-600">{item.lineItem}</td>
+                  <td className="border p-2 text-center">{item.unit}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
       {/* ملخص سريع للبيانات */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
