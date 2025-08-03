@@ -188,35 +188,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
         </div>
       )}
 
-      {/* Historical Pricing Summary from Excel */}
-      {historicalPricing && historicalPricing.length > 0 && (
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <h4 className="font-semibold mb-3 flex items-center gap-2 text-blue-800">
-            <Package className="h-4 w-4" />
-            البيانات التاريخية من الشيت (LINE ITEM: {historicalPricing[0]?.lineItem})
-          </h4>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <label className="text-blue-700 font-medium">إجمالي الطلبات:</label>
-              <p className="font-semibold">{historicalPricing.length}</p>
-            </div>
-            <div>
-              <label className="text-blue-700 font-medium">إجمالي الكمية:</label>
-              <p className="font-semibold">
-                {historicalPricing.reduce((sum, p) => sum + Number(p.quantity || 0), 0).toLocaleString('ar-EG')}
-              </p>
-            </div>
-            <div>
-              <label className="text-blue-700 font-medium">آخر سعر:</label>
-              <p className="font-semibold text-green-600">
-                {historicalPricing[0]?.unitPrice 
-                  ? formatCurrency(Number(historicalPricing[0].unitPrice), historicalPricing[0].currency)
-                  : "غير محدد"}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+
 
 
 
