@@ -16,6 +16,7 @@ async function throwIfResNotOk(res: Response) {
       (error as any).details = errorDetails;
       (error as any).existingItem = errorData.existingItem;
       (error as any).response = res;
+      console.log("Error object created:", error, "Details:", errorDetails);
       throw error;
     } catch (parseError) {
       // If JSON parsing fails, try to get text
