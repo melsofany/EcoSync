@@ -918,12 +918,21 @@ Respond in JSON format:
 
       console.log(`✅ Generated ${mappedData.length} preview records`);
       console.log("🔍 Sample mapped data:", mappedData.slice(0, 2));
+      
+      // تحقق من مطابقة الأعمدة وإرجاع معلومات إضافية للمساعدة في التشخيص
+      const columnMappingInfo = Object.entries(columnMapping as Record<string, string>).map(([field, column]) => ({
+        field,
+        column,
+        sampleValue: filteredData[0]?.[column],
+        found: filteredData[0]?.[column] !== undefined
+      }));
 
       await logActivity(req, "preview_import", "quotations", req.session.user!.id, `Previewed ${mappedData.length} quotation records for import`);
 
       res.json({
         previewData: mappedData,
         totalRows: mappedData.length,
+        columnMappingInfo,
         mapping: {
           'B': 'وحدة القياس (UOM)',
           'C': 'رقم البند (LINE ITEM)',
