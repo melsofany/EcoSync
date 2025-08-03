@@ -58,7 +58,14 @@ export default function Suppliers() {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
     },
     onError: (error: any) => {
-      const errorMessage = error?.details || "حدث خطأ أثناء حذف المورد";
+      let errorMessage = "حدث خطأ أثناء حذف المورد";
+      
+      if (error?.details) {
+        errorMessage = error.details;
+      } else if (error?.message && error.message !== "حدث خطأ أثناء حذف المورد") {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "خطأ في الحذف",
         description: errorMessage,
