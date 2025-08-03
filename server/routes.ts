@@ -792,6 +792,14 @@ Respond in JSON format:
 
       console.log(`Filtered ${excelData.length} rows down to ${filteredData.length} data rows`);
 
+      // تحقق من وجود البيانات
+      if (filteredData.length === 0) {
+        console.log("❌ No data after filtering");
+        return res.json({ previewData: [], totalRows: 0, message: "لا توجد بيانات صالحة في الملف" });
+      }
+
+      console.log("🔍 Sample filtered data:", filteredData.slice(0, 2));
+
       // نسخ البيانات مباشرة كما هي في Excel بدون أي تعديل أو Fill Down
       const mappedData = filteredData.map((row: any, index: number) => {
         const rowKeys = Object.keys(row);
@@ -908,6 +916,9 @@ Respond in JSON format:
         return result;
       });
 
+      console.log(`✅ Generated ${mappedData.length} preview records`);
+      console.log("🔍 Sample mapped data:", mappedData.slice(0, 2));
+
       await logActivity(req, "preview_import", "quotations", req.session.user!.id, `Previewed ${mappedData.length} quotation records for import`);
 
       res.json({
@@ -929,6 +940,129 @@ Respond in JSON format:
     } catch (error) {
       console.error("Error previewing import:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // نقطة نهاية للاختبار السريع
+  app.get("/api/import/quotations/test-data", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const testData = [
+        {"A":"1","B":"Each","C":"1854.002.CARIER.7519","D":"2503244","E":"COMPLETE PC BOARD","F":"25R009802","G":"45844","H":"6","I":"","J":"45858","K":"EDC","L":"done"},
+        {"A":"2","B":"Each","C":"1854.002.CARIER.7520","D":"2503245","E":"CIRCUIT BOARD","F":"","G":"45844","H":"4","I":"","J":"45858","K":"","L":"done"}
+      ];
+      
+      const columnMapping = {
+        "lineItem": "C",
+        "partNumber": "D", 
+        "description": "E",
+        "quantity": "H",
+        "unit": "B",
+        "requestDate": "G",
+        "expiryDate": "J",
+        "clientName": "K",
+        "rfqNumber": "F"
+      };
+
+      // استخدام نفس منطق المعاينة
+      const filteredData = testData.filter((row: any) => {
+        const values = Object.values(row);
+        return values.some(val => val !== null && val !== undefined && val !== '' && String(val).trim() !== '');
+      });
+
+      const mappedData = filteredData.map((row: any, index: number) => {
+        const processedData = {
+          lineNumber: index + 1,
+          unit: 'Each',
+          lineItem: '',
+          partNumber: '',
+          description: '',
+          rfqNumber: '',
+          rfqDate: '',
+          quantity: 0,
+          clientPrice: 0,
+          expiryDate: '',
+          clientName: ''
+        };
+        
+        Object.entries(columnMapping as Record<string, string>).forEach(([fieldName, columnLetter]) => {
+          const rawValue = row[columnLetter];
+          const strValue = rawValue ? String(rawValue).trim() : '';
+          
+          switch (fieldName) {
+            case 'lineItem':
+              processedData.lineItem = strValue;
+              break;
+            case 'partNumber':
+              processedData.partNumber = strValue;
+              break;
+            case 'description':
+              processedData.description = strValue;
+              break;
+            case 'quantity':
+              processedData.quantity = strValue ? parseInt(strValue) || 0 : 0;
+              break;
+            case 'unit':
+              processedData.unit = strValue || 'Each';
+              break;
+            case 'requestDate':
+              processedData.rfqDate = rawValue;
+              break;
+            case 'expiryDate':
+              processedData.expiryDate = rawValue;
+              break;
+            case 'clientName':
+              processedData.clientName = strValue || '';
+              break;
+            case 'rfqNumber':
+              processedData.rfqNumber = strValue;
+              break;
+          }
+        });
+
+        const formatDate = (dateValue: any) => {
+          if (!dateValue) return '';
+          if (typeof dateValue === 'number' && dateValue > 40000 && dateValue < 50000) {
+            const excelEpoch = new Date(1899, 11, 30);
+            const jsDate = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
+            return jsDate.toISOString().split('T')[0];
+          }
+          return dateValue.toString();
+        };
+
+        return {
+          rowIndex: index + 1,
+          lineNumber: processedData.lineNumber,
+          requestNumber: processedData.rfqNumber || `REQ-${Date.now()}-${index + 1}`,
+          customRequestNumber: processedData.rfqNumber,
+          requestDate: formatDate(processedData.rfqDate),
+          expiryDate: formatDate(processedData.expiryDate),
+          status: 'pending',
+          clientName: processedData.clientName || 'غير محدد',
+          itemNumber: '',
+          kItemId: '',
+          partNumber: processedData.partNumber,
+          lineItem: processedData.lineItem,
+          description: processedData.description,
+          unit: processedData.unit,
+          category: '',
+          brand: '',
+          quantity: processedData.quantity,
+          unitPrice: processedData.clientPrice,
+          totalPrice: processedData.quantity * processedData.clientPrice,
+          currency: 'EGP',
+          aiStatus: 'pending',
+          aiMatchedItemId: null
+        };
+      });
+
+      res.json({
+        previewData: mappedData,
+        totalRows: mappedData.length,
+        message: "بيانات اختبار - النسخ المباشر يعمل"
+      });
+    } catch (error) {
+      console.error("Test data error:", error);
+      res.status(500).json({ message: "خطأ في بيانات الاختبار" });
     }
   });
 
