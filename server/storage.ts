@@ -13,7 +13,6 @@ import {
   pricingHistory,
   activityLog,
   passwordResetTokens,
-  notifications,
   type User,
   type InsertUser,
   type Client,
@@ -40,8 +39,6 @@ import {
   type InsertPricingHistory,
   type ActivityLog,
   type InsertActivityLog,
-  type Notification,
-  type InsertNotification,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and, isNull, isNotNull, sql } from "drizzle-orm";
@@ -181,15 +178,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(id: string): Promise<void> {
-    // Delete related records first to avoid foreign key violations
-    
-    // Delete password reset tokens
-    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, id));
-    
-    // Delete notifications
-    await db.delete(notifications).where(eq(notifications.userId, id));
-    
-    // Delete activity logs
+    // Delete related activity logs first
     await db.delete(activityLog).where(eq(activityLog.userId, id));
     
     // Then delete the user
@@ -761,11 +750,6 @@ export class DatabaseStorage implements IStorage {
     const clientsData = await db.select().from(clients);
     const suppliersData = await db.select().from(suppliers);
     const purchaseOrdersData = await db.select().from(purchaseOrders);
-    const usersData = await db.select().from(users);
-
-    // Count active (online) users
-    const activeUsers = usersData.filter(u => u.isOnline && u.isActive).length;
-    const totalUsers = usersData.filter(u => u.isActive).length;
 
     return {
       totalQuotations: quotations.length,
@@ -776,8 +760,6 @@ export class DatabaseStorage implements IStorage {
       pendingPurchaseOrders: purchaseOrdersData.filter(po => po.status === "pending").length,
       totalClients: clientsData.length,
       totalSuppliers: suppliersData.length,
-      activeUsers: activeUsers,
-      totalUsers: totalUsers,
     };
   }
 
@@ -1476,42 +1458,6 @@ export class DatabaseStorage implements IStorage {
       const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
       return `PO-K${timestamp}${random}`;
     }
-  }
-
-  // Notification operations
-  async createNotification(notification: InsertNotification): Promise<Notification> {
-    const [result] = await db
-      .insert(notifications)
-      .values(notification)
-      .returning();
-    return result;
-  }
-
-  async getUserNotifications(userId: string): Promise<Notification[]> {
-    return await db
-      .select()
-      .from(notifications)
-      .where(eq(notifications.userId, userId))
-      .orderBy(desc(notifications.createdAt));
-  }
-
-  async markNotificationRead(id: string): Promise<void> {
-    await db
-      .update(notifications)
-      .set({ isRead: true, readAt: new Date() })
-      .where(eq(notifications.id, id));
-  }
-
-  async getUnreadNotificationCount(userId: string): Promise<number> {
-    const result = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(notifications)
-      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
-    return result[0].count;
-  }
-
-  async deleteNotification(id: string): Promise<void> {
-    await db.delete(notifications).where(eq(notifications.id, id));
   }
 }
 

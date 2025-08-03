@@ -1,7 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, useLogout } from "@/hooks/useAuth";
 import { canAccessSection } from "@/lib/auth";
-import { canRead, UserRole } from "@/lib/permissions";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -17,8 +16,7 @@ import {
   DollarSign,
   TrendingUp,
   Upload,
-  Activity,
-  Shield
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,93 +30,66 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const { user } = useAuth();
   const logout = useLogout();
 
-  // Check permissions for menu items
-  const canAccessQuotations = canRead(user?.role as UserRole, 'quotations');
-  const canAccessItems = canRead(user?.role as UserRole, 'items');
-  const canAccessClients = canRead(user?.role as UserRole, 'clients');
-  const canAccessSuppliers = canRead(user?.role as UserRole, 'suppliers');
-  const canAccessPurchaseOrders = canRead(user?.role as UserRole, 'purchaseOrders');
-  const canAccessReports = canRead(user?.role as UserRole, 'reports');
-  const canAccessUsers = canRead(user?.role as UserRole, 'users');
-  const canAccessSystemSettings = canRead(user?.role as UserRole, 'systemSettings');
-
   const menuItems = [
     {
       title: "لوحة التحكم",
       href: "/",
       icon: LayoutDashboard,
       section: "dashboard",
-      show: true, // Dashboard always visible
     },
     {
       title: "طلبات التسعير",
       href: "/quotations",
       icon: FileText,
       section: "quotations",
-      show: canAccessQuotations,
     },
     {
       title: "إدارة الأصناف",
       href: "/items",
       icon: Package,
       section: "items",
-      show: canAccessItems,
     },
     {
       title: "إدارة العملاء",
       href: "/clients",
       icon: Users,
       section: "clients",
-      show: canAccessClients,
     },
     {
       title: "إدارة الموردين",
       href: "/suppliers",
       icon: Truck,
       section: "suppliers",
-      show: canAccessSuppliers,
     },
     {
       title: "أسعار الموردين",
       href: "/supplier-pricing",
       icon: DollarSign,
       section: "supplier-pricing",
-      show: canAccessSuppliers, // Same as suppliers
     },
     {
       title: "تسعير العملاء",
       href: "/customer-pricing",
       icon: TrendingUp,
       section: "customer-pricing",
-      show: canAccessClients, // Same as clients
     },
     {
       title: "أوامر الشراء",
       href: "/purchase-orders",
       icon: ShoppingCart,
       section: "purchase-orders",
-      show: canAccessPurchaseOrders,
     },
     {
       title: "التقارير",
       href: "/reports",
       icon: BarChart3,
       section: "reports",
-      show: canAccessReports,
     },
     {
       title: "إدارة النظام",
       href: "/admin",
       icon: Settings,
       section: "admin",
-      show: canAccessUsers || canAccessSystemSettings,
-    },
-    {
-      title: "اختبار الصلاحيات",
-      href: "/test-permissions",
-      icon: Shield,
-      section: "test-permissions",
-      show: true, // Always show for testing
     },
   ];
 
@@ -177,22 +148,24 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {isOpen && (
           <div className="p-3 lg:p-4 border-b border-gray-100 bg-gray-50">
             <div className="flex items-center space-x-3 space-x-reverse">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-white text-sm font-bold">
-                  {user.fullName?.split(' ').slice(0, 2).map(name => name.charAt(0)).join('')}
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">
+                  {getInitials(user.fullName)}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">
-                  {user.fullName?.split(' ').slice(0, 2).join(' ')}
+                  {user.fullName}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {getRoleLabel(user.role)}
                 </p>
-                <div className="flex items-center space-x-1 space-x-reverse mt-1">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-gray-400">متصل</span>
-                </div>
+              </div>
+              <div className="flex items-center">
+                <Circle className={cn(
+                  "w-2 h-2 rounded-full",
+                  user.isOnline ? "fill-green-400 text-green-400" : "fill-gray-400 text-gray-400"
+                )} />
               </div>
             </div>
           </div>
@@ -201,7 +174,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2">
           {menuItems.map((item) => {
-            if (!item.show) {
+            if (!canAccessSection(user, item.section)) {
               return null;
             }
 
