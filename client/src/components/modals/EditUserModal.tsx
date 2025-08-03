@@ -107,12 +107,12 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit, isLoadi
       return false;
     }
 
-    // Phone validation (Saudi format)
-    const phoneRegex = /^(05|5)(5|0|3|6|4|9|1|8|7)([0-9]{7})$/;
+    // Phone validation (basic format check)
+    const phoneRegex = /^[0-9+\-\s()]{7,20}$/;
     if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
       toast({
         title: "خطأ في التحقق",
-        description: "رقم الهاتف غير صحيح. يجب أن يبدأ بـ 05 ويتكون من 10 أرقام",
+        description: "رقم الهاتف غير صحيح. يجب أن يحتوي على أرقام فقط",
         variant: "destructive",
       });
       return false;
@@ -136,6 +136,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit, isLoadi
       email: "",
       phone: "",
       role: "",
+      profileImage: "",
       isActive: true
     });
     onClose();
