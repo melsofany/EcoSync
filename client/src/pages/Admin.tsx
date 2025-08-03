@@ -177,7 +177,8 @@ export default function Admin() {
       purchasing: "موظف مشتريات",
       accounting: "موظف حسابات",
     };
-    return roles[role as keyof typeof roles] || role;
+    // Ensure safe fallback for unknown roles
+    return roles[role as keyof typeof roles] || String(role).replace(/[<>]/g, '') || "مستخدم";
   };
 
   const formatTime = (dateString: string) => {
