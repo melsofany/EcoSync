@@ -178,10 +178,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(id: string): Promise<void> {
-    // Delete related activity logs first
+    // Delete all related data in correct order to avoid foreign key constraints
+    
+    // 1. Delete password reset tokens
+    await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, id));
+    
+    // 2. Delete activity logs
     await db.delete(activityLog).where(eq(activityLog.userId, id));
     
-    // Then delete the user
+    // 3. Update quotation requests to remove user reference (set createdBy to null)
+    await db.update(quotationRequests)
+      .set({ createdBy: null })
+      .where(eq(quotationRequests.createdBy, id));
+    
+    // 4. Update clients to remove user reference (set createdBy to null)
+    await db.update(clients)
+      .set({ createdBy: null })
+      .where(eq(clients.createdBy, id));
+    
+    // 5. Update items to remove user reference (set createdBy to null)
+    await db.update(items)
+      .set({ createdBy: null })
+      .where(eq(items.createdBy, id));
+    
+    // 6. Update purchase orders to remove user reference (set createdBy to null)
+    await db.update(purchaseOrders)
+      .set({ createdBy: null })
+      .where(eq(purchaseOrders.createdBy, id));
+    
+    // 7. Finally delete the user
     await db.delete(users).where(eq(users.id, id));
   }
 
