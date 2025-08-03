@@ -84,9 +84,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Update user online status
+      // Update user online status and get latest data
       const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
       await storage.updateUserOnlineStatus(user.id, true, ipAddress);
+
+      // Get updated user data to include online status
+      const updatedUser = await storage.getUser(user.id);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Error updating user status" });
+      }
 
       req.session.user = {
         id: user.id,
@@ -97,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await logActivity(req, "login_success", "user", user.id, "User logged in successfully");
 
-      const { password: _, ...userWithoutPassword } = user;
+      const { password: _, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);
     } catch (error) {
       console.error("Login error:", error);
@@ -219,6 +225,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
+
+      // Update user activity timestamp to keep them as "online"
+      await storage.updateUserOnlineStatus(user.id, true);
 
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
