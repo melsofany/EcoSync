@@ -1026,6 +1026,9 @@ Respond in JSON format:
         return res.status(404).json({ message: "Purchase order item not found" });
       }
 
+      // Recalculate and update PO total value
+      await storage.updatePurchaseOrderTotal(poId);
+
       await logActivity(req, "update_po_item", "purchase_order_item", itemId, `Updated PO item in order ${poId}`);
       res.json(updatedItem);
     } catch (error) {
@@ -1043,6 +1046,9 @@ Respond in JSON format:
       if (!deletedItem) {
         return res.status(404).json({ message: "Purchase order item not found" });
       }
+
+      // Recalculate and update PO total value
+      await storage.updatePurchaseOrderTotal(poId);
 
       await logActivity(req, "delete_po_item", "purchase_order_item", itemId, `Deleted PO item from order ${poId}`);
       res.json({ message: "Purchase order item deleted successfully" });

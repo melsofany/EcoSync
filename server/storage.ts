@@ -107,6 +107,7 @@ export interface IStorage {
   getPurchaseOrderItems(poId: string): Promise<PurchaseOrderItem[]>;
   updatePurchaseOrderItem(itemId: string, updates: Partial<PurchaseOrderItem>): Promise<PurchaseOrderItem | undefined>;
   deletePurchaseOrderItem(itemId: string): Promise<PurchaseOrderItem | undefined>;
+  updatePurchaseOrderTotal(poId: string): Promise<void>;
 
   // Supplier quotes
   addSupplierQuote(quote: InsertSupplierQuote): Promise<SupplierQuote>;
@@ -1040,6 +1041,30 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error deleting purchase order item:", error);
       return undefined;
+    }
+  }
+
+  async updatePurchaseOrderTotal(poId: string): Promise<void> {
+    try {
+      // Get all items for this purchase order
+      const items = await db
+        .select()
+        .from(purchaseOrderItems)
+        .where(eq(purchaseOrderItems.poId, poId));
+
+      // Calculate total value
+      const totalValue = items.reduce((sum, item) => {
+        return sum + (Number(item.totalPrice) || 0);
+      }, 0);
+
+      // Update purchase order total
+      await db
+        .update(purchaseOrders)
+        .set({ totalValue: totalValue.toString() })
+        .where(eq(purchaseOrders.id, poId));
+
+    } catch (error) {
+      console.error("Error updating purchase order total:", error);
     }
   }
 
