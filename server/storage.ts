@@ -12,6 +12,7 @@ import {
   customerPricing,
   pricingHistory,
   activityLog,
+  passwordResetTokens,
   type User,
   type InsertUser,
   type Client,
@@ -47,11 +48,18 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
+  updateUserPassword(userId: string, hashedPassword: string): Promise<void>;
   deleteUser(id: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
   updateUserOnlineStatus(id: string, isOnline: boolean, ipAddress?: string): Promise<void>;
+
+  // Password reset operations
+  createPasswordResetToken(data: { userId: string; token: string; email: string; expiresAt: Date }): Promise<void>;
+  getPasswordResetToken(token: string): Promise<{ userId: string; email: string; expiresAt: Date; used: boolean } | undefined>;
+  markPasswordResetTokenUsed(token: string): Promise<void>;
 
   // Client operations
   createClient(client: InsertClient): Promise<Client>;
@@ -191,6 +199,38 @@ export class DatabaseStorage implements IStorage {
         ...(isOnline && { lastLoginAt: new Date() }),
       })
       .where(eq(users.id, id));
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ password: hashedPassword, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  // Password reset token operations
+  async createPasswordResetToken(data: { userId: string; token: string; email: string; expiresAt: Date }): Promise<void> {
+    await db.insert(passwordResetTokens).values(data);
+  }
+
+  async getPasswordResetToken(token: string): Promise<{ userId: string; email: string; expiresAt: Date; used: boolean } | undefined> {
+    const [resetToken] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(eq(passwordResetTokens.token, token));
+    return resetToken || undefined;
+  }
+
+  async markPasswordResetTokenUsed(token: string): Promise<void> {
+    await db
+      .update(passwordResetTokens)
+      .set({ used: true })
+      .where(eq(passwordResetTokens.token, token));
   }
 
   // Client operations
