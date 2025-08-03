@@ -36,11 +36,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
   // Fetch detailed pricing when component mounts
   React.useEffect(() => {
     const fetchDetailedPricing = async () => {
-      if (!item?.item?.id) return;
+      if (!item?.id) return;
       
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/items/${item.item.id}/detailed-pricing`);
+        const response = await fetch(`/api/items/${item.id}/detailed-pricing`);
         const data = await response.json();
         setDetailedPricing(data);
       } catch (error) {
@@ -51,7 +51,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
     };
 
     fetchDetailedPricing();
-  }, [item?.item?.id]);
+  }, [item?.id]);
 
   if (isLoading) {
     return <div className="bg-muted/30 rounded-lg p-4 text-center">جاري تحميل التفاصيل...</div>;
@@ -69,7 +69,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <div>
             <label className="text-sm font-medium">سعر المورد:</label>
             <p className="font-semibold text-green-600">
-              {formatCurrency(Number(item.supplierPricing?.unitPrice || 0))}
+              {formatCurrency(Number(item.supplierPrice || 0))}
             </p>
           </div>
           <div>
@@ -449,7 +449,7 @@ export default function CustomerPricing() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
-  const { data: itemsNeedingPricing, isLoading } = useQuery({
+  const { data: itemsNeedingPricing = [], isLoading } = useQuery({
     queryKey: ["/api/items-ready-for-customer-pricing"],
   });
 
@@ -510,22 +510,22 @@ export default function CustomerPricing() {
             <CardContent className="space-y-2">
               {itemsNeedingPricing.map((item: any) => (
                 <Collapsible
-                  key={item.item.id}
-                  open={openItems.has(item.item.id)}
-                  onOpenChange={() => toggleItem(item.item.id)}
+                  key={item.id}
+                  open={openItems.has(item.id)}
+                  onOpenChange={() => toggleItem(item.id)}
                 >
                   <CollapsibleTrigger className="w-full">
                     <div className="flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-lg border transition-colors">
                       <div className="flex items-center space-x-3 space-x-reverse">
-                        {openItems.has(item.item.id) ? (
+                        {openItems.has(item.id) ? (
                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
                         ) : (
                           <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         )}
                         <div className="text-right">
-                          <p className="font-medium">{item.item.description}</p>
+                          <p className="font-medium">{item.description}</p>
                           <p className="text-sm text-muted-foreground">
-                            رقم البند: {item.item.itemNumber} | الوحدة: {item.item.unit}
+                            {item.kItemId} | رقم البند: {item.itemNumber} | الوحدة: {item.unit}
                           </p>
                         </div>
                       </div>
