@@ -256,19 +256,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user (block/unblock)
+  // Update user (all fields including block/unblock)
   app.patch("/api/users/:userId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const { isActive } = req.body;
+      const updateData = req.body;
       
-      const updatedUser = await storage.updateUser(userId, { isActive });
+      // If password is being updated, hash it
+      if (updateData.password) {
+        updateData.password = await bcrypt.hash(updateData.password, 10);
+      }
+      
+      const updatedUser = await storage.updateUser(userId, updateData);
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      await logActivity(req, isActive ? "activate_user" : "deactivate_user", "user", userId, 
-        `User ${updatedUser.username} was ${isActive ? 'activated' : 'deactivated'}`);
+      // Log the activity
+      if (updateData.hasOwnProperty('isActive')) {
+        await logActivity(req, updateData.isActive ? "activate_user" : "deactivate_user", "user", userId, 
+          `${updatedUser.fullName} تم ${updateData.isActive ? 'تفعيله' : 'إيقافه'}`);
+      } else {
+        await logActivity(req, "update_user", "user", userId, 
+          `تم تحديث بيانات المستخدم ${updatedUser.fullName}`);
+      }
 
       const { password: _, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);

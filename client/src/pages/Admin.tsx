@@ -13,6 +13,7 @@ import { hasRole } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import NewUserModal from "@/components/modals/NewUserModal";
+import EditUserModal from "@/components/modals/EditUserModal";
 import { 
   Users, 
   Shield, 
@@ -47,6 +48,7 @@ export default function Admin() {
   
   const [activeSection, setActiveSection] = useState<string>("");
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     deepSeekApiKey: "",
     sessionTimeout: 30,
@@ -495,7 +497,7 @@ export default function Admin() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {/* TODO: Add edit functionality */}}
+                                onClick={() => setEditingUser(userItem)}
                                 className="text-blue-600 hover:text-blue-800"
                                 title="تعديل المستخدم"
                               >
@@ -686,6 +688,14 @@ export default function Admin() {
         isOpen={isNewUserModalOpen}
         onClose={() => setIsNewUserModalOpen(false)}
       />
+      
+      {editingUser && (
+        <EditUserModal
+          user={editingUser}
+          isOpen={!!editingUser}
+          onClose={() => setEditingUser(null)}
+        />
+      )}
     </div>
   );
 }
