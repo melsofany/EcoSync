@@ -175,36 +175,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </div>
         )}
 
-        {/* Navigation */}
-        <nav className="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2">
-          {menuItems.map((item) => {
-            if (!canAccessSection(user, item.section)) {
-              return null;
-            }
-
-            const Icon = item.icon;
-            const isActive = location === item.href || (item.href !== '/' && location.startsWith(item.href));
-
-            return (
-              <Link key={item.href} href={item.href}>
-                <div className={cn(
-                  "flex items-center space-x-3 space-x-reverse p-2 lg:p-3 rounded-lg transition-colors group relative",
-                  isActive 
-                    ? "bg-primary text-white" 
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-                )}>
-                  <Icon className="h-4 w-4 lg:h-5 lg:w-5 flex-shrink-0" />
-                  {isOpen && <span className="font-medium text-sm lg:text-base">{item.title}</span>}
-                  {!isOpen && isActive && (
-                    <div className="absolute right-2 w-2 h-2 bg-primary rounded-full">
-                      <Circle className="h-2 w-2 fill-current" />
-                    </div>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Navigation section removed */}
+        <div className="flex-1"></div>
 
         {/* Logout */}
         <div className="p-2 lg:p-4 border-t border-gray-200">
