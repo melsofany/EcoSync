@@ -603,7 +603,7 @@ export default function CreatePurchaseOrder() {
                         <div>
                           <p className="text-sm font-medium text-gray-600">إجمالي الكمية</p>
                           <p className="text-xl font-bold text-orange-600">
-                            {poItems.reduce((sum, item) => sum + (item.quantity || 0), 0)}
+                            {poItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0)}
                           </p>
                         </div>
                         <div>
