@@ -750,6 +750,11 @@ export class DatabaseStorage implements IStorage {
     const clientsData = await db.select().from(clients);
     const suppliersData = await db.select().from(suppliers);
     const purchaseOrdersData = await db.select().from(purchaseOrders);
+    const usersData = await db.select().from(users);
+
+    // Count active (online) users
+    const activeUsers = usersData.filter(u => u.isOnline && u.isActive).length;
+    const totalUsers = usersData.filter(u => u.isActive).length;
 
     return {
       totalQuotations: quotations.length,
@@ -760,6 +765,8 @@ export class DatabaseStorage implements IStorage {
       pendingPurchaseOrders: purchaseOrdersData.filter(po => po.status === "pending").length,
       totalClients: clientsData.length,
       totalSuppliers: suppliersData.length,
+      activeUsers: activeUsers,
+      totalUsers: totalUsers,
     };
   }
 
