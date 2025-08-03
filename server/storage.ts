@@ -910,6 +910,7 @@ export class DatabaseStorage implements IStorage {
         description: items.description,
         lineItem: items.lineItem,
         kItemId: items.kItemId,
+        partNo: items.partNumber,
         category: items.category,
         unit: items.unit,
       })

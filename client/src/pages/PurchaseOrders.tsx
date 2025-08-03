@@ -391,7 +391,8 @@ export default function PurchaseOrders() {
                       <TableHeader>
                         <TableRow className="bg-gray-50">
                           <TableHead className="text-right">الوصف</TableHead>
-                          <TableHead className="text-right">رقم القطعة</TableHead>
+                          <TableHead className="text-right">معرف البند</TableHead>
+                          <TableHead className="text-right">PART NO</TableHead>
                           <TableHead className="text-right">LINE ITEM</TableHead>
                           <TableHead className="text-right">الكمية</TableHead>
                           <TableHead className="text-right">سعر الوحدة</TableHead>
@@ -417,6 +418,9 @@ export default function PurchaseOrders() {
                             </TableCell>
                             <TableCell className="text-sm font-mono">
                               {item.kItemId || 'غير محدد'}
+                            </TableCell>
+                            <TableCell className="text-sm font-mono text-gray-700">
+                              {item.partNo || 'غير محدد'}
                             </TableCell>
                             <TableCell className="text-xs font-mono text-blue-600">
                               {item.lineItem || 'غير محدد'}
