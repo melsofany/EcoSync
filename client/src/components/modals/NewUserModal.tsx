@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { ProfileImageUploader } from "@/components/ProfileImageUploader";
 import { X, User, Lock, Shield, Mail, Phone, Camera, Upload } from "lucide-react";
 
 const userSchema = z.object({
@@ -196,33 +197,15 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
             </div>
 
             <div className="md:col-span-2">
-              <Label htmlFor="profileImage">الصورة الشخصية</Label>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-                    {form.watch("profileImage") ? (
-                      <img 
-                        src={form.watch("profileImage")} 
-                        alt="صورة المستخدم" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Camera className="h-8 w-8 text-gray-400" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <Input
-                      id="profileImage"
-                      type="url"
-                      placeholder="رابط الصورة الشخصية (اختياري)"
-                      {...form.register("profileImage")}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      يمكنك إدخال رابط الصورة أو تركه فارغاً
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <Label>الصورة الشخصية</Label>
+              <ProfileImageUploader
+                currentImage={form.watch("profileImage")}
+                onImageChange={(imageUrl) => form.setValue("profileImage", imageUrl)}
+                className="mt-2"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                ارفع صورة شخصية للمستخدم الجديد (اختياري)
+              </p>
             </div>
 
             <div>
