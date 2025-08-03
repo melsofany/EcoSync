@@ -842,36 +842,7 @@ Respond in JSON format:
     }
   });
 
-  // Get comprehensive historical data for an item from database
-  app.get("/api/items/:itemId/historical-pricing", requireAuth, async (req: Request, res: Response) => {
-    try {
-      const { itemId } = req.params;
-      
-      // Get the item first to find its LINE ITEM code
-      const item = await storage.getItemById(itemId);
-      if (!item) {
-        return res.status(404).json({ message: "Item not found" });
-      }
 
-      const lineItem = item.lineItem;
-      
-      if (!lineItem) {
-        return res.json([]);
-      }
-
-      console.log('Getting comprehensive historical data for LINE ITEM:', lineItem);
-      
-      // Use the existing working API but enhance it to include all required fields
-      const historicalData = await storage.getItemHistoricalPricing(itemId);
-      
-      console.log(`Found ${historicalData.length} comprehensive historical records for LINE ITEM: ${lineItem}`);
-      
-      res.json(historicalData);
-    } catch (error) {
-      console.error("Error fetching comprehensive historical data:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
 
   // Customer pricing endpoints
   app.post("/api/customer-pricing", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
