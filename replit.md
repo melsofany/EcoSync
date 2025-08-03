@@ -58,17 +58,21 @@ Preferred communication style: Simple, everyday language.
 - **✅ File Naming**: Automatic filename generation with date stamps (e.g., items_2025-08-03.xlsx)
 - **✅ Activity Tracking**: All export operations logged for audit trail with record counts
 
-### Excel Import System (August 3, 2025) - Final Column Structure
+### Excel Import System (August 3, 2025) - Final Column Structure with Dual Header Fix
 - **✅ IT Admin Import Feature**: Added Excel import functionality for quotation requests, restricted to IT administrators only
 - **✅ File Upload**: Support for .xlsx and .xls file formats with comprehensive file validation
 - **✅ Data Preview**: Shows imported data under actual database column headers for verification before import
 - **✅ Final Column Mapping**: Correct RTL Excel structure - B(UOM), C(LINE ITEM), D(PART NO), E(DESCRIPTION), F(RFQ NO), G(RFQ DATE), H(QTY), I(CLIENT PRICE), J(EXPIRY DATE), K(CLIENT NAME)
+- **✅ Dual Header Row Fix**: Smart filtering to remove multiple header rows and handle "0" column mislabeling
+- **✅ Intelligent Price Detection**: Advanced logic to detect client prices even when Excel mislabels price column as "0"
+- **✅ Header Pattern Recognition**: Filters out rows containing header patterns in Arabic and English
+- **✅ Data Cleanup**: Removes empty rows and duplicate header information before processing
 - **✅ Approval Workflow**: Two-step process with preview and confirmation to ensure data accuracy
 - **✅ Error Handling**: Comprehensive error reporting for failed imports with detailed error messages
 - **✅ Automatic Client Creation**: Creates new clients automatically if they don't exist in the database
 - **✅ Item Management**: Creates items and links them to quotations with proper categorization
 - **✅ Activity Logging**: All import operations tracked with detailed success/error statistics
-- **✅ Client Pricing Integration**: Imports client pricing data from column I for immediate quotation pricing
+- **✅ Client Pricing Integration**: Imports client pricing data with smart column detection for accurate pricing
 - **✅ P-Number Generation**: Auto-generates P-format item numbers, with AI matching for duplicate detection planned
 - **✅ RTL Support**: Excel sheet direction from right to left as specified by user
 

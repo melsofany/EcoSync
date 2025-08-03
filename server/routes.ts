@@ -717,13 +717,66 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
+      // Filter out header rows and empty rows first
+      const filteredData = excelData.filter((row: any, index: number) => {
+        const values = Object.values(row);
+        
+        // Skip completely empty rows
+        if (values.every(val => val === null || val === undefined || val === '')) {
+          return false;
+        }
+        
+        // Skip rows that contain header text patterns
+        const rowText = values.join(' ').toLowerCase();
+        const headerPatterns = [
+          'line no', 'line item', 'part no', 'description', 'rfq no', 'rfq date', 
+          'qty', 'price', 'expiry date', 'client name', 'العميل', 'response date',
+          'uom', 'unit', 'البند', 'الوصف', 'الكمية', 'السعر', 'التاريخ'
+        ];
+        
+        const isHeaderRow = headerPatterns.some(pattern => rowText.includes(pattern));
+        if (isHeaderRow) {
+          console.log(`Skipping header row ${index}:`, values);
+          return false;
+        }
+        
+        return true;
+      });
+
+      console.log(`Filtered ${excelData.length} rows down to ${filteredData.length} data rows`);
+
       // Map Excel columns according to user specification (RTL direction)
       // B=UOM, C=LINE ITEM, D=PART NO, E=DESCRIPTION, F=RFQ NO, G=RFQ DATE, H=QTY, I=CLIENT PRICE, J=EXPIRY DATE, K=CLIENT NAME
-      const mappedData = excelData.map((row: any, index: number) => {
+      const mappedData = filteredData.map((row: any, index: number) => {
         // Get all keys to access by position
         const rowKeys = Object.keys(row);
+        console.log(`Row ${index} keys:`, rowKeys, 'Values:', Object.values(row));
         
-        // Map columns correctly according to user specification
+        // Handle the "0" column issue - sometimes the price column gets labeled as "0"
+        // Search for price values in columns that might be mislabeled
+        let clientPrice = 0;
+        let actualPriceColumn = -1;
+        
+        // Look for numeric values that could be prices
+        for (let i = 1; i < rowKeys.length; i++) {
+          const value = row[rowKeys[i]];
+          const numValue = parseFloat(value);
+          if (!isNaN(numValue) && numValue > 0 && numValue < 1000000) {
+            // Check if this looks like a price (reasonable range)
+            const prevVal = i > 1 ? row[rowKeys[i-1]] : '';
+            const nextVal = i < rowKeys.length - 1 ? row[rowKeys[i+1]] : '';
+            
+            // If surrounded by non-numeric data, likely a price
+            if ((isNaN(parseFloat(prevVal)) || parseFloat(prevVal) <= 0) && 
+                (isNaN(parseFloat(nextVal)) || parseFloat(nextVal) <= 0 || typeof nextVal === 'string')) {
+              clientPrice = numValue;
+              actualPriceColumn = i;
+              break;
+            }
+          }
+        }
+        
+        // Map columns correctly according to user specification, with fallback logic
         const unit = rowKeys.length > 1 ? row[rowKeys[1]] || 'Each' : 'Each';              // B: UOM (الوحدة)
         const lineItem = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                   // C: LINE ITEM
         const partNumber = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';                 // D: PART NO
@@ -731,9 +784,16 @@ Respond in JSON format:
         const rfqNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                  // F: RFQ NO (رقم الطلب)
         const rfqDate = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                    // G: RFQ DATE (تاريخ الطلب)
         const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // H: QTY (الكمية)
-        const clientPrice = rowKeys.length > 8 ? parseFloat(row[rowKeys[8]]) || 0 : 0;      // I: CLIENT PRICE (السعر الخاص بالعميل)
+        
+        // Use detected price or fallback to column I
+        if (clientPrice === 0) {
+          clientPrice = rowKeys.length > 8 ? parseFloat(row[rowKeys[8]]) || 0 : 0;      // I: CLIENT PRICE (السعر الخاص بالعميل)
+        }
+        
         const expiryDate = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // J: EXPIRY DATE (تاريخ انتهاء العرض)
         const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // K: CLIENT NAME (اسم العميل)
+        
+        console.log(`Row ${index} - Price: ${clientPrice} (from column ${actualPriceColumn >= 0 ? rowKeys[actualPriceColumn] : 'I'})`);
 
         // Format dates properly (convert Excel serial dates if needed)
         const formatDate = (dateValue: any) => {
