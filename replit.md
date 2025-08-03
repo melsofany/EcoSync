@@ -93,6 +93,7 @@ Preferred communication style: Simple, everyday language.
 - **✅ Schema Update**: Modified items table to use new default numbering function
 - **✅ UI Updates**: Updated all screens to reflect new P- format in forms and displays
 - **✅ Standardization**: Unified item numbering across all system components
+- **✅ Function Fix**: Fixed generate_p_number() function to handle sequential numbering correctly (P-002041, P-002042, etc.)
 
 ### Purchase Orders Import Recovery (August 3, 2025)
 - **✅ Import Issue Identified**: Found that purchase orders were missing after data cleanup
