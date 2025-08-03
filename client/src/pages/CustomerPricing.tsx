@@ -107,13 +107,23 @@ function ItemDetailedPricing({ item }: { item: any }) {
           if (response.ok) {
             const data = await response.json();
             console.log('FORCE FETCH: Data received:', data);
-            setHistoricalPricing(data);
+            console.log('FORCE FETCH: Setting historical pricing state');
+            setHistoricalPricing(Array.isArray(data) ? data : []);
+          } else {
+            console.error('FORCE FETCH: Failed with status:', response.status);
+            setHistoricalPricing([]);
           }
         } catch (error) {
           console.error('FORCE FETCH: Error:', error);
+          setHistoricalPricing([]);
         }
       };
+      
+      // Call immediately
       forceHistoricalFetch();
+      
+      // Also call after a delay to ensure it works
+      setTimeout(forceHistoricalFetch, 1000);
     }
   }, [item]);
 
@@ -741,6 +751,9 @@ export default function CustomerPricing() {
             <Card className="border-red-200 bg-red-50">
               <CardHeader>
                 <CardTitle className="text-red-700">DEBUG: Force Show Item Details</CardTitle>
+                <p className="text-sm text-red-600">
+                  هذا القسم يعرض تفاصيل البند مباشرة لاختبار البيانات التاريخية من Excel
+                </p>
               </CardHeader>
               <CardContent>
                 <ItemDetailedPricing item={itemsArray[0]} />
