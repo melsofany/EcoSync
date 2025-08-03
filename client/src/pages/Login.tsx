@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building, User, Lock, ArrowLeft } from "lucide-react";
+import { Building, User, Lock, ArrowLeft, Mail } from "lucide-react";
 import qortobaLogo from "@/assets/qortoba-logo.png";
 
 const loginSchema = z.object({
@@ -20,6 +20,9 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function Login() {
   const login = useLogin();
   const [showCredentials, setShowCredentials] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -31,6 +34,31 @@ export default function Login() {
 
   const onSubmit = (data: LoginForm) => {
     login.mutate(data);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetEmail) {
+      setResetMessage("يرجى إدخال البريد الإلكتروني");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/reset-password-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        setResetMessage("تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني");
+      } else {
+        setResetMessage(result.message || "حدث خطأ، يرجى المحاولة مرة أخرى");
+      }
+    } catch (error) {
+      setResetMessage("حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى");
+    }
   };
 
   return (
@@ -103,6 +131,57 @@ export default function Login() {
               )}
             </Button>
           </form>
+
+          {/* Password Reset Section */}
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              onClick={() => setShowResetPassword(!showResetPassword)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              نسيت كلمة المرور؟
+            </Button>
+          </div>
+
+          {showResetPassword && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
+              <div className="text-center">
+                <h3 className="font-semibold text-blue-800 mb-2">استعادة كلمة المرور</h3>
+                <p className="text-sm text-blue-700">أدخل بريدك الإلكتروني لإرسال رابط الاستعادة</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="relative">
+                  <Input
+                    type="email"
+                    placeholder="البريد الإلكتروني"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    className="pl-12"
+                  />
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                </div>
+                
+                <Button
+                  onClick={handleResetPassword}
+                  className="w-full"
+                  variant="outline"
+                >
+                  إرسال رابط الاستعادة
+                </Button>
+                
+                {resetMessage && (
+                  <div className={`text-sm text-center p-2 rounded ${
+                    resetMessage.includes("تم إرسال") 
+                      ? "text-green-700 bg-green-100" 
+                      : "text-red-700 bg-red-100"
+                  }`}>
+                    {resetMessage}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="mt-6">
             <Button

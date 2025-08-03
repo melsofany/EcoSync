@@ -3,8 +3,10 @@ import { createServer, type Server } from "http";
 import { storage, initializeDatabase } from "./storage";
 import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
 import { autoMapExcelColumns, processExcelRowForQuotation } from "./simpleExcelImport";
+import { sendEmail, generatePasswordResetEmail } from "./emailService";
 import bcrypt from "bcrypt";
 import session from "express-session";
+import { randomBytes } from "crypto";
 
 // Extend the Express Request type to include session data
 declare module "express-session" {
@@ -120,6 +122,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Logout error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Password reset request
+  app.post("/api/auth/reset-password-request", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "البريد الإلكتروني مطلوب" });
+      }
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if email exists or not for security
+        return res.json({ message: "إذا كان البريد الإلكتروني موجود، ستصلك رسالة استعادة كلمة المرور" });
+      }
+
+      // Generate reset token
+      const resetToken = randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      // Save token to database
+      await storage.createPasswordResetToken({
+        userId: user.id,
+        token: resetToken,
+        email: email,
+        expiresAt: expiresAt
+      });
+
+      // Generate reset link
+      const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}`;
+      
+      // Send email
+      const emailResult = await sendEmail({
+        to: email,
+        subject: "إعادة تعيين كلمة المرور - نظام قرطبة للتوريدات",
+        html: generatePasswordResetEmail(user.fullName, resetLink)
+      });
+
+      if (emailResult.success) {
+        res.json({ message: "تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني" });
+      } else {
+        res.status(500).json({ message: emailResult.message });
+      }
+
+    } catch (error) {
+      console.error("Password reset request error:", error);
+      res.status(500).json({ message: "حدث خطأ في النظام" });
+    }
+  });
+
+  // Reset password with token
+  app.post("/api/auth/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ message: "الرمز المميز وكلمة المرور الجديدة مطلوبان" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" });
+      }
+
+      // Find and validate token
+      const resetToken = await storage.getPasswordResetToken(token);
+      if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
+        return res.status(400).json({ message: "رمز استعادة كلمة المرور غير صالح أو منتهي الصلاحية" });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user password
+      await storage.updateUserPassword(resetToken.userId, hashedPassword);
+      
+      // Mark token as used
+      await storage.markPasswordResetTokenUsed(token);
+
+      await logActivity(req, "password_reset", "user", resetToken.userId, "Password reset completed");
+
+      res.json({ message: "تم تغيير كلمة المرور بنجاح" });
+
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "حدث خطأ في النظام" });
     }
   });
 
