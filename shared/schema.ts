@@ -9,6 +9,9 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   fullName: text("full_name").notNull(),
+  email: text("email").unique(),
+  phone: text("phone"),
+  profileImage: text("profile_image"), // URL للصورة الشخصية
   role: text("role").notNull(), // "manager", "it_admin", "data_entry", "purchasing"
   isActive: boolean("is_active").default(true),
   isOnline: boolean("is_online").default(false),
