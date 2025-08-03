@@ -104,10 +104,19 @@ export default function PurchaseOrders() {
   // Handle status update for tracking
   const updateStatusMutation = useMutation({
     mutationFn: async ({ poId, status }: { poId: string; status: string }) => {
-      return apiRequest(`/api/purchase-orders/${poId}/status`, {
+      const response = await fetch(`/api/purchase-orders/${poId}/status`, {
         method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ status }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({

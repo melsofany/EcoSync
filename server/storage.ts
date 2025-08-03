@@ -928,6 +928,33 @@ export class DatabaseStorage implements IStorage {
       purchaseOrders: purchaseOrdersData,
     };
   }
+
+  async getNextPONumber(): Promise<string> {
+    try {
+      // Get the highest PO number from the database
+      const lastPO = await db
+        .select()
+        .from(purchaseOrders)
+        .orderBy(desc(purchaseOrders.poNumber))
+        .limit(1);
+
+      if (lastPO.length > 0) {
+        // Extract number from PO format (e.g., "PO-K123456789" -> get the last number)
+        const lastNumber = parseInt(lastPO[0].poNumber.replace(/\D/g, '').slice(-4)) || 0;
+        const nextNumber = lastNumber + 1;
+        return `PO-K${new Date().getFullYear()}${nextNumber.toString().padStart(4, '0')}`;
+      } else {
+        // First PO of the year
+        return `PO-K${new Date().getFullYear()}0001`;
+      }
+    } catch (error) {
+      console.error('Error generating PO number:', error);
+      // Fallback to timestamp-based ID
+      const timestamp = Date.now().toString().slice(-6);
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      return `PO-K${timestamp}${random}`;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
