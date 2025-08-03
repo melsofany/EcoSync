@@ -58,6 +58,7 @@ export default function Suppliers() {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
     },
     onError: (error: any) => {
+      console.log("Delete supplier error:", error);
       let errorMessage = "حدث خطأ أثناء حذف المورد";
       
       if (error?.details) {

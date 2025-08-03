@@ -57,6 +57,7 @@ export default function Clients() {
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
     },
     onError: (error: any) => {
+      console.log("Delete client error:", error);
       let errorMessage = "حدث خطأ أثناء حذف العميل";
       
       if (error?.details) {
