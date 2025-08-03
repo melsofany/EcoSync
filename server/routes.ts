@@ -708,7 +708,7 @@ Respond in JSON format:
             quantity: item.quantity,
             unitPrice: item.unitPrice.toString(),
             totalPrice: item.totalPrice.toString(),
-            notes: item.notes || ""
+            currency: item.currency
           });
         }
       }
@@ -782,7 +782,7 @@ Respond in JSON format:
           return res.status(400).json({ message: "Invalid table name" });
       }
 
-      await logActivity(req, "export_data", table, null, `Exported ${table} data as ${format} (${data.length} records)`);
+      await logActivity(req, "export_data", table, undefined, `Exported ${table} data as ${format} (${data.length} records)`);
       
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -1731,7 +1731,7 @@ Respond in JSON format:
     try {
       const { importExcelData } = await import('./import-data.js');
       const result = await importExcelData();
-      await logActivity(req, "import_data", "system", "", `Imported ${result.importedItems || 0} items from Excel`);
+      await logActivity(req, "import_data", "system", undefined, `Imported ${result.stats?.items || 0} items from Excel`);
       res.json(result);
     } catch (error) {
       console.error('Error importing data:', error);
@@ -1842,7 +1842,6 @@ Respond in JSON format:
         try {
           // إنشاء طلب التسعير
           const quotationRequest = await storage.createQuotationRequest({
-            requestNumber: record.requestNumber,
             customRequestNumber: record.customRequestNumber,
             requestDate: record.requestDate || new Date().toISOString().split('T')[0],
             expiryDate: record.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -1854,7 +1853,7 @@ Respond in JSON format:
           });
 
           // إنشاء بند طلب التسعير
-          await storage.createQuotationItem({
+          await storage.createQuotationRequestItem({
             quotationRequestId: quotationRequest.id,
             itemNumber: record.itemNumber || '',
             kItemId: record.kItemId || '',
