@@ -1,15 +1,22 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Eye, Printer, Truck, Clock, CheckCircle, DollarSign } from "lucide-react";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import NewPurchaseOrderModal from "@/components/modals/NewPurchaseOrderModal";
 
 export default function PurchaseOrders() {
   const [isNewPOModalOpen, setIsNewPOModalOpen] = useState(false);
+  const [selectedPO, setSelectedPO] = useState<any>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: purchaseOrders, isLoading } = useQuery({
     queryKey: ["/api/purchase-orders"],
@@ -57,6 +64,80 @@ export default function PurchaseOrders() {
   const getQuotationNumber = (quotationId: string) => {
     const quotation = quotations?.find((q: any) => q.id === quotationId);
     return quotation?.requestNumber || "غير محدد";
+  };
+
+  // Handle viewing purchase order details
+  const handleViewDetails = (po: any) => {
+    setSelectedPO(po);
+    setIsDetailsModalOpen(true);
+  };
+
+  // Handle printing purchase order
+  const handlePrint = (po: any) => {
+    // Create a simple print view
+    const printContent = `
+      <div style="direction: rtl; font-family: Arial, sans-serif; padding: 20px;">
+        <h1 style="text-align: center; color: #1e40af;">أمر شراء رقم: ${po.poNumber}</h1>
+        <div style="margin: 20px 0; border: 1px solid #ccc; padding: 15px;">
+          <h2>تفاصيل الأمر</h2>
+          <p><strong>رقم الطلب:</strong> ${getQuotationNumber(po.quotationId)}</p>
+          <p><strong>تاريخ الأمر:</strong> ${formatDate(po.poDate)}</p>
+          <p><strong>القيمة الإجمالية:</strong> ${formatCurrency(po.totalValue)}</p>
+          <p><strong>الحالة:</strong> ${po.status}</p>
+          <p><strong>حالة التسليم:</strong> ${po.deliveryStatus ? 'تم التسليم' : 'لم يتم التسليم'}</p>
+        </div>
+        <div style="margin-top: 30px; text-align: center; color: #666;">
+          <p>الخديوي للتوريدات العمومية والمقاولات</p>
+          <p>تم الطباعة في: ${new Date().toLocaleDateString('ar-EG')}</p>
+        </div>
+      </div>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  // Handle status update for tracking
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ poId, status }: { poId: string; status: string }) => {
+      return apiRequest(`/api/purchase-orders/${poId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "تم بنجاح",
+        description: "تم تحديث حالة أمر الشراء",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/purchase-orders"] });
+    },
+    onError: () => {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث الحالة",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleTrackOrder = (po: any) => {
+    const nextStatus = po.status === 'pending' ? 'confirmed' : 
+                     po.status === 'confirmed' ? 'delivered' : 
+                     po.status === 'delivered' ? 'invoiced' : po.status;
+                     
+    if (nextStatus !== po.status) {
+      updateStatusMutation.mutate({ poId: po.id, status: nextStatus });
+    } else {
+      toast({
+        title: "معلومات",
+        description: "أمر الشراء في المرحلة الأخيرة",
+      });
+    }
   };
 
   // Calculate statistics
@@ -186,13 +267,30 @@ export default function PurchaseOrders() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
-                          <Button variant="ghost" size="sm" title="عرض التفاصيل">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="عرض التفاصيل"
+                            onClick={() => handleViewDetails(po)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" title="طباعة">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="طباعة"
+                            onClick={() => handlePrint(po)}
+                          >
                             <Printer className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" title="تتبع الطلب" className="text-purple-600 hover:text-purple-800">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="تتبع الطلب" 
+                            className="text-purple-600 hover:text-purple-800"
+                            onClick={() => handleTrackOrder(po)}
+                            disabled={updateStatusMutation.isPending}
+                          >
                             <Truck className="h-4 w-4" />
                           </Button>
                         </div>
@@ -226,6 +324,69 @@ export default function PurchaseOrders() {
         isOpen={isNewPOModalOpen}
         onClose={() => setIsNewPOModalOpen(false)}
       />
+
+      {/* Purchase Order Details Modal */}
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تفاصيل أمر الشراء رقم: {selectedPO?.poNumber}</DialogTitle>
+          </DialogHeader>
+          
+          {selectedPO && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-600">رقم الطلب</label>
+                  <p className="text-blue-600 font-medium">{getQuotationNumber(selectedPO.quotationId)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">تاريخ الأمر</label>
+                  <p>{formatDate(selectedPO.poDate)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">القيمة الإجمالية</label>
+                  <p className="font-bold text-green-600">{formatCurrency(selectedPO.totalValue)}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">الحالة</label>
+                  <div>{getStatusBadge(selectedPO.status)}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">حالة التسليم</label>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <div className={`w-2 h-2 rounded-full ${selectedPO.deliveryStatus ? 'bg-green-400' : 'bg-gray-300'}`}></div>
+                    <span>{selectedPO.deliveryStatus ? 'تم التسليم' : 'لم يتم التسليم'}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">حالة الفاتورة</label>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <div className={`w-2 h-2 rounded-full ${selectedPO.invoiceIssued ? 'bg-green-400' : 'bg-gray-300'}`}></div>
+                    <span>{selectedPO.invoiceIssued ? 'تم إصدار الفاتورة' : 'لم يتم إصدار الفاتورة'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {selectedPO.notes && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600">ملاحظات</label>
+                  <p className="bg-gray-50 p-2 rounded text-sm">{selectedPO.notes}</p>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-4">
+                <Button onClick={() => handlePrint(selectedPO)} variant="outline">
+                  <Printer className="h-4 w-4 ml-2" />
+                  طباعة
+                </Button>
+                <Button onClick={() => setIsDetailsModalOpen(false)}>
+                  إغلاق
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
