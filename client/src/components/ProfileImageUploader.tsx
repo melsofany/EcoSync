@@ -66,22 +66,30 @@ export function ProfileImageUploader({ currentImage, onImageChange, className }:
         throw new Error('Failed to upload file');
       }
 
-      // Extract the object path from the upload URL and convert to public URL
-      const url = new URL(uploadURL);
-      const pathParts = url.pathname.split('/');
-      const bucketName = pathParts[1];
-      const objectPath = pathParts.slice(2).join('/');
+      // Create object path for the uploaded file
+      const objectPath = `/objects/uploads/${Date.now()}-${file.name}`;
       
-      // Convert to public URL format - remove the bucket name from the path
-      const relativePath = objectPath.replace('public/', '');
-      const publicImageUrl = `/public-objects/${relativePath}`;
+      // Set image ACL and get the final URL
+      const aclResponse = await fetch('/api/profile-image/set-acl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          imageUrl: uploadURL 
+        }),
+      });
+
+      if (!aclResponse.ok) {
+        throw new Error('Failed to set image permissions');
+      }
+
+      const { objectPath: finalPath } = await aclResponse.json();
       
-      console.log('Upload URL:', uploadURL);
-      console.log('Object path:', objectPath);
-      console.log('Public URL:', publicImageUrl);
-      
-      setPreviewUrl(publicImageUrl);
-      onImageChange(publicImageUrl);
+      // Use the object path for internal storage
+      setPreviewUrl(finalPath);
+      onImageChange(finalPath);
 
       toast({
         title: "تم رفع الصورة بنجاح",
