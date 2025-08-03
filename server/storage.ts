@@ -86,6 +86,7 @@ export interface IStorage {
   removeQuotationItem(itemId: string): Promise<void>;
   updateQuotationItem(id: string, updates: Partial<QuotationItem>): Promise<QuotationItem | undefined>;
   deleteQuotationItem(id: string): Promise<boolean>;
+  addItemToQuotation(quotationId: string, itemData: { itemId: string; quantity: number; lineNumber?: number; clientPrice?: number }): Promise<QuotationItem>;
 
   // Supplier operations
   createSupplier(supplier: InsertSupplier): Promise<Supplier>;
@@ -491,6 +492,21 @@ export class DatabaseStorage implements IStorage {
   async deleteQuotationItem(id: string): Promise<boolean> {
     const result = await db.delete(quotationItems).where(eq(quotationItems.id, id));
     return (result.rowCount || 0) > 0;
+  }
+
+  async addItemToQuotation(quotationId: string, itemData: { itemId: string; quantity: number; lineNumber?: number; clientPrice?: number }): Promise<QuotationItem> {
+    const [quotationItem] = await db
+      .insert(quotationItems)
+      .values({
+        quotationId,
+        itemId: itemData.itemId,
+        quantity: itemData.quantity.toString(),
+        unitPrice: itemData.clientPrice ? itemData.clientPrice.toString() : undefined,
+        totalPrice: itemData.clientPrice ? (itemData.clientPrice * itemData.quantity).toString() : undefined,
+        currency: 'EGP'
+      })
+      .returning();
+    return quotationItem;
   }
 
   // Supplier operations

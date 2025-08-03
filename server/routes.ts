@@ -853,7 +853,8 @@ Respond in JSON format:
             await storage.addItemToQuotation(quotation.id, {
               itemId: item.id,
               quantity: row.quantity,
-              lineNumber: row.lineNumber || 0
+              lineNumber: row.lineNumber || 0,
+              clientPrice: row.priceToClient // إضافة السعر للعميل
             });
           }
 
