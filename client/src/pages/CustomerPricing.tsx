@@ -51,7 +51,8 @@ function ItemDetailedPricing({ item }: { item: any }) {
         if (historicalResponse.ok) {
           const historicalData = await historicalResponse.json();
           console.log('Historical data received:', historicalData);
-          setHistoricalPricing(historicalData);
+          console.log('Setting historical pricing state with:', historicalData.length, 'items');
+          setHistoricalPricing(Array.isArray(historicalData) ? historicalData : []);
         } else {
           console.error('Failed to fetch historical data:', historicalResponse.status);
           setHistoricalPricing([]);
@@ -257,8 +258,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
                   </TableRow>
                 ))}
 
+                {/* Debug info */}
+                {console.log('Rendering historicalPricing:', historicalPricing, 'length:', historicalPricing?.length)}
+                
                 {/* Historical pricing from Excel sheets - Display all entries with same LINE ITEM */}
-                {historicalPricing && historicalPricing.map((pricing: any, index: number) => (
+                {historicalPricing && historicalPricing.length > 0 ? historicalPricing.map((pricing: any, index: number) => (
                   <TableRow key={`historical-${index}`} className="hover:bg-yellow-50 bg-yellow-25 border-b">
                     <TableCell className="text-center border font-bold">
                       {pricing.sourceType === 'purchase_order' ? pricing.poNumber?.slice(-4) : pricing.kItemId}
@@ -301,7 +305,13 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       {pricing.unit || "Each"}
                     </TableCell>
                   </TableRow>
-                ))}
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={14} className="text-center py-4 text-muted-foreground">
+                      {historicalPricing ? `لا توجد بيانات تاريخية (طول المصفوفة: ${historicalPricing.length})` : 'لا توجد بيانات تاريخية'}
+                    </TableCell>
+                  </TableRow>
+                )}
                 
                 {/* If no data, show item basic info */}
                 {(!detailedPricing?.supplierPricings || detailedPricing.supplierPricings.length === 0) && 
