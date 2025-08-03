@@ -717,49 +717,54 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
-      // Map Excel columns to database fields based on header names and positions
-      // Expected structure: A=Done, B=Client, C=Response Date, D=Quantity, E=Request Date, F=Source File, G=Description, H=PART NO, I=LINE ITEM, J=UOM, K=Line No
+      // Map Excel columns to database fields - corrected mapping based on actual file structure
       const mappedData = excelData.map((row: any, index: number) => {
-        // Get values from specific columns or by property names
-        let clientName = row['Client'] || row['عميل'] || '';
-        let responseDate = row['Response Date'] || row['تاريخ الرد'] || '';
-        let quantity = parseInt(row['Quantity'] || row['الكمية'] || '0') || 0;
-        let requestDate = row['Request Date'] || row['تاريخ الطلب'] || '';
-        let sourceFile = row['Source File'] || row['ملف المصدر'] || '';
-        let description = row['Description'] || row['الوصف'] || '';
-        let partNumber = row['PART NO'] || row['رقم القطعة'] || '';
-        let lineItem = row['LINE ITEM'] || row['رقم البند'] || '';
-        let uom = row['UOM'] || row['وحدة القياس'] || '';
-        let lineNumber = parseInt(row['Line No'] || row['رقم السطر'] || '0') || 0;
-
-        // If above doesn't work, try by array position (fallback)
+        // Get all keys to access by position
         const rowKeys = Object.keys(row);
-        if (!clientName && rowKeys.length > 1) clientName = row[rowKeys[1]] || '';
-        if (!responseDate && rowKeys.length > 2) responseDate = row[rowKeys[2]] || '';
-        if (!quantity && rowKeys.length > 3) quantity = parseInt(row[rowKeys[3]]) || 0;
-        if (!requestDate && rowKeys.length > 4) requestDate = row[rowKeys[4]] || '';
-        if (!sourceFile && rowKeys.length > 5) sourceFile = row[rowKeys[5]] || '';
-        if (!description && rowKeys.length > 6) description = row[rowKeys[6]] || '';
-        if (!partNumber && rowKeys.length > 7) partNumber = row[rowKeys[7]] || '';
-        if (!lineItem && rowKeys.length > 8) lineItem = row[rowKeys[8]] || '';
-        if (!uom && rowKeys.length > 9) uom = row[rowKeys[9]] || '';
-        if (!lineNumber && rowKeys.length > 10) lineNumber = parseInt(row[rowKeys[10]]) || 0;
+        
+        // Based on the image: A=Done, B=Client, C=Response Date, D=Quantity, E=Request Date, F=Source File, G=Description, H=PART NO, I=LINE ITEM, J=UOM, K=Line No
+        const done = rowKeys.length > 0 ? row[rowKeys[0]] || '' : '';
+        const clientName = rowKeys.length > 1 ? row[rowKeys[1]] || '' : '';
+        const responseDate = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';
+        const quantity = rowKeys.length > 3 ? parseInt(row[rowKeys[3]]) || 0 : 0;
+        const requestDate = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';
+        const sourceFile = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';
+        const description = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';
+        const partNumber = rowKeys.length > 7 ? row[rowKeys[7]] || '' : '';
+        const lineItem = rowKeys.length > 8 ? row[rowKeys[8]] || '' : '';
+        const uom = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';
+        const lineNumber = rowKeys.length > 10 ? parseInt(row[rowKeys[10]]) || 0 : 0;
+
+        // Format dates properly (convert Excel serial dates if needed)
+        const formatDate = (dateValue: any) => {
+          if (!dateValue) return '';
+          
+          // If it's a number (Excel serial date), convert it
+          if (typeof dateValue === 'number') {
+            const excelEpoch = new Date(1900, 0, 1);
+            const jsDate = new Date(excelEpoch.getTime() + (dateValue - 2) * 24 * 60 * 60 * 1000);
+            return jsDate.toISOString().split('T')[0];
+          }
+          
+          // If it's already a string, return as is
+          return dateValue.toString();
+        };
 
         return {
           rowIndex: index + 1,
           // Database fields mapping
-          clientName,
+          clientName: clientName || 'غير محدد',
           requestNumber: sourceFile || `REQ-${Date.now()}-${index + 1}`,
           customRequestNumber: sourceFile,
-          requestDate,
-          responseDate,
+          requestDate: formatDate(requestDate),
+          responseDate: formatDate(responseDate),
           quantity,
           description,
           partNumber,
           lineItem,
           uom,
           lineNumber,
-          status: 'pending', // Default status
+          status: 'pending',
           // Excel original data for reference
           excelData: row
         };
@@ -821,10 +826,9 @@ Respond in JSON format:
             clientId: client?.id || '',
             requestDate: row.requestDate,
             customRequestNumber: row.customRequestNumber,
-            expiryDate: row.expiryDate || null,
             status: row.status as any,
             createdBy: req.session.user!.id,
-            notes: `Imported from Excel - Client Price: ${row.clientPrice}`,
+            notes: `Imported from Excel - Response Date: ${row.responseDate}`,
           };
 
           const quotation = await storage.createQuotationRequest(quotationData);

@@ -182,9 +182,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           <Alert>
             <Download className="h-4 w-4" />
             <AlertDescription>
-              هيكل ملف Excel المطلوب:
-              <br />العمود A: الحالة | العمود B: اسم العميل | العمود C: تاريخ الرد | العمود D: الكمية | العمود E: تاريخ الطلب
-              <br />العمود F: ملف المصدر | العمود G: التوصيف | العمود H: رقم القطعة | العمود I: رقم البند | العمود J: وحدة القياس | العمود K: رقم السطر
+              <strong>هيكل ملف Excel المطلوب (بالترتيب الصحيح):</strong>
+              <br />A: الحالة | B: اسم العميل | C: تاريخ الرد | D: الكمية | E: تاريخ الطلب
+              <br />F: ملف المصدر | G: التوصيف | H: رقم القطعة | I: رقم البند | J: وحدة القياس | K: رقم السطر
+              <br /><em>مثال: EDC | 26/07/2025 | 100 | 20/07/2025 | 25R009802 | COMPLETE PC BOARD | 2503244 | 1854.002.CARIER.7519 | Each | 1</em>
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -213,14 +214,17 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
             </Alert>
 
             {/* Column Mapping Display */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-4 bg-blue-50 rounded-lg">
-              {Object.entries(mapping).map(([excelCol, dbCol]) => (
-                <div key={excelCol} className="text-sm flex items-center">
-                  <span className="font-bold text-blue-800 bg-blue-200 px-2 py-1 rounded text-xs">{excelCol}</span>
-                  <span className="mx-2">←</span>
-                  <span className="text-gray-700">{dbCol}</span>
-                </div>
-              ))}
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-semibold text-blue-800 mb-3">ربط أعمدة Excel بقاعدة البيانات:</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                {Object.entries(mapping).map(([excelCol, dbCol]) => (
+                  <div key={excelCol} className="text-sm flex items-center bg-white p-2 rounded border">
+                    <span className="font-bold text-white bg-blue-600 px-2 py-1 rounded text-xs min-w-[24px] text-center">{excelCol}</span>
+                    <span className="mx-2 text-blue-600">→</span>
+                    <span className="text-gray-700 text-xs">{dbCol}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Preview Table */}
@@ -249,8 +253,8 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                       <td className="px-3 py-2 font-mono text-blue-600" dir="ltr">
                         {row.customRequestNumber}
                       </td>
-                      <td className="px-3 py-2">{row.requestDate}</td>
-                      <td className="px-3 py-2">{row.responseDate}</td>
+                      <td className="px-3 py-2" dir="ltr">{row.requestDate}</td>
+                      <td className="px-3 py-2" dir="ltr">{row.responseDate}</td>
                       <td className="px-3 py-2 max-w-xs truncate" title={row.description}>
                         {row.description}
                       </td>
