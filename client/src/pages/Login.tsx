@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Building, User, Lock, ArrowLeft } from "lucide-react";
+import qortobaLogo from "@/assets/qortoba-logo.png";
 
 const loginSchema = z.object({
   username: z.string().min(1, "اسم المستخدم مطلوب"),
@@ -37,13 +38,16 @@ export default function Login() {
       <Card className="w-full max-w-md shadow-xl">
         <CardContent className="pt-8 pb-8 px-8">
           <div className="text-center mb-8">
-            {/* Company Logo Placeholder */}
-            <div className="w-20 h-20 bg-primary/10 rounded-full mx-auto mb-4 flex items-center justify-center">
-              {/* COMPANY LOGO: Place Al-Khedawi company logo here */}
-              <Building className="h-10 w-10 text-primary" />
+            {/* Company Logo */}
+            <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <img 
+                src={qortobaLogo} 
+                alt="قرطبة للتوريدات" 
+                className="h-20 w-20 object-contain"
+              />
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">نظام الخديوي</h1>
-            <p className="text-gray-600">للتوريدات العمومية والمقاولات</p>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">نظام قرطبة</h1>
+            <p className="text-gray-600">للتوريدات</p>
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

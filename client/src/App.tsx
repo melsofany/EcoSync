@@ -32,7 +32,7 @@ function Router() {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full loading-spinner mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold text-gray-700 mb-2">جاري تحميل النظام...</h2>
-          <p className="text-gray-500">الخديوي للتوريدات العمومية والمقاولات</p>
+          <p className="text-gray-500">قرطبة للتوريدات</p>
         </div>
       </div>
     );

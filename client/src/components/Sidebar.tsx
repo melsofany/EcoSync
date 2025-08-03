@@ -147,13 +147,17 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {/* Company Header */}
         <div className="p-3 sm:p-4 lg:p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3 space-x-reverse">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <Building className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
+            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg flex items-center justify-center">
+              <img 
+                src="/assets/qortoba-logo.png" 
+                alt="قرطبة للتوريدات" 
+                className="h-8 w-8 lg:h-10 lg:w-10 object-contain"
+              />
             </div>
             {isOpen && (
               <div>
-                <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام الخديوي</h2>
-                <p className="text-xs text-gray-500">للتوريدات والمقاولات</p>
+                <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام قرطبة</h2>
+                <p className="text-xs text-gray-500">للتوريدات</p>
               </div>
             )}
           </div>

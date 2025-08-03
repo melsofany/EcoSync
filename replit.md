@@ -1,8 +1,8 @@
-# Al-Khedawi General Supplies Management System
+# قرطبة للتوريدات - نظام إدارة التوريدات
 
 ## Overview
 
-A comprehensive business management system for Al-Khedawi General Supplies and Contracting Company. This web application manages quotation requests, item cataloging, purchase orders, and administrative operations with role-based access control. The system integrates AI-powered item analysis through DeepSeek API to identify duplicate items and enhance data quality. Built as a demand-based procurement system without inventory management.
+A comprehensive business management system for قرطبة للتوريدات. This web application manages quotation requests, item cataloging, purchase orders, and administrative operations with role-based access control. The system integrates AI-powered item analysis through DeepSeek API to identify duplicate items and enhance data quality. Built as a demand-based procurement system without inventory management.
 
 ## User Preferences
 
@@ -46,6 +46,13 @@ Preferred communication style: Simple, everyday language.
 - **Activity Tracking**: Comprehensive logging of user actions with IP addresses
 - **Online Status**: Real-time tracking of user login/logout status
 - **Password Security**: bcrypt hashing with salt rounds
+
+## Recent Critical Updates (August 3, 2025)
+
+### Company Rebranding
+- **✅ Company Name Updated**: Changed from "الخديوي" to "قرطبة للتوريدات" throughout the system
+- **✅ New Logo Integration**: Added company logo to login page and sidebar
+- **✅ UI Updates**: Updated all references to company name in Arabic interface
 
 ## Recent Critical Fixes (August 3, 2025)
 
