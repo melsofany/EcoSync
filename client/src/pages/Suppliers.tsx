@@ -48,9 +48,7 @@ export default function Suppliers() {
   // Delete supplier mutation
   const deleteSupplierMutation = useMutation({
     mutationFn: async (supplierId: string) => {
-      return apiRequest(`/api/suppliers/${supplierId}`, {
-        method: 'DELETE'
-      });
+      return apiRequest("DELETE", `/api/suppliers/${supplierId}`);
     },
     onSuccess: () => {
       toast({

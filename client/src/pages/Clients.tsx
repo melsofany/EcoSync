@@ -47,9 +47,7 @@ export default function Clients() {
   // Delete client mutation
   const deleteClientMutation = useMutation({
     mutationFn: async (clientId: string) => {
-      return apiRequest(`/api/clients/${clientId}`, {
-        method: 'DELETE'
-      });
+      return apiRequest("DELETE", `/api/clients/${clientId}`);
     },
     onSuccess: () => {
       toast({
