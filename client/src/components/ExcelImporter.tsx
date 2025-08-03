@@ -54,16 +54,21 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
 
   // مرحلة 1: تحليل الملف وعرض الأعمدة
   const analyzeMutation = useMutation({
-    mutationFn: async (excelData: any[]) => {
+    mutationFn: async (fileData: any[]) => {
       const response = await apiRequest("POST", "/api/import/quotations/analyze", {
-        excelData
+        excelData: fileData
       });
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data, fileData) => {
+      console.log("✅ Analyze success:", { 
+        dataLength: data.totalRows, 
+        fileDataLength: fileData.length,
+        availableColumns: data.availableColumns.length 
+      });
       setAvailableColumns(data.availableColumns);
       setRequiredFields(data.requiredFields);
-      setExcelData(excelData);
+      setExcelData(fileData); // حفظ البيانات الأصلية
       setShowColumnMapping(true);
       toast({
         title: "تم تحليل الملف بنجاح",
@@ -133,6 +138,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      console.log("📁 File selected:", file.name);
       setSelectedFile(file);
       setShowPreview(false);
       setPreviewData([]);
@@ -159,6 +165,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          console.log("📊 Excel data parsed:", { length: jsonData.length, sample: jsonData.slice(0, 2) });
           
           analyzeMutation.mutate(jsonData);
         } catch (error) {
@@ -204,6 +211,23 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
       });
       return;
     }
+
+    // التحقق من وجود البيانات
+    if (!excelData || excelData.length === 0) {
+      toast({
+        title: "لا توجد بيانات",
+        description: "يرجى رفع ملف Excel أولاً",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log("🔍 Preview request being sent:", { 
+      excelDataLength: excelData.length, 
+      columnMapping,
+      sampleData: excelData.slice(0, 1),
+      hasRequiredFields: Object.keys(columnMapping).length > 0
+    });
     
     previewMutation.mutate({ excelData, columnMapping });
   };

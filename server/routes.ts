@@ -765,11 +765,20 @@ Respond in JSON format:
     try {
       const { excelData, columnMapping } = req.body;
       
+      console.log("Preview request received:", {
+        excelDataType: typeof excelData,
+        excelDataLength: Array.isArray(excelData) ? excelData.length : 'not array',
+        columnMappingType: typeof columnMapping,
+        columnMappingKeys: columnMapping ? Object.keys(columnMapping) : 'no keys'
+      });
+      
       if (!Array.isArray(excelData) || excelData.length === 0) {
+        console.log("❌ Invalid Excel data:", excelData);
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
       if (!columnMapping || typeof columnMapping !== 'object') {
+        console.log("❌ Column mapping required:", columnMapping);
         return res.status(400).json({ message: "Column mapping is required" });
       }
 
