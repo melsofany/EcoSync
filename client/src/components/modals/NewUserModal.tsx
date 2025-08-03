@@ -99,22 +99,12 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-50" dir="rtl">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>إضافة مستخدم جديد</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle>إضافة مستخدم جديد</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6 relative">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="username">اسم المستخدم *</Label>
@@ -125,7 +115,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                   className="pl-10"
                   {...form.register("username")}
                 />
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
               {form.formState.errors.username && (
                 <p className="text-sm text-red-600 mt-1">
@@ -144,7 +134,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                   className="pl-10"
                   {...form.register("password")}
                 />
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
               {form.formState.errors.password && (
                 <p className="text-sm text-red-600 mt-1">
@@ -177,7 +167,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                   className="pl-10"
                   {...form.register("email")}
                 />
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
               {form.formState.errors.email && (
                 <p className="text-sm text-red-600 mt-1">
@@ -196,7 +186,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                   className="pl-10"
                   {...form.register("phone")}
                 />
-                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
               </div>
               {form.formState.errors.phone && (
                 <p className="text-sm text-red-600 mt-1">
