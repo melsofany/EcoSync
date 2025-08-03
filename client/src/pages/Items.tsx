@@ -192,6 +192,7 @@ export default function Items() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     partNumber: "",
+    lineItem: "",
     description: "",
     category: "",
   });
@@ -230,6 +231,7 @@ export default function Items() {
   const filteredItems = items && Array.isArray(items) ? items.filter((item: any) => {
     return (
       (!filters.partNumber || item.partNumber?.includes(filters.partNumber)) &&
+      (!filters.lineItem || item.lineItem?.includes(filters.lineItem)) &&
       (!filters.description || item.description.includes(filters.description)) &&
       (!filters.category || filters.category === "all" || item.category === filters.category)
     );
@@ -339,14 +341,25 @@ export default function Items() {
           <CardTitle>البحث والتصفية</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <Label htmlFor="partNumber">رقم القطعة</Label>
+              <Label htmlFor="partNumber">رقم القطعة (PART NO)</Label>
               <Input
                 id="partNumber"
-                placeholder="ELEK00000001"
+                placeholder="P-000001"
                 value={filters.partNumber}
                 onChange={(e) => setFilters({ ...filters, partNumber: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="lineItem">رقم السطر (LINE ITEM)</Label>
+              <Input
+                id="lineItem"
+                dir="ltr"
+                placeholder="2281.004.GAITRO.7046"
+                value={filters.lineItem}
+                onChange={(e) => setFilters({ ...filters, lineItem: e.target.value })}
+                className="font-mono text-blue-600"
               />
             </div>
             <div>
