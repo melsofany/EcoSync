@@ -869,11 +869,21 @@ Respond in JSON format:
           if (!dateValue) return '';
           
           // إذا كان رقم (تاريخ Excel التسلسلي)
-          if (typeof dateValue === 'number' && dateValue > 1) {
+          if (typeof dateValue === 'number' && dateValue > 40000 && dateValue < 50000) {
             // Excel يبدأ العد من 1900/1/1، لكن هناك خطأ في حساب Excel للسنة الكبيسة
             const excelEpoch = new Date(1899, 11, 30); // 30 ديسمبر 1899
             const jsDate = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
             return jsDate.toISOString().split('T')[0];
+          }
+          
+          // إذا كان نص رقمي، حوله إلى رقم ثم تاريخ
+          if (typeof dateValue === 'string' && !isNaN(Number(dateValue))) {
+            const numValue = Number(dateValue);
+            if (numValue > 40000 && numValue < 50000) {
+              const excelEpoch = new Date(1899, 11, 30);
+              const jsDate = new Date(excelEpoch.getTime() + numValue * 24 * 60 * 60 * 1000);
+              return jsDate.toISOString().split('T')[0];
+            }
           }
           
           // إذا كان نص تاريخ ISO، استخرج التاريخ فقط
