@@ -252,7 +252,7 @@ export default function QuotationDetail() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-gray-800">
-              طلب التسعير {(quotation as any)?.requestNumber || 'غير محدد'}
+              طلب التسعير {(quotation as any)?.customRequestNumber || (quotation as any)?.requestNumber || 'غير محدد'}
             </h1>
             <p className="text-gray-600">إدارة تفاصيل طلب التسعير وأصنافه</p>
           </div>
@@ -292,7 +292,7 @@ export default function QuotationDetail() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <Label className="text-sm font-medium text-gray-600">رقم الطلب</Label>
-              <p className="text-lg font-semibold text-gray-800">{(quotation as any)?.requestNumber}</p>
+              <p className="text-lg font-semibold text-gray-800">{(quotation as any)?.customRequestNumber || (quotation as any)?.requestNumber}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">اسم العميل</Label>

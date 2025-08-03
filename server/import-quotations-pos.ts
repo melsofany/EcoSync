@@ -21,7 +21,7 @@ export async function importQuotationsAndPOs(): Promise<ImportQuotationsPOsResul
     const adminUserId = '4964161e-b3a1-4e10-ac5b-9b728913bb6f';
     
     // Read structured pricing data
-    const dataPath = join(process.cwd(), 'attached_assets', 'structured_pricing_data.json');
+    const dataPath = join(process.cwd(), '..', 'attached_assets', 'structured_pricing_data.json');
     const rawData = readFileSync(dataPath, 'utf-8');
     const structuredData = JSON.parse(rawData);
     
