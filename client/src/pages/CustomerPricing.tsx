@@ -56,13 +56,18 @@ function ItemDetailedPricing({ item }: { item: any }) {
         console.log('Calling historical pricing API...');
         const historicalResponse = await fetch(`/api/items/${item.id}/historical-pricing`);
         console.log('Historical response status:', historicalResponse.status);
+        console.log('Historical response object:', historicalResponse);
+        
         if (historicalResponse.ok) {
           const historicalData = await historicalResponse.json();
           console.log('Historical data received:', historicalData);
-          console.log('Setting historical pricing state with:', historicalData.length, 'items');
+          console.log('Historical data type:', typeof historicalData);
+          console.log('Historical data is array:', Array.isArray(historicalData));
+          console.log('Historical data length:', historicalData?.length);
           setHistoricalPricing(Array.isArray(historicalData) ? historicalData : []);
         } else {
-          console.error('Failed to fetch historical data:', historicalResponse.status);
+          const errorText = await historicalResponse.text();
+          console.error('Failed to fetch historical data:', historicalResponse.status, errorText);
           setHistoricalPricing([]);
         }
       } catch (error) {
@@ -268,7 +273,21 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 ))}
 
                 {/* Debug info */}
-                {console.log('About to render historicalPricing:', historicalPricing, 'length:', historicalPricing?.length, 'type:', typeof historicalPricing)}
+                {console.log('=== RENDER DEBUG ===')}
+                {console.log('About to render historicalPricing:', historicalPricing)}
+                {console.log('historicalPricing length:', historicalPricing?.length)}
+                {console.log('historicalPricing type:', typeof historicalPricing)}
+                {console.log('historicalPricing is array:', Array.isArray(historicalPricing))}
+                {console.log('historicalPricing truthiness:', !!historicalPricing)}
+                {console.log('historicalPricing && historicalPricing.length > 0:', historicalPricing && historicalPricing.length > 0)}
+                {console.log('===================')}
+                
+                {/* Show raw data for debugging */}
+                <TableRow>
+                  <TableCell colSpan={14} className="text-xs bg-blue-50 border">
+                    <strong>DEBUG:</strong> Historical data = {JSON.stringify(historicalPricing)} | Length = {historicalPricing?.length} | Type = {typeof historicalPricing}
+                  </TableCell>
+                </TableRow>
                 
                 {/* Historical pricing from Excel sheets - Display all entries with same LINE ITEM */}
                 {historicalPricing && historicalPricing.length > 0 ? (
