@@ -86,24 +86,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       section: "reports",
     },
     {
-      title: "استيراد البيانات",
-      href: "/import-data",
-      icon: Upload,
-      section: "admin",
-    },
-    {
-      title: "استيراد Excel",
-      href: "/import-excel-data",
-      icon: Upload,
-      section: "admin",
-    },
-    {
-      title: "مراقبة الاستيراد",
-      href: "/import-progress",
-      icon: Activity,
-      section: "admin",
-    },
-    {
       title: "إدارة النظام",
       href: "/admin",
       icon: Settings,
