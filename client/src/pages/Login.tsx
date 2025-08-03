@@ -63,22 +63,35 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden" dir="rtl">
-      {/* Video Background */}
+      {/* Animated Background */}
       <div className="absolute inset-0 z-0">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-          className="w-full h-full object-cover"
-          style={{ filter: 'brightness(0.3) blur(1px)' }}
-        >
-          <source src="/logistics-background.mp4" type="video/mp4" />
-        </video>
-        {/* Fallback gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-indigo-900 -z-10"></div>
+        {/* Base gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
+        
+        {/* Animated containers */}
+        <div className="absolute inset-0 opacity-20">
+          {/* Moving containers */}
+          <div className="container-animation container-1"></div>
+          <div className="container-animation container-2"></div>
+          <div className="container-animation container-3"></div>
+          <div className="container-animation container-4"></div>
+          
+          {/* Warehouse structure */}
+          <div className="warehouse-structure"></div>
+          
+          {/* Moving trucks */}
+          <div className="truck-animation truck-1"></div>
+          <div className="truck-animation truck-2"></div>
+          
+          {/* Crane animation */}
+          <div className="crane-animation"></div>
+          
+          {/* Grid pattern */}
+          <div className="grid-pattern"></div>
+        </div>
+        
         {/* Overlay */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-black/50"></div>
       </div>
       
       {/* Content */}

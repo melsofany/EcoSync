@@ -71,6 +71,153 @@
     transform: scaleX(-1);
   }
 
+  /* Logistics Background Animations */
+  .container-animation {
+    position: absolute;
+    width: 60px;
+    height: 40px;
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    border-radius: 4px;
+    animation: moveContainer 20s infinite linear;
+  }
+
+  .container-1 {
+    top: 20%;
+    left: -80px;
+    animation-delay: 0s;
+  }
+
+  .container-2 {
+    top: 40%;
+    left: -80px;
+    animation-delay: 5s;
+    background: linear-gradient(135deg, #059669, #10b981);
+  }
+
+  .container-3 {
+    top: 60%;
+    left: -80px;
+    animation-delay: 10s;
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+  }
+
+  .container-4 {
+    top: 80%;
+    left: -80px;
+    animation-delay: 15s;
+    background: linear-gradient(135deg, #ca8a04, #eab308);
+  }
+
+  .warehouse-structure {
+    position: absolute;
+    bottom: 10%;
+    right: 10%;
+    width: 200px;
+    height: 120px;
+    background: linear-gradient(135deg, #374151, #4b5563);
+    clip-path: polygon(0 100%, 0 20%, 50% 0, 100% 20%, 100% 100%);
+    opacity: 0.3;
+  }
+
+  .truck-animation {
+    position: absolute;
+    width: 80px;
+    height: 40px;
+    background: linear-gradient(135deg, #1f2937, #374151);
+    border-radius: 8px;
+    animation: moveTruck 25s infinite linear;
+  }
+
+  .truck-1 {
+    bottom: 25%;
+    left: -100px;
+    animation-delay: 0s;
+  }
+
+  .truck-2 {
+    bottom: 15%;
+    left: -100px;
+    animation-delay: 12.5s;
+  }
+
+  .crane-animation {
+    position: absolute;
+    top: 15%;
+    right: 15%;
+    width: 100px;
+    height: 150px;
+    background: linear-gradient(135deg, #6b7280, #9ca3af);
+    clip-path: polygon(45% 0, 55% 0, 55% 60%, 100% 60%, 100% 70%, 50% 70%, 50% 100%, 45% 100%);
+    opacity: 0.4;
+    transform-origin: 50% 100%;
+    animation: cranePivot 15s infinite ease-in-out;
+  }
+
+  .grid-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+    background-size: 100px 100px;
+    animation: gridMove 30s linear infinite;
+  }
+
+  @keyframes moveContainer {
+    0% {
+      transform: translateX(0) scale(1);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.6;
+    }
+    90% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateX(calc(100vw + 80px)) scale(0.8);
+      opacity: 0;
+    }
+  }
+
+  @keyframes moveTruck {
+    0% {
+      transform: translateX(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.8;
+    }
+    90% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateX(calc(100vw + 100px));
+      opacity: 0;
+    }
+  }
+
+  @keyframes cranePivot {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(15deg);
+    }
+    75% {
+      transform: rotate(-15deg);
+    }
+  }
+
+  @keyframes gridMove {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(100px, 100px);
+    }
+  }
+
   .card-hover {
     transition: all 0.2s ease-in-out;
   }
