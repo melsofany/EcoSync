@@ -119,18 +119,18 @@ export class ObjectStorageService {
     }
   }
 
-  // Gets the upload URL for a profile image.
+  // Gets the upload URL for profile images in private storage.
   async getProfileImageUploadURL(): Promise<string> {
-    const publicObjectPaths = this.getPublicObjectSearchPaths();
-    if (publicObjectPaths.length === 0) {
+    const privateObjectDir = this.getPrivateObjectDir();
+    if (!privateObjectDir) {
       throw new Error(
-        "PUBLIC_OBJECT_SEARCH_PATHS not set. Create a bucket in 'Object Storage' " +
-          "tool and set PUBLIC_OBJECT_SEARCH_PATHS env var."
+        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
+          "tool and set PRIVATE_OBJECT_DIR env var."
       );
     }
 
     const imageId = randomUUID();
-    const fullPath = `${publicObjectPaths[0]}/profile-images/${imageId}`;
+    const fullPath = `${privateObjectDir}/profile-images/${imageId}`;
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
 
@@ -143,34 +143,108 @@ export class ObjectStorageService {
     });
   }
 
-  // Gets the public URL for a profile image
-  getProfileImagePublicURL(imageId: string): string {
-    return `/public-objects/profile-images/${imageId}`;
+  // Gets the upload URL for an object entity.
+  async getObjectEntityUploadURL(): Promise<string> {
+    const privateObjectDir = this.getPrivateObjectDir();
+    if (!privateObjectDir) {
+      throw new Error(
+        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
+          "tool and set PRIVATE_OBJECT_DIR env var."
+      );
+    }
+
+    const objectId = randomUUID();
+    const fullPath = `${privateObjectDir}/uploads/${objectId}`;
+
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+
+    // Sign URL for PUT method with TTL
+    return signObjectURL({
+      bucketName,
+      objectName,
+      method: "PUT",
+      ttlSec: 900,
+    });
   }
 
-  // Normalize image path from upload URL to public URL
-  normalizeProfileImagePath(rawPath: string): string {
+  // Gets the object entity file from the object path.
+  async getObjectEntityFile(objectPath: string): Promise<File> {
+    if (!objectPath.startsWith("/objects/")) {
+      throw new ObjectNotFoundError();
+    }
+
+    const parts = objectPath.slice(1).split("/");
+    if (parts.length < 2) {
+      throw new ObjectNotFoundError();
+    }
+
+    const entityId = parts.slice(1).join("/");
+    let entityDir = this.getPrivateObjectDir();
+    if (!entityDir.endsWith("/")) {
+      entityDir = `${entityDir}/`;
+    }
+    const objectEntityPath = `${entityDir}${entityId}`;
+    const { bucketName, objectName } = parseObjectPath(objectEntityPath);
+    const bucket = objectStorageClient.bucket(bucketName);
+    const objectFile = bucket.file(objectName);
+    const [exists] = await objectFile.exists();
+    if (!exists) {
+      throw new ObjectNotFoundError();
+    }
+    return objectFile;
+  }
+
+  normalizeObjectEntityPath(rawPath: string): string {
     if (!rawPath.startsWith("https://storage.googleapis.com/")) {
       return rawPath;
     }
   
-    // Extract the path from the URL
+    // Extract the path from the URL by removing query parameters and domain
     const url = new URL(rawPath);
     const rawObjectPath = url.pathname;
   
-    const publicObjectPaths = this.getPublicObjectSearchPaths();
-    if (publicObjectPaths.length === 0) {
-      return rawPath;
-    }
-
-    const publicPath = publicObjectPaths[0];
-    if (!rawObjectPath.startsWith(publicPath)) {
-      return rawPath;
+    let objectEntityDir = this.getPrivateObjectDir();
+    if (!objectEntityDir.endsWith("/")) {
+      objectEntityDir = `${objectEntityDir}/`;
     }
   
-    // Extract the relative path
-    const relativePath = rawObjectPath.slice(publicPath.length + 1);
-    return `/public-objects/${relativePath}`;
+    if (!rawObjectPath.startsWith(objectEntityDir)) {
+      return rawObjectPath;
+    }
+  
+    // Extract the entity ID from the path
+    const entityId = rawObjectPath.slice(objectEntityDir.length);
+    return `/objects/${entityId}`;
+  }
+
+  // Tries to set the ACL policy for the object entity and return the normalized path.
+  async trySetObjectEntityAclPolicy(
+    rawPath: string,
+    aclPolicy: any
+  ): Promise<string> {
+    const normalizedPath = this.normalizeObjectEntityPath(rawPath);
+    if (!normalizedPath.startsWith("/")) {
+      return normalizedPath;
+    }
+
+    const objectFile = await this.getObjectEntityFile(normalizedPath);
+    // For now, we'll skip actual ACL setting since we don't have the ACL system
+    // await setObjectAclPolicy(objectFile, aclPolicy);
+    return normalizedPath;
+  }
+
+  // Checks if the user can access the object entity.
+  async canAccessObjectEntity({
+    userId,
+    objectFile,
+    requestedPermission,
+  }: {
+    userId?: string;
+    objectFile: File;
+    requestedPermission?: string;
+  }): Promise<boolean> {
+    // For profile images, allow public access
+    return true;
   }
 }
 

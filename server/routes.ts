@@ -761,6 +761,54 @@ Respond in JSON format:
     }
   });
 
+  app.post("/api/profile-image/set-acl", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { imageUrl } = req.body;
+      const userId = req.session.user!.id;
+      
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        imageUrl,
+        {
+          owner: userId,
+          visibility: "public", // Profile images are public
+        },
+      );
+
+      res.json({ objectPath });
+    } catch (error) {
+      console.error("Error setting profile image ACL:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Serve private objects (like profile images)
+  app.get("/objects/:objectPath(*)", requireAuth, async (req: Request, res: Response) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      const userId = req.session.user?.id;
+      
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        objectFile,
+        userId: userId,
+        requestedPermission: "read" as any,
+      });
+      
+      if (!canAccess) {
+        return res.sendStatus(401);
+      }
+      
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error accessing private object:", error);
+      if (error.name === "ObjectNotFoundError") {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
   // Activity log routes
   app.get("/api/activity", requireAuth, async (req: Request, res: Response) => {
     try {
