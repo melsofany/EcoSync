@@ -57,15 +57,20 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
       }
     }
     
-    // Create default client
-    const defaultClient = await storage.createClient({
-      name: 'العميل الافتراضي - استيراد شامل',
-      contactPerson: '',
-      email: '',
-      phone: '',
-      address: '',
-      notes: 'عميل افتراضي للبيانات المستوردة الشاملة'
-    });
+    // Get EDC client (main client)
+    const clients = await storage.getAllClients();
+    let defaultClient = clients.find(c => c.name === 'EDC');
+    
+    if (!defaultClient) {
+      defaultClient = await storage.createClient({
+        name: 'EDC',
+        contactPerson: 'مدير المشتريات',
+        email: 'procurement@edc.com',
+        phone: '+966-XXX-XXXXX',
+        address: 'المملكة العربية السعودية',
+        notes: 'العميل الرئيسي للشركة'
+      });
+    }
     
     // Prepare items for AI analysis
     const itemsForAI: ItemForAnalysis[] = completeData.items.map((item: any) => ({
