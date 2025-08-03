@@ -213,6 +213,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Quotation operations
+  async getQuotations(): Promise<QuotationRequest[]> {
+    return await db.select().from(quotationRequests).orderBy(desc(quotationRequests.createdAt));
+  }
+
+  async createQuotation(requestData: InsertQuotationRequest): Promise<QuotationRequest> {
+    return this.createQuotationRequest(requestData);
+  }
+
   async createQuotationRequest(requestData: InsertQuotationRequest): Promise<QuotationRequest> {
     const requestNumber = await this.getNextRequestNumber();
     const [quotation] = await db
@@ -495,8 +503,36 @@ export class DatabaseStorage implements IStorage {
     return supplier || undefined;
   }
 
+  async createPurchaseOrder(poData: InsertPurchaseOrder): Promise<PurchaseOrder> {
+    const poNumber = await this.getNextPONumber();
+    const [po] = await db
+      .insert(purchaseOrders)
+      .values({
+        ...poData,
+        poNumber,
+      })
+      .returning();
+    return po;
+  }
+
   async getAllPurchaseOrders(): Promise<PurchaseOrder[]> {
     return await db.select().from(purchaseOrders).orderBy(desc(purchaseOrders.createdAt));
+  }
+
+  async getNextPONumber(): Promise<string> {
+    const [lastPO] = await db
+      .select({ poNumber: purchaseOrders.poNumber })
+      .from(purchaseOrders)
+      .orderBy(desc(purchaseOrders.poNumber))
+      .limit(1);
+    
+    if (lastPO?.poNumber) {
+      const lastNumber = parseInt(lastPO.poNumber.replace('PO', ''));
+      const nextNumber = (lastNumber + 1).toString().padStart(6, '0');
+      return `PO${nextNumber}`;
+    }
+    
+    return 'PO000001';
   }
 
   async getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined> {

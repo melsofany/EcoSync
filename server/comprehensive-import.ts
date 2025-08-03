@@ -162,8 +162,71 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
               });
             }
             
-            // Skip quotation creation for now to focus on items import
-            // Will be added later if needed
+            // Create quotation if RFQ exists
+            if (originalItem.rfq && originalItem.rfq !== '0') {
+              try {
+                const existingQuotations = await storage.getQuotations();
+                let quotation = existingQuotations.find((q: any) => q.customRequestNumber === originalItem.rfq);
+                
+                if (!quotation) {
+                  quotation = await storage.createQuotation({
+                    createdBy: adminUserId,
+                    clientId: defaultClient.id,
+                    customRequestNumber: originalItem.rfq,
+                    requestDate: originalItem.date_rfq || new Date().toISOString(),
+                    status: originalItem.condition === 'منتهي' ? 'completed' : 'pending',
+                    notes: `استيراد شامل - RFQ: ${originalItem.rfq}`
+                  });
+                }
+                
+                await storage.addQuotationItem({
+                  quotationId: quotation.id,
+                  itemId: newItem.id,
+                  quantity: originalItem.qty.toString(),
+                  notes: `PO: ${originalItem.po || 'غير محدد'}`
+                });
+
+                // Create purchase order if PO exists and item has valid data
+                if (originalItem.po && originalItem.po !== '0' && originalItem.qty_po > 0) {
+                  try {
+                    const existingPOs = await storage.getAllPurchaseOrders();
+                    let purchaseOrder = existingPOs.find((po: any) => po.poNumber === originalItem.po);
+                    
+                    if (!purchaseOrder) {
+                      purchaseOrder = await storage.createPurchaseOrder({
+                        createdBy: adminUserId,
+                        quotationRequestId: quotation.id,
+                        supplierId: supplierMap.get(originalItem.buyer) || null,
+                        poNumber: originalItem.po,
+                        orderDate: originalItem.date_po || new Date().toISOString(),
+                        status: 'pending',
+                        notes: `استيراد شامل - PO: ${originalItem.po}`,
+                        currency: 'EGP',
+                        totalAmount: (originalItem.price_po * originalItem.qty_po).toString()
+                      });
+                    }
+                    
+                    await storage.addPurchaseOrderItem({
+                      purchaseOrderId: purchaseOrder.id,
+                      itemId: newItem.id,
+                      quantity: originalItem.qty_po.toString(),
+                      unitPrice: originalItem.price_po.toString(),
+                      totalPrice: (originalItem.price_po * originalItem.qty_po).toString(),
+                      currency: 'EGP',
+                      notes: `RFQ: ${originalItem.rfq} - الإجمالي: ${originalItem.total_po}`
+                    });
+                    
+                    console.log(`تم إنشاء أمر شراء ${originalItem.po} للصنف ${originalItem.serial_number}`);
+                    
+                  } catch (poError) {
+                    console.error(`خطأ في إنشاء أمر الشراء ${originalItem.po}:`, poError);
+                  }
+                }
+                
+              } catch (quotationError) {
+                console.error(`خطأ في إنشاء طلب عرض أسعار للصنف ${originalItem.serial_number}:`, quotationError);
+              }
+            }
             
           } catch (itemError) {
             console.error(`خطأ في إنشاء الصنف ${originalItem.serial_number}:`, itemError);
