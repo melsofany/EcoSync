@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Send } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { hasRole } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -68,6 +68,33 @@ export default function Quotations() {
   // Delete quotation function
   const handleDeleteQuotation = async (quotationId: string) => {
     deleteQuotationMutation.mutate(quotationId);
+  };
+
+  // Send quotation for pricing mutation
+  const sendForPricingMutation = useMutation({
+    mutationFn: async (quotationId: string) => {
+      await apiRequest("PATCH", `/api/quotations/${quotationId}/status`, {
+        status: "sent_for_pricing"
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
+      toast({
+        title: "تم إرسال طلب التسعير",
+        description: "تم إرسال طلب التسعير لقسم التسعير بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في إرسال طلب التسعير",
+        description: error.message || "حدث خطأ أثناء إرسال طلب التسعير",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSendForPricing = (quotationId: string) => {
+    sendForPricingMutation.mutate(quotationId);
   };
 
   const getStatusBadge = (status: string) => {
@@ -234,6 +261,18 @@ export default function Quotations() {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
+                          
+                          {user && hasRole(user, ["manager", "data_entry"]) && quotation.status === "pending" && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleSendForPricing(quotation.id)}
+                              title="إرسال للتسعير"
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          )}
                           
                           {user && hasRole(user, ["manager", "data_entry"]) && (
                             <Button 

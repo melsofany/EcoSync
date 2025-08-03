@@ -219,14 +219,19 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
         }
       }
 
+      // After creating quotation and items, send it for pricing automatically
+      await apiRequest("PATCH", `/api/quotations/${quotation.id}/status`, {
+        status: "sent_for_pricing"
+      });
+
       return quotation;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
       queryClient.invalidateQueries({ queryKey: ["/api/items"] });
       toast({
-        title: "تم إنشاء طلب التسعير",
-        description: `تم إنشاء طلب التسعير ${data.requestNumber} بنجاح مع ${form.getValues("items").length} بند`,
+        title: "تم إرسال طلب التسعير",
+        description: `تم إنشاء وإرسال طلب التسعير ${data.requestNumber} للتسعير بنجاح مع ${form.getValues("items").length} بند`,
       });
       form.reset();
       setAiAnalysisResults({});
