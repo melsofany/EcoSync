@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { ExcelImporter } from "@/components/ExcelImporter";
+import { QuickImporter } from "@/components/QuickImporter";
 import { 
   FileText, 
   ShoppingCart, 
@@ -402,7 +403,7 @@ export default function Dashboard() {
           </CardHeader>
           {showImporter && (
             <CardContent>
-              <ExcelImporter onImportComplete={() => {
+              <QuickImporter onImportComplete={() => {
                 // Refresh data after import
                 window.location.reload();
               }} />

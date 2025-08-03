@@ -15,7 +15,8 @@ import {
   AlertTriangle,
   X,
   Database,
-  Download
+  Download,
+  Zap
 } from "lucide-react";
 
 interface PreviewData {
@@ -85,6 +86,32 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
   });
 
   // مرحلة 2: معاينة البيانات بناءً على المطابقة
+  // Mutation للاستيراد التلقائي السريع
+  const autoImportMutation = useMutation({
+    mutationFn: async (excelData: any[]) => {
+      const response = await apiRequest("POST", "/api/import/quotations/auto", { excelData });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setPreviewData(data.previewData);
+      setShowPreview(true);
+      setShowColumnMapping(false);
+      
+      toast({
+        title: "🚀 تم الاستيراد التلقائي بنجاح!",
+        description: `تم استيراد ${data.totalRows} سجل تلقائياً بثقة ${data.confidence}%`,
+        variant: data.confidence > 80 ? "default" : "destructive"
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في الاستيراد التلقائي",
+        description: error.message || "حدث خطأ أثناء الاستيراد التلقائي",
+        variant: "destructive",
+      });
+    },
+  });
+
   const previewMutation = useMutation({
     mutationFn: async (params: { excelData: any[], columnMapping: Record<string, string> }) => {
       const response = await apiRequest("POST", "/api/import/quotations/preview", params);
@@ -277,6 +304,14 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
             >
               <Eye className="h-4 w-4" />
               <span>{analyzeMutation.isPending ? "جاري التحليل..." : "تحليل الملف"}</span>
+            </Button>
+            <Button
+              onClick={handleAutoImport}
+              disabled={!selectedFile || autoImportMutation.isPending}
+              className="flex items-center space-x-2 space-x-reverse bg-green-600 hover:bg-green-700"
+            >
+              <Zap className="h-4 w-4" />
+              <span>{autoImportMutation.isPending ? "جاري الاستيراد التلقائي..." : "🚀 استيراد تلقائي"}</span>
             </Button>
           </div>
 

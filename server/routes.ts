@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage, initializeDatabase } from "./storage";
 import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
+import { autoMapExcelColumns, processExcelRowForQuotation } from "./simpleExcelImport";
 import bcrypt from "bcrypt";
 import session from "express-session";
 
@@ -1671,6 +1672,56 @@ Respond in JSON format:
     } catch (error) {
       console.error('Error importing quotations/POs:', error);
       res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // 🚀 استيراد تلقائي بسيط
+  app.post("/api/import/quotations/auto", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { excelData } = req.body;
+      
+      if (!excelData || !Array.isArray(excelData) || excelData.length === 0) {
+        return res.status(400).json({ message: "Excel data is required" });
+      }
+
+      console.log("🚀 Auto-import starting with", excelData.length, "rows");
+      
+      // الخطوة 1: استخراج أسماء الأعمدة
+      const excelColumns = Object.keys(excelData[0]);
+      console.log("📋 Available columns:", excelColumns);
+      
+      // الخطوة 2: المطابقة التلقائية
+      const mapping = autoMapExcelColumns(excelColumns);
+      console.log("🤖 Column mapping:", mapping);
+      
+      // الخطوة 3: معالجة البيانات
+      const processedData = excelData.map((row: any, index: number) => 
+        processExcelRowForQuotation(row, mapping, index)
+      );
+
+      // فلترة البيانات الصالحة
+      const validData = processedData.filter(row => 
+        row.lineItem && row.partNumber && row.description && row.quantity > 0
+      );
+
+      console.log(`✅ Processed ${processedData.length} rows, ${validData.length} valid`);
+      
+      const confidence = Math.round((Object.keys(mapping).length / 10) * 100);
+      
+      await logActivity(req, "auto_import", "quotations", req.session.user!.id, 
+        `Auto-imported ${validData.length} quotation records`);
+
+      res.json({
+        previewData: validData,
+        totalRows: validData.length,
+        confidence,
+        mapping,
+        message: `تم استيراد ${validData.length} سجل تلقائياً`
+      });
+
+    } catch (error) {
+      console.error("Error in auto-import:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
