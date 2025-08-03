@@ -848,11 +848,11 @@ Respond in JSON format:
 
             const item = await storage.createItem(itemData);
 
-            // Link item to quotation
+            // Link item to quotation with correct quantity as string
             await storage.addItemToQuotation(quotation.id, {
               itemId: item.id,
               quantity: row.quantity,
-              lineNumber: row.lineNumber
+              lineNumber: row.lineNumber || 0
             });
           }
 
