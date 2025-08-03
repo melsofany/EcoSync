@@ -20,6 +20,7 @@ import {
   Database,
   Upload
 } from "lucide-react";
+import { UserAvatar } from "@/components/UserAvatar";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -268,12 +269,16 @@ export default function Dashboard() {
             <div className="space-y-4">
               {activities && Array.isArray(activities) ? activities.slice(0, 5).map((activity: any) => (
                 <div key={activity.id} className="flex items-center space-x-3 space-x-reverse">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${getActionColor(activity.action)}`}>
-                    {getActionIcon(activity.action)}
-                  </div>
+                  <UserAvatar 
+                    user={{ 
+                      fullName: activity.userFullName || activity.username || 'مستخدم غير معروف',
+                      profileImage: activity.userProfileImage 
+                    }} 
+                    size="sm" 
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-800 truncate">
-                      {activity.details || activity.action}
+                      <span className="text-blue-600">{activity.userFullName || activity.username}</span> {activity.action}
                     </p>
                     <p className="text-xs text-gray-500">
                       {formatTime(activity.timestamp)} - {formatDate(activity.timestamp)}
