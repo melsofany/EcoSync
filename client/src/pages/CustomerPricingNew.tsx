@@ -33,12 +33,16 @@ function ItemDetailedPricing({ item }: { item: any }) {
       
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/items/${item.id}/detailed-pricing`);
+        const response = await fetch(`/api/items/${item.id}/detailed-pricing`, {
+          credentials: 'include'
+        });
         const data = await response.json();
         setDetailedPricing(data);
 
         // Also fetch comprehensive data
-        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data`);
+        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data`, {
+          credentials: 'include'
+        });
         const comprehensiveResult = await comprehensiveResponse.json();
         setComprehensiveData(comprehensiveResult);
       } catch (error) {
@@ -381,6 +385,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
       const response = await fetch("/api/customer-pricing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({
           itemId: item.id,
           quotationId: item.quotationId,

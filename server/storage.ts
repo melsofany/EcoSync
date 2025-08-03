@@ -868,10 +868,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(suppliers, eq(supplierPricing.supplierId, suppliers.id))
       .leftJoin(
         customerPricing,
-        and(
-          eq(items.id, customerPricing.itemId),
-          eq(customerPricing.status, "active")
-        )
+        eq(items.id, customerPricing.itemId)
       )
       .where(
         and(
