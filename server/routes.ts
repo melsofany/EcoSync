@@ -110,6 +110,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const firstTwoNames = nameParts.slice(0, 2).join(' ');
       
       await logActivity(req, "login_success", "user", user.id, `${firstTwoNames} logged in successfully`);
+      
+      // Create welcome notification
+      try {
+        await storage.createNotification({
+          userId: user.id,
+          title: "مرحباً بك",
+          message: `أهلاً وسهلاً ${firstTwoNames}، مرحباً بك في نظام قرطبة للتوريدات`,
+          type: "success",
+          isRead: false,
+        });
+      } catch (error) {
+        console.error("Error creating welcome notification:", error);
+      }
 
       const { password: _, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);
@@ -1936,6 +1949,67 @@ Respond in JSON format:
 
     } catch (error) {
       console.error("Error confirming import:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Notification endpoints
+  app.get("/api/notifications", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const notifications = await storage.getUserNotifications(req.session.user.id);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/notifications/unread-count", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const count = await storage.getUnreadNotificationCount(req.session.user.id);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/notifications/:id/read", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      await storage.markNotificationRead(req.params.id);
+      await logActivity(req, "notification_read", "notification", req.params.id, "تم قراءة الإشعار");
+      
+      res.json({ message: "تم تحديث الإشعار" });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/notifications/:id", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      await storage.deleteNotification(req.params.id);
+      await logActivity(req, "notification_delete", "notification", req.params.id, "تم حذف الإشعار");
+      
+      res.json({ message: "تم حذف الإشعار" });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
