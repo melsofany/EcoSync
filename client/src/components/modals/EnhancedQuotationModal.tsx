@@ -175,15 +175,28 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
 
       // Then create items and add them to the quotation
       for (const itemData of data.items) {
-        // Create the item first
-        const itemResponse = await apiRequest("POST", "/api/items", {
-          description: itemData.description,
-          partNumber: itemData.partNumber || null,
-          lineItem: itemData.lineItem || null,
-          unit: itemData.unit,
-          category: itemData.category || null,
-        });
-        const item = await itemResponse.json();
+        // Try to create the item (will return existing item if duplicate)
+        let item;
+        try {
+          const itemResponse = await apiRequest("POST", "/api/items", {
+            description: itemData.description,
+            partNumber: itemData.partNumber || null,
+            lineItem: itemData.lineItem || null,
+            unit: itemData.unit,
+            category: itemData.category || null,
+          });
+          item = await itemResponse.json();
+        } catch (error: any) {
+          // If it's a duplicate error, use the existing item
+          if (error.status === 409 && error.existingItem) {
+            // Find the existing item by part number
+            const itemsResponse = await apiRequest("GET", "/api/items");
+            const allItems = await itemsResponse.json();
+            item = allItems.find((i: any) => i.partNumber === itemData.partNumber);
+          } else {
+            throw error; // Re-throw if it's not a duplicate error
+          }
+        }
 
         // Add item to quotation
         await apiRequest("POST", `/api/quotations/${quotation.id}/items`, {

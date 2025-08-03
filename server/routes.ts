@@ -337,15 +337,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const exactMatch = similarItems.find(item => item.partNumber === validatedData.partNumber);
         
         if (exactMatch) {
-          return res.status(409).json({ 
-            message: "Duplicate item detected: An item with this part number already exists",
-            error: "DUPLICATE_PART_NUMBER",
-            existingItem: {
-              itemNumber: exactMatch.itemNumber,
-              description: exactMatch.description,
-              partNumber: exactMatch.partNumber
-            }
-          });
+          // Instead of returning error, return the existing item
+          await logActivity(req, "find_existing_item", "item", exactMatch.id, `Found existing item: ${exactMatch.itemNumber} - ${exactMatch.description}`);
+          return res.status(200).json(exactMatch);
         }
       }
       
