@@ -1068,8 +1068,7 @@ export class DatabaseStorage implements IStorage {
       LEFT JOIN purchase_orders po ON poi.po_id = po.id
       
       WHERE (
-          i.line_item = ${lineItem} 
-          AND i.part_number = ${partNumber}
+          i.part_number = ${partNumber}
       )
       ORDER BY qr.request_date DESC, i.line_item, po.po_date DESC
     `);

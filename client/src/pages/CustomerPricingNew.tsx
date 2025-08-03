@@ -187,9 +187,14 @@ function ItemDetailedPricing({ item }: { item: any }) {
             جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
           </h4>
           <p className="text-blue-100 text-sm mt-1">
-            عرض البيانات المطابقة تماماً لـ LINE ITEM: {item.lineItem} و PART NO: {item.partNumber}
-            {comprehensiveData && ` (${comprehensiveData.length} سجل)`}
+            عرض جميع البيانات لـ PART NO: {item.partNumber}
+            {comprehensiveData && ` (${comprehensiveData.length} سجل في قاعدة البيانات)`}
           </p>
+          <div className="bg-red-100 border border-red-400 text-red-800 px-3 py-2 rounded text-sm mt-2">
+            <strong>تحذير:</strong> البيانات في قاعدة البيانات مختلفة عن Excel. 
+            قاعدة البيانات تحتوي على LINE ITEM: {item.lineItem} بينما Excel يحتوي على 1511.022.GENRAL.7513.
+            يجب إعادة استيراد البيانات من Excel الصحيح.
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
