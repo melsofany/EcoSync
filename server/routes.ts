@@ -808,20 +808,22 @@ Respond in JSON format:
         const meaningfulValues = values.filter(val => 
           val !== null && val !== undefined && val !== '' && val !== 'nan'
         );
+        
         if (meaningfulValues.length < 5) {
           return false;
         }
         
-        // استبعاد صفوف العناوين
+        // فحص دقيق لصفوف العناوين - تجنب الإفراط في التصفية
         const rowText = values.join(' ').toLowerCase();
-        const headerPatterns = [
-          'line no', 'line item', 'part no', 'description', 'rfq no', 'rfq date', 
-          'qty', 'price', 'expiry date', 'client name', 'العميل', 'response date',
-          'uom', 'unit', 'البند', 'الوصف', 'الكمية', 'السعر', 'التاريخ'
-        ];
         
-        const isHeaderRow = headerPatterns.some(pattern => rowText.includes(pattern));
-        if (isHeaderRow) {
+        // شروط صارمة لاكتشاف العناوين - يجب وجود كلمات رئيسية متعددة
+        const hasLineNo = rowText.includes('line no') || rowText.includes('line item');
+        const hasPartNo = rowText.includes('part no') || rowText.includes('part number'); 
+        const hasDescription = rowText.includes('description');
+        const hasMultipleHeaderWords = (hasLineNo && hasPartNo) || (hasLineNo && hasDescription);
+        
+        if (hasMultipleHeaderWords) {
+          console.log(`❌ Row ${index + 1}: Header row detected (strict criteria)`);
           return false;
         }
         
@@ -845,29 +847,9 @@ Respond in JSON format:
         let lastRfqNumber = '';
         
         fillDownData.forEach((row, index) => {
-          // معالجة اسم العميل - البحث في مختلف المصادر
-          let currentClient = row[clientColumnLetter] || row['العميل '] || row['العميل'] || '';
-          
-          // البحث حسب فهرس العمود أيضاً
           const keys = Object.keys(row);
-          const clientColumnIndex = clientColumnLetter.charCodeAt(0) - 65;
-          if (!currentClient && clientColumnIndex >= 0 && clientColumnIndex < keys.length) {
-            currentClient = row[keys[clientColumnIndex]] || '';
-          }
           
-          if (currentClient && currentClient.trim() !== '' && currentClient.toLowerCase() !== 'done') {
-            lastClientName = currentClient.trim();
-            console.log(`Row ${index + 1}: Found client "${lastClientName}"`);
-          } else if (lastClientName) {
-            // نسخ اسم العميل من الصف السابق
-            row[clientColumnLetter] = lastClientName;
-            if (clientColumnIndex >= 0 && clientColumnIndex < keys.length) {
-              row[keys[clientColumnIndex]] = lastClientName;
-            }
-            console.log(`Row ${index + 1}: Filled client name with "${lastClientName}"`);
-          }
-          
-          // معالجة رقم الطلب
+          // معالجة رقم الطلب أولاً (لتحديد بداية طلب جديد)
           if (rfqColumnLetter) {
             let currentRfq = row[rfqColumnLetter] || '';
             const rfqColumnIndex = rfqColumnLetter.charCodeAt(0) - 65;
@@ -877,17 +859,41 @@ Respond in JSON format:
             }
             
             if (currentRfq && currentRfq.trim() !== '') {
-              lastRfqNumber = currentRfq.trim();
+              const newRfq = currentRfq.trim();
+              if (newRfq !== lastRfqNumber) {
+                // طلب جديد - إعادة تعيين المتغيرات
+                lastRfqNumber = newRfq;
+                lastClientName = ''; // إعادة تعيين العميل عند طلب جديد
+              }
             } else if (lastRfqNumber) {
+              // نفس الطلب - نسخ رقم الطلب
               row[rfqColumnLetter] = lastRfqNumber;
               if (rfqColumnIndex >= 0 && rfqColumnIndex < keys.length) {
                 row[keys[rfqColumnIndex]] = lastRfqNumber;
               }
             }
           }
+          
+          // معالجة اسم العميل (بعد معالجة رقم الطلب)
+          let currentClient = row[clientColumnLetter] || row['العميل '] || row['العميل'] || '';
+          const clientColumnIndex = clientColumnLetter.charCodeAt(0) - 65;
+          
+          if (!currentClient && clientColumnIndex >= 0 && clientColumnIndex < keys.length) {
+            currentClient = row[keys[clientColumnIndex]] || '';
+          }
+          
+          if (currentClient && currentClient.trim() !== '' && currentClient.toLowerCase() !== 'done') {
+            lastClientName = currentClient.trim();
+          } else if (lastClientName) {
+            // نسخ اسم العميل من الصف السابق (فقط ضمن نفس الطلب)
+            row[clientColumnLetter] = lastClientName;
+            if (clientColumnIndex >= 0 && clientColumnIndex < keys.length) {
+              row[keys[clientColumnIndex]] = lastClientName;
+            }
+          }
         });
         
-        console.log(`✅ Applied Fill Down - Client names filled for ${fillDownData.length} rows`);
+        // تم تطبيق Fill Down بنجاح
       }
 
       // تحليل ذكي للبيانات وربطها بقاعدة البيانات
