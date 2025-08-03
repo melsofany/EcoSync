@@ -37,17 +37,25 @@ function ItemDetailedPricing({ item }: { item: any }) {
   // Fetch detailed pricing and historical data when component mounts
   React.useEffect(() => {
     const fetchPricingData = async () => {
-      if (!item?.id) return;
+      if (!item?.id) {
+        console.log('No item ID provided');
+        return;
+      }
       
+      console.log('Fetching pricing data for item:', item.id);
       setIsLoading(true);
       try {
         // Fetch detailed pricing
+        console.log('Calling detailed pricing API...');
         const detailedResponse = await fetch(`/api/items/${item.id}/detailed-pricing`);
         const detailedData = await detailedResponse.json();
+        console.log('Detailed pricing data received:', detailedData);
         setDetailedPricing(detailedData);
 
         // Fetch historical pricing from Excel sheets
+        console.log('Calling historical pricing API...');
         const historicalResponse = await fetch(`/api/items/${item.id}/historical-pricing`);
+        console.log('Historical response status:', historicalResponse.status);
         if (historicalResponse.ok) {
           const historicalData = await historicalResponse.json();
           console.log('Historical data received:', historicalData);
@@ -59,6 +67,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
         }
       } catch (error) {
         console.error('Error fetching pricing data:', error);
+        setHistoricalPricing([]);
       } finally {
         setIsLoading(false);
       }
@@ -259,10 +268,13 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 ))}
 
                 {/* Debug info */}
-                {console.log('Rendering historicalPricing:', historicalPricing, 'length:', historicalPricing?.length)}
+                {console.log('About to render historicalPricing:', historicalPricing, 'length:', historicalPricing?.length, 'type:', typeof historicalPricing)}
                 
                 {/* Historical pricing from Excel sheets - Display all entries with same LINE ITEM */}
-                {historicalPricing && historicalPricing.length > 0 ? historicalPricing.map((pricing: any, index: number) => (
+                {historicalPricing && historicalPricing.length > 0 ? (
+                  <>
+                    {console.log('Rendering', historicalPricing.length, 'historical pricing rows')}
+                    {historicalPricing.map((pricing: any, index: number) => (
                   <TableRow key={`historical-${index}`} className="hover:bg-yellow-50 bg-yellow-25 border-b">
                     <TableCell className="text-center border font-bold">
                       {pricing.sourceType === 'purchase_order' ? pricing.poNumber?.slice(-4) : pricing.kItemId}
@@ -305,7 +317,9 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       {pricing.unit || "Each"}
                     </TableCell>
                   </TableRow>
-                )) : (
+                    ))}
+                  </>
+                ) : (
                   <TableRow>
                     <TableCell colSpan={14} className="text-center py-4 text-muted-foreground">
                       {historicalPricing ? `لا توجد بيانات تاريخية (طول المصفوفة: ${historicalPricing.length})` : 'لا توجد بيانات تاريخية'}
