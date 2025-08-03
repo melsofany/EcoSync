@@ -717,24 +717,24 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
-      // Map Excel columns to database fields based on actual image structure
-      // A=Done, B=العميل, C=Response Date, D=Quantity, E=Request Date, F=Source File, G=Description, H=PART NO, I=LINE ITEM, J=UOM, K=Line No
+      // Based on the actual output data, let me trace the correct mapping:
+      // Row 1: done | 25R009802 | 2025-07-20 | EDC | Description | 2503244 | 1854.002.CARIER.7519 | 6 | Each | (empty)
+      // This suggests: A=status, B=sourceFile, C=requestDate, D=clientName, E=description, F=partNumber, G=lineItem, H=quantity, I=unit, J=lineNumber
       const mappedData = excelData.map((row: any, index: number) => {
         // Get all keys to access by position
         const rowKeys = Object.keys(row);
         
-        // Map columns correctly based on the actual image
-        const done = rowKeys.length > 0 ? row[rowKeys[0]] || '' : '';                       // A: Done
-        const clientName = rowKeys.length > 1 ? row[rowKeys[1]] || '' : '';                 // B: العميل (EDC)
-        const responseDate = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';               // C: Response Date
-        const quantity = rowKeys.length > 3 ? parseInt(row[rowKeys[3]]) || 0 : 0;           // D: Quantity
-        const requestDate = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';                // E: Request Date
-        const sourceFile = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                 // F: Source File
-        const description = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                // G: Description
-        const partNumber = rowKeys.length > 7 ? row[rowKeys[7]] || '' : '';                 // H: PART NO
-        const lineItem = rowKeys.length > 8 ? row[rowKeys[8]] || '' : '';                   // I: LINE ITEM
-        const unit = rowKeys.length > 9 ? row[rowKeys[9]] || 'Each' : 'Each';              // J: UOM
-        const lineNumber = rowKeys.length > 10 ? parseInt(row[rowKeys[10]]) || 0 : 0;       // K: Line No
+        // Map columns based on actual output pattern
+        const status = rowKeys.length > 0 ? row[rowKeys[0]] || '' : '';                     // A: status (done)
+        const sourceFile = rowKeys.length > 1 ? row[rowKeys[1]] || '' : '';                 // B: Source File (25R009802)
+        const requestDate = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                // C: Request Date (2025-07-20)
+        const clientName = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';                 // D: Client Name (EDC)
+        const description = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';                // E: Description
+        const partNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                 // F: PART NO (2503244)
+        const lineItem = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                   // G: LINE ITEM (1854.002.CARIER.7519)
+        const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // H: Quantity (6)
+        const unit = rowKeys.length > 8 ? row[rowKeys[8]] || 'Each' : 'Each';              // I: UOM (Each)
+        const lineNumber = rowKeys.length > 9 ? parseInt(row[rowKeys[9]]) || 0 : 0;         // J: Line Number
 
         // Format dates properly (convert Excel serial dates if needed)
         const formatDate = (dateValue: any) => {
@@ -753,12 +753,12 @@ Respond in JSON format:
 
         return {
           rowIndex: index + 1,
-          // Database fields mapping
+          // Database fields mapping - corrected
           clientName: clientName || 'غير محدد',
           requestNumber: sourceFile || `REQ-${Date.now()}-${index + 1}`,
           customRequestNumber: sourceFile,
           requestDate: formatDate(requestDate),
-          responseDate: formatDate(responseDate),
+          responseDate: '', // No response date in this format
           quantity,
           priceToClient: 0, // No price in this format
           description,
@@ -766,7 +766,7 @@ Respond in JSON format:
           lineItem,
           unit,
           lineNumber,
-          status: 'pending',
+          status: status === 'done' ? 'completed' : 'pending',
           // Excel original data for reference
           excelData: row
         };
@@ -778,17 +778,16 @@ Respond in JSON format:
         previewData: mappedData,
         totalRows: mappedData.length,
         mapping: {
-          'A': 'الحالة (Done)',
-          'B': 'اسم العميل (العميل)',
-          'C': 'تاريخ الرد (Response Date)',
-          'D': 'الكمية (Quantity)',
-          'E': 'تاريخ الطلب (Request Date)',
-          'F': 'ملف المصدر (Source File)',
-          'G': 'التوصيف (Description)',
-          'H': 'رقم القطعة (PART NO)',
-          'I': 'رقم البند (LINE ITEM)',
-          'J': 'وحدة القياس (UOM)',
-          'K': 'رقم السطر (Line No)'
+          'A': 'الحالة (Status)',
+          'B': 'ملف المصدر (Source File)',
+          'C': 'تاريخ الطلب (Request Date)',
+          'D': 'اسم العميل (Client Name)',
+          'E': 'التوصيف (Description)',
+          'F': 'رقم القطعة (PART NO)',
+          'G': 'رقم البند (LINE ITEM)',
+          'H': 'الكمية (Quantity)',
+          'I': 'وحدة القياس (UOM)',
+          'J': 'رقم السطر (Line No)'
         }
       });
     } catch (error) {

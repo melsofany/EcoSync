@@ -183,10 +183,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           <Alert>
             <Download className="h-4 w-4" />
             <AlertDescription>
-              <strong>هيكل ملف Excel المطلوب (حسب الصورة الفعلية):</strong>
-              <br />A: الحالة (Done) | B: اسم العميل (EDC) | C: تاريخ الرد | D: الكمية | E: تاريخ الطلب
-              <br />F: ملف المصدر | G: التوصيف | H: رقم القطعة | I: رقم البند | J: وحدة القياس | K: رقم السطر
-              <br /><em>مثال: done | EDC | 26/07/2025 | 100 | 20/07/2025 | 25R009802 | COMPLETE PC BOARD | 2503244 | 1854.002.CARIER.7519 | Each | 1</em>
+              <strong>هيكل ملف Excel المطلوب (حسب البيانات الفعلية):</strong>
+              <br />A: الحالة (done) | B: ملف المصدر (25R009802) | C: تاريخ الطلب (2025-07-20) | D: اسم العميل (EDC) | E: التوصيف
+              <br />F: رقم القطعة (2503244) | G: رقم البند (1854.002.CARIER.7519) | H: الكمية (6) | I: وحدة القياس (Each) | J: رقم السطر
+              <br /><em>مثال: done | 25R009802 | 2025-07-20 | EDC | COMPLETE PC BOARD | 2503244 | 1854.002.CARIER.7519 | 6 | Each | 1</em>
             </AlertDescription>
           </Alert>
         </CardContent>
