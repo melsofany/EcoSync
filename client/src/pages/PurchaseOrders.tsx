@@ -390,10 +390,10 @@ export default function PurchaseOrders() {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-gray-50">
-                          <TableHead className="text-right">الوصف</TableHead>
-                          <TableHead className="text-right">معرف البند</TableHead>
-                          <TableHead className="text-right">PART NO</TableHead>
+                          <TableHead className="text-right">رقم الصنف</TableHead>
                           <TableHead className="text-right">LINE ITEM</TableHead>
+                          <TableHead className="text-right">الوصف</TableHead>
+                          <TableHead className="text-right">PART NO</TableHead>
                           <TableHead className="text-right">الكمية</TableHead>
                           <TableHead className="text-right">سعر الوحدة</TableHead>
                           <TableHead className="text-right">المجموع</TableHead>
@@ -402,6 +402,12 @@ export default function PurchaseOrders() {
                       <TableBody>
                         {poItems.map((item: any, index: number) => (
                           <TableRow key={index}>
+                            <TableCell className="text-sm font-medium">
+                              {item.itemNumber || 'غير محدد'}
+                            </TableCell>
+                            <TableCell className="text-sm font-mono text-blue-600 font-semibold">
+                              {item.lineItem || 'غير محدد'}
+                            </TableCell>
                             <TableCell className="max-w-xs">
                               <div className="text-sm">
                                 {item.description?.split('\n').map((line: string, lineIndex: number) => (
@@ -410,20 +416,9 @@ export default function PurchaseOrders() {
                                   </div>
                                 ))}
                               </div>
-                              {item.lineItem && (
-                                <div className="text-xs text-blue-600 mt-1 font-mono">
-                                  LINE: {item.lineItem}
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-sm font-mono">
-                              {item.kItemId || 'غير محدد'}
                             </TableCell>
                             <TableCell className="text-sm font-mono text-gray-700">
                               {item.partNo || 'غير محدد'}
-                            </TableCell>
-                            <TableCell className="text-xs font-mono text-blue-600">
-                              {item.lineItem || 'غير محدد'}
                             </TableCell>
                             <TableCell className="text-right font-medium">
                               {Number(item.quantity).toLocaleString('ar-EG')}

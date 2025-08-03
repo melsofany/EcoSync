@@ -120,6 +120,7 @@ export default function SupplierPricing() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>رقم الصنف</TableHead>
+                    <TableHead>LINE ITEM</TableHead>
                     <TableHead>الوصف</TableHead>
                     <TableHead>الوحدة</TableHead>
                     <TableHead>الفئة</TableHead>
@@ -130,6 +131,9 @@ export default function SupplierPricing() {
                   {itemsRequiringPricing.map((item: any) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.itemNumber}</TableCell>
+                      <TableCell className="font-mono text-blue-600 text-sm">
+                        {item.lineItem || "غير محدد"}
+                      </TableCell>
                       <TableCell>{item.description}</TableCell>
                       <TableCell>{item.unit}</TableCell>
                       <TableCell>{item.category || "غير محدد"}</TableCell>

@@ -385,6 +385,7 @@ export default function Items() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">رقم الصنف</TableHead>
+                  <TableHead className="text-right">LINE ITEM</TableHead>
                   <TableHead className="text-right">رقم القطعة</TableHead>
                   <TableHead className="text-right">الوصف</TableHead>
                   <TableHead className="text-right">الوحدة</TableHead>
@@ -397,7 +398,7 @@ export default function Items() {
               <TableBody>
                 {filteredItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                       لا توجد أصناف
                     </TableCell>
                   </TableRow>
@@ -405,6 +406,9 @@ export default function Items() {
                   filteredItems.map((item: any) => (
                     <TableRow key={item.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">{item.itemNumber}</TableCell>
+                      <TableCell className="font-mono text-blue-600 text-sm">
+                        {item.lineItem || "غير محدد"}
+                      </TableCell>
                       <TableCell>{item.partNumber || "غير محدد"}</TableCell>
                       <TableCell className="max-w-xs truncate">{item.description}</TableCell>
                       <TableCell>{item.unit}</TableCell>

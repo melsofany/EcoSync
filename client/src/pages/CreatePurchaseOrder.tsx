@@ -447,6 +447,7 @@ export default function CreatePurchaseOrder() {
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead>رقم الصنف / LINE ITEM</TableHead>
                           <TableHead>تفاصيل البند</TableHead>
                           <TableHead>طلب التسعير</TableHead>
                           <TableHead>المورد</TableHead>
@@ -465,11 +466,16 @@ export default function CreatePurchaseOrder() {
                             <TableRow key={index}>
                               <TableCell>
                                 <div className="space-y-1">
-                                  <p className="font-semibold text-gray-900">{quotationItem?.description || "وصف البند"}</p>
-                                  <p className="text-sm text-blue-600">معرف البند: {quotationItem?.kItemId || "غير محدد"}</p>
-                                  <p className="text-xs text-green-600">رقم البند: {quotationItem?.itemNumber || "غير محدد"}</p>
+                                  <p className="text-xs text-green-600 font-medium">رقم البند: {quotationItem?.itemNumber || "غير محدد"}</p>
+                                  <p className="text-sm font-mono text-blue-600 font-semibold">
+                                    {quotationItem?.lineItem || "غير محدد"}
+                                  </p>
                                   <p className="text-xs text-purple-600">PART NO: {quotationItem?.partNumber || "غير محدد"}</p>
-                                  <p className="text-xs text-orange-600">LINE ITEM: {quotationItem?.lineItem || "غير محدد"}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <p className="font-semibold text-gray-900">{quotationItem?.description || "وصف البند"}</p>
                                   <p className="text-xs text-gray-500">الوحدة: {quotationItem?.unit || "Each"}</p>
                                   {quotationItem?.category && (
                                     <p className="text-xs text-gray-500">الفئة: {quotationItem.category}</p>
