@@ -225,9 +225,16 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
 
               {/* جدول المعاينة */}
               <div>
-                <h4 className="font-semibold mb-2">معاينة البيانات (أول 5 سجلات):</h4>
-                <div className="overflow-x-auto overflow-y-auto max-h-96 border rounded-lg">
+                <h4 className="font-semibold mb-2">معاينة جميع البيانات ({previewData.length} سجل):</h4>
+                <div 
+                  className="overflow-x-auto overflow-y-auto max-h-[600px] border rounded-lg shadow-lg bg-white"
+                  style={{
+                    scrollbarWidth: 'auto',
+                    scrollbarColor: '#3b82f6 #e5e7eb'
+                  }}
+                >
                   <table className="w-full text-sm border-collapse border border-gray-300 min-w-[1400px]">
+
                     <thead>
                       <tr className="bg-gray-100 sticky top-0">
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[60px]">الصف</th>
@@ -243,8 +250,8 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
                       </tr>
                     </thead>
                     <tbody>
-                      {previewData.slice(0, 5).map((row, index) => (
-                        <tr key={index} className={index % 2 === 0 ? "bg-white hover:bg-blue-50" : "bg-gray-50 hover:bg-blue-50"}>
+                      {previewData.map((row, index) => (
+                        <tr key={index} className={`${index % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-blue-50 transition-colors duration-150`}>
                           <td className="border border-gray-300 p-3 text-center font-medium">{row.rowIndex}</td>
                           <td className="border border-gray-300 p-3 font-mono text-indigo-600 text-sm">
                             {row.requestNumber || row.customRequestNumber || 'غير محدد'}
@@ -265,11 +272,12 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
                       ))}
                     </tbody>
                   </table>
-                  {previewData.length > 5 && (
-                    <p className="text-sm text-gray-500 mt-2 text-center">
-                      ... و {previewData.length - 5} سجل آخر
-                    </p>
-                  )}
+                </div>
+                
+                {/* شريط معلومات التمرير */}
+                <div className="mt-2 text-xs text-gray-500 bg-gray-50 p-2 rounded flex justify-between items-center">
+                  <span>📊 عدد السجلات المعروضة: {previewData.length}</span>
+                  <span>↔️ استخدم المسطرة الأفقية لعرض جميع الأعمدة | ↕️ المسطرة الرأسية لعرض جميع السجلات</span>
                 </div>
               </div>
 
