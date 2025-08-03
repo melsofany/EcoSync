@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Zap, Upload, CheckCircle } from "lucide-react";
+import { Zap, Upload, CheckCircle, Eye, AlertTriangle } from "lucide-react";
 import * as XLSX from 'xlsx';
 
 interface QuickImporterProps {
@@ -17,30 +17,57 @@ interface QuickImporterProps {
 export function QuickImporter({ onImportComplete }: QuickImporterProps) {
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [results, setResults] = useState<any>(null);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [mappingInfo, setMappingInfo] = useState<any>(null);
 
-  // الاستيراد التلقائي السريع
-  const quickImportMutation = useMutation({
+  // المعاينة التلقائية
+  const previewMutation = useMutation({
     mutationFn: async (excelData: any[]) => {
       const response = await apiRequest("POST", "/api/import/quotations/auto", { excelData });
       return response.json();
     },
     onSuccess: (data) => {
-      setResults(data);
+      setPreviewData(data.previewData || []);
+      setMappingInfo(data);
+      setShowPreview(true);
       toast({
-        title: "🚀 تم الاستيراد التلقائي!",
-        description: `تم معالجة ${data.totalRows} سجل بثقة ${data.confidence}%`,
+        title: "تم تحليل الملف",
+        description: `تم العثور على ${data.totalRows} سجل صالح للاستيراد`,
         variant: data.confidence > 70 ? "default" : "destructive"
       });
-      
-      if (onImportComplete && data.totalRows > 0) {
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في التحليل",
+        description: error.message || "حدث خطأ أثناء تحليل الملف",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // الاستيراد النهائي
+  const finalImportMutation = useMutation({
+    mutationFn: async (data: any[]) => {
+      const response = await apiRequest("POST", "/api/import/quotations/confirm", { quotationData: data });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "تم الاستيراد بنجاح!",
+        description: `تم حفظ ${data.imported} سجل في قاعدة البيانات`,
+      });
+      setShowPreview(false);
+      setPreviewData([]);
+      setSelectedFile(null);
+      if (onImportComplete) {
         onImportComplete();
       }
     },
     onError: (error: any) => {
       toast({
-        title: "خطأ في الاستيراد",
-        description: error.message || "حدث خطأ غير متوقع",
+        title: "خطأ في الحفظ",
+        description: error.message || "حدث خطأ أثناء حفظ البيانات",
         variant: "destructive",
       });
     },
@@ -50,11 +77,13 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      setResults(null);
+      setShowPreview(false);
+      setPreviewData([]);
+      setMappingInfo(null);
     }
   };
 
-  const handleQuickImport = async () => {
+  const handlePreview = async () => {
     if (!selectedFile) return;
 
     try {
@@ -72,7 +101,7 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
         return;
       }
 
-      quickImportMutation.mutate(jsonData);
+      previewMutation.mutate(jsonData);
       
     } catch (error) {
       toast({
@@ -111,18 +140,18 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
               className="flex-1"
             />
             <Button
-              onClick={handleQuickImport}
-              disabled={!selectedFile || quickImportMutation.isPending}
-              className="flex items-center space-x-2 space-x-reverse bg-green-600 hover:bg-green-700"
+              onClick={handlePreview}
+              disabled={!selectedFile || previewMutation.isPending}
+              className="flex items-center space-x-2 space-x-reverse bg-blue-600 hover:bg-blue-700"
             >
-              <Zap className="h-4 w-4" />
+              <Eye className="h-4 w-4" />
               <span>
-                {quickImportMutation.isPending ? "جاري الاستيراد..." : "🚀 استيراد تلقائي"}
+                {previewMutation.isPending ? "جاري التحليل..." : "معاينة البيانات"}
               </span>
             </Button>
           </div>
 
-          {quickImportMutation.isPending && (
+          {previewMutation.isPending && (
             <Alert>
               <Upload className="h-4 w-4" />
               <AlertDescription>
@@ -133,53 +162,125 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
         </CardContent>
       </Card>
 
-      {/* عرض النتائج */}
-      {results && (
+      {/* معاينة البيانات */}
+      {showPreview && previewData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>نتائج الاستيراد التلقائي</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              <span>معاينة البيانات قبل الاستيراد</span>
+              <div className="flex space-x-2 space-x-reverse">
+                <Button
+                  onClick={() => setShowPreview(false)}
+                  variant="outline"
+                  size="sm"
+                >
+                  إلغاء
+                </Button>
+                <Button
+                  onClick={() => finalImportMutation.mutate(previewData)}
+                  disabled={finalImportMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700"
+                  size="sm"
+                >
+                  <CheckCircle className="h-4 w-4 ml-1" />
+                  {finalImportMutation.isPending ? "جاري الحفظ..." : "تأكيد الاستيراد"}
+                </Button>
+              </div>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              {/* إحصائيات سريعة */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{results.totalRows}</div>
-                  <div className="text-sm text-gray-600">سجل تم استيراده</div>
-                </div>
                 <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{results.confidence}%</div>
+                  <div className="text-2xl font-bold text-blue-600">{previewData.length}</div>
+                  <div className="text-sm text-gray-600">سجل جاهز للاستيراد</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">{mappingInfo?.confidence || 0}%</div>
                   <div className="text-sm text-gray-600">دقة المطابقة</div>
                 </div>
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
                   <div className="text-2xl font-bold text-purple-600">
-                    {results.mappingResult?.suggestions?.length || 0}
+                    {Object.keys(mappingInfo?.mapping || {}).length}
                   </div>
                   <div className="text-sm text-gray-600">عمود تم مطابقته</div>
                 </div>
               </div>
 
               {/* تفاصيل المطابقة */}
-              {results.mappingResult?.suggestions && (
-                <div className="mt-4">
-                  <h4 className="font-semibold mb-2">تفاصيل المطابقة التلقائية:</h4>
-                  <div className="space-y-2">
-                    {results.mappingResult.suggestions.map((suggestion: any, index: number) => (
-                      <div key={index} className="flex justify-between p-2 bg-gray-50 rounded">
-                        <span className="font-medium">{getFieldLabel(suggestion.field)}</span>
-                        <span className="text-blue-600">"{suggestion.column}"</span>
-                        <span className="text-green-600">{suggestion.confidence}%</span>
+              {mappingInfo?.mapping && (
+                <div>
+                  <h4 className="font-semibold mb-2">مطابقة الأعمدة:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {Object.entries(mappingInfo.mapping).map(([field, column]: [string, any]) => (
+                      <div key={field} className="flex justify-between p-2 bg-gray-50 rounded text-sm">
+                        <span className="font-medium">{getFieldLabel(field)}</span>
+                        <span className="text-blue-600">"{column}"</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {results.confidence >= 80 && (
+              {/* جدول المعاينة */}
+              <div>
+                <h4 className="font-semibold mb-2">معاينة البيانات (أول 5 سجلات):</h4>
+                <div className="overflow-auto max-h-96">
+                  <table className="w-full text-sm border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 p-2 text-right">الصف</th>
+                        <th className="border border-gray-300 p-2 text-right">العميل</th>
+                        <th className="border border-gray-300 p-2 text-right">رقم البند</th>
+                        <th className="border border-gray-300 p-2 text-right">رقم القطعة</th>
+                        <th className="border border-gray-300 p-2 text-right">التوصيف</th>
+                        <th className="border border-gray-300 p-2 text-right">الكمية</th>
+                        <th className="border border-gray-300 p-2 text-right">السعر</th>
+                        <th className="border border-gray-300 p-2 text-right">تاريخ الطلب</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {previewData.slice(0, 5).map((row, index) => (
+                        <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                          <td className="border border-gray-300 p-2">{row.rowIndex}</td>
+                          <td className="border border-gray-300 p-2">{row.clientName}</td>
+                          <td className="border border-gray-300 p-2 font-mono text-blue-600">{row.lineItem}</td>
+                          <td className="border border-gray-300 p-2">{row.partNumber}</td>
+                          <td className="border border-gray-300 p-2 max-w-xs truncate" title={row.description}>
+                            {row.description}
+                          </td>
+                          <td className="border border-gray-300 p-2 text-center">{row.quantity}</td>
+                          <td className="border border-gray-300 p-2 text-center">{row.unitPrice}</td>
+                          <td className="border border-gray-300 p-2">{row.requestDate}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {previewData.length > 5 && (
+                    <p className="text-sm text-gray-500 mt-2 text-center">
+                      ... و {previewData.length - 5} سجل آخر
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {mappingInfo?.confidence >= 80 && (
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>✅ نجح الاستيراد التلقائي!</strong> تم تحليل الملف ومطابقة الأعمدة بدقة عالية.
-                    البيانات جاهزة للاستخدام في النظام.
+                    <strong>✅ جودة عالية!</strong> تم تحليل الملف ومطابقة الأعمدة بدقة عالية.
+                    راجع البيانات أعلاه واضغط "تأكيد الاستيراد" للحفظ في قاعدة البيانات.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {mappingInfo?.confidence < 80 && (
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>تحذير:</strong> دقة المطابقة أقل من المتوقع ({mappingInfo?.confidence}%).
+                    راجع البيانات بعناية قبل التأكيد.
                   </AlertDescription>
                 </Alert>
               )}

@@ -1725,6 +1725,79 @@ Respond in JSON format:
     }
   });
 
+  // تأكيد الاستيراد وحفظ البيانات في قاعدة البيانات
+  app.post("/api/import/quotations/confirm", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { quotationData } = req.body;
+      
+      if (!quotationData || !Array.isArray(quotationData) || quotationData.length === 0) {
+        return res.status(400).json({ message: "Quotation data is required" });
+      }
+
+      console.log("💾 Confirming import of", quotationData.length, "quotation records");
+      
+      let imported = 0;
+      const errors: string[] = [];
+
+      for (const record of quotationData) {
+        try {
+          // إنشاء طلب التسعير
+          const quotationRequest = await storage.createQuotationRequest({
+            requestNumber: record.requestNumber,
+            customRequestNumber: record.customRequestNumber,
+            requestDate: record.requestDate || new Date().toISOString().split('T')[0],
+            expiryDate: record.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            status: record.status || 'pending',
+            clientName: record.clientName || 'غير محدد',
+            notes: '',
+            totalValue: record.totalPrice || 0,
+            currency: record.currency || 'EGP'
+          });
+
+          // إنشاء بند طلب التسعير
+          await storage.createQuotationItem({
+            quotationRequestId: quotationRequest.id,
+            itemNumber: record.itemNumber || '',
+            kItemId: record.kItemId || '',
+            partNumber: record.partNumber || '',
+            lineItem: record.lineItem || '',
+            description: record.description || '',
+            unit: record.unit || 'غير محدد',
+            category: record.category || '',
+            brand: record.brand || '',
+            quantity: record.quantity || 0,
+            unitPrice: record.unitPrice || 0,
+            totalPrice: record.totalPrice || 0,
+            currency: record.currency || 'EGP',
+            aiStatus: record.aiStatus || 'pending',
+            aiMatchedItemId: record.aiMatchedItemId || null
+          });
+
+          imported++;
+        } catch (error) {
+          console.error("Error importing record:", error);
+          errors.push(`سجل ${record.rowIndex}: ${error}`);
+        }
+      }
+
+      console.log(`✅ Import completed: ${imported} records imported, ${errors.length} errors`);
+      
+      await logActivity(req, "confirm_import", "quotations", req.session.user!.id, 
+        `Imported ${imported} quotation records successfully`);
+
+      res.json({
+        imported,
+        total: quotationData.length,
+        errors,
+        message: `تم استيراد ${imported} سجل بنجاح`
+      });
+
+    } catch (error) {
+      console.error("Error confirming import:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
