@@ -239,6 +239,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/clients/:clientId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+      
+      // Get client details for logging
+      const client = await storage.getClientById(clientId);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+
+      await storage.deleteClient(clientId);
+      await logActivity(req, "delete_client", "client", clientId, `Deleted client: ${client.name}`);
+
+      res.json({ message: "Client deleted successfully" });
+    } catch (error) {
+      console.error("Delete client error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Quotation routes
   app.get("/api/quotations", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -623,6 +643,26 @@ Respond in JSON format:
       res.status(201).json(supplier);
     } catch (error) {
       console.error("Create supplier error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/suppliers/:supplierId", requireAuth, requireRole(["manager", "data_entry"]), async (req: Request, res: Response) => {
+    try {
+      const { supplierId } = req.params;
+      
+      // Get supplier details for logging
+      const supplier = await storage.getSupplierById(supplierId);
+      if (!supplier) {
+        return res.status(404).json({ message: "Supplier not found" });
+      }
+
+      await storage.deleteSupplier(supplierId);
+      await logActivity(req, "delete_supplier", "supplier", supplierId, `Deleted supplier: ${supplier.name}`);
+
+      res.json({ message: "Supplier deleted successfully" });
+    } catch (error) {
+      console.error("Delete supplier error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

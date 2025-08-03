@@ -57,7 +57,9 @@ export interface IStorage {
   createClient(client: InsertClient): Promise<Client>;
   getAllClients(): Promise<Client[]>;
   getClient(id: string): Promise<Client | undefined>;
+  getClientById(id: string): Promise<Client | undefined>;
   updateClient(id: string, updates: Partial<Client>): Promise<Client | undefined>;
+  deleteClient(id: string): Promise<void>;
 
   // Quotation operations
   createQuotationRequest(request: InsertQuotationRequest): Promise<QuotationRequest>;
@@ -89,7 +91,9 @@ export interface IStorage {
   createSupplier(supplier: InsertSupplier): Promise<Supplier>;
   getAllSuppliers(): Promise<Supplier[]>;
   getSupplier(id: string): Promise<Supplier | undefined>;
+  getSupplierById(id: string): Promise<Supplier | undefined>;
   updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier | undefined>;
+  deleteSupplier(id: string): Promise<void>;
 
   // Purchase order operations
   createPurchaseOrder(po: InsertPurchaseOrder): Promise<PurchaseOrder>;
@@ -203,6 +207,11 @@ export class DatabaseStorage implements IStorage {
     return client || undefined;
   }
 
+  async getClientById(id: string): Promise<Client | undefined> {
+    const [client] = await db.select().from(clients).where(eq(clients.id, id));
+    return client || undefined;
+  }
+
   async updateClient(id: string, updates: Partial<Client>): Promise<Client | undefined> {
     const [client] = await db
       .update(clients)
@@ -210,6 +219,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(clients.id, id))
       .returning();
     return client || undefined;
+  }
+
+  async deleteClient(id: string): Promise<void> {
+    await db.delete(clients).where(eq(clients.id, id));
   }
 
   // Quotation operations
@@ -494,6 +507,11 @@ export class DatabaseStorage implements IStorage {
     return supplier || undefined;
   }
 
+  async getSupplierById(id: string): Promise<Supplier | undefined> {
+    const [supplier] = await db.select().from(suppliers).where(eq(suppliers.id, id));
+    return supplier || undefined;
+  }
+
   async updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier | undefined> {
     const [supplier] = await db
       .update(suppliers)
@@ -501,6 +519,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(suppliers.id, id))
       .returning();
     return supplier || undefined;
+  }
+
+  async deleteSupplier(id: string): Promise<void> {
+    await db.delete(suppliers).where(eq(suppliers.id, id));
   }
 
   async createPurchaseOrder(poData: InsertPurchaseOrder): Promise<PurchaseOrder> {

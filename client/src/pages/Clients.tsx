@@ -18,8 +18,10 @@ import {
   Mail,
   MapPin,
   Edit,
-  Building
+  Building,
+  Trash2
 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function Clients() {
   const { user } = useAuth();
@@ -38,6 +40,29 @@ export default function Clients() {
     client.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  // Delete client mutation
+  const deleteClientMutation = useMutation({
+    mutationFn: async (clientId: string) => {
+      return apiRequest(`/api/clients/${clientId}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "تم حذف العميل",
+        description: "تم حذف العميل بنجاح من النظام",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+    },
+    onError: () => {
+      toast({
+        title: "خطأ في الحذف",
+        description: "حدث خطأ أثناء حذف العميل",
+        variant: "destructive",
+      });
+    }
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG');
@@ -226,13 +251,52 @@ export default function Clients() {
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
                           {hasRole(user, ["manager", "it_admin"]) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => {
+                                  // TODO: Implement edit functionality
+                                  toast({
+                                    title: "قريباً",
+                                    description: "سيتم تفعيل وظيفة التحرير قريباً",
+                                  });
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>حذف العميل</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      هل أنت متأكد من حذف العميل "{client.name}"؟ 
+                                      لا يمكن التراجع عن هذا الإجراء.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteClientMutation.mutate(client.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      حذف
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
                           )}
                         </div>
                       </TableCell>

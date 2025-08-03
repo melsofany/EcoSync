@@ -18,8 +18,10 @@ import {
   Mail,
   MapPin,
   Edit,
-  User
+  User,
+  Trash2
 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export default function Suppliers() {
   const { user } = useAuth();
@@ -39,6 +41,29 @@ export default function Suppliers() {
     supplier.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  // Delete supplier mutation
+  const deleteSupplierMutation = useMutation({
+    mutationFn: async (supplierId: string) => {
+      return apiRequest(`/api/suppliers/${supplierId}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "تم حذف المورد",
+        description: "تم حذف المورد بنجاح من النظام",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
+    },
+    onError: () => {
+      toast({
+        title: "خطأ في الحذف",
+        description: "حدث خطأ أثناء حذف المورد",
+        variant: "destructive",
+      });
+    }
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG');
@@ -240,13 +265,52 @@ export default function Suppliers() {
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
                           {hasRole(user, ["manager", "data_entry"]) && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={() => {
+                                  // TODO: Implement edit functionality
+                                  toast({
+                                    title: "قريباً",
+                                    description: "سيتم تفعيل وظيفة التحرير قريباً",
+                                  });
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>حذف المورد</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      هل أنت متأكد من حذف المورد "{supplier.name}"؟ 
+                                      لا يمكن التراجع عن هذا الإجراء.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteSupplierMutation.mutate(supplier.id)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      حذف
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
                           )}
                         </div>
                       </TableCell>
