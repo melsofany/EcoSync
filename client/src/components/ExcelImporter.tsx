@@ -366,7 +366,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
       )}
 
       {/* Preview Section */}
-      {showPreview && previewData.length > 0 && (
+      {showPreview && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -380,14 +380,23 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                تحقق من صحة البيانات أدناه قبل التأكيد. البيانات معروضة تحت أسماء أعمدة قاعدة البيانات الفعلية.
-              </AlertDescription>
-            </Alert>
+            {previewData.length === 0 ? (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  لا توجد بيانات للمعاينة. تحقق من الملف والأعمدة المحددة.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <>
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    تحقق من صحة البيانات أدناه قبل التأكيد. البيانات معروضة تحت أسماء أعمدة قاعدة البيانات الفعلية.
+                  </AlertDescription>
+                </Alert>
 
-            {/* Column Mapping Display */}
+                {/* Column Mapping Display */}
             <div className="p-4 bg-blue-50 rounded-lg">
               <h3 className="font-semibold text-blue-800 mb-3">ربط أعمدة Excel بقاعدة البيانات:</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -399,9 +408,9 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                   </div>
                 ))}
               </div>
-            </div>
+                </div>
 
-            {/* Preview Table */}
+                {/* Preview Table */}
             <div className="overflow-x-auto border rounded-lg">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50">
@@ -452,10 +461,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                   ... و {previewData.length - 10} سجل إضافي
                 </div>
               )}
-            </div>
+                </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end space-x-3 space-x-reverse">
+                    {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 space-x-reverse">
               <Button
                 variant="outline"
                 onClick={handleCancel}
@@ -471,8 +480,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
               >
                 <CheckCircle className="h-4 w-4 ml-2" />
                 {confirmMutation.isPending ? "جاري الاستيراد..." : "تأكيد الاستيراد"}
-              </Button>
-            </div>
+                </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       )}
