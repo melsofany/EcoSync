@@ -2014,6 +2014,74 @@ Respond in JSON format:
     }
   });
 
+  // Profile image endpoints
+  app.post("/api/profile-images/upload", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getProfileImageUploadURL();
+      
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error generating profile image upload URL:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put("/api/profile-images/update", async (req: Request, res: Response) => {
+    try {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { imageURL } = req.body;
+      if (!imageURL) {
+        return res.status(400).json({ message: "imageURL is required" });
+      }
+
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      const profileImagePath = objectStorageService.normalizeProfileImagePath(imageURL);
+
+      // Update user profile with new image path
+      await storage.updateUser(req.session.user.id, {
+        profileImage: profileImagePath,
+      });
+
+      await logActivity(req, "profile_image_update", "user", req.session.user.id, "تم تحديث الصورة الشخصية");
+
+      res.json({ 
+        message: "تم تحديث الصورة الشخصية بنجاح",
+        profileImagePath 
+      });
+    } catch (error) {
+      console.error("Error updating profile image:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Serve profile images
+  app.get("/profile-images/:imagePath(*)", async (req: Request, res: Response) => {
+    try {
+      const imagePath = `/profile-images/${req.params.imagePath}`;
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      
+      const imageFile = await objectStorageService.getProfileImageFile(imagePath);
+      await objectStorageService.downloadObject(imageFile, res);
+    } catch (error) {
+      console.error("Error serving profile image:", error);
+      if (error.name === "ObjectNotFoundError") {
+        return res.status(404).json({ error: "Image not found" });
+      }
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
