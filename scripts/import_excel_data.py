@@ -14,60 +14,17 @@ def clean_and_process_excel(file_path):
         # قراءة ملف Excel مع تخطي الصفوف الأولى للعثور على العناوين
         print("محاولة قراءة الملف مع صفوف مختلفة...")
         
-        # البحث عن الجدول الصحيح
-        best_header = None
-        best_df = None
+        # قراءة من الصف 13 مباشرة كما أشار المستخدم
+        print("قراءة البيانات من الصف 13...")
+        df = pd.read_excel(file_path, header=12)  # الصف 13 = index 12
         
-        for header_row in range(20):
-            try:
-                df = pd.read_excel(file_path, header=header_row)
-                
-                # البحث عن عناوين تطابق الصورة المرفقة
-                cols_str = ' '.join([str(col).upper() for col in df.columns])
-                target_cols = ['TOTAL PO', 'PRICE/PO', 'QTY', 'DATE/PO', 'PO', 'CATEGORY', 'RES.DATE', 'PRICE/RFQ', 'DATE/RFQ', 'RFQ', 'DESCRIPTION', 'PART NO', 'LINE ITEM', 'UOM']
-                
-                matches = sum(1 for target in target_cols if target in cols_str)
-                
-                if matches >= 8:  # إذا وجدت 8 عناوين أو أكثر
-                    print(f"\nالصف {header_row} - تطابق {matches} عمود:")
-                    for i, col in enumerate(df.columns):
-                        if i < 25:
-                            print(f"{i}: {col}")
-                    
-                    best_header = header_row
-                    best_df = df
-                    break
-                    
-            except Exception as e:
-                continue
+        print("أعمدة الجدول:")
+        for i, col in enumerate(df.columns):
+            if i < 20:
+                print(f"{i}: {col}")
         
-        if best_df is None:
-            print("لم يتم العثور على الجدول الصحيح، جرب البحث يدوياً...")
-            # جرب صفوف مختلفة وابحث عن صف يحتوي على LC1D32M7
-            for header_row in range(30):
-                try:
-                    df = pd.read_excel(file_path, header=header_row)
-                    # ابحث في أول 100 صف عن LC1D32M7
-                    found_lc1d32m7 = False
-                    for idx in range(min(100, len(df))):
-                        row_values = ' '.join([str(val) for val in df.iloc[idx].values if pd.notna(val)])
-                        if 'LC1D32M7' in row_values:
-                            found_lc1d32m7 = True
-                            print(f"وجدت LC1D32M7 في الصف {header_row}, السجل {idx}")
-                            break
-                    
-                    if found_lc1d32m7:
-                        print(f"استخدام الصف {header_row} كعناوين:")
-                        for i, col in enumerate(df.columns):
-                            if i < 20:
-                                print(f"{i}: {col}")
-                        best_df = df
-                        break
-                        
-                except Exception as e:
-                    continue
-        
-        df = best_df if best_df is not None else df
+        # تنظيف أسماء الأعمدة
+        df.columns = [str(col).strip() for col in df.columns]
         
         # تنظيف البيانات
         records = []

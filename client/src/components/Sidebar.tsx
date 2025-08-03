@@ -16,7 +16,8 @@ import {
   DollarSign,
   TrendingUp,
   Upload,
-  Activity
+  Activity,
+  FileSpreadsheet
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -88,6 +89,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     {
       title: "استيراد البيانات",
       href: "/import-data",
+      icon: Upload,
+      section: "admin",
+    },
+    {
+      title: "استيراد Excel",
+      href: "/import-excel-data",
       icon: Upload,
       section: "admin",
     },

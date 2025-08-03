@@ -1,235 +1,159 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
-import { Upload, Database, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+
+interface ImportResult {
+  success: boolean;
+  stats: {
+    items: number;
+    quotations: number;
+    quotation_items: number;
+    purchase_orders: number;
+    purchase_order_items: number;
+  };
+}
 
 export default function ImportData() {
-  const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
-  const [importResult, setImportResult] = useState<any>(null);
-  const { toast } = useToast();
+  const [result, setResult] = useState<ImportResult | null>(null);
 
   const importMutation = useMutation({
-    mutationFn: () => apiRequest('/api/import-data', {
-      method: 'POST',
-      body: JSON.stringify({})
-    }),
-    onMutate: () => {
-      setImportStatus('importing');
-      setImportResult(null);
-      toast({
-        title: "بدء الاستيراد",
-        description: "جاري استيراد البيانات من ملف Excel...",
+    mutationFn: async (): Promise<ImportResult> => {
+      const response = await fetch('/api/import-data', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
     },
-    onSuccess: (data) => {
-      setImportStatus('success');
-      setImportResult(data);
-      toast({
-        title: "تم الاستيراد بنجاح",
-        description: `تم استيراد ${data.importedItems || 0} بند بنجاح`,
-      });
+    onSuccess: (data: ImportResult) => {
+      setResult(data);
     },
-    onError: (error: any) => {
-      setImportStatus('error');
-      setImportResult(error);
-      toast({
-        title: "خطأ في الاستيراد",
-        description: "حدث خطأ أثناء استيراد البيانات",
-        variant: "destructive",
-      });
+    onError: (error) => {
+      console.error('Import failed:', error);
     }
   });
 
   const handleImport = () => {
+    setResult(null);
     importMutation.mutate();
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">استيراد البيانات</h1>
-          <p className="text-muted-foreground mt-2">
-            استيراد البيانات من ملف Excel إلى النظام
-          </p>
-        </div>
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">استيراد البيانات من Excel</h1>
+        <p className="text-muted-foreground">
+          استيراد البيانات المحضرة من ملف Excel إلى قاعدة البيانات
+        </p>
       </div>
 
-      <div className="grid gap-6">
-        {/* Import Status Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              حالة الاستيراد
-            </CardTitle>
-            <CardDescription>
-              استيراد البيانات من ملف DP DEV_1754181634716.xlsx
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {importStatus === 'idle' && (
-              <Alert>
-                <Upload className="h-4 w-4" />
-                <AlertDescription>
-                  جاهز لاستيراد البيانات من ملف Excel. سيتم استيراد أول 50 بند كعينة تجريبية.
-                </AlertDescription>
-              </Alert>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            استيراد البيانات
+          </CardTitle>
+          <CardDescription>
+            سيتم استيراد البيانات التالية:
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>البنود والأجزاء</li>
+              <li>طلبات التسعير</li>
+              <li>بنود طلبات التسعير</li>
+              <li>أوامر الشراء</li>
+              <li>بنود أوامر الشراء</li>
+            </ul>
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button 
+            onClick={handleImport} 
+            disabled={importMutation.isPending}
+            className="w-full"
+            size="lg"
+          >
+            {importMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                جاري الاستيراد...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                بدء الاستيراد
+              </>
             )}
+          </Button>
 
-            {importStatus === 'importing' && (
-              <div className="space-y-2">
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    جاري استيراد البيانات... يرجى الانتظار
-                  </AlertDescription>
-                </Alert>
-                <Progress className="w-full" />
-              </div>
-            )}
+          {importMutation.error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                خطأ في الاستيراد: {importMutation.error.message}
+              </AlertDescription>
+            </Alert>
+          )}
 
-            {importStatus === 'success' && importResult && (
-              <Alert className="border-green-200 bg-green-50">
+          {result && (
+            <Alert className={result.success ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"}>
+              {result.success ? (
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
-                  تم الاستيراد بنجاح! تم استيراد {importResult.importedItems} بند من أصل {importResult.totalItems} بند في الملف.
-                  تم إنشاء {importResult.suppliersCreated} مورد جديد.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {importStatus === 'error' && (
-              <Alert variant="destructive">
-                <XCircle className="h-4 w-4" />
-                <AlertDescription>
-                  حدث خطأ أثناء الاستيراد. يرجى المحاولة مرة أخرى أو التواصل مع الدعم الفني.
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <div className="flex gap-4">
-              <Button 
-                onClick={handleImport} 
-                disabled={importStatus === 'importing'}
-                className="flex items-center gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                {importStatus === 'importing' ? 'جاري الاستيراد...' : 'بدء الاستيراد'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* File Information Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>معلومات الملف</CardTitle>
-            <CardDescription>
-              تفاصيل الملف المراد استيراده
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <h4 className="font-medium">اسم الملف</h4>
-                <p className="text-sm text-muted-foreground">DP DEV_1754181634716.xlsx</p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">نوع البيانات</h4>
-                <p className="text-sm text-muted-foreground">بيانات البنود والموردين وطلبات الأسعار</p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">عدد البنود المتوقع</h4>
-                <Badge variant="outline">11,000+ بند</Badge>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">الحالة</h4>
-                <Badge variant={importStatus === 'success' ? 'default' : 'secondary'}>
-                  {importStatus === 'idle' && 'جاهز للاستيراد'}
-                  {importStatus === 'importing' && 'جاري الاستيراد'}
-                  {importStatus === 'success' && 'تم الاستيراد'}
-                  {importStatus === 'error' && 'خطأ في الاستيراد'}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Data Preview Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>معاينة البيانات</CardTitle>
-            <CardDescription>
-              الحقول التي سيتم استيرادها
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              {[
-                'رقم تسلسلي',
-                'وصف البند',
-                'رقم القطعة',
-                'رقم الخط',
-                'وحدة القياس',
-                'الفئة',
-                'رقم RFQ',
-                'الكمية',
-                'سعر RFQ',
-                'رقم PO',
-                'تاريخ RFQ',
-                'حالة الطلب',
-                'المشتري',
-                'ملاحظات'
-              ].map((field) => (
-                <Badge key={field} variant="outline" className="justify-center">
-                  {field}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Import Results */}
-        {importResult && importStatus === 'success' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>نتائج الاستيراد</CardTitle>
-              <CardDescription>
-                إحصائيات عملية الاستيراد
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">
-                    {importResult.importedItems}
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-600" />
+              )}
+              <AlertDescription className={result.success ? "text-green-800" : "text-red-800"}>
+                {result.success ? (
+                  <div className="space-y-2">
+                    <p className="font-semibold">تم الاستيراد بنجاح! 🎉</p>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>البنود: {result.stats.items}</div>
+                      <div>طلبات التسعير: {result.stats.quotations}</div>
+                      <div>بنود طلبات التسعير: {result.stats.quotation_items}</div>
+                      <div>أوامر الشراء: {result.stats.purchase_orders}</div>
+                      <div>بنود أوامر الشراء: {result.stats.purchase_order_items}</div>
+                    </div>
                   </div>
-                  <div className="text-sm text-green-700">بند مستورد</div>
-                </div>
-                <div className="text-center p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {importResult.suppliersCreated}
-                  </div>
-                  <div className="text-sm text-blue-700">مورد جديد</div>
-                </div>
-                <div className="text-center p-4 bg-orange-50 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">
-                    {importResult.totalItems}
-                  </div>
-                  <div className="text-sm text-orange-700">إجمالي البنود في الملف</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+                ) : (
+                  "فشل في الاستيراد. يرجى المحاولة مرة أخرى."
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>معلومات مهمة</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            <h4 className="font-semibold">البيانات المستوردة:</h4>
+            <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+              <li>تم استخراج 2767 سجل صالح من ملف Excel</li>
+              <li>البيانات مقروءة من الصف 13 كما هو محدد</li>
+              <li>يتم ربط البنود بطلبات التسعير وأوامر الشراء</li>
+              <li>أسعار العملاء محسوبة من متوسط أسعار طلبات التسعير</li>
+            </ul>
+          </div>
+          
+          <div className="space-y-2">
+            <h4 className="font-semibold">تنبيهات:</h4>
+            <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+              <li>العملية تستغرق عدة دقائق حسب حجم البيانات</li>
+              <li>لا تغلق الصفحة أثناء عملية الاستيراد</li>
+              <li>يُنصح بعمل نسخة احتياطية قبل الاستيراد</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
