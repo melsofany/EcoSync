@@ -175,8 +175,26 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </div>
         )}
 
-        {/* Navigation section removed */}
-        <div className="flex-1"></div>
+        {/* Static Navigation Content */}
+        <div className="flex-1 p-2 lg:p-4">
+          <div className="space-y-3">
+            <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-2xl mb-2">📊</div>
+              <h3 className="font-medium text-gray-800 mb-1">نظام قرطبة</h3>
+              <p className="text-xs text-gray-600">إدارة التوريدات</p>
+            </div>
+            
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="text-lg mb-1">🏢</div>
+              <p className="text-xs text-blue-800 font-medium">شركة قرطبة للتوريدات</p>
+            </div>
+            
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <div className="text-lg mb-1">✅</div>
+              <p className="text-xs text-green-800">النظام يعمل بكفاءة</p>
+            </div>
+          </div>
+        </div>
 
         {/* Logout */}
         <div className="p-2 lg:p-4 border-t border-gray-200">
