@@ -177,24 +177,22 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {isOpen && (
           <div className="p-3 lg:p-4 border-b border-gray-100 bg-gray-50">
             <div className="flex items-center space-x-3 space-x-reverse">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {getInitials(user.fullName)}
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-white text-sm font-bold">
+                  {user.fullName?.split(' ').slice(0, 2).map(name => name.charAt(0)).join('')}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">
-                  {user.fullName}
+                  {user.fullName?.split(' ').slice(0, 2).join(' ')}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {getRoleLabel(user.role)}
                 </p>
-              </div>
-              <div className="flex items-center">
-                <Circle className={cn(
-                  "w-2 h-2 rounded-full",
-                  user.isOnline ? "fill-green-400 text-green-400" : "fill-gray-400 text-gray-400"
-                )} />
+                <div className="flex items-center space-x-1 space-x-reverse mt-1">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-gray-400">متصل</span>
+                </div>
               </div>
             </div>
           </div>
