@@ -13,6 +13,7 @@ import {
   pricingHistory,
   activityLog,
   passwordResetTokens,
+  notifications,
   type User,
   type InsertUser,
   type Client,
@@ -39,6 +40,8 @@ import {
   type InsertPricingHistory,
   type ActivityLog,
   type InsertActivityLog,
+  type Notification,
+  type InsertNotification,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, like, and, isNull, isNotNull, sql } from "drizzle-orm";
@@ -1465,6 +1468,42 @@ export class DatabaseStorage implements IStorage {
       const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
       return `PO-K${timestamp}${random}`;
     }
+  }
+
+  // Notification operations
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [result] = await db
+      .insert(notifications)
+      .values(notification)
+      .returning();
+    return result;
+  }
+
+  async getUserNotifications(userId: string): Promise<Notification[]> {
+    return await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt));
+  }
+
+  async markNotificationRead(id: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true, readAt: new Date() })
+      .where(eq(notifications.id, id));
+  }
+
+  async getUnreadNotificationCount(userId: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notifications)
+      .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+    return result[0].count;
+  }
+
+  async deleteNotification(id: string): Promise<void> {
+    await db.delete(notifications).where(eq(notifications.id, id));
   }
 }
 
