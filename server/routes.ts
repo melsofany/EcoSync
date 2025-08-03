@@ -306,8 +306,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid email format" });
       }
 
-      // Validate phone format if provided (Saudi format)
-      if (updateData.phone && !/^(05|5)(5|0|3|6|4|9|1|8|7)([0-9]{7})$/.test(updateData.phone.replace(/\s/g, ''))) {
+      // Validate phone format if provided (basic format)
+      if (updateData.phone && !/^[0-9+\-\s()]{7,20}$/.test(updateData.phone.replace(/\s/g, ''))) {
         return res.status(400).json({ message: "Invalid phone number format" });
       }
 
