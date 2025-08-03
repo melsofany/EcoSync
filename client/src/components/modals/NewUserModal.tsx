@@ -99,12 +99,12 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto z-50" dir="rtl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle>إضافة مستخدم جديد</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6 relative">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="username">اسم المستخدم *</Label>
@@ -228,18 +228,24 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                   {/* Upload Controls */}
                   <div className="flex-1 space-y-2">
                     <div className="flex gap-2">
-                      <ProfileImageUploader
-                        currentImageUrl={form.watch("profileImage") || ""}
-                        onImageUploaded={(imageUrl) => {
-                          form.setValue("profileImage", imageUrl);
-                        }}
-                      />
+                      <div className="z-auto">
+                        <ProfileImageUploader
+                          currentImageUrl={form.watch("profileImage") || ""}
+                          onImageUploaded={(imageUrl) => {
+                            form.setValue("profileImage", imageUrl);
+                          }}
+                        />
+                      </div>
                       {form.watch("profileImage") && (
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => form.setValue("profileImage", "")}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            form.setValue("profileImage", "");
+                          }}
+                          className="cursor-pointer"
                         >
                           <X className="h-4 w-4 mr-1" />
                           إزالة
@@ -273,13 +279,13 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
               <Label htmlFor="role">الدور والصلاحيات *</Label>
               <div className="relative">
                 <Select
-                  value={form.watch("role")}
+                  value={form.watch("role") || ""}
                   onValueChange={(value) => form.setValue("role", value)}
                 >
-                  <SelectTrigger className="pl-10">
+                  <SelectTrigger className="pl-10" id="role-select">
                     <SelectValue placeholder="اختر دور المستخدم" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[100]">
                     {roles.map((role) => (
                       <SelectItem key={role.value} value={role.value}>
                         {role.label}
@@ -302,10 +308,10 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                 value={form.watch("isActive") ? "active" : "inactive"}
                 onValueChange={(value) => form.setValue("isActive", value === "active")}
               >
-                <SelectTrigger>
+                <SelectTrigger id="status-select">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[100]">
                   <SelectItem value="active">نشط</SelectItem>
                   <SelectItem value="inactive">غير نشط</SelectItem>
                 </SelectContent>
@@ -355,22 +361,24 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
             </div>
           )}
 
-          <div className="flex justify-end space-x-3 space-x-reverse pt-6 border-t">
+          <div className="flex justify-end gap-3 pt-6 border-t">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
               disabled={createUserMutation.isPending}
+              className="cursor-pointer"
             >
               إلغاء
             </Button>
             <Button
               type="submit"
               disabled={createUserMutation.isPending}
+              className="cursor-pointer"
             >
               {createUserMutation.isPending ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner ml-2"></div>
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin ml-2"></div>
                   جاري الإنشاء...
                 </>
               ) : (
