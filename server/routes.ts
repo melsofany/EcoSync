@@ -752,11 +752,10 @@ Respond in JSON format:
         const rowKeys = Object.keys(row);
         console.log(`Row ${index} keys:`, rowKeys, 'Values:', Object.values(row));
         
-        // Analyze the actual data structure based on console output
-        // The current data structure seems to be:
-        // [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Response Date, Done]
+        // تحديث: البيانات الحديثة تحتوي على:
+        // [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Unnamed: 8, Response Date, العميل, Done]
         
-        // Map according to actual data positions
+        // Map according to the updated data structure
         const lineNumber = rowKeys.length > 0 ? row[rowKeys[0]] || 0 : 0;                   // Line No
         const unit = rowKeys.length > 1 ? row[rowKeys[1]] || 'Each' : 'Each';              // UOM
         const lineItem = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                   // LINE ITEM
@@ -765,16 +764,47 @@ Respond in JSON format:
         const rfqNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                  // Source File (RFQ Number)
         const rfqDate = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                    // Request Date
         const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // Quantity
-        const expiryDate = rowKeys.length > 8 ? row[rowKeys[8]] || '' : '';                 // Response Date (Expiry)
-        const clientName = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // Done/Status (use as client name fallback)
         
-        // بناءً على فحص البيانات الفعلية، ملف Excel لا يحتوي على عمود أسعار منفصل
-        // السعر يجب أن يُحدد لاحقاً من خلال نظام التسعير
-        // سنضع قيمة افتراضية مؤقتة حتى يتم تحديد السعر الفعلي
+        // العمود الثامن (Index 8) هو عمود السعر "Unnamed: 8"
+        const priceColumn = rowKeys.length > 8 ? row[rowKeys[8]] : '';                      // Unnamed: 8 (السعر)
         
-        let clientPrice = 0; // سيتم تحديد السعر لاحقاً من خلال نظام التسعير
+        const expiryDate = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // Response Date (Expiry)
+        const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // العميل
+        const status = rowKeys.length > 11 ? row[rowKeys[11]] || '' : '';                   // Done/Status
         
-        console.log(`Row ${index} - No price in Excel data. Price will be set during pricing phase. LINE ITEM: ${lineItem}`);
+        // استخراج السعر من العمود الثامن (Unnamed: 8)
+        let clientPrice = 0;
+        
+        if (priceColumn !== undefined && priceColumn !== null && priceColumn !== '') {
+          const numPrice = parseFloat(priceColumn);
+          if (!isNaN(numPrice) && numPrice > 0) {
+            clientPrice = numPrice;
+          }
+        }
+        
+        // إذا لم نجد سعر في العمود المخصص، ابحث في باقي الأعمدة
+        if (clientPrice === 0) {
+          for (let i = 0; i < rowKeys.length; i++) {
+            const value = row[rowKeys[i]];
+            const numValue = parseFloat(value);
+            
+            // تحقق من كون القيمة سعر معقول
+            if (!isNaN(numValue) && numValue >= 10 && numValue <= 50000) {
+              // تجنب أرقام الصفوف والكميات والتواريخ
+              const isLineNumber = (numValue <= 100 && Number.isInteger(numValue));
+              const isDate = (numValue > 40000 && numValue < 50000); // Excel date range
+              const isQuantity = (value === quantity);
+              
+              if (!isLineNumber && !isDate && !isQuantity) {
+                clientPrice = numValue;
+                console.log(`Row ${index} - Found price: ${clientPrice} in column ${rowKeys[i]}`);
+                break;
+              }
+            }
+          }
+        }
+        
+        console.log(`Row ${index} - Final price: ${clientPrice}, LINE ITEM: ${lineItem}`);
 
         // Format dates properly (convert Excel serial dates if needed)
         const formatDate = (dateValue: any) => {
@@ -794,7 +824,7 @@ Respond in JSON format:
         return {
           rowIndex: index + 1,
           // Database fields mapping according to actual data structure
-          clientName: clientName === 'done' ? 'غير محدد' : (clientName || 'غير محدد'),
+          clientName: clientName && clientName !== 'done' ? clientName : 'غير محدد',
           requestNumber: rfqNumber || `REQ-${Date.now()}-${index + 1}`,
           customRequestNumber: rfqNumber,
           requestDate: formatDate(rfqDate),

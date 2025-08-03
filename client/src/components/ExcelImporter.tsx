@@ -183,10 +183,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           <Alert>
             <Download className="h-4 w-4" />
             <AlertDescription>
-              <strong>تحديث: النظام يقرأ البيانات من ملف Excel الحالي:</strong>
-              <br />Line No | UOM | LINE ITEM | PART NO | Description | Source File | Request Date | Quantity | Response Date | Done
-              <br /><strong>ملاحظة مهمة:</strong> ملف Excel لا يحتوي على أسعار - الأسعار ستُحدد لاحقاً من خلال نظام التسعير
-              <br /><em>البيانات المُستوردة: رقم البند، رقم القطعة، التوصيف، الكمية، تاريخ الطلب</em>
+              <strong>التنسيق المحدث لملف Excel:</strong>
+              <br />Line No | UOM | LINE ITEM | PART NO | Description | Source File | Request Date | Quantity | <strong>السعر (العمود I)</strong> | Response Date | العميل | Done
+              <br /><strong>السعر:</strong> يُقرأ من العمود I (Unnamed: 8) أو يُبحث عنه في البيانات تلقائياً
+              <br /><em>البيانات المُستوردة: رقم البند، رقم القطعة، التوصيف، الكمية، السعر، العميل</em>
               <br /><strong>معرف P-:</strong> يتم توليده تلقائياً بعد معالجة البيانات
             </AlertDescription>
           </Alert>
@@ -267,8 +267,8 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                         {row.lineItem}
                       </td>
                       <td className="px-3 py-2">{row.quantity}</td>
-                      <td className="px-3 py-2 font-semibold text-amber-600">
-                        {row.priceToClient > 0 ? `${row.priceToClient?.toLocaleString()} EGP` : 'يُحدد لاحقاً'}
+                      <td className="px-3 py-2 font-semibold text-green-600">
+                        {row.priceToClient > 0 ? `${row.priceToClient?.toLocaleString()} EGP` : 'غير محدد'}
                       </td>
                       <td className="px-3 py-2">{row.unit}</td>
                     </tr>
