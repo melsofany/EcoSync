@@ -1030,8 +1030,9 @@ export class DatabaseStorage implements IStorage {
 
     const lineItem = item[0].lineItem;
     const partNumber = item[0].partNumber;
+    const description = item[0].description;
     
-    // Get comprehensive data combining quotations and purchase orders
+    // Get comprehensive data for all related items (similar contactors)
     const comprehensiveData = await db.execute(sql`
       SELECT 
           -- معلومات العميل والبند
@@ -1066,8 +1067,15 @@ export class DatabaseStorage implements IStorage {
       LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
       LEFT JOIN purchase_orders po ON poi.po_id = po.id
       
-      WHERE (i.line_item = ${lineItem} OR i.part_number = ${partNumber} OR i.id = ${itemId})
-      ORDER BY qr.request_date DESC, po.po_date DESC
+      WHERE (
+          i.part_number LIKE '%LC1%D32%' 
+          OR i.description LIKE '%CONTACTOR%32%AMP%'
+          OR i.description LIKE '%CONTACTOR%30%32%AMP%'
+          OR i.line_item = ${lineItem} 
+          OR i.part_number = ${partNumber} 
+          OR i.id = ${itemId}
+      )
+      ORDER BY qr.request_date DESC, i.line_item, po.po_date DESC
     `);
 
     return comprehensiveData.rows as any[];

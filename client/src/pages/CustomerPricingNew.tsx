@@ -154,25 +154,25 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <h4 className="font-semibold mb-3 text-blue-800">ملخص إحصائيات البند</h4>
           <div className="grid grid-cols-4 gap-4 text-sm">
             <div className="bg-white rounded-lg p-3 border border-blue-200">
-              <label className="font-medium text-gray-600">إجمالي طلبات التسعير:</label>
+              <label className="font-medium text-gray-600">إجمالي السجلات:</label>
               <p className="text-purple-700 font-bold text-lg">{comprehensiveData.length}</p>
             </div>
             <div className="bg-white rounded-lg p-3 border border-green-200">
-              <label className="font-medium text-gray-600">إجمالي الكمية المطلوبة:</label>
+              <label className="font-medium text-gray-600">إجمالي الكمية:</label>
               <p className="text-green-700 font-bold text-lg">
                 {comprehensiveData.reduce((sum, row) => sum + (Number(row.rfq_qty) || 0), 0)}
               </p>
             </div>
             <div className="bg-white rounded-lg p-3 border border-orange-200">
-              <label className="font-medium text-gray-600">أوامر الشراء المكتملة:</label>
+              <label className="font-medium text-gray-600">طلبات مع أسعار:</label>
               <p className="text-orange-700 font-bold text-lg">
-                {comprehensiveData.filter(row => row.po_number).length}
+                {comprehensiveData.filter(row => Number(row.customer_price) > 0).length}
               </p>
             </div>
             <div className="bg-white rounded-lg p-3 border border-red-200">
-              <label className="font-medium text-gray-600">متوسط السعر:</label>
+              <label className="font-medium text-gray-600">أوامر الشراء:</label>
               <p className="text-red-700 font-bold text-lg">
-                {formatCurrency(Number(item.supplierPrice || 0))}
+                {comprehensiveData.filter(row => row.po_number && row.po_number !== '').length}
               </p>
             </div>
           </div>
@@ -187,7 +187,8 @@ function ItemDetailedPricing({ item }: { item: any }) {
             جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
           </h4>
           <p className="text-blue-100 text-sm mt-1">
-            عرض شامل لجميع طلبات التسعير وأوامر الشراء المرتبطة بـ LINE ITEM: {item.lineItem}
+            عرض شامل لجميع طلبات التسعير وأوامر الشراء للـ Contactors 32 AMP المشابهة
+            {comprehensiveData && ` (${comprehensiveData.length} سجل)`}
           </p>
         </div>
         <div className="overflow-x-auto">
