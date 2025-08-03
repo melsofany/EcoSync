@@ -23,8 +23,8 @@ export function UserAvatar({ user, size = "md", className = "" }: UserAvatarProp
 
   const isValidImageUrl = (url: string | null | undefined) => {
     if (!url) return false;
-    // Allow local public-objects URLs and external image URLs
-    if (url.startsWith('/public-objects/')) {
+    // Allow local object storage URLs
+    if (url.startsWith('/objects/') || url.startsWith('/public-objects/')) {
       return true;
     }
     // Check if URL is a direct image link
