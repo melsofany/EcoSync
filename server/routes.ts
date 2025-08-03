@@ -647,6 +647,67 @@ Respond in JSON format:
     }
   });
 
+  // Export routes - only for managers
+  app.get("/api/export/:table", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+    try {
+      const { table } = req.params;
+      const { format = 'json' } = req.query;
+      
+      let data: any[] = [];
+      let filename = '';
+      
+      switch (table) {
+        case 'quotations':
+          data = await storage.getAllQuotations();
+          filename = `quotations_${new Date().toISOString().split('T')[0]}.${format}`;
+          break;
+        case 'items':
+          data = await storage.getAllItems();
+          filename = `items_${new Date().toISOString().split('T')[0]}.${format}`;
+          break;
+        case 'purchase-orders':
+          data = await storage.getAllPurchaseOrders();
+          filename = `purchase_orders_${new Date().toISOString().split('T')[0]}.${format}`;
+          break;
+        case 'clients':
+          data = await storage.getAllClients();
+          filename = `clients_${new Date().toISOString().split('T')[0]}.${format}`;
+          break;
+        case 'suppliers':
+          data = await storage.getAllSuppliers();
+          filename = `suppliers_${new Date().toISOString().split('T')[0]}.${format}`;
+          break;
+        case 'users':
+          data = await storage.getAllUsers();
+          // Remove sensitive data
+          data = data.map(({ password, ...user }) => user);
+          filename = `users_${new Date().toISOString().split('T')[0]}.${format}`;
+          break;
+        case 'activity':
+          data = await storage.getActivities();
+          filename = `activity_log_${new Date().toISOString().split('T')[0]}.${format}`;
+          break;
+        default:
+          return res.status(400).json({ message: "Invalid table name" });
+      }
+
+      await logActivity(req, "export_data", table, null, `Exported ${table} data as ${format} (${data.length} records)`);
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.json({
+        data,
+        filename,
+        timestamp: new Date().toISOString(),
+        table,
+        count: data.length
+      });
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Supplier routes
   app.get("/api/suppliers", requireAuth, async (req: Request, res: Response) => {
     try {

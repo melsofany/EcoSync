@@ -1,6 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   FileText, 
   ShoppingCart, 
@@ -9,11 +13,15 @@ import {
   TrendingUp, 
   Clock,
   CheckCircle,
-  Plus
+  Plus,
+  Download,
+  Database
 } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [exportingTable, setExportingTable] = useState<string | null>(null);
 
   const { data: stats } = useQuery({
     queryKey: ["/api/statistics"],
@@ -54,6 +62,98 @@ export default function Dashboard() {
     if (action.includes('login')) return 'bg-green-100';
     return 'bg-gray-100';
   };
+
+  const exportMutation = useMutation({
+    mutationFn: async (table: string) => {
+      const response = await apiRequest("GET", `/api/export/${table}?format=json`);
+      return response.json();
+    },
+    onSuccess: async (data, table) => {
+      try {
+        // Dynamically import XLSX
+        const XLSX = await import('xlsx');
+        
+        // Create workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(data.data);
+        
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(workbook, worksheet, getTableLabel(table));
+        
+        // Generate Excel file and download
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename.replace('.json', '.xlsx');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "تم تصدير البيانات بنجاح",
+          description: `تم تصدير ${data.count} سجل من جدول ${getTableLabel(table)} كملف إكسل`,
+        });
+      } catch (error) {
+        console.error('Error creating Excel file:', error);
+        // Fallback to JSON
+        const jsonData = JSON.stringify(data.data, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = data.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "تم تصدير البيانات كـ JSON",
+          description: `تم تصدير ${data.count} سجل من جدول ${getTableLabel(table)}`,
+        });
+      }
+      setExportingTable(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في تصدير البيانات",
+        description: error.message || "حدث خطأ أثناء تصدير البيانات",
+        variant: "destructive",
+      });
+      setExportingTable(null);
+    },
+  });
+
+  const getTableLabel = (table: string) => {
+    const labels: Record<string, string> = {
+      'quotations': 'طلبات التسعير',
+      'items': 'الأصناف',
+      'purchase-orders': 'أوامر الشراء',
+      'clients': 'العملاء',
+      'suppliers': 'الموردين',
+      'users': 'المستخدمين',
+      'activity': 'سجل الأنشطة'
+    };
+    return labels[table] || table;
+  };
+
+  const handleExport = (table: string) => {
+    setExportingTable(table);
+    exportMutation.mutate(table);
+  };
+
+  const exportTables = [
+    { key: 'quotations', label: 'طلبات التسعير', icon: FileText },
+    { key: 'items', label: 'الأصناف', icon: Package },
+    { key: 'purchase-orders', label: 'أوامر الشراء', icon: ShoppingCart },
+    { key: 'clients', label: 'العملاء', icon: Users },
+    { key: 'suppliers', label: 'الموردين', icon: TrendingUp },
+    { key: 'users', label: 'المستخدمين', icon: Users },
+    { key: 'activity', label: 'سجل الأنشطة', icon: Clock }
+  ];
 
   return (
     <div className="space-y-4 lg:space-y-8">
@@ -236,6 +336,49 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Data Export Section - Only for Managers */}
+      {user?.role === 'manager' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 space-x-reverse">
+              <Database className="h-5 w-5" />
+              <span>تصدير قواعد البيانات</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {exportTables.map((table) => {
+                const Icon = table.icon;
+                const isExporting = exportingTable === table.key;
+                
+                return (
+                  <Button
+                    key={table.key}
+                    variant="outline"
+                    className="h-auto p-4 flex flex-col items-center space-y-2"
+                    onClick={() => handleExport(table.key)}
+                    disabled={isExporting || exportMutation.isPending}
+                  >
+                    <Icon className="h-6 w-6 text-primary" />
+                    <span className="text-sm font-medium">{table.label}</span>
+                    <div className="flex items-center space-x-1 space-x-reverse text-xs text-gray-500">
+                      <Download className="h-3 w-3" />
+                      <span>{isExporting ? "جاري التصدير..." : "تصدير Excel"}</span>
+                    </div>
+                  </Button>
+                );
+              })}
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-blue-800 flex items-center">
+                <Database className="h-4 w-4 ml-2" />
+                سيتم تصدير البيانات بصيغة Excel (.xlsx) جاهزة للفتح في Microsoft Excel أو أي تطبيق جداول بيانات آخر.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
