@@ -14,7 +14,8 @@ import {
   Users,
   Truck,
   DollarSign,
-  TrendingUp
+  TrendingUp,
+  Upload
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -82,6 +83,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       href: "/reports",
       icon: BarChart3,
       section: "reports",
+    },
+    {
+      title: "استيراد البيانات",
+      href: "/import-data",
+      icon: Upload,
+      section: "admin",
     },
     {
       title: "إدارة النظام",

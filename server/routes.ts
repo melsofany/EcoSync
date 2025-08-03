@@ -935,7 +935,7 @@ Respond in JSON format:
     }
   });
 
-  // Import data endpoint
+  // Import data endpoint (simple)
   app.post('/api/import-data', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
     try {
       const { importExcelData } = await import('./import-data.js');
@@ -944,6 +944,19 @@ Respond in JSON format:
       res.json(result);
     } catch (error) {
       console.error('Error importing data:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Comprehensive import with AI analysis
+  app.post('/api/import-comprehensive', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { importAllItemsWithAIAnalysis } = await import('./comprehensive-import.js');
+      const result = await importAllItemsWithAIAnalysis();
+      await logActivity(req, "comprehensive_import", "system", "", `Comprehensive import: ${result.uniqueItemsImported} unique items, ${result.duplicatesDetected} duplicates detected`);
+      res.json(result);
+    } catch (error) {
+      console.error('Error in comprehensive import:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });
