@@ -708,6 +708,145 @@ Respond in JSON format:
     }
   });
 
+  // Excel import routes - only for IT admins
+  app.post("/api/import/quotations/preview", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { excelData } = req.body;
+      
+      if (!Array.isArray(excelData) || excelData.length === 0) {
+        return res.status(400).json({ message: "Invalid Excel data" });
+      }
+
+      // Map Excel columns to database fields
+      const mappedData = excelData.map((row: any, index: number) => {
+        return {
+          rowIndex: index + 1,
+          // Database fields mapping
+          clientName: row['Client'] || '',
+          requestNumber: row['Request Date'] ? `REQ-${Date.now()}-${index + 1}` : '',
+          customRequestNumber: row['Request Date'] || '',
+          responseDate: row['Response Date'] || '',
+          quantity: parseInt(row['Quantity']) || 0,
+          requestDate: row['Request Date'] || '',
+          sourceFile: row['Source File'] || '',
+          description: row['Description'] || '',
+          partNumber: row['PART NO'] || '',
+          lineItem: row['LINE ITEM'] || '',
+          uom: row['UOM'] || '',
+          lineNumber: parseInt(row['Line No']) || 0,
+          status: 'pending', // Default status
+          // Excel original data for reference
+          excelData: row
+        };
+      });
+
+      await logActivity(req, "preview_import", "quotations", req.session.user!.id, `Previewed ${mappedData.length} quotation records for import`);
+
+      res.json({
+        previewData: mappedData,
+        totalRows: mappedData.length,
+        mapping: {
+          'Client': 'اسم العميل',
+          'Response Date': 'تاريخ الرد',
+          'Quantity': 'الكمية',
+          'Request Date': 'تاريخ الطلب',
+          'Source File': 'ملف المصدر',
+          'Description': 'الوصف',
+          'PART NO': 'رقم القطعة',
+          'LINE ITEM': 'رقم البند',
+          'UOM': 'وحدة القياس',
+          'Line No': 'رقم السطر'
+        }
+      });
+    } catch (error) {
+      console.error("Error previewing import:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/import/quotations/confirm", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { previewData } = req.body;
+      
+      if (!Array.isArray(previewData) || previewData.length === 0) {
+        return res.status(400).json({ message: "No data to import" });
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors: string[] = [];
+
+      for (const row of previewData) {
+        try {
+          // Create or find client
+          let client = await storage.getClientByName(row.clientName);
+          if (!client && row.clientName) {
+            const newClient = await storage.createClient({
+              name: row.clientName,
+              email: `${row.clientName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+              phone: '',
+              address: ''
+            });
+            client = newClient;
+          }
+
+          // Create quotation request
+          const quotationData = {
+            clientId: client?.id || '',
+            requestDate: row.requestDate,
+            customRequestNumber: row.customRequestNumber,
+            status: row.status as any,
+            createdBy: req.session.user!.id,
+            notes: `Imported from Excel - ${row.sourceFile}`,
+          };
+
+          const quotation = await storage.createQuotationRequest(quotationData);
+
+          // Create item for this quotation
+          if (row.partNumber || row.description) {
+            const itemData = {
+              kItemId: `P-${Date.now()}-${successCount + 1}`,
+              partNumber: row.partNumber || '',
+              lineItem: row.lineItem || '',
+              description: row.description || '',
+              category: 'general',
+              unit: row.uom || 'Each',
+              createdBy: req.session.user!.id,
+              notes: `Imported from ${row.sourceFile}`
+            };
+
+            const item = await storage.createItem(itemData);
+
+            // Link item to quotation
+            await storage.addItemToQuotation(quotation.id, {
+              itemId: item.id,
+              quantity: row.quantity,
+              lineNumber: row.lineNumber
+            });
+          }
+
+          successCount++;
+        } catch (error) {
+          errorCount++;
+          errors.push(`Row ${row.rowIndex}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      await logActivity(req, "confirm_import", "quotations", req.session.user!.id, 
+        `Imported ${successCount} quotations successfully, ${errorCount} errors`);
+
+      res.json({
+        success: true,
+        imported: successCount,
+        errors: errorCount,
+        errorDetails: errors.slice(0, 10) // Limit error details
+      });
+    } catch (error) {
+      console.error("Error confirming import:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Supplier routes
   app.get("/api/suppliers", requireAuth, async (req: Request, res: Response) => {
     try {

@@ -58,6 +58,17 @@ Preferred communication style: Simple, everyday language.
 - **✅ File Naming**: Automatic filename generation with date stamps (e.g., items_2025-08-03.xlsx)
 - **✅ Activity Tracking**: All export operations logged for audit trail with record counts
 
+### Excel Import System (August 3, 2025)
+- **✅ IT Admin Import Feature**: Added Excel import functionality for quotation requests, restricted to IT administrators only
+- **✅ File Upload**: Support for .xlsx and .xls file formats with comprehensive file validation
+- **✅ Data Preview**: Shows imported data under actual database column headers for verification before import
+- **✅ Column Mapping**: Maps Excel columns (Client, Response Date, Quantity, etc.) to database fields automatically
+- **✅ Approval Workflow**: Two-step process with preview and confirmation to ensure data accuracy
+- **✅ Error Handling**: Comprehensive error reporting for failed imports with detailed error messages
+- **✅ Automatic Client Creation**: Creates new clients automatically if they don't exist in the database
+- **✅ Item Management**: Creates items and links them to quotations with proper categorization
+- **✅ Activity Logging**: All import operations tracked with detailed success/error statistics
+
 ## Recent Critical Updates (August 3, 2025)
 
 ### Company Rebranding

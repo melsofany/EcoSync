@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { ExcelImporter } from "@/components/ExcelImporter";
 import { 
   FileText, 
   ShoppingCart, 
@@ -15,13 +16,15 @@ import {
   CheckCircle,
   Plus,
   Download,
-  Database
+  Database,
+  Upload
 } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [exportingTable, setExportingTable] = useState<string | null>(null);
+  const [showImporter, setShowImporter] = useState(false);
 
   const { data: stats } = useQuery({
     queryKey: ["/api/statistics"],
@@ -377,6 +380,34 @@ export default function Dashboard() {
               </p>
             </div>
           </CardContent>
+        </Card>
+      )}
+
+      {/* Excel Import Section - Only for IT Admins */}
+      {user?.role === 'it_admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <Upload className="h-5 w-5" />
+                <span>استيراد البيانات من Excel</span>
+              </div>
+              <Button
+                onClick={() => setShowImporter(!showImporter)}
+                variant={showImporter ? "secondary" : "default"}
+              >
+                {showImporter ? "إخفاء" : "عرض"} مستورد Excel
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          {showImporter && (
+            <CardContent>
+              <ExcelImporter onImportComplete={() => {
+                // Refresh data after import
+                window.location.reload();
+              }} />
+            </CardContent>
+          )}
         </Card>
       )}
     </div>

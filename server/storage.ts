@@ -642,6 +642,45 @@ export class DatabaseStorage implements IStorage {
     return activity;
   }
 
+  async getClientByName(name: string): Promise<SelectClient | null> {
+    if (!name) return null;
+    const results = await db.select().from(clients).where(eq(clients.name, name)).limit(1);
+    return results.length > 0 ? results[0] : null;
+  }
+
+  async getAllQuotations(): Promise<any[]> {
+    return await db.select().from(quotationRequests);
+  }
+
+  async getAllItems(): Promise<any[]> {
+    return await db.select().from(items);
+  }
+
+  async getAllPurchaseOrders(): Promise<any[]> {
+    return await db.select().from(purchaseOrders);
+  }
+
+  async getAllClients(): Promise<any[]> {
+    return await db.select().from(clients);
+  }
+
+  async getAllSuppliers(): Promise<any[]> {
+    return await db.select().from(suppliers);
+  }
+
+  async getAllUsers(): Promise<any[]> {
+    return await db.select().from(users);
+  }
+
+  async addItemToQuotation(quotationId: string, itemData: { itemId: string; quantity: number; lineNumber: number }): Promise<void> {
+    await db.insert(quotationItems).values({
+      quotationId,
+      itemId: itemData.itemId,
+      quantity: itemData.quantity.toString(),
+      lineNumber: itemData.lineNumber
+    });
+  }
+
   async getActivities(limit: number = 50): Promise<ActivityLog[]> {
     return await db.select().from(activityLog)
       .orderBy(desc(activityLog.timestamp))
