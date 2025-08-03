@@ -935,6 +935,19 @@ Respond in JSON format:
     }
   });
 
+  // Import data endpoint
+  app.post('/api/import-data', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { importExcelData } = await import('./import-data.js');
+      const result = await importExcelData();
+      await logActivity(req, "import_data", "system", "", `Imported ${result.importedItems || 0} items from Excel`);
+      res.json(result);
+    } catch (error) {
+      console.error('Error importing data:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -18,6 +18,7 @@ import Suppliers from "@/pages/Suppliers";
 import SupplierPricing from "@/pages/SupplierPricing";
 import CustomerPricing from "@/pages/CustomerPricingNew";
 import CreatePurchaseOrder from "@/pages/CreatePurchaseOrder";
+import ImportData from "@/pages/ImportDataSimple";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -52,6 +53,7 @@ function Router() {
         <Route path="/customer-pricing" component={CustomerPricing} />
         <Route path="/purchase-orders" component={PurchaseOrders} />
         <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
+        <Route path="/import-data" component={ImportData} />
         <Route path="/reports" component={Reports} />
         <Route path="/admin" component={Admin} />
         <Route component={NotFound} />

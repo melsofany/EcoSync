@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "serial_number": 1,
+      "description": "LEFT BRACKET FOR A/C CARRIER QG MODEL 42QG18H",
+      "part_number": "",
+      "line_item": "1854.014.CARIER.7506",
+      "uom": "EACH",
+      "category": "GENRAL",
+      "rfq": "25R000057",
+      "qty": 2.0,
+      "price_rfq": 225.0,
+      "po": "P25E02726",
+      "qty_po": 2.0,
+      "price_po": 225.0,
+      "condition": "منتهي",
+      "buyer": "Omar AbdelMaaboud",
+      "note": "",
+      "date_rfq": "2025-01-05",
+      "date_po": "2025-02-24",
+      "res_date": "2025-01-11"
+    }
+  ],
+  "suppliers": [
+    "Omar AbdelMaaboud"
+  ],
+  "total_items": 1
+}
