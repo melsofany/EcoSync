@@ -42,8 +42,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
         return;
       }
       
-      console.log('Fetching pricing data for item:', item.id);
+      console.log('=== FETCHING PRICING DATA ===');
+      console.log('Item ID:', item.id);
+      console.log('Item object:', item);
       setIsLoading(true);
+      
       try {
         // Fetch detailed pricing
         console.log('Calling detailed pricing API...');
@@ -52,32 +55,43 @@ function ItemDetailedPricing({ item }: { item: any }) {
         console.log('Detailed pricing data received:', detailedData);
         setDetailedPricing(detailedData);
 
-        // Fetch historical pricing from Excel sheets
-        console.log('Calling historical pricing API...');
+        // Fetch historical pricing from Excel sheets - FORCE THIS CALL
+        console.log('=== CALLING HISTORICAL PRICING API ===');
+        console.log('URL:', `/api/items/${item.id}/historical-pricing`);
+        
         const historicalResponse = await fetch(`/api/items/${item.id}/historical-pricing`);
         console.log('Historical response status:', historicalResponse.status);
-        console.log('Historical response object:', historicalResponse);
+        console.log('Historical response headers:', [...historicalResponse.headers.entries()]);
         
         if (historicalResponse.ok) {
           const historicalData = await historicalResponse.json();
-          console.log('Historical data received:', historicalData);
-          console.log('Historical data type:', typeof historicalData);
-          console.log('Historical data is array:', Array.isArray(historicalData));
-          console.log('Historical data length:', historicalData?.length);
-          setHistoricalPricing(Array.isArray(historicalData) ? historicalData : []);
+          console.log('=== HISTORICAL DATA SUCCESS ===');
+          console.log('Raw response:', historicalData);
+          console.log('Data type:', typeof historicalData);
+          console.log('Is array:', Array.isArray(historicalData));
+          console.log('Length:', historicalData?.length);
+          console.log('First item:', historicalData?.[0]);
+          
+          const processedData = Array.isArray(historicalData) ? historicalData : [];
+          console.log('Setting state with processed data:', processedData);
+          setHistoricalPricing(processedData);
         } else {
           const errorText = await historicalResponse.text();
-          console.error('Failed to fetch historical data:', historicalResponse.status, errorText);
+          console.error('=== HISTORICAL DATA ERROR ===');
+          console.error('Status:', historicalResponse.status);
+          console.error('Error text:', errorText);
           setHistoricalPricing([]);
         }
       } catch (error) {
-        console.error('Error fetching pricing data:', error);
+        console.error('=== FETCH ERROR ===', error);
         setHistoricalPricing([]);
       } finally {
         setIsLoading(false);
+        console.log('=== FETCH COMPLETE ===');
       }
     };
 
+    console.log('useEffect triggered for item:', item?.id);
     fetchPricingData();
   }, [item?.id]);
 
@@ -284,8 +298,17 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 
                 {/* Show raw data for debugging */}
                 <TableRow>
-                  <TableCell colSpan={14} className="text-xs bg-blue-50 border">
-                    <strong>DEBUG:</strong> Historical data = {JSON.stringify(historicalPricing)} | Length = {historicalPricing?.length} | Type = {typeof historicalPricing}
+                  <TableCell colSpan={14} className="text-xs bg-blue-50 border p-2">
+                    <div className="space-y-1">
+                      <div><strong>DEBUG INFO:</strong></div>
+                      <div>Historical Data Length: {historicalPricing?.length || 0}</div>
+                      <div>Historical Data Type: {typeof historicalPricing}</div>
+                      <div>Is Array: {Array.isArray(historicalPricing) ? 'Yes' : 'No'}</div>
+                      <div>Has Data: {historicalPricing && historicalPricing.length > 0 ? 'Yes' : 'No'}</div>
+                      <div className="max-h-32 overflow-auto text-xs">
+                        Raw Data: {JSON.stringify(historicalPricing, null, 2)}
+                      </div>
+                    </div>
                   </TableCell>
                 </TableRow>
                 
