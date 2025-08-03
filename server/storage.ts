@@ -897,14 +897,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPurchaseOrderItems(poId: string): Promise<any[]> {
-    return await db
+    const result = await db
       .select({
-        purchaseOrderItem: purchaseOrderItems,
-        item: items,
+        id: purchaseOrderItems.id,
+        poId: purchaseOrderItems.poId,
+        itemId: purchaseOrderItems.itemId,
+        quantity: purchaseOrderItems.quantity,
+        unitPrice: purchaseOrderItems.unitPrice,
+        totalPrice: purchaseOrderItems.totalPrice,
+        currency: purchaseOrderItems.currency,
+        // Item details
+        description: items.description,
+        lineItem: items.lineItem,
+        kItemId: items.kItemId,
+        notes: items.notes,
+        category: items.category,
+        unit: items.unit,
       })
       .from(purchaseOrderItems)
       .leftJoin(items, eq(purchaseOrderItems.itemId, items.id))
-      .where(eq(purchaseOrderItems.poId, poId));
+      .where(eq(purchaseOrderItems.poId, poId))
+      .orderBy(items.lineItem);
+    
+    return result;
   }
 
   async updatePurchaseOrderStatus(id: string, status: string): Promise<PurchaseOrder | undefined> {
