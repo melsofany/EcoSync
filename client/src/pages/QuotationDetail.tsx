@@ -30,6 +30,7 @@ import {
   Clock,
   Calculator
 } from "lucide-react";
+import { QuotationRequest, QuotationItemWithDetails, InsertQuotationItem, Client, Item, InsertItem } from "@/../../shared/schema";
 
 interface QuotationItem {
   id: string;
@@ -380,18 +381,23 @@ export default function QuotationDetail() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {quotationItems.map((quotationItem: QuotationItem) => (
+                  {quotationItems.map((quotationItem: QuotationItemWithDetails) => (
                     <TableRow key={quotationItem.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">
                         {quotationItem.itemNumber || "غير محدد"}
                       </TableCell>
                       <TableCell>
-                        <div className="max-w-xs">
-                          <p className="font-medium text-gray-800 truncate">
+                        <div className="max-w-md">
+                          <p className="font-medium text-gray-800 whitespace-pre-wrap text-sm leading-tight">
                             {quotationItem.description || "غير محدد"}
                           </p>
+                          {quotationItem.lineItem && (
+                            <p className="text-xs text-blue-600 mt-1 font-mono">
+                              LINE: {quotationItem.lineItem}
+                            </p>
+                          )}
                           {quotationItem.category && (
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 mt-1">
                               {quotationItem.category}
                             </p>
                           )}

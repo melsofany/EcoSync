@@ -311,5 +311,18 @@ export type InsertPricingHistory = z.infer<typeof insertPricingHistorySchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 
+// Extended types for joined queries
+export type QuotationItemWithDetails = QuotationItem & {
+  itemNumber?: string;
+  kItemId?: string;
+  partNumber?: string;
+  lineItem?: string;
+  description?: string;
+  unit?: string;
+  category?: string;
+  brand?: string;
+  supplierName?: string;
+};
+
 // Add the self-reference relation for items after the table is defined
 // This avoids the circular reference issue during table definition
