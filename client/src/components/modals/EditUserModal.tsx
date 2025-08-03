@@ -150,6 +150,7 @@ export default function EditUserModal({ user, isOpen, onClose }: EditUserModalPr
                 <SelectItem value="it_admin">مدير تقنية المعلومات</SelectItem>
                 <SelectItem value="data_entry">موظف إدخال بيانات</SelectItem>
                 <SelectItem value="purchasing">موظف مشتريات</SelectItem>
+                <SelectItem value="accounting">موظف حسابات</SelectItem>
               </SelectContent>
             </Select>
           </div>

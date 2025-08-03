@@ -38,6 +38,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
     { value: "it_admin", label: "مدير تقنية المعلومات" },
     { value: "data_entry", label: "موظف إدخال بيانات" },
     { value: "purchasing", label: "موظف مشتريات" },
+    { value: "accounting", label: "موظف حسابات" },
   ];
 
   const form = useForm<UserForm>({

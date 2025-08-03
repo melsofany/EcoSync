@@ -34,7 +34,7 @@ export default function Reports() {
 
   const { data: activities } = useQuery({
     queryKey: ["/api/activity"],
-    enabled: hasRole(user, ["manager", "it_admin"]),
+    enabled: hasRole(user, ["manager", "it_admin", "accounting"]),
   });
 
   const { data: quotations } = useQuery({
@@ -56,7 +56,7 @@ export default function Reports() {
       icon: BarChart3,
       color: "blue",
       value: "sales",
-      access: ["manager", "it_admin", "data_entry", "purchasing"],
+      access: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
     },
     {
       title: "تقرير أداء الموظفين",

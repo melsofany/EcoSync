@@ -175,6 +175,7 @@ export default function Admin() {
       it_admin: "مدير تقنية المعلومات",
       data_entry: "موظف إدخال بيانات",
       purchasing: "موظف مشتريات",
+      accounting: "موظف حسابات",
     };
     return roles[role as keyof typeof roles] || role;
   };

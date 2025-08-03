@@ -41,15 +41,15 @@ export const canAccessSection = (user: User | null, section: string): boolean =>
   if (!user) return false;
 
   const permissions = {
-    dashboard: ["manager", "it_admin", "data_entry", "purchasing"],
-    quotations: ["manager", "it_admin", "data_entry"],
+    dashboard: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+    quotations: ["manager", "it_admin", "data_entry", "accounting"], // accounting يمكنه الاطلاع على الطلبات
     items: ["manager", "it_admin", "data_entry"],
-    clients: ["manager", "it_admin", "data_entry", "purchasing"],
-    suppliers: ["manager", "it_admin", "data_entry", "purchasing"],
-    "supplier-pricing": ["manager", "it_admin", "data_entry", "purchasing"],
-    "customer-pricing": ["manager"], // المرحلة الثانية - تسعير العملاء للمدير فقط
-    "purchase-orders": ["manager", "it_admin", "data_entry"],
-    reports: ["manager", "it_admin", "data_entry", "purchasing"],
+    clients: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+    suppliers: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+    "supplier-pricing": ["manager", "it_admin", "data_entry", "purchasing", "accounting"], // accounting يمكنه الاطلاع على الأسعار
+    "customer-pricing": ["manager", "accounting"], // accounting يمكنه الاطلاع على تسعير العملاء
+    "purchase-orders": ["manager", "it_admin", "data_entry", "accounting"], // accounting يمكنه الاطلاع على أوامر الشراء
+    reports: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
     admin: ["manager", "it_admin"],
   };
 

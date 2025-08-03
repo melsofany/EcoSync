@@ -325,6 +325,7 @@ export default function Dashboard() {
                         {onlineUser.role === 'it_admin' && 'مدير تقنية المعلومات'}
                         {onlineUser.role === 'data_entry' && 'موظف إدخال بيانات'}
                         {onlineUser.role === 'purchasing' && 'موظف مشتريات'}
+                        {onlineUser.role === 'accounting' && 'موظف حسابات'}
                       </p>
                     </div>
                   </div>
