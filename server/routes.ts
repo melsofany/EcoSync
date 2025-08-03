@@ -709,7 +709,7 @@ Respond in JSON format:
   });
 
   // Excel import routes - only for IT admins
-  app.post("/api/import/quotations/preview", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+  app.post("/api/import/quotations/preview", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
       const { excelData } = req.body;
       
@@ -930,7 +930,7 @@ Respond in JSON format:
     }
   });
 
-  app.post("/api/import/quotations/confirm", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+  app.post("/api/import/quotations/confirm", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
       const { previewData } = req.body;
       
