@@ -750,40 +750,70 @@ Respond in JSON format:
       const mappedData = filteredData.map((row: any, index: number) => {
         // Get all keys to access by position
         const rowKeys = Object.keys(row);
-        console.log(`Row ${index} keys:`, rowKeys, 'Values:', Object.values(row));
+        // console.log(`Row ${index} keys:`, rowKeys, 'Values:', Object.values(row));
         
-        // تحديث: البيانات الحديثة تحتوي على:
-        // [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Unnamed: 8, Response Date, العميل, Done]
+        // الهيكل الفعلي المُكتشف من اللوج - الملف الحالي لا يحتوي على عمود السعر:
+        // [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Response Date, Done]
+        // ليس [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Unnamed: 8, Response Date, العميل, Done]
         
-        // Map according to the updated data structure
-        const lineNumber = rowKeys.length > 0 ? row[rowKeys[0]] || 0 : 0;                   // Line No
-        const unit = rowKeys.length > 1 ? row[rowKeys[1]] || 'Each' : 'Each';              // UOM
-        const lineItem = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                   // LINE ITEM
-        const partNumber = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';                 // PART NO  
-        const description = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';                // Description
-        const rfqNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                  // Source File (RFQ Number)
-        const rfqDate = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                    // Request Date
-        const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // Quantity
-        
-        // العمود الثامن (Index 8) هو عمود السعر "Unnamed: 8"
-        const priceColumn = rowKeys.length > 8 ? row[rowKeys[8]] : '';                      // Unnamed: 8 (السعر)
-        
-        const expiryDate = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // Response Date (Expiry)
-        const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // العميل
-        const status = rowKeys.length > 11 ? row[rowKeys[11]] || '' : '';                   // Done/Status
-        
-        // استخراج السعر - منطق مبسط وواضح
-        let clientPrice = 0;
-        
-        // تحقق من العمود I (Unnamed: 8) إذا كان يحتوي على سعر صحيح
-        if (priceColumn !== undefined && priceColumn !== null && 
-            !isNaN(parseFloat(priceColumn)) && parseFloat(priceColumn) > 0 && 
-            parseFloat(priceColumn) < 10000) { // سعر معقول أقل من 10000
-          clientPrice = parseFloat(priceColumn);
+        // تحديد الهيكل بناءً على عدد الأعمدة الفعلي
+        if (rowKeys.length === 10) {
+          // الهيكل: [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Response Date, Done]
+          var lineNumber = row[rowKeys[0]] || 0;
+          var unit = row[rowKeys[1]] || 'Each';
+          var lineItem = row[rowKeys[2]] || '';
+          var partNumber = row[rowKeys[3]] || '';
+          var description = row[rowKeys[4]] || '';
+          var rfqNumber = row[rowKeys[5]] || '';
+          var rfqDate = row[rowKeys[6]] || '';
+          var quantity = parseInt(row[rowKeys[7]]) || 0;
+          var expiryDate = row[rowKeys[8]] || '';  // Response Date
+          var status = row[rowKeys[9]] || '';      // Done
+          var clientName = 'غير محدد';             // ليس موجود في هذا الملف
+          var priceColumn = null;                  // ليس موجود في هذا الملف
+        } else if (rowKeys.length === 12) {
+          // الهيكل: [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Unnamed: 8, Response Date, العميل, Done]
+          var lineNumber = row[rowKeys[0]] || 0;
+          var unit = row[rowKeys[1]] || 'Each';
+          var lineItem = row[rowKeys[2]] || '';
+          var partNumber = row[rowKeys[3]] || '';
+          var description = row[rowKeys[4]] || '';
+          var rfqNumber = row[rowKeys[5]] || '';
+          var rfqDate = row[rowKeys[6]] || '';
+          var quantity = parseInt(row[rowKeys[7]]) || 0;
+          var priceColumn = row[rowKeys[8]];       // Unnamed: 8 (السعر)
+          var expiryDate = row[rowKeys[9]] || '';  // Response Date
+          var clientName = row[rowKeys[10]] || ''; // العميل
+          var status = row[rowKeys[11]] || '';     // Done
+        } else {
+          // هيكل غير معروف - استخدم القيم الافتراضية
+          var lineNumber = 0;
+          var unit = 'Each';
+          var lineItem = '';
+          var partNumber = '';
+          var description = '';
+          var rfqNumber = '';
+          var rfqDate = '';
+          var quantity = 0;
+          var priceColumn = null;
+          var expiryDate = '';
+          var clientName = 'غير محدد';
+          var status = '';
         }
         
-        // إذا لم نجد سعر صالح، اتركه 0 (سيُحدد لاحقاً)
-        console.log(`Row ${index} - Price: ${clientPrice}, LINE ITEM: ${lineItem}`);
+        // استخراج السعر - فقط إذا كان عمود السعر موجود وصحيح
+        let clientPrice = 0;
+        
+        if (priceColumn !== null && priceColumn !== undefined && priceColumn !== '' && 
+            priceColumn !== 'NaN' && !isNaN(parseFloat(priceColumn))) {
+          const parsedPrice = parseFloat(priceColumn);
+          // سعر معقول بين 1 و 50000 وليس تاريخ Excel أو سنة
+          if (parsedPrice > 0 && parsedPrice <= 50000 && parsedPrice < 2000) {
+            clientPrice = parsedPrice;
+          }
+        }
+        
+        // console.log(`Row ${index} - Price: ${clientPrice}, Columns: ${rowKeys.length}, LINE ITEM: ${lineItem}`);
         
         console.log(`Row ${index} - Final price: ${clientPrice}, LINE ITEM: ${lineItem}`);
 
