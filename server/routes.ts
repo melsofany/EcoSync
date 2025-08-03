@@ -1015,6 +1015,44 @@ Respond in JSON format:
     }
   });
 
+  app.patch("/api/purchase-orders/:id", requireAuth, requireRole(['manager', 'purchasing']), async (req: Request, res: Response) => {
+    try {
+      const updates = req.body;
+      
+      const purchaseOrder = await storage.updatePurchaseOrder(req.params.id, updates);
+      if (!purchaseOrder) {
+        return res.status(404).json({ message: "Purchase order not found" });
+      }
+
+      await logActivity(req, "update_purchase_order", "purchase_order", purchaseOrder.id, `Updated purchase order: ${purchaseOrder.poNumber}`);
+
+      res.json(purchaseOrder);
+    } catch (error) {
+      console.error("Update purchase order error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/purchase-orders/:id", requireAuth, requireRole(['manager', 'purchasing']), async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      // Get purchase order details for logging
+      const purchaseOrder = await storage.getPurchaseOrder(id);
+      if (!purchaseOrder) {
+        return res.status(404).json({ message: "Purchase order not found" });
+      }
+
+      await storage.deletePurchaseOrder(id);
+      await logActivity(req, "delete_purchase_order", "purchase_order", id, `Deleted purchase order: ${purchaseOrder.poNumber}`);
+
+      res.json({ message: "Purchase order deleted successfully" });
+    } catch (error) {
+      console.error("Delete purchase order error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.patch("/api/purchase-orders/:id/status", requireAuth, requireRole(['manager', 'purchasing']), async (req: Request, res: Response) => {
     try {
       const { status } = req.body;

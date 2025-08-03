@@ -589,6 +589,14 @@ export class DatabaseStorage implements IStorage {
     return po || undefined;
   }
 
+  async deletePurchaseOrder(id: string): Promise<void> {
+    // First delete related purchase order items
+    await db.delete(purchaseOrderItems).where(eq(purchaseOrderItems.poId, id));
+    
+    // Then delete the purchase order itself
+    await db.delete(purchaseOrders).where(eq(purchaseOrders.id, id));
+  }
+
   // Purchase order items
   async addPurchaseOrderItem(itemData: InsertPurchaseOrderItem): Promise<PurchaseOrderItem> {
     const [item] = await db

@@ -5,16 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Eye, Printer, Truck, Clock, CheckCircle, DollarSign } from "lucide-react";
+import { Plus, Eye, Printer, Truck, Clock, CheckCircle, DollarSign, Edit, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import NewPurchaseOrderModal from "@/components/modals/NewPurchaseOrderModal";
+import EditPurchaseOrderModal from "@/components/modals/EditPurchaseOrderModal";
 
 export default function PurchaseOrders() {
   const [isNewPOModalOpen, setIsNewPOModalOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<any>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPO, setEditingPO] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -71,6 +74,50 @@ export default function PurchaseOrders() {
     queryKey: ["/api/purchase-orders", selectedPO?.id, "items"],
     enabled: !!selectedPO?.id,
   });
+
+  // Delete purchase order mutation
+  const deletePOMutation = useMutation({
+    mutationFn: async (poId: string) => {
+      const response = await fetch(`/api/purchase-orders/${poId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "حدث خطأ أثناء حذف أمر الشراء");
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "تم حذف أمر الشراء",
+        description: "تم حذف أمر الشراء بنجاح من النظام",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/purchase-orders"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في الحذف",
+        description: error.message || "حدث خطأ أثناء حذف أمر الشراء",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Handle editing purchase order
+  const handleEditPO = (po: any) => {
+    setEditingPO(po);
+    setIsEditModalOpen(true);
+  };
+
+  // Handle deleting purchase order
+  const handleDeletePO = (po: any) => {
+    if (window.confirm(`هل أنت متأكد من حذف أمر الشراء رقم ${po.poNumber}؟`)) {
+      deletePOMutation.mutate(po.id);
+    }
+  };
 
   // Handle viewing purchase order details
   const handleViewDetails = (po: any) => {
@@ -308,6 +355,25 @@ export default function PurchaseOrders() {
                           >
                             <Truck className="h-4 w-4" />
                           </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="تحرير"
+                            className="text-blue-600 hover:text-blue-800"
+                            onClick={() => handleEditPO(po)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="حذف"
+                            className="text-red-600 hover:text-red-800"
+                            onClick={() => handleDeletePO(po)}
+                            disabled={deletePOMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -338,6 +404,12 @@ export default function PurchaseOrders() {
       <NewPurchaseOrderModal
         isOpen={isNewPOModalOpen}
         onClose={() => setIsNewPOModalOpen(false)}
+      />
+
+      <EditPurchaseOrderModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        purchaseOrder={editingPO}
       />
 
       {/* Purchase Order Details Modal */}
