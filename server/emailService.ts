@@ -1,12 +1,7 @@
-import { MailService } from '@sendgrid/mail';
+import { Resend } from 'resend';
 
-// Initialize SendGrid only if API key is available
-let mailService: MailService | null = null;
-
-if (process.env.SENDGRID_API_KEY) {
-  mailService = new MailService();
-  mailService.setApiKey(process.env.SENDGRID_API_KEY);
-}
+// Initialize Resend with the provided API key
+const resend = new Resend('re_iL48tjwP_HMjSGy39x4UA4etAqitDzScn');
 
 interface EmailParams {
   to: string;
@@ -15,31 +10,32 @@ interface EmailParams {
 }
 
 export async function sendEmail(params: EmailParams): Promise<{ success: boolean; message: string }> {
-  // If SendGrid is not configured, return instructions instead of sending
-  if (!mailService) {
-    return {
-      success: false,
-      message: "لم يتم تكوين خدمة البريد الإلكتروني. يرجى التواصل مع مدير النظام لإعادة تعيين كلمة المرور يدوياً."
-    };
-  }
-
   try {
-    await mailService.send({
-      to: params.to,
-      from: process.env.FROM_EMAIL || 'noreply@qortoba.com',
+    const { data, error } = await resend.emails.send({
+      from: 'نظام قرطبة للتوريدات <noreply@resend.dev>',
+      to: [params.to],
       subject: params.subject,
       html: params.html,
     });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return {
+        success: false,
+        message: "فشل في إرسال البريد الإلكتروني. يرجى التأكد من صحة عنوان البريد الإلكتروني."
+      };
+    }
     
+    console.log('Email sent successfully:', data);
     return {
       success: true,
-      message: "تم إرسال البريد الإلكتروني بنجاح"
+      message: "تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني"
     };
   } catch (error) {
     console.error('Email sending error:', error);
     return {
       success: false,
-      message: "فشل في إرسال البريد الإلكتروني. يرجى التواصل مع مدير النظام."
+      message: "حدث خطأ في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى."
     };
   }
 }
