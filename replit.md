@@ -62,12 +62,14 @@ Preferred communication style: Simple, everyday language.
 - **✅ IT Admin Import Feature**: Added Excel import functionality for quotation requests, restricted to IT administrators only
 - **✅ File Upload**: Support for .xlsx and .xls file formats with comprehensive file validation
 - **✅ Data Preview**: Shows imported data under actual database column headers for verification before import
-- **✅ Column Mapping**: Maps Excel columns (Client, Response Date, Quantity, etc.) to database fields automatically
+- **✅ Column Mapping**: Maps Excel columns by position - B(UOM), C(LINE ITEM), D(PART NO), E(Description), F(Request Number), G(Request Date), H(Quantity), I(Client Price), J(Expiry Date), K(Client Name)
 - **✅ Approval Workflow**: Two-step process with preview and confirmation to ensure data accuracy
 - **✅ Error Handling**: Comprehensive error reporting for failed imports with detailed error messages
 - **✅ Automatic Client Creation**: Creates new clients automatically if they don't exist in the database
 - **✅ Item Management**: Creates items and links them to quotations with proper categorization
 - **✅ Activity Logging**: All import operations tracked with detailed success/error statistics
+- **✅ Client Pricing Integration**: Imports client pricing data from column I for immediate quotation pricing
+- **✅ P-Number Generation**: Auto-generates P-format item numbers using AI matching for duplicate detection
 
 ## Recent Critical Updates (August 3, 2025)
 

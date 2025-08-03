@@ -717,23 +717,36 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
-      // Map Excel columns to database fields
+      // Map Excel columns to database fields based on column positions
+      // B=UOM, C=LINE ITEM, D=PART NO, E=Description, F=Request Number, G=Request Date, H=Quantity, I=Client Price, J=Expiry Date, K=Client Name
       const mappedData = excelData.map((row: any, index: number) => {
+        // Get column values by position (Excel columns)
+        const rowKeys = Object.keys(row);
+        const uom = row[rowKeys[1]] || ''; // Column B (index 1)
+        const lineItem = row[rowKeys[2]] || ''; // Column C (index 2)  
+        const partNumber = row[rowKeys[3]] || ''; // Column D (index 3)
+        const description = row[rowKeys[4]] || ''; // Column E (index 4)
+        const requestNumber = row[rowKeys[5]] || ''; // Column F (index 5)
+        const requestDate = row[rowKeys[6]] || ''; // Column G (index 6)
+        const quantity = parseInt(row[rowKeys[7]]) || 0; // Column H (index 7)
+        const clientPrice = row[rowKeys[8]] || ''; // Column I (index 8)
+        const expiryDate = row[rowKeys[9]] || ''; // Column J (index 9)
+        const clientName = row[rowKeys[10]] || ''; // Column K (index 10)
+
         return {
           rowIndex: index + 1,
           // Database fields mapping
-          clientName: row['Client'] || '',
-          requestNumber: row['Request Date'] ? `REQ-${Date.now()}-${index + 1}` : '',
-          customRequestNumber: row['Request Date'] || '',
-          responseDate: row['Response Date'] || '',
-          quantity: parseInt(row['Quantity']) || 0,
-          requestDate: row['Request Date'] || '',
-          sourceFile: row['Source File'] || '',
-          description: row['Description'] || '',
-          partNumber: row['PART NO'] || '',
-          lineItem: row['LINE ITEM'] || '',
-          uom: row['UOM'] || '',
-          lineNumber: parseInt(row['Line No']) || 0,
+          clientName,
+          requestNumber: requestNumber || `REQ-${Date.now()}-${index + 1}`,
+          customRequestNumber: requestNumber,
+          requestDate,
+          quantity,
+          description,
+          partNumber,
+          lineItem,
+          uom,
+          clientPrice,
+          expiryDate,
           status: 'pending', // Default status
           // Excel original data for reference
           excelData: row
@@ -746,16 +759,16 @@ Respond in JSON format:
         previewData: mappedData,
         totalRows: mappedData.length,
         mapping: {
-          'Client': 'اسم العميل',
-          'Response Date': 'تاريخ الرد',
-          'Quantity': 'الكمية',
-          'Request Date': 'تاريخ الطلب',
-          'Source File': 'ملف المصدر',
-          'Description': 'الوصف',
-          'PART NO': 'رقم القطعة',
-          'LINE ITEM': 'رقم البند',
-          'UOM': 'وحدة القياس',
-          'Line No': 'رقم السطر'
+          'B': 'وحدة القياس (UOM)',
+          'C': 'رقم البند (LINE ITEM)', 
+          'D': 'رقم القطعة (PART NO)',
+          'E': 'التوصيف (Description)',
+          'F': 'رقم الطلب (Request Number)',
+          'G': 'تاريخ الطلب (Request Date)',
+          'H': 'الكمية (Quantity)',
+          'I': 'السعر للعميل (Client Price)',
+          'J': 'تاريخ انتهاء العرض (Expiry Date)',
+          'K': 'اسم العميل (Client Name)'
         }
       });
     } catch (error) {
@@ -795,9 +808,10 @@ Respond in JSON format:
             clientId: client?.id || '',
             requestDate: row.requestDate,
             customRequestNumber: row.customRequestNumber,
+            expiryDate: row.expiryDate || null,
             status: row.status as any,
             createdBy: req.session.user!.id,
-            notes: `Imported from Excel - ${row.sourceFile}`,
+            notes: `Imported from Excel - Client Price: ${row.clientPrice}`,
           };
 
           const quotation = await storage.createQuotationRequest(quotationData);

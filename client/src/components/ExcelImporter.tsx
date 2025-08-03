@@ -23,15 +23,14 @@ interface PreviewData {
   clientName: string;
   requestNumber: string;
   customRequestNumber: string;
-  responseDate: string;
-  quantity: number;
   requestDate: string;
-  sourceFile: string;
+  quantity: number;
   description: string;
   partNumber: string;
   lineItem: string;
   uom: string;
-  lineNumber: number;
+  clientPrice: string;
+  expiryDate: string;
   status: string;
   excelData: any;
 }
@@ -183,7 +182,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           <Alert>
             <Download className="h-4 w-4" />
             <AlertDescription>
-              يجب أن يحتوي ملف Excel على الأعمدة التالية: Client, Response Date, Quantity, Request Date, Source File, Description, PART NO, LINE ITEM, UOM, Line No
+              هيكل ملف Excel المطلوب:
+              <br />العمود B: وحدة القياس (UOM) | العمود C: رقم البند (LINE ITEM) | العمود D: رقم القطعة (PART NO)
+              <br />العمود E: التوصيف | العمود F: رقم الطلب | العمود G: تاريخ الطلب | العمود H: الكمية
+              <br />العمود I: السعر للعميل | العمود J: تاريخ انتهاء العرض | العمود K: اسم العميل
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -211,12 +213,12 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
               </AlertDescription>
             </Alert>
 
-            {/* Data Mapping Display */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 p-4 bg-gray-50 rounded-lg">
+            {/* Column Mapping Display */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-4 bg-blue-50 rounded-lg">
               {Object.entries(mapping).map(([excelCol, dbCol]) => (
-                <div key={excelCol} className="text-xs">
-                  <span className="font-medium text-blue-600">{excelCol}</span>
-                  <span className="mx-1">←</span>
+                <div key={excelCol} className="text-sm flex items-center">
+                  <span className="font-bold text-blue-800 bg-blue-200 px-2 py-1 rounded text-xs">{excelCol}</span>
+                  <span className="mx-2">←</span>
                   <span className="text-gray-700">{dbCol}</span>
                 </div>
               ))}
@@ -229,12 +231,15 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                   <tr>
                     <th className="px-3 py-2 text-right">الصف</th>
                     <th className="px-3 py-2 text-right">اسم العميل</th>
+                    <th className="px-3 py-2 text-right">رقم الطلب</th>
                     <th className="px-3 py-2 text-right">تاريخ الطلب</th>
-                    <th className="px-3 py-2 text-right">الوصف</th>
+                    <th className="px-3 py-2 text-right">التوصيف</th>
                     <th className="px-3 py-2 text-right">رقم القطعة</th>
                     <th className="px-3 py-2 text-right">رقم البند</th>
                     <th className="px-3 py-2 text-right">الكمية</th>
                     <th className="px-3 py-2 text-right">وحدة القياس</th>
+                    <th className="px-3 py-2 text-right">سعر العميل</th>
+                    <th className="px-3 py-2 text-right">تاريخ انتهاء العرض</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -242,6 +247,9 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                     <tr key={index} className="border-t hover:bg-gray-50">
                       <td className="px-3 py-2">{row.rowIndex}</td>
                       <td className="px-3 py-2">{row.clientName}</td>
+                      <td className="px-3 py-2 font-mono text-blue-600" dir="ltr">
+                        {row.customRequestNumber}
+                      </td>
                       <td className="px-3 py-2">{row.requestDate}</td>
                       <td className="px-3 py-2 max-w-xs truncate" title={row.description}>
                         {row.description}
@@ -254,6 +262,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                       </td>
                       <td className="px-3 py-2">{row.quantity}</td>
                       <td className="px-3 py-2">{row.uom}</td>
+                      <td className="px-3 py-2 font-semibold text-green-600">
+                        {row.clientPrice}
+                      </td>
+                      <td className="px-3 py-2">{row.expiryDate}</td>
                     </tr>
                   ))}
                 </tbody>
