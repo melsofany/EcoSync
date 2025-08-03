@@ -789,13 +789,15 @@ Respond in JSON format:
           
           // رقم البند (يحتوي على نقاط وأرقام مثل 1854.002.CARIER.7519)
           else if (key.toLowerCase().includes('line item') || key.toLowerCase().includes('item') ||
-                   /^\d{4}\.\d{3}\.[A-Z]+\.\d{4}$/.test(strValue)) {
-            analyzedData.lineItem = strValue;
+                   /^\d+\.\d+\.[A-Z0-9]+\.\d+$/.test(strValue) || strValue.includes('.')) {
+            if (strValue.length > 10 && strValue.includes('.')) { // رقم بند محتمل
+              analyzedData.lineItem = strValue;
+            }
           }
           
-          // رقم القطعة (أرقام وحروف)
+          // رقم القطعة (أرقام وحروف ولكن ليس رقم بند)
           else if (key.toLowerCase().includes('part') || key.toLowerCase().includes('p/n')) {
-            if (!/^\d{4}\.\d{3}\.[A-Z]+\.\d{4}$/.test(strValue)) { // ليس رقم بند
+            if (!strValue.includes('.') || strValue.length < 10) { // ليس رقم بند
               analyzedData.partNumber = strValue;
             }
           }
@@ -855,9 +857,13 @@ Respond in JSON format:
             else if (!isNaN(num) && num > 50 && num <= 10000 && !analyzedData.clientPrice) {
               analyzedData.clientPrice = num;
             }
-            // نص طويل = توصيف محتمل
+            // نص طويل = توصيف محتمل، أو رقم بند بنقاط
             else if (strValue.length > 30 && !analyzedData.description) {
               analyzedData.description = strValue;
+            }
+            // رقم بند محتمل (يحتوي على نقاط)
+            else if (strValue.includes('.') && strValue.length > 10 && !analyzedData.lineItem) {
+              analyzedData.lineItem = strValue;
             }
           }
         });
