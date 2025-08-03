@@ -95,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: user.role,
       };
 
-      await logActivity(req, "login_success", "user", user.id, "User logged in successfully");
+      await logActivity(req, "login_success", "user", user.id, `${user.fullName} قام بتسجيل الدخول بنجاح`);
 
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
@@ -109,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (req.session.user) {
         await storage.updateUserOnlineStatus(req.session.user.id, false);
-        await logActivity(req, "logout", "user", req.session.user.id, "User logged out");
+        await logActivity(req, "logout", "user", req.session.user.id, `${req.session.user.fullName} قام بتسجيل الخروج`);
       }
 
       req.session.destroy((err) => {
