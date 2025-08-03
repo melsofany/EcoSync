@@ -89,7 +89,8 @@ export default function Sidebar({ isOpen }: SidebarProps) {
       data_entry: "موظف إدخال بيانات",
       purchasing: "موظف مشتريات",
     };
-    return roles[role as keyof typeof roles] || role;
+    // Ensure safe fallback for unknown roles
+    return roles[role as keyof typeof roles] || String(role).replace(/[<>]/g, '') || "مستخدم";
   };
 
   if (!user) return null;
