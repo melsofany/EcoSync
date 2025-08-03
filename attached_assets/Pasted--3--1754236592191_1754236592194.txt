@@ -1,0 +1,143 @@
+
+قرطبة للتوريدات
+نظام إدارة التوريدات
+مرحباً بك في نظام قرطبة للتوريدات
+
+3
+١٨:٥٦
+٣‏/٨‏/٢٠٢٥
+مرحباً، امل اشرف فتحي
+نظرة عامة على أداء النظام اليوم
+
+طلبات التسعير
+
+1539
+
+نمو مستمر
+أوامر الشراء
+
+257
+
+أداء ممتاز
+الأصناف المسجلة
+
+2039
+
+زيادة مستمرة
+المستخدمون النشطون
+
+0
+
+متصل الآن
+آخر الأنشطة
+User logged in successfully
+
+٠٦:٥٤ م - ٣‏/٨‏/٢٠٢٥
+
+Previewed 68 quotation records for import
+
+٠٦:٥٠ م - ٣‏/٨‏/٢٠٢٥
+
+User logged in successfully
+
+٠٦:٥٠ م - ٣‏/٨‏/٢٠٢٥
+
+Previewed 68 quotation records for import
+
+٠٦:٣٥ م - ٣‏/٨‏/٢٠٢٥
+
+User logged in successfully
+
+٠٦:٣٤ م - ٣‏/٨‏/٢٠٢٥
+
+المستخدمون المتصلون
+0 متصل
+اا
+امل اشرف فتحي
+
+مدير تقنية المعلومات
+
+172.31.84.226
+تصدير قواعد البيانات
+
+طلبات التسعير
+تصدير Excel
+
+الأصناف
+تصدير Excel
+
+أوامر الشراء
+تصدير Excel
+
+العملاء
+تصدير Excel
+
+الموردين
+تصدير Excel
+
+المستخدمين
+تصدير Excel
+
+سجل الأنشطة
+تصدير Excel
+سيتم تصدير البيانات بصيغة Excel (.xlsx) جاهزة للفتح في Microsoft Excel أو أي تطبيق جداول بيانات آخر.
+
+استيراد البيانات من Excel
+إخفاء مستورد Excel
+استيراد طلبات التسعير من Excel
+RFQ_Items_Export.xlsx
+
+معاينة
+هيكل ملف Excel المطلوب (حسب الصورة المرفقة):
+B: وحدة القياس (UOM) | C: رقم البند (LINE ITEM) | D: رقم القطعة (PART NO) | E: التوصيف (DESCRIPTION) | F: ملف المصدر (Source File)
+G: تاريخ الطلب (Request Date) | H: الكمية (Quantity) | I: السعر للعميل (PRICE TO CLIENT) | J: تاريخ الرد (Response Date) | K: اسم العميل (العميل)
+مثال: Each | 1854.002.CARIER.7519 | 2503244 | COMPLETE PC BOARD | 25R009802 | 26/07/2025 | 100 | 1500 | 31/07/2025 | EDC
+معاينة البيانات المستوردة
+68 سجل
+تحقق من صحة البيانات أدناه قبل التأكيد. البيانات معروضة تحت أسماء أعمدة قاعدة البيانات الفعلية.
+ربط أعمدة Excel بقاعدة البيانات:
+B
+→
+وحدة القياس (UOM)
+C
+→
+رقم البند (LINE ITEM)
+D
+→
+رقم القطعة (PART NO)
+E
+→
+التوصيف (DESCRIPTION)
+F
+→
+ملف المصدر (Source File)
+G
+→
+تاريخ الطلب (Request Date)
+H
+→
+الكمية (Quantity)
+I
+→
+السعر للعميل (PRICE TO CLIENT)
+J
+→
+تاريخ الرد (Response Date)
+K
+→
+اسم العميل (العميل)
+الصف	اسم العميل	رقم الطلب	تاريخ الطلب	تاريخ الرد	التوصيف	رقم القطعة	رقم البند	الكمية	السعر	وحدة القياس
+1	done	25R009802	2025-07-20	EDC	P/N : 2503244, COMPLETE PC BOARD FOR HARMONEY CARRIER A/C ( MODEL 42VMC 18H) COMPLETE CONTROL BOX ASSEMBLY	2503244	1854.002.CARIER.7519	6	45864	Each
+2	غير محدد	25R009802	2025-07-20	done	P/N : 36314802 , BODY ASSY , FOR CARRIER A/C , 42QG18-H-XM	36314802	1854.002.CARIER.0888	2	45864	Each
+3	غير محدد	25R009802	2025-07-20	done	P/N : 121, Freezer condenser fan motor with its blades diameter 30 CM FOR COBLEND FREEZER UNIT H2G2	121	1521.009.COPLND.0216	4	45864	Each
+4	غير محدد	25R009808	2025-07-20	done	70 MM2CABLE LUGS WITH 10 MM HOLE DIAMETER MADE IN CHINA ( REF CODE 1001.001.USED.0047 )		5720.003.GENRAL.0170	50	45861	Each
+5	غير محدد	25R009808	2025-07-20	done	50 MM2CABLE LUGS WITH 10 MM HOLE DIAMETER MADE IN CHINA		5720.003.GENRAL.0150	50	45861	Each
+6	غير محدد	25R009808	2025-07-20	done	25 MM2CABLE LUGS WITH 8 MM HOLE DIAMETER MADE IN CHINA		5720.003.GENRAL.0125	50	45861	Each
+7	غير محدد	25R009808	2025-07-20	done	10 MM2CABLE LUGS WITH 6 MM HOLE DIAMETER MADE IN CHINA		5720.003.GENRAL.0110	50	45861	Each
+8	غير محدد	25R009808	2025-07-20	done	6 MM2CABLE LUGS WITH 6 MM HOLE DIAMETER MADE IN CHINA		5720.003.GENRAL.0106	100	45861	Each
+9	غير محدد	25R009808	2025-07-20	done	COPPER CLAD, POINTED SECTIONAL GROUND ROD - 3/4 INCH X 10 FEET PRODUCT ABB TYPE 7510S , ABB STAMPED ON ROD		5720.003.GENRAL.0034	3	45861	Each
+10	غير محدد	25R009808	2025-07-20	done	1 CONDUCTOR X 25 SQUERE MM YELLOW/GREEN SOFT ( ELSEWEDY )		5720.003.GENRAL.0025	50	45861	Metre
+... و 58 سجل إضافي
+إلغاء
+تأكيد الاستيراد
+This is a temporary development preview, and these links are not for public use. Deploy your app for secure sharing or use an invite link.

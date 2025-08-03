@@ -31,6 +31,7 @@ interface PreviewData {
   partNumber: string;
   lineItem: string;
   unit: string;
+  lineNumber: number;
   status: string;
   excelData: any;
 }
@@ -182,10 +183,10 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           <Alert>
             <Download className="h-4 w-4" />
             <AlertDescription>
-              <strong>هيكل ملف Excel المطلوب (حسب الصورة المرفقة):</strong>
-              <br />B: وحدة القياس (UOM) | C: رقم البند (LINE ITEM) | D: رقم القطعة (PART NO) | E: التوصيف (DESCRIPTION) | F: ملف المصدر (Source File)
-              <br />G: تاريخ الطلب (Request Date) | H: الكمية (Quantity) | I: السعر للعميل (PRICE TO CLIENT) | J: تاريخ الرد (Response Date) | K: اسم العميل (العميل)
-              <br /><em>مثال: Each | 1854.002.CARIER.7519 | 2503244 | COMPLETE PC BOARD | 25R009802 | 26/07/2025 | 100 | 1500 | 31/07/2025 | EDC</em>
+              <strong>هيكل ملف Excel المطلوب (حسب الصورة الفعلية):</strong>
+              <br />A: الحالة (Done) | B: اسم العميل (EDC) | C: تاريخ الرد | D: الكمية | E: تاريخ الطلب
+              <br />F: ملف المصدر | G: التوصيف | H: رقم القطعة | I: رقم البند | J: وحدة القياس | K: رقم السطر
+              <br /><em>مثال: done | EDC | 26/07/2025 | 100 | 20/07/2025 | 25R009802 | COMPLETE PC BOARD | 2503244 | 1854.002.CARIER.7519 | Each | 1</em>
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -241,8 +242,8 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                     <th className="px-3 py-2 text-right">رقم القطعة</th>
                     <th className="px-3 py-2 text-right">رقم البند</th>
                     <th className="px-3 py-2 text-right">الكمية</th>
-                    <th className="px-3 py-2 text-right">السعر</th>
                     <th className="px-3 py-2 text-right">وحدة القياس</th>
+                    <th className="px-3 py-2 text-right">رقم السطر</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -265,10 +266,8 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                         {row.lineItem}
                       </td>
                       <td className="px-3 py-2">{row.quantity}</td>
-                      <td className="px-3 py-2 font-semibold text-green-600">
-                        {row.priceToClient}
-                      </td>
                       <td className="px-3 py-2">{row.unit}</td>
+                      <td className="px-3 py-2">{row.lineNumber}</td>
                     </tr>
                   ))}
                 </tbody>
