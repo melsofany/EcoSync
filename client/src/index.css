@@ -71,6 +71,54 @@
     transform: scaleX(-1);
   }
 
+  /* Supply Chain Background Animations */
+  @keyframes float {
+    0% {
+      transform: translateX(-100px) translateY(0px) rotate(0deg);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.1;
+    }
+    90% {
+      opacity: 0.1;
+    }
+    100% {
+      transform: translateX(calc(100vw + 100px)) translateY(-50px) rotate(10deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes gridMove {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(60px, 60px);
+    }
+  }
+
+  .floating-element {
+    color: #2563eb;
+    filter: blur(0.5px);
+  }
+
+  .floating-element.truck {
+    animation-duration: 15s;
+  }
+
+  .floating-element.container {
+    animation-duration: 25s;
+  }
+
+  .floating-element.crane {
+    animation-duration: 20s;
+  }
+
+  .floating-element.ship {
+    animation-duration: 30s;
+  }
+
   .card-hover {
     transition: all 0.2s ease-in-out;
   }
