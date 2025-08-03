@@ -56,10 +56,11 @@ export default function Clients() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
     },
-    onError: () => {
+    onError: (error: any) => {
+      const errorMessage = error?.details || "حدث خطأ أثناء حذف العميل";
       toast({
         title: "خطأ في الحذف",
-        description: "حدث خطأ أثناء حذف العميل",
+        description: errorMessage,
         variant: "destructive",
       });
     }

@@ -272,8 +272,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await logActivity(req, "delete_client", "client", clientId, `Deleted client: ${client.name}`);
 
       res.json({ message: "Client deleted successfully" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Delete client error:", error);
+      if (error.message && error.message.includes("Cannot delete client")) {
+        return res.status(400).json({ 
+          message: "لا يمكن حذف العميل", 
+          details: "هذا العميل مرتبط بطلبات تسعير موجودة. يجب حذف الطلبات أولاً." 
+        });
+      }
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -699,8 +705,14 @@ Respond in JSON format:
       await logActivity(req, "delete_supplier", "supplier", supplierId, `Deleted supplier: ${supplier.name}`);
 
       res.json({ message: "Supplier deleted successfully" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Delete supplier error:", error);
+      if (error.message && error.message.includes("Cannot delete supplier")) {
+        return res.status(400).json({ 
+          message: "لا يمكن حذف المورد", 
+          details: "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً." 
+        });
+      }
       res.status(500).json({ message: "Internal server error" });
     }
   });

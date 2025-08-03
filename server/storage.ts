@@ -222,6 +222,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteClient(id: string): Promise<void> {
+    // Check if client has quotations
+    const quotations = await db.select().from(quotationRequests).where(eq(quotationRequests.clientId, id));
+    
+    if (quotations.length > 0) {
+      throw new Error(`Cannot delete client: ${quotations.length} quotation(s) are linked to this client`);
+    }
+    
     await db.delete(clients).where(eq(clients.id, id));
   }
 
@@ -522,6 +529,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteSupplier(id: string): Promise<void> {
+    // Check if supplier has pricing records
+    const pricingRecords = await db.select().from(supplierPricing).where(eq(supplierPricing.supplierId, id));
+    
+    if (pricingRecords.length > 0) {
+      throw new Error(`Cannot delete supplier: ${pricingRecords.length} pricing record(s) are linked to this supplier`);
+    }
+    
     await db.delete(suppliers).where(eq(suppliers.id, id));
   }
 
