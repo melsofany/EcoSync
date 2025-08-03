@@ -772,17 +772,7 @@ Respond in JSON format:
         columnMappingKeys: columnMapping ? Object.keys(columnMapping) : 'no keys'
       });
 
-      // عرض عينة من البيانات لتشخيص مشكلة العميل
-      console.log("🔍 Sample Excel data for client field analysis:");
-      if (columnMapping.clientName) {
-        const clientColumn = columnMapping.clientName;
-        console.log(`Client column mapped to: ${clientColumn}`);
-        excelData.slice(0, 10).forEach((row, index) => {
-          const clientValue = row[`العميل `] || row[`العميل`] || row[clientColumn] || row[`Client Name`] || row[`CLIENT NAME`];
-          console.log(`Row ${index + 1}: Client = "${clientValue}" (from column ${clientColumn})`);
-          console.log(`  Raw row keys:`, Object.keys(row));
-        });
-      }
+
       
       if (!Array.isArray(excelData) || excelData.length === 0) {
         console.log("❌ Invalid Excel data:", excelData);
@@ -794,280 +784,128 @@ Respond in JSON format:
         return res.status(400).json({ message: "Column mapping is required" });
       }
 
-      // فلترة وتنظيف البيانات
-      const filteredData = excelData.filter((row: any, index: number) => {
-        const rowKeys = Object.keys(row);
+      // فلترة بسيطة للصفوف الفارغة فقط
+      const filteredData = excelData.filter((row: any) => {
         const values = Object.values(row);
-        
-        // استبعاد الصفوف الفارغة تماماً
-        if (values.every(val => val === null || val === undefined || val === '')) {
-          return false;
-        }
-        
-        // استبعاد الصفوف التي تحتوي على أقل من 5 أعمدة مفيدة
-        const meaningfulValues = values.filter(val => 
-          val !== null && val !== undefined && val !== '' && val !== 'nan'
-        );
-        if (meaningfulValues.length < 5) {
-          return false;
-        }
-        
-        // استبعاد صفوف العناوين
-        const rowText = values.join(' ').toLowerCase();
-        const headerPatterns = [
-          'line no', 'line item', 'part no', 'description', 'rfq no', 'rfq date', 
-          'qty', 'price', 'expiry date', 'client name', 'العميل', 'response date',
-          'uom', 'unit', 'البند', 'الوصف', 'الكمية', 'السعر', 'التاريخ'
-        ];
-        
-        const isHeaderRow = headerPatterns.some(pattern => rowText.includes(pattern));
-        if (isHeaderRow) {
-          return false;
-        }
-        
-        // استبعاد الصفوف التي تحتوي على حرف واحد فقط (مثل 's')
-        if (rowKeys.length === 1 && String(values[0]).length <= 2) {
-          return false;
-        }
-        
-        return true;
+        return values.some(val => val !== null && val !== undefined && val !== '' && String(val).trim() !== '');
       });
 
       console.log(`Filtered ${excelData.length} rows down to ${filteredData.length} data rows`);
 
-      // تطبيق "Fill Down" للبيانات المدمجة (merged cells) 
-      const fillDownData = [...filteredData];
-      const clientColumnLetter = columnMapping.clientName;
-      const rfqColumnLetter = columnMapping.rfqNumber;
-      
-      if (clientColumnLetter) {
-        let lastClientName = '';
-        let lastRfqNumber = '';
-        
-        fillDownData.forEach((row, index) => {
-          // معالجة اسم العميل - البحث في مختلف المصادر
-          let currentClient = row[clientColumnLetter] || row['العميل '] || row['العميل'] || '';
-          
-          // البحث حسب فهرس العمود أيضاً
-          const keys = Object.keys(row);
-          const clientColumnIndex = clientColumnLetter.charCodeAt(0) - 65;
-          if (!currentClient && clientColumnIndex >= 0 && clientColumnIndex < keys.length) {
-            currentClient = row[keys[clientColumnIndex]] || '';
-          }
-          
-          if (currentClient && currentClient.trim() !== '' && currentClient.toLowerCase() !== 'done') {
-            lastClientName = currentClient.trim();
-            console.log(`Row ${index + 1}: Found client "${lastClientName}"`);
-          } else if (lastClientName) {
-            // نسخ اسم العميل من الصف السابق
-            row[clientColumnLetter] = lastClientName;
-            if (clientColumnIndex >= 0 && clientColumnIndex < keys.length) {
-              row[keys[clientColumnIndex]] = lastClientName;
-            }
-            console.log(`Row ${index + 1}: Filled client name with "${lastClientName}"`);
-          }
-          
-          // معالجة رقم الطلب
-          if (rfqColumnLetter) {
-            let currentRfq = row[rfqColumnLetter] || '';
-            const rfqColumnIndex = rfqColumnLetter.charCodeAt(0) - 65;
-            
-            if (!currentRfq && rfqColumnIndex >= 0 && rfqColumnIndex < keys.length) {
-              currentRfq = row[keys[rfqColumnIndex]] || '';
-            }
-            
-            if (currentRfq && currentRfq.trim() !== '') {
-              lastRfqNumber = currentRfq.trim();
-            } else if (lastRfqNumber) {
-              row[rfqColumnLetter] = lastRfqNumber;
-              if (rfqColumnIndex >= 0 && rfqColumnIndex < keys.length) {
-                row[keys[rfqColumnIndex]] = lastRfqNumber;
-              }
-            }
-          }
-        });
-        
-        console.log(`✅ Applied Fill Down - Client names filled for ${fillDownData.length} rows`);
-      }
-
-      // تحليل ذكي للبيانات وربطها بقاعدة البيانات
-      const mappedData = fillDownData.map((row: any, index: number) => {
+      // نسخ البيانات مباشرة كما هي في Excel بدون أي تعديل أو Fill Down
+      const mappedData = filteredData.map((row: any, index: number) => {
         const rowKeys = Object.keys(row);
-        const rowValues = Object.values(row);
         
-        // تحليل البيانات وتحديد النوع لكل عمود
-        const analyzedData = {
-          lineNumber: 0,
+        // قيم افتراضية فقط
+        const processedData = {
+          lineNumber: index + 1,
           unit: 'Each',
           lineItem: '',
           partNumber: '',
           description: '',
           rfqNumber: '',
-          rfqDate: '' as string | number,
+          rfqDate: '',
           quantity: 0,
           clientPrice: 0,
-          expiryDate: '' as string | number,
-          clientName: 'غير محدد'
+          expiryDate: '',
+          clientName: ''
         };
         
-        // قراءة البيانات باستخدام المطابقة المحددة من المستخدم
-        rowKeys.forEach((key, colIndex) => {
-          const value = row[key];
-          const strValue = String(value || '').trim();
+        // نسخ مباشر للقيم من الأعمدة المحددة - كما هي بالضبط  
+        Object.entries(columnMapping as Record<string, string>).forEach(([fieldName, columnLetter]) => {
+          const rawValue = row[columnLetter]; // استخدم اسم العمود مباشرة
+          const strValue = rawValue ? String(rawValue).trim() : '';
           
-          // تخطي القيم الفارغة أو NaN
-          if (!strValue || strValue === 'nan' || strValue === 'NaN') return;
+
           
-          // تحديد نوع البيانات بناءً على المطابقة المحددة من المستخدم
-          const columnLetter = String.fromCharCode(65 + colIndex); // A, B, C, etc.
-          
-          // البحث عن نوع البيانات المطابق لهذا العمود
-          let fieldType = null;
-          for (const [field, mappedColumn] of Object.entries(columnMapping)) {
-            if (mappedColumn === columnLetter) {
-              fieldType = field;
-              break;
-            }
-          }
-          
-          // معالجة البيانات حسب النوع المحدد
-          switch (fieldType) {
+          // نسخ القيمة بدون أي تعديل
+          switch (fieldName) {
             case 'lineItem':
-              analyzedData.lineItem = strValue;
+              processedData.lineItem = strValue;
               break;
-              
             case 'partNumber':
-              analyzedData.partNumber = strValue;
+              processedData.partNumber = strValue;
               break;
-              
             case 'description':
-              analyzedData.description = strValue;
+              processedData.description = strValue;
               break;
-              
             case 'quantity':
-              const qty = parseInt(strValue);
-              if (!isNaN(qty) && qty >= 0) {
-                analyzedData.quantity = qty;
-              }
+              processedData.quantity = strValue ? parseInt(strValue) || 0 : 0;
               break;
-              
             case 'unit':
-              analyzedData.unit = strValue;
+              processedData.unit = strValue || 'Each';
               break;
-              
             case 'requestDate':
-              // تحويل فوري للأرقام التسلسلية
-              const numValue = parseFloat(strValue);
-              if (!isNaN(numValue) && numValue > 40000 && numValue < 50000) {
-                analyzedData.rfqDate = numValue;
-              } else {
-                analyzedData.rfqDate = strValue;
-              }
+              processedData.rfqDate = rawValue; // نسخ كما هو - رقم أو نص
               break;
-              
             case 'expiryDate':
-              // تحويل فوري للأرقام التسلسلية
-              const expiryNum = parseFloat(strValue);
-              if (!isNaN(expiryNum) && expiryNum > 40000 && expiryNum < 50000) {
-                analyzedData.expiryDate = expiryNum;
-              } else {
-                analyzedData.expiryDate = strValue;
-              }
+              processedData.expiryDate = rawValue; // نسخ كما هو
               break;
-              
             case 'clientName':
-              if (strValue.toLowerCase() !== 'done' && strValue.toLowerCase() !== 'nan') {
-                analyzedData.clientName = strValue;
-              }
+              processedData.clientName = strValue || '';
+
               break;
-              
             case 'rfqNumber':
-              analyzedData.rfqNumber = strValue;
+              processedData.rfqNumber = strValue;
               break;
-              
             case 'unitPrice':
-              const price = parseFloat(strValue);
-              if (!isNaN(price) && price >= 0) {
-                analyzedData.clientPrice = price;
-              }
-              break;
-              
-            default:
-              // عمود غير محدد في المطابقة - تجاهل
+              processedData.clientPrice = strValue ? parseFloat(strValue) || 0 : 0;
               break;
           }
         });
         
-        // console.log(`Row ${index}: LINE ITEM: ${analyzedData.lineItem}, PRICE: ${analyzedData.clientPrice}, QTY: ${analyzedData.quantity}`);
+        // console.log(`Row ${index}: LINE ITEM: ${processedData.lineItem}, PRICE: ${processedData.clientPrice}, QTY: ${processedData.quantity}`);
 
-        // تحويل التواريخ من Excel التسلسلية إلى تاريخ مقروء
+        // تحويل التواريخ فقط عند الحاجة للعرض
         const formatDate = (dateValue: any) => {
           if (!dateValue) return '';
           
-          // إذا كان رقم (تاريخ Excel التسلسلي)
+          // إذا كان رقم Excel التسلسلي
           if (typeof dateValue === 'number' && dateValue > 40000 && dateValue < 50000) {
-            // Excel يبدأ العد من 1900/1/1، لكن هناك خطأ في حساب Excel للسنة الكبيسة
-            const excelEpoch = new Date(1899, 11, 30); // 30 ديسمبر 1899
+            const excelEpoch = new Date(1899, 11, 30);
             const jsDate = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
             return jsDate.toISOString().split('T')[0];
           }
           
-          // إذا كان نص رقمي، حوله إلى رقم ثم تاريخ
-          if (typeof dateValue === 'string' && !isNaN(Number(dateValue))) {
-            const numValue = Number(dateValue);
-            if (numValue > 40000 && numValue < 50000) {
-              const excelEpoch = new Date(1899, 11, 30);
-              const jsDate = new Date(excelEpoch.getTime() + numValue * 24 * 60 * 60 * 1000);
-              return jsDate.toISOString().split('T')[0];
-            }
-          }
-          
-          // إذا كان نص تاريخ ISO، استخرج التاريخ فقط
-          if (typeof dateValue === 'string' && dateValue.includes('T')) {
-            return dateValue.split('T')[0];
-          }
-          
-          // إذا كان نص عادي، أرجعه كما هو
           return dateValue.toString();
         };
 
-        // إرجاع البيانات بالشكل المطابق لقاعدة البيانات
-        return {
-          // بيانات صف Excel للعرض
+        // إرجاع البيانات للمعاينة كما هي
+        const result = {
           rowIndex: index + 1,
-          lineNumber: analyzedData.lineNumber || (index + 1),
+          lineNumber: processedData.lineNumber,
           
-          // بيانات الطلب (quotationRequests table)
-          requestNumber: analyzedData.rfqNumber || `REQ-${Date.now()}-${index + 1}`,
-          customRequestNumber: analyzedData.rfqNumber, // رقم الطلب من العميل
-          requestDate: formatDate(analyzedData.rfqDate),
-          expiryDate: formatDate(analyzedData.expiryDate),
+          // نسخ البيانات كما هي
+          requestNumber: processedData.rfqNumber || `REQ-${Date.now()}-${index + 1}`,
+          customRequestNumber: processedData.rfqNumber,
+          requestDate: formatDate(processedData.rfqDate),
+          expiryDate: formatDate(processedData.expiryDate),
           status: 'pending',
           
-          // بيانات العميل (clients table)
-          clientName: analyzedData.clientName || 'غير محدد',
+          clientName: processedData.clientName || 'غير محدد',
           
-          // بيانات البند (items table)
-          // معرف البند P- سيتم توليده تلقائياً عبر الذكاء الاصطناعي
-          itemNumber: '', // سيتم توليده: P-000001, P-000002, etc.
-          kItemId: '', // سيتم توليده: K-generated ID
-          partNumber: analyzedData.partNumber || '',
-          lineItem: analyzedData.lineItem || '', // رقم البند من Excel
-          description: analyzedData.description || 'بدون توصيف',
-          unit: analyzedData.unit || 'Each',
-          category: '', // سيتم تحديده بالذكاء الاصطناعي
-          brand: '', // سيتم استخراجه من التوصيف
+          // بيانات البند
+          itemNumber: '',
+          kItemId: '',
+          partNumber: processedData.partNumber,
+          lineItem: processedData.lineItem,
+          description: processedData.description,
+          unit: processedData.unit,
+          category: '',
+          brand: '',
           
-          // بيانات العرض (quotationItems table)
-          quantity: analyzedData.quantity || 0,
-          unitPrice: analyzedData.clientPrice || 0,
-          totalPrice: (analyzedData.quantity || 0) * (analyzedData.clientPrice || 0),
+          // بيانات العرض
+          quantity: processedData.quantity,
+          unitPrice: processedData.clientPrice,
+          totalPrice: processedData.quantity * processedData.clientPrice,
           currency: 'EGP',
           
           // حالة الذكاء الاصطناعي
-          aiStatus: 'pending', // سيتم المعالجة بعد الرفع
+          aiStatus: 'pending',
           aiMatchedItemId: null
         };
+        
+        return result;
       });
 
       await logActivity(req, "preview_import", "quotations", req.session.user!.id, `Previewed ${mappedData.length} quotation records for import`);
