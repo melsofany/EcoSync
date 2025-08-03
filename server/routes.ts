@@ -260,6 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertQuotationRequestSchema.parse({
         ...req.body,
         createdBy: userId,
+        status: "sent_for_pricing", // Automatically set to sent_for_pricing
       });
       
       const quotation = await storage.createQuotationRequest(validatedData);

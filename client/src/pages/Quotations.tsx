@@ -100,6 +100,7 @@ export default function Quotations() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { label: "في الانتظار", variant: "secondary" as const },
+      sent_for_pricing: { label: "تم الإرسال للتسعير", variant: "default" as const },
       processing: { label: "قيد المعالجة", variant: "default" as const },
       completed: { label: "مكتمل", variant: "default" as const },
       cancelled: { label: "ملغي", variant: "destructive" as const },
@@ -109,6 +110,7 @@ export default function Quotations() {
     return (
       <Badge variant={config.variant} className={
         status === "completed" ? "bg-green-100 text-green-800 hover:bg-green-100" :
+        status === "sent_for_pricing" ? "bg-blue-100 text-blue-800 hover:bg-blue-100" :
         status === "processing" ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" : ""
       }>
         {config.label}
