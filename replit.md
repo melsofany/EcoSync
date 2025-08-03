@@ -66,10 +66,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Updates
 
-### Three-Stage Excel Import System (2025-08-03)
-- **Stage 1**: File analysis - displays all available Excel columns (A-L) with sample data
-- **Stage 2**: Manual column mapping - user specifies which Excel column maps to each database field
-- **Stage 3**: Data preview and confirmation - shows processed data before final import
-- **Fixed Issues**: HTTP 400 Bad Request error, corrected data flow between import stages
-- **Terminology**: Corrected from "طلب الشراء" (purchase order) to "طلب التسعير" (quotation request)
-- **Date Conversion**: Perfect handling of Excel serial numbers to readable dates (45844 → 2025-07-06)
+### Enhanced Excel Import System (2025-08-03)
+- **Complete Data Visibility**: Full scrollable preview showing ALL imported records (not just first 5) with vertical and horizontal scrollbars
+- **Flexible Part Number Requirements**: System now accepts items without Part Number - only requires LINE ITEM, Description, and Quantity > 0
+- **Enhanced Table Display**: 
+  - Complete text display for long descriptions with proper text wrapping
+  - All columns visible including Order Number (from Source File) and Quote Expiry Date (from Response Date)
+  - Color-coded columns with improved styling and hover effects
+  - Sticky headers for better navigation during scroll
+- **Auto-mapping Intelligence**: Recognizes real Excel column names and maps them automatically
+- **Data Integrity**: Exact copying without Fill Down logic - preserves Excel data as-is
