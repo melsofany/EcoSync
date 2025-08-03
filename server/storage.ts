@@ -617,13 +617,27 @@ export class DatabaseStorage implements IStorage {
     return pricing || undefined;
   }
 
-  async getItemsRequiringPricing(): Promise<Item[]> {
-    // Get all items that don't have active pricing yet
-    const itemsWithoutPricing = await db
+  async getItemsRequiringPricing(): Promise<any[]> {
+    // Get items from quotations that have been sent for pricing and don't have supplier pricing yet
+    const itemsNeedingPricing = await db
       .select({
-        items: items
+        id: items.id,
+        itemNumber: items.itemNumber,
+        kItemId: items.kItemId,
+        description: items.description,
+        partNumber: items.partNumber,
+        lineItem: items.lineItem,
+        unit: items.unit,
+        category: items.category,
+        createdAt: items.createdAt,
+        quotationId: quotationItems.quotationId,
+        quantity: quotationItems.quantity,
+        quotationStatus: quotationRequests.status,
+        requestNumber: quotationRequests.requestNumber,
       })
       .from(items)
+      .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
+      .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
       .leftJoin(
         supplierPricing,
         and(
@@ -631,9 +645,15 @@ export class DatabaseStorage implements IStorage {
           eq(supplierPricing.status, "active")
         )
       )
-      .where(isNull(supplierPricing.itemId));
+      .where(
+        and(
+          eq(quotationRequests.status, "sent_for_pricing"),
+          isNull(supplierPricing.itemId)
+        )
+      )
+      .orderBy(desc(quotationRequests.createdAt));
 
-    return itemsWithoutPricing.map(row => row.items);
+    return itemsNeedingPricing;
   }
 
   async getPricingHistoryForItem(itemId: string): Promise<SupplierPricing[]> {
@@ -685,28 +705,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Get items ready for customer pricing (items with supplier pricing but no customer pricing)
-  async getItemsReadyForCustomerPricing(quotationId?: string): Promise<any[]> {
-    const baseQuery = db
+  async getItemsReadyForCustomerPricing(): Promise<any[]> {
+    // Get items that have supplier pricing but don't have customer pricing yet
+    const itemsWithSupplierPricing = await db
       .select({
-        item: items,
-        supplierPricing: supplierPricing,
-        hasCustomerPricing: customerPricing.id,
+        id: items.id,
+        itemNumber: items.itemNumber,
+        kItemId: items.kItemId,
+        description: items.description,
+        partNumber: items.partNumber,
+        lineItem: items.lineItem,
+        unit: items.unit,
+        category: items.category,
+        createdAt: items.createdAt,
+        quotationId: quotationItems.quotationId,
+        quantity: quotationItems.quantity,
+        quotationStatus: quotationRequests.status,
+        requestNumber: quotationRequests.requestNumber,
+        supplierPrice: supplierPricing.unitPrice,
+        supplierName: suppliers.name,
       })
       .from(items)
-      .leftJoin(supplierPricing, and(
-        eq(items.id, supplierPricing.itemId),
-        eq(supplierPricing.status, "active")
-      ))
-      .leftJoin(customerPricing, and(
-        eq(items.id, customerPricing.itemId),
-        quotationId ? eq(customerPricing.quotationId, quotationId) : isNotNull(customerPricing.id)
-      ))
-      .where(and(
-        isNotNull(supplierPricing.id), // Has supplier pricing
-        isNull(customerPricing.id) // No customer pricing yet
-      ));
+      .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
+      .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+      .innerJoin(
+        supplierPricing,
+        and(
+          eq(items.id, supplierPricing.itemId),
+          eq(supplierPricing.status, "active")
+        )
+      )
+      .leftJoin(suppliers, eq(supplierPricing.supplierId, suppliers.id))
+      .leftJoin(
+        customerPricing,
+        and(
+          eq(items.id, customerPricing.itemId),
+          eq(customerPricing.status, "active")
+        )
+      )
+      .where(
+        and(
+          eq(quotationRequests.status, "sent_for_pricing"),
+          isNull(customerPricing.itemId)
+        )
+      )
+      .orderBy(desc(quotationRequests.createdAt));
 
-    return await baseQuery;
+    return itemsWithSupplierPricing;
   }
 
   // Pricing history operations
