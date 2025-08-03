@@ -109,6 +109,9 @@ Preferred communication style: Simple, everyday language.
 - **✅ Role-Based Access**: Delete operations restricted to appropriate user roles
 - **✅ Activity Logging**: All deletion operations logged for audit trail
 - **✅ Storage Methods**: Added getClientById, deleteClient, getSupplierById, deleteSupplier methods
+- **✅ Database Constraints Fix**: Modified foreign key constraints to allow deletion without affecting related records
+- **✅ Soft Delete Implementation**: Clients and suppliers can be deleted while preserving quotations and pricing records
+- **✅ Schema Updates**: Updated quotation_requests.client_id to allow NULL values with ON DELETE SET NULL constraint
 
 ### LINE ITEM Display Enhancement (August 3, 2025)
 - **✅ Standardized Format**: Implemented consistent LINE ITEM display format "6666.001.GENRAL.0069" across all screens
