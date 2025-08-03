@@ -757,6 +757,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Get items ready for customer pricing (items with supplier pricing but no customer pricing)
+  async getItemHistoricalPricing(itemId: string): Promise<any[]> {
+    // Get historical pricing data for an item from original Excel sheets
+    const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
+    if (!item.length) return [];
+
+    const lineItem = item[0].lineItem;
+    if (!lineItem) return [];
+
+    // Get historical data from quotations and purchase orders
+    const historicalData = await db
+      .select({
+        kItemId: items.kItemId,
+        description: items.description,
+        lineItem: items.lineItem,
+        partNumber: items.partNumber,
+        unitPrice: quotationItems.unitPrice,
+        totalPrice: quotationItems.totalPrice,
+        quantity: quotationItems.quantity,
+        currency: quotationItems.currency,
+        requestNumber: quotationRequests.customRequestNumber,
+        requestDate: quotationRequests.requestDate,
+        clientName: clients.name,
+        sourceType: 'quotation' as string,
+      })
+      .from(items)
+      .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
+      .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+      .innerJoin(clients, eq(quotationRequests.clientId, clients.id))
+      .where(eq(items.lineItem, lineItem))
+      .orderBy(desc(quotationRequests.requestDate));
+
+    return historicalData;
+  }
+
   async getItemsReadyForCustomerPricing(): Promise<any[]> {
     // Get items that have supplier pricing but don't have customer pricing yet
     const itemsWithSupplierPricing = await db

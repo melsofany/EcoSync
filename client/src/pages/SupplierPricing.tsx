@@ -30,6 +30,12 @@ export default function SupplierPricing() {
     enabled: !!selectedItem?.id,
   });
 
+  // Fetch historical pricing data from Excel sheets
+  const { data: historicalPricing = [] } = useQuery<any[]>({
+    queryKey: ["/api/items", selectedItem?.id, "historical-pricing"],
+    enabled: !!selectedItem?.id,
+  });
+
 
 
   const formatDate = (dateString: string) => {
@@ -209,6 +215,61 @@ export default function SupplierPricing() {
                 </TableBody>
               </Table>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Historical Pricing from Excel Sheets */}
+      {showPricingHistory && selectedItem && historicalPricing.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <FileText className="h-5 w-5 ml-2" />
+              البيانات التاريخية من الشيت للصنف: {selectedItem.kItemId}
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              {selectedItem.description} - LINE ITEM: <span className="text-blue-600 font-mono">{selectedItem.lineItem}</span>
+            </p>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">رقم الطلب</TableHead>
+                  <TableHead className="text-right">العميل</TableHead>
+                  <TableHead className="text-right">الكمية</TableHead>
+                  <TableHead className="text-right">سعر الوحدة</TableHead>
+                  <TableHead className="text-right">المجموع</TableHead>
+                  <TableHead className="text-right">تاريخ الطلب</TableHead>
+                  <TableHead className="text-right">المصدر</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {historicalPricing.map((pricing: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">
+                      {pricing.requestNumber || 'غير محدد'}
+                    </TableCell>
+                    <TableCell>{pricing.clientName}</TableCell>
+                    <TableCell className="text-right font-medium">
+                      {Number(pricing.quantity).toLocaleString('ar-EG')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(pricing.unitPrice, pricing.currency)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-green-600">
+                      {formatCurrency(pricing.totalPrice, pricing.currency)}
+                    </TableCell>
+                    <TableCell>{formatDate(pricing.requestDate)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                        {pricing.sourceType === 'quotation' ? 'طلب تسعير' : 'أمر شراء'}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}

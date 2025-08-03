@@ -823,8 +823,7 @@ Respond in JSON format:
   // Get items ready for customer pricing (Phase 2: Customer pricing)
   app.get("/api/items-ready-for-customer-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
-      const quotationId = req.query.quotationId as string;
-      const items = await storage.getItemsReadyForCustomerPricing(quotationId);
+      const items = await storage.getItemsReadyForCustomerPricing();
       res.json(items);
     } catch (error) {
       console.error("Error fetching items ready for customer pricing:", error);
@@ -839,6 +838,18 @@ Respond in JSON format:
       res.json(detailedPricing);
     } catch (error) {
       console.error("Error fetching detailed pricing:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get historical pricing data for an item from Excel sheets
+  app.get("/api/items/:itemId/historical-pricing", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      const historicalData = await storage.getItemHistoricalPricing(itemId);
+      res.json(historicalData);
+    } catch (error) {
+      console.error("Get item historical pricing error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
