@@ -5,12 +5,15 @@ async function throwIfResNotOk(res: Response) {
     try {
       // Try to parse JSON response first
       const errorData = await res.json();
+      console.log("Parsed error data from server:", errorData);
       const error = new Error(errorData.message || res.statusText);
       (error as any).status = res.status;
       (error as any).details = errorData.details;
       (error as any).serverError = errorData;
+      console.log("Created error object:", error);
       throw error;
     } catch (parseError) {
+      console.log("Failed to parse JSON error, using fallback");
       // If JSON parsing fails, create simple error
       const error = new Error(`HTTP ${res.status}: ${res.statusText}`);
       (error as any).status = res.status;
