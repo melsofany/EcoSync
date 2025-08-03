@@ -717,16 +717,25 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
-      // Filter out header rows and empty rows first
+      // فلترة وتنظيف البيانات
       const filteredData = excelData.filter((row: any, index: number) => {
+        const rowKeys = Object.keys(row);
         const values = Object.values(row);
         
-        // Skip completely empty rows
+        // استبعاد الصفوف الفارغة تماماً
         if (values.every(val => val === null || val === undefined || val === '')) {
           return false;
         }
         
-        // Skip rows that contain header text patterns
+        // استبعاد الصفوف التي تحتوي على أقل من 5 أعمدة مفيدة
+        const meaningfulValues = values.filter(val => 
+          val !== null && val !== undefined && val !== '' && val !== 'nan'
+        );
+        if (meaningfulValues.length < 5) {
+          return false;
+        }
+        
+        // استبعاد صفوف العناوين
         const rowText = values.join(' ').toLowerCase();
         const headerPatterns = [
           'line no', 'line item', 'part no', 'description', 'rfq no', 'rfq date', 
@@ -736,7 +745,11 @@ Respond in JSON format:
         
         const isHeaderRow = headerPatterns.some(pattern => rowText.includes(pattern));
         if (isHeaderRow) {
-          console.log(`Skipping header row ${index}:`, values);
+          return false;
+        }
+        
+        // استبعاد الصفوف التي تحتوي على حرف واحد فقط (مثل 's')
+        if (rowKeys.length === 1 && String(values[0]).length <= 2) {
           return false;
         }
         
@@ -770,7 +783,7 @@ Respond in JSON format:
           const value = row[key];
           const strValue = String(value || '').trim();
           
-          console.log(`  Column ${colIndex} (${key}): ${strValue}`);
+          // console.log(`  Column ${colIndex} (${key}): ${strValue}`);
           
           // تخطي القيم الفارغة أو NaN
           if (!strValue || strValue === 'nan' || strValue === 'NaN') return;
@@ -881,7 +894,7 @@ Respond in JSON format:
           }
         });
         
-        console.log(`Row ${index}: LINE ITEM: ${analyzedData.lineItem}, PRICE: ${analyzedData.clientPrice}, QTY: ${analyzedData.quantity}`);
+        // console.log(`Row ${index}: LINE ITEM: ${analyzedData.lineItem}, PRICE: ${analyzedData.clientPrice}, QTY: ${analyzedData.quantity}`);
 
         // Format dates properly (convert Excel serial dates if needed)
         const formatDate = (dateValue: any) => {
@@ -900,7 +913,7 @@ Respond in JSON format:
 
         return {
           rowIndex: index + 1,
-          // ربط البيانات المُحللة بحقول قاعدة البيانات
+          // نقل كامل للبيانات المُحللة بناءً على هيكل قاعدة البيانات
           clientName: analyzedData.clientName || 'غير محدد',
           requestNumber: analyzedData.rfqNumber || `REQ-${Date.now()}-${index + 1}`,
           customRequestNumber: analyzedData.rfqNumber,
@@ -912,6 +925,8 @@ Respond in JSON format:
           quantity: analyzedData.quantity || 0,
           unit: analyzedData.unit || 'Each',
           priceToClient: analyzedData.clientPrice || 0,
+          status: 'pending',
+          lineNumber: analyzedData.lineNumber || (index + 1)
         };
       });
 
