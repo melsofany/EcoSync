@@ -360,7 +360,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       {pricing.clientName || "غير محدد"}
                     </TableCell>
                     {/* K ITEM ID */}
-                    <TableCell className="text-center border">{pricing.kItemId}</TableCell>
+                    <TableCell className="text-center border">{pricing.kItemId || pricing.itemId}</TableCell>
                     {/* DESCRIPTION */}
                     <TableCell className="text-left border px-2 text-xs max-w-xs">
                       <div className="break-words">
@@ -377,35 +377,35 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     </TableCell>
                     {/* RFQ NUMBER */}
                     <TableCell className="text-center border font-bold text-green-600">
-                      {pricing.rfqNumber || "-"}
+                      {pricing.requestNumber || "-"}
                     </TableCell>
                     {/* RFQ DATE */}
                     <TableCell className="text-center border">
-                      {pricing.rfqDate ? format(new Date(pricing.rfqDate), "dd/MM/yyyy", { locale: ar }) : "-"}
+                      {pricing.requestDate ? format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar }) : "-"}
                     </TableCell>
                     {/* RFQ QUANTITY */}
-                    <TableCell className="text-center border">{pricing.rfqQuantity || "-"}</TableCell>
+                    <TableCell className="text-center border">{pricing.quantity || "-"}</TableCell>
                     {/* RESPONSE DATE */}
                     <TableCell className="text-center border">
-                      {pricing.responseDate ? format(new Date(pricing.responseDate), "dd/MM/yyyy", { locale: ar }) : "-"}
+                      {pricing.requestDate ? format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar }) : "-"}
                     </TableCell>
                     {/* PO NUMBER */}
                     <TableCell className="text-center border font-bold text-orange-600">
-                      {pricing.poNumber || "-"}
+                      {pricing.sourceType === 'purchase_order' ? (pricing.requestNumber || "-") : "-"}
                     </TableCell>
                     {/* PO DATE */}
                     <TableCell className="text-center border">
-                      {pricing.poDate ? format(new Date(pricing.poDate), "dd/MM/yyyy", { locale: ar }) : "-"}
+                      {pricing.sourceType === 'purchase_order' && pricing.requestDate ? format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar }) : "-"}
                     </TableCell>
                     {/* PO QUANTITY */}
-                    <TableCell className="text-center border">{pricing.poQuantity || "-"}</TableCell>
+                    <TableCell className="text-center border">{pricing.sourceType === 'purchase_order' ? (pricing.quantity || "-") : "-"}</TableCell>
                     {/* PO PRICE */}
                     <TableCell className="text-center border font-bold text-green-600">
-                      {pricing.poPrice ? formatCurrency(Number(pricing.poPrice), pricing.currency) : "-"}
+                      {pricing.sourceType === 'purchase_order' && pricing.unitPrice ? formatCurrency(Number(pricing.unitPrice), pricing.currency) : "-"}
                     </TableCell>
                     {/* PO TOTAL */}
                     <TableCell className="text-center border font-bold">
-                      {pricing.poTotal ? formatCurrency(Number(pricing.poTotal), pricing.currency) : "-"}
+                      {pricing.sourceType === 'purchase_order' && pricing.totalPrice ? formatCurrency(Number(pricing.totalPrice), pricing.currency) : "-"}
                     </TableCell>
                   </TableRow>
                     ))}

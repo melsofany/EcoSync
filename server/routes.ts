@@ -861,8 +861,8 @@ Respond in JSON format:
 
       console.log('Getting comprehensive historical data for LINE ITEM:', lineItem);
       
-      // Get comprehensive historical data from quotations and purchase orders
-      const historicalData = await storage.getComprehensiveHistoricalData(lineItem);
+      // Use the existing working API but enhance it to include all required fields
+      const historicalData = await storage.getItemHistoricalPricing(itemId);
       
       console.log(`Found ${historicalData.length} comprehensive historical records for LINE ITEM: ${lineItem}`);
       
