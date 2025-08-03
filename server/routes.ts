@@ -787,17 +787,18 @@ Respond in JSON format:
             analyzedData.unit = strValue;
           }
           
-          // رقم البند (يحتوي على نقاط وأرقام مثل 1854.002.CARIER.7519)
-          else if (key.toLowerCase().includes('line item') || key.toLowerCase().includes('item') ||
-                   /^\d+\.\d+\.[A-Z0-9]+\.\d+$/.test(strValue) || strValue.includes('.')) {
-            if (strValue.length > 10 && strValue.includes('.')) { // رقم بند محتمل
-              analyzedData.lineItem = strValue;
-            }
+          // رقم البند (نمط محدد: أرقام.أرقام.حروف.أرقام مثل 1854.002.CARIER.7519)
+          else if (key.toLowerCase().includes('line item') || key.toLowerCase().includes('item')) {
+            analyzedData.lineItem = strValue;
+          }
+          // فحص نمط رقم البند بالتعبير النمطي
+          else if (/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue)) {
+            analyzedData.lineItem = strValue;
           }
           
           // رقم القطعة (أرقام وحروف ولكن ليس رقم بند)
           else if (key.toLowerCase().includes('part') || key.toLowerCase().includes('p/n')) {
-            if (!strValue.includes('.') || strValue.length < 10) { // ليس رقم بند
+            if (!/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue)) { // ليس رقم بند
               analyzedData.partNumber = strValue;
             }
           }
@@ -814,12 +815,19 @@ Respond in JSON format:
             analyzedData.rfqNumber = strValue;
           }
           
-          // التواريخ (تحتوي على 2025 أو تنسيق تاريخ)
-          else if (key.toLowerCase().includes('date') || 
-                   strValue.includes('2025') || strValue.includes('-')) {
+          // التواريخ (Excel serial numbers أو تنسيق تاريخ)
+          else if (key.toLowerCase().includes('date')) {
             if (key.toLowerCase().includes('request')) {
               analyzedData.rfqDate = strValue;
             } else if (key.toLowerCase().includes('response') || key.toLowerCase().includes('expiry')) {
+              analyzedData.expiryDate = strValue;
+            }
+          }
+          // أرقام التواريخ التسلسلية في Excel (45000+)
+          else if (!isNaN(parseFloat(strValue)) && parseFloat(strValue) > 40000 && parseFloat(strValue) < 50000) {
+            if (!analyzedData.rfqDate) {
+              analyzedData.rfqDate = strValue;
+            } else if (!analyzedData.expiryDate) {
               analyzedData.expiryDate = strValue;
             }
           }
@@ -840,9 +848,11 @@ Respond in JSON format:
             }
           }
           
-          // اسم العميل (نص عربي أو انجليزي)
+          // اسم العميل (نص عربي أو انجليزي وليس "done")
           else if (key.includes('العميل') || key.toLowerCase().includes('client')) {
-            analyzedData.clientName = strValue;
+            if (strValue.toLowerCase() !== 'done' && strValue.toLowerCase() !== 'nan') {
+              analyzedData.clientName = strValue;
+            }
           }
           
           // إذا لم نحدد العمود، جرب التخمين من القيمة
@@ -861,8 +871,8 @@ Respond in JSON format:
             else if (strValue.length > 30 && !analyzedData.description) {
               analyzedData.description = strValue;
             }
-            // رقم بند محتمل (يحتوي على نقاط)
-            else if (strValue.includes('.') && strValue.length > 10 && !analyzedData.lineItem) {
+            // فحص إضافي لرقم البند إذا لم نجده بعد
+            else if (/^\d{4}\.\d{3}\.[A-Z0-9]+\.\d{4}$/.test(strValue) && !analyzedData.lineItem) {
               analyzedData.lineItem = strValue;
             }
           }
