@@ -162,33 +162,8 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
               });
             }
             
-            // Create quotation if RFQ exists
-            if (originalItem.rfq && originalItem.rfq !== '0') {
-              try {
-                const existingQuotations = await storage.getQuotations();
-                let quotation = existingQuotations.find((q: any) => q.customRequestNumber === originalItem.rfq);
-                
-                if (!quotation) {
-                  quotation = await storage.createQuotation({
-                    createdBy: adminUserId,
-                    clientId: defaultClient.id,
-                    customRequestNumber: originalItem.rfq,
-                    requestDate: originalItem.date_rfq || new Date().toISOString(),
-                    status: originalItem.condition === 'منتهي' ? 'completed' : 'pending',
-                    notes: `استيراد شامل - RFQ: ${originalItem.rfq}`
-                  });
-                }
-                
-                await storage.addQuotationItem({
-                  quotationId: quotation.id,
-                  itemId: newItem.id,
-                  quantity: originalItem.qty.toString(),
-                  notes: `PO: ${originalItem.po || 'غير محدد'}`
-                });
-              } catch (quotationError) {
-                console.error(`خطأ في إنشاء طلب عرض أسعار للصنف ${originalItem.serial_number}:`, quotationError);
-              }
-            }
+            // Skip quotation creation for now to focus on items import
+            // Will be added later if needed
             
           } catch (itemError) {
             console.error(`خطأ في إنشاء الصنف ${originalItem.serial_number}:`, itemError);
