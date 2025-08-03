@@ -151,7 +151,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
       {/* إحصائيات سريعة */}
       {comprehensiveData && comprehensiveData.length > 0 && (
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold mb-3 text-blue-800">ملخص إحصائيات البند</h4>
+          <h4 className="font-semibold mb-3 text-blue-800">ملخص إحصائيات البند المطابق</h4>
           <div className="grid grid-cols-4 gap-4 text-sm">
             <div className="bg-white rounded-lg p-3 border border-blue-200">
               <label className="font-medium text-gray-600">إجمالي السجلات:</label>
@@ -187,7 +187,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
           </h4>
           <p className="text-blue-100 text-sm mt-1">
-            عرض شامل لجميع طلبات التسعير وأوامر الشراء للـ Contactors 32 AMP المشابهة
+            عرض دقيق للبيانات المطابقة لـ LINE ITEM: {item.lineItem} و PART NO: {item.partNumber}
             {comprehensiveData && ` (${comprehensiveData.length} سجل)`}
           </p>
         </div>

@@ -1068,12 +1068,8 @@ export class DatabaseStorage implements IStorage {
       LEFT JOIN purchase_orders po ON poi.po_id = po.id
       
       WHERE (
-          i.part_number LIKE '%LC1%D32%' 
-          OR i.description LIKE '%CONTACTOR%32%AMP%'
-          OR i.description LIKE '%CONTACTOR%30%32%AMP%'
-          OR i.line_item = ${lineItem} 
-          OR i.part_number = ${partNumber} 
-          OR i.id = ${itemId}
+          i.line_item = ${lineItem} 
+          AND i.part_number = ${partNumber}
       )
       ORDER BY qr.request_date DESC, i.line_item, po.po_date DESC
     `);
