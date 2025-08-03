@@ -251,20 +251,22 @@ function ItemDetailedPricing({ item }: { item: any }) {
                   </TableRow>
                 ))}
 
-                {/* Historical pricing from Excel sheets */}
+                {/* Historical pricing from Excel sheets - Display all entries with same LINE ITEM */}
                 {historicalPricing && historicalPricing.map((pricing: any, index: number) => (
                   <TableRow key={`historical-${index}`} className="hover:bg-yellow-50 bg-yellow-25 border-b">
                     <TableCell className="text-center border font-bold">
-                      {pricing.requestNumber || pricing.kItemId}
+                      {pricing.sourceType === 'purchase_order' ? pricing.poNumber?.slice(-4) : pricing.kItemId}
                     </TableCell>
                     <TableCell className="text-center border">{pricing.quantity}</TableCell>
                     <TableCell className="text-center border">
                       {format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
                     <TableCell className="text-center border">
-                      {pricing.requestNumber || "N/A"}
+                      {pricing.sourceType === 'purchase_order' ? pricing.poNumber : (pricing.requestNumber || "-")}
                     </TableCell>
-                    <TableCell className="text-center border font-bold">{pricing.clientName?.slice(0, 8)}</TableCell>
+                    <TableCell className="text-center border font-bold">
+                      {pricing.category?.toUpperCase() || "SUPPLIES"}
+                    </TableCell>
                     <TableCell className="text-center border">
                       {format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
@@ -276,7 +278,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       {format(new Date(pricing.requestDate), "dd/MM/yyyy", { locale: ar })}
                     </TableCell>
                     <TableCell className="text-center border font-bold text-blue-600">
-                      شيت أصلي
+                      {pricing.requestNumber || "ORIGINAL"}
                     </TableCell>
                     <TableCell className="text-left border px-2 text-xs max-w-xs">
                       <div className="break-words">
@@ -289,7 +291,9 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     <TableCell className="text-center border font-bold text-xs text-blue-600">
                       {pricing.lineItem}
                     </TableCell>
-                    <TableCell className="text-center border font-bold">Each</TableCell>
+                    <TableCell className="text-center border font-bold">
+                      {pricing.unit || "Each"}
+                    </TableCell>
                   </TableRow>
                 ))}
                 

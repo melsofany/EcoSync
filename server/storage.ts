@@ -765,8 +765,8 @@ export class DatabaseStorage implements IStorage {
     const lineItem = item[0].lineItem;
     if (!lineItem) return [];
 
-    // Get historical data from quotations and purchase orders
-    const historicalData = await db
+    // Get ALL items with the same LINE ITEM from Excel sheets (quotations and purchase orders)
+    const quotationData = await db
       .select({
         kItemId: items.kItemId,
         description: items.description,
@@ -780,6 +780,8 @@ export class DatabaseStorage implements IStorage {
         requestDate: quotationRequests.requestDate,
         clientName: clients.name,
         sourceType: 'quotation' as string,
+        unit: items.unit,
+        category: items.category,
       })
       .from(items)
       .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
@@ -788,7 +790,35 @@ export class DatabaseStorage implements IStorage {
       .where(eq(items.lineItem, lineItem))
       .orderBy(desc(quotationRequests.requestDate));
 
-    return historicalData;
+    // Get purchase order data for the same LINE ITEM
+    const purchaseOrderData = await db
+      .select({
+        kItemId: items.kItemId,
+        description: items.description,
+        lineItem: items.lineItem,
+        partNumber: items.partNumber,
+        unitPrice: purchaseOrderItems.unitPrice,
+        totalPrice: purchaseOrderItems.totalPrice,
+        quantity: purchaseOrderItems.quantity,
+        currency: purchaseOrderItems.currency,
+        requestNumber: quotationRequests.customRequestNumber,
+        requestDate: purchaseOrders.poDate,
+        clientName: clients.name,
+        sourceType: 'purchase_order' as string,
+        unit: items.unit,
+        category: items.category,
+        poNumber: purchaseOrders.poNumber,
+      })
+      .from(items)
+      .innerJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
+      .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+      .innerJoin(quotationRequests, eq(purchaseOrders.quotationId, quotationRequests.id))
+      .innerJoin(clients, eq(quotationRequests.clientId, clients.id))
+      .where(eq(items.lineItem, lineItem))
+      .orderBy(desc(purchaseOrders.poDate));
+
+    // Combine and return all data
+    return [...quotationData, ...purchaseOrderData];
   }
 
   async getItemsReadyForCustomerPricing(): Promise<any[]> {
