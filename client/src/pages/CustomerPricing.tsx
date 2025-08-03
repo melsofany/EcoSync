@@ -117,9 +117,17 @@ function ItemDetailedPricing({ item }: { item: any }) {
     }
   }, [item]);
 
+  console.log('ItemDetailedPricing render:', { item, isLoading, historicalPricing: historicalPricing?.length });
+
   if (isLoading) {
     return <div className="bg-muted/30 rounded-lg p-4 text-center">جاري تحميل التفاصيل...</div>;
   }
+
+  console.log('ItemDetailedPricing rendering with data:', { 
+    detailedPricing: !!detailedPricing, 
+    historicalLength: historicalPricing?.length,
+    itemId: item?.id 
+  });
 
   return (
     <div className="space-y-4">
@@ -713,6 +721,7 @@ export default function CustomerPricing() {
                     </div>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="px-4 pb-4">
+                    {console.log('Rendering ItemDetailedPricing for item:', item.id)}
                     <ItemDetailedPricing item={item} />
                   </CollapsibleContent>
                 </Collapsible>
