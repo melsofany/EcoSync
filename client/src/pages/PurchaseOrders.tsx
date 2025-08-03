@@ -32,6 +32,10 @@ export default function PurchaseOrders() {
     queryKey: ["/api/quotations"],
   });
 
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/auth/me"],
+  });
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { label: "في الانتظار", variant: "secondary" as const },
@@ -199,6 +203,9 @@ export default function PurchaseOrders() {
   const pendingPOs = purchaseOrders?.filter((po: any) => po.status === "pending").length || 0;
   const confirmedPOs = purchaseOrders?.filter((po: any) => po.status === "confirmed").length || 0;
   const totalValue = purchaseOrders?.reduce((sum: number, po: any) => sum + (Number(po.totalValue) || 0), 0) || 0;
+  
+  // Check if current user is manager
+  const isManager = currentUser?.role === 'manager';
 
   if (isLoading) {
     return (
@@ -233,7 +240,7 @@ export default function PurchaseOrders() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className={`grid grid-cols-1 ${isManager ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
         <Card className="card-hover">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -262,19 +269,22 @@ export default function PurchaseOrders() {
           </CardContent>
         </Card>
 
-        <Card className="card-hover">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">إجمالي القيمة</p>
-                <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalValue)}</p>
+        {/* Total Value Card - Only for managers */}
+        {isManager && (
+          <Card className="card-hover">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">إجمالي القيمة</p>
+                  <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalValue)}</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-blue-600" />
+                </div>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Purchase Orders Table */}
@@ -287,7 +297,7 @@ export default function PurchaseOrders() {
                   <TableHead className="text-right">رقم الأمر</TableHead>
                   <TableHead className="text-right">رقم طلب التسعير</TableHead>
                   <TableHead className="text-right">التاريخ</TableHead>
-                  <TableHead className="text-right">القيمة</TableHead>
+                  {isManager && <TableHead className="text-right">القيمة</TableHead>}
                   <TableHead className="text-right">الحالة</TableHead>
                   <TableHead className="text-right">حالة التسليم</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
@@ -296,7 +306,7 @@ export default function PurchaseOrders() {
               <TableBody>
                 {!purchaseOrders || purchaseOrders.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={isManager ? 7 : 6} className="text-center py-8 text-gray-500">
                       لا توجد أوامر شراء
                     </TableCell>
                   </TableRow>
@@ -308,9 +318,11 @@ export default function PurchaseOrders() {
                         {getQuotationNumber(po.quotationId)}
                       </TableCell>
                       <TableCell>{formatDate(po.poDate)}</TableCell>
-                      <TableCell className="font-medium">
-                        {formatCurrency(po.totalValue)}
-                      </TableCell>
+                      {isManager && (
+                        <TableCell className="font-medium">
+                          {formatCurrency(po.totalValue)}
+                        </TableCell>
+                      )}
                       <TableCell>{getStatusBadge(po.status)}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
