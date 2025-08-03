@@ -54,6 +54,13 @@ Preferred communication style: Simple, everyday language.
 - **✅ New Logo Integration**: Added company logo to login page and sidebar
 - **✅ UI Updates**: Updated all references to company name in Arabic interface
 
+### Purchase Order Search Fix (August 3, 2025)
+- **✅ Fixed Search Issue**: Resolved problem where quotation number "25R00002" was not found in purchase order creation
+- **✅ Enhanced Search Logic**: Updated search to include both `requestNumber` and `customRequestNumber` fields
+- **✅ Improved Display**: Modified UI to show custom request numbers (like 25R00002) as primary display with system numbers as secondary
+- **✅ Type Definitions**: Added `customRequestNumber` field to Quotation TypeScript interface
+- **✅ User Experience**: Users can now successfully search and create purchase orders for all quotation numbers
+
 ## Recent Critical Fixes (August 3, 2025)
 
 ### Data Import Corrections
