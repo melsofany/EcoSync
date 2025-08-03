@@ -771,10 +771,10 @@ Respond in JSON format:
           partNumber: '',
           description: '',
           rfqNumber: '',
-          rfqDate: '',
+          rfqDate: '' as string | number,
           quantity: 0,
           clientPrice: 0,
-          expiryDate: '',
+          expiryDate: '' as string | number,
           clientName: 'غير محدد'
         };
         
@@ -817,7 +817,13 @@ Respond in JSON format:
               break;
               
             case 6: // العمود G - تاريخ الطلب (Request Date)
-              analyzedData.rfqDate = strValue;
+              // تحويل فوري للأرقام التسلسلية
+              const numValue = parseFloat(strValue);
+              if (!isNaN(numValue) && numValue > 40000 && numValue < 50000) {
+                analyzedData.rfqDate = numValue;
+              } else {
+                analyzedData.rfqDate = strValue;
+              }
               break;
               
             case 7: // العمود H - الكمية (Quantity)
@@ -835,7 +841,13 @@ Respond in JSON format:
               break;
               
             case 9: // العمود J - تاريخ انتهاء العرض (Response/Expiry Date)
-              analyzedData.expiryDate = strValue;
+              // تحويل فوري للأرقام التسلسلية
+              const expiryNum = parseFloat(strValue);
+              if (!isNaN(expiryNum) && expiryNum > 40000 && expiryNum < 50000) {
+                analyzedData.expiryDate = expiryNum;
+              } else {
+                analyzedData.expiryDate = strValue;
+              }
               break;
               
             case 10: // العمود K - اسم العميل
