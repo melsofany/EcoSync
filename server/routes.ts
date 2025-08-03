@@ -4,6 +4,7 @@ import { storage, initializeDatabase } from "./storage";
 import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
 import { autoMapExcelColumns, processExcelRowForQuotation } from "./simpleExcelImport";
 import { sendEmail, generatePasswordResetEmail } from "./emailService";
+import { ObjectStorageService } from "./objectStorage";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import { randomBytes } from "crypto";
@@ -730,6 +731,33 @@ Respond in JSON format:
     } catch (error) {
       console.error("Create purchase order error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Object Storage routes for profile images
+  app.get("/public-objects/:filePath(*)", async (req: Request, res: Response) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/profile-image/upload", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getProfileImageUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting profile image upload URL:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 

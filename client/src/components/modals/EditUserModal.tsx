@@ -9,6 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { ProfileImageUploader } from "@/components/ProfileImageUploader";
 
 interface EditUserModalProps {
   user: any;
@@ -128,27 +129,11 @@ export default function EditUserModal({ user, isOpen, onClose }: EditUserModalPr
           </div>
 
           <div>
-            <Label htmlFor="profileImage">رابط الصورة الشخصية</Label>
-            <Input
-              id="profileImage"
-              type="url"
-              value={formData.profileImage}
-              onChange={(e) => setFormData({...formData, profileImage: e.target.value})}
-              placeholder="https://example.com/image.jpg"
+            <Label>الصورة الشخصية</Label>
+            <ProfileImageUploader
+              currentImage={formData.profileImage}
+              onImageChange={(imageUrl) => setFormData({...formData, profileImage: imageUrl})}
             />
-            {formData.profileImage && (
-              <div className="mt-2">
-                <img 
-                  src={formData.profileImage} 
-                  alt="معاينة الصورة"
-                  className="w-16 h-16 rounded-full object-cover border"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
           </div>
 
           <div>
