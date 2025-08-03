@@ -1699,9 +1699,9 @@ Respond in JSON format:
         processExcelRowForQuotation(row, mapping, index)
       );
 
-      // فلترة البيانات الصالحة
+      // فلترة البيانات الصالحة - السماح بالبنود بدون رقم قطعة
       const validData = processedData.filter(row => 
-        row.lineItem && row.partNumber && row.description && row.quantity > 0
+        row.lineItem && row.description && row.quantity > 0
       );
 
       console.log(`✅ Processed ${processedData.length} rows, ${validData.length} valid`);
