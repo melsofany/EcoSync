@@ -148,10 +148,27 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {isOpen && (
           <div className="p-3 lg:p-4 border-b border-gray-100 bg-gray-50">
             <div className="flex items-center space-x-3 space-x-reverse">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {getInitials(user.fullName)}
-                </span>
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
+                {user.profileImage ? (
+                  <img 
+                    src={user.profileImage} 
+                    alt={user.fullName}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // إذا فشل تحميل الصورة، إظهار الحروف الأولى
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `<span class="text-white text-sm font-medium">${getInitials(user.fullName)}</span>`;
+                      }
+                    }}
+                  />
+                ) : (
+                  <span className="text-white text-sm font-medium">
+                    {getInitials(user.fullName)}
+                  </span>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">
