@@ -1,179 +1,210 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import { storage } from './storage.js';
+import fs from 'fs';
 import { nanoid } from 'nanoid';
+import { db } from './db.js';
+import { 
+  users, clients, items, quotationRequests, quotationItems, 
+  purchaseOrders, purchaseOrderItems, activities 
+} from '../shared/schema.js';
 
-interface ImportedItem {
-  serial_number: number;
-  description: string;
-  part_number: string;
-  line_item: string;
-  uom: string;
-  category: string;
-  rfq: string;
-  qty: number;
-  price_rfq: number;
-  po: string;
-  qty_po: number;
-  price_po: number;
-  condition: string;
-  buyer: string;
-  note: string;
-  date_rfq: string | null;
-  date_po: string | null;
-  res_date: string | null;
+interface ImportData {
+  items: Array<{
+    item_number: string;
+    part_number: string;
+    line_item: string;
+    description: string;
+    unit_of_measure: string;
+    category: string;
+  }>;
+  quotations: Array<{
+    custom_request_number: string;
+    request_date: string;
+    status: string;
+    client_name: string;
+  }>;
+  quotation_items: Array<{
+    quotation_index: number;
+    item_index: number;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+  }>;
+  purchase_orders: Array<{
+    po_number: string;
+    po_date: string;
+    status: string;
+    client_name: string;
+  }>;
+  purchase_order_items: Array<{
+    po_index: number;
+    item_index: number;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+  }>;
 }
 
-interface ImportedData {
-  items: ImportedItem[];
-  suppliers: string[];
-  total_items: number;
-}
-
-export async function importExcelData() {
+async function importExcelData() {
   try {
-    console.log('بدء استيراد البيانات من ملف Excel...');
+    console.log('🚀 بدء عملية استيراد البيانات...');
     
-    // Use known admin user ID from database
-    const adminUserId = '4964161e-b3a1-4e10-ac5b-9b728913bb6f';
+    // قراءة البيانات المعالجة
+    const data: ImportData = JSON.parse(
+      fs.readFileSync('attached_assets/processed_import_data.json', 'utf-8')
+    );
     
-    // Read processed data
-    const dataPath = join(process.cwd(), '..', 'attached_assets', 'processed_data.json');
-    const rawData = readFileSync(dataPath, 'utf-8');
-    const importData: ImportedData = JSON.parse(rawData);
+    console.log('📊 إحصائيات البيانات:');
+    console.log(`- البنود: ${data.items.length}`);
+    console.log(`- طلبات التسعير: ${data.quotations.length}`);
+    console.log(`- بنود طلبات التسعير: ${data.quotation_items.length}`);
+    console.log(`- أوامر الشراء: ${data.purchase_orders.length}`);
+    console.log(`- بنود أوامر الشراء: ${data.purchase_order_items.length}`);
     
-    console.log(`جاري استيراد ${importData.items.length} بند...`);
-    
-    // Import suppliers first
-    const supplierMap = new Map<string, string>();
-    for (const supplierName of importData.suppliers) {
-      if (supplierName && supplierName.trim()) {
-        const supplierId = nanoid();
-        await storage.createSupplier({
-          name: supplierName,
-          contactPerson: '',
-          email: '',
-          phone: '',
-          address: '',
-          notes: 'مستورد من ملف Excel'
-        });
-        supplierMap.set(supplierName, supplierId);
-        console.log(`تم إنشاء المورد: ${supplierName}`);
-      }
+    // إنشاء عميل افتراضي
+    let client = await db.select().from(clients).where(db.eq(clients.name, 'EDC')).limit(1);
+    if (client.length === 0) {
+      await db.insert(clients).values({
+        id: nanoid(),
+        name: 'EDC',
+        contact_email: 'info@edc.com',
+        contact_phone: '+1234567890',
+        address: 'مصر'
+      });
+      client = await db.select().from(clients).where(db.eq(clients.name, 'EDC')).limit(1);
     }
+    const clientId = client[0].id;
     
-    // Create a default client for imported data
-    const defaultClientId = nanoid();
-    await storage.createClient({
-      name: 'العميل الافتراضي - بيانات مستوردة',
-      contactPerson: '',
-      email: '',
-      phone: '',
-      address: '',
-      notes: 'عميل افتراضي للبيانات المستوردة من Excel'
-    });
-    
-    // Import items
-    let importedCount = 0;
-    for (const itemData of importData.items) {
-      try {
-        const itemId = nanoid();
-        
-        // Create item
-        await storage.createItem({
-          createdBy: adminUserId,
-          kItemId: `K${itemData.serial_number.toString().padStart(6, '0')}`,
-          description: itemData.description || 'وصف غير متوفر',
-          unit: itemData.uom || 'قطعة',
-          brand: '',
-          partNumber: itemData.part_number || '',
-          lineItem: itemData.line_item || '',
-          category: itemData.category || 'عام',
-          notes: `${itemData.note ? itemData.note + ' - ' : ''}مستورد من Excel - الرقم التسلسلي: ${itemData.serial_number}`,
-          status: 'pending'
-        });
-        
-        // Add supplier pricing if available
-        if (itemData.price_rfq > 0 && itemData.buyer && supplierMap.has(itemData.buyer)) {
-          await storage.createSupplierPricing({
-            createdBy: adminUserId,
-            itemId: itemId,
-            supplierId: supplierMap.get(itemData.buyer)!,
-            unitPrice: itemData.price_rfq.toString(),
-            priceReceivedDate: itemData.date_rfq || new Date().toISOString(),
-            notes: `RFQ: ${itemData.rfq} - حالة: ${itemData.condition}`,
-            currency: 'EGP',
-            leadTime: '30 يوم',
-            status: 'received'
-          });
-        }
-        
-        // Create quotation request if RFQ exists
-        if (itemData.rfq && itemData.rfq !== '0') {
-          // Check if quotation already exists
-          const existingQuotations = await storage.getQuotationRequests();
-          const existingQuotation = existingQuotations.find((q: any) => q.customRequestNumber === itemData.rfq);
-          
-          let quotationId: string;
-          if (existingQuotation) {
-            quotationId = existingQuotation.id;
-          } else {
-            quotationId = nanoid();
-            await storage.createQuotationRequest({
-              createdBy: adminUserId,
-              clientId: defaultClientId,
-              customRequestNumber: itemData.rfq,
-              requestDate: itemData.date_rfq || new Date().toISOString(),
-              status: itemData.condition === 'منتهي' ? 'completed' : 'pending',
-              notes: `مستورد من Excel - تاريخ RFQ: ${itemData.date_rfq || 'غير محدد'}`
-            });
-          }
-          
-          // Add quotation item
-          await storage.addItemToQuotation({
-            quotationRequestId: quotationId,
-            itemId: itemId,
-            quantity: itemData.qty.toString(),
-            notes: `PO: ${itemData.po || 'غير محدد'} - الكمية المطلوبة في PO: ${itemData.qty_po || 0}`
-          });
-        }
-        
-        importedCount++;
-        if (importedCount % 10 === 0) {
-          console.log(`تم استيراد ${importedCount} بند...`);
-        }
-        
-      } catch (error) {
-        console.error(`خطأ في استيراد البند ${itemData.serial_number}:`, error);
-      }
+    // استيراد البنود
+    console.log('📦 استيراد البنود...');
+    const itemIds: string[] = [];
+    for (const itemData of data.items) {
+      const itemId = nanoid();
+      await db.insert(items).values({
+        id: itemId,
+        item_number: itemData.item_number,
+        part_number: itemData.part_number,
+        line_item: itemData.line_item,
+        description: itemData.description,
+        unit_of_measure: itemData.unit_of_measure,
+        category: itemData.category,
+        supplier_price: 0,
+        customer_price: 0,
+        ai_processed: false
+      });
+      itemIds.push(itemId);
     }
+    console.log(`✅ تم استيراد ${itemIds.length} بند`);
     
-    console.log(`تم الانتهاء من الاستيراد. تم استيراد ${importedCount} بند بنجاح.`);
-    console.log(`إجمالي البنود في الملف: ${importData.total_items}`);
+    // استيراد طلبات التسعير
+    console.log('📋 استيراد طلبات التسعير...');
+    const quotationIds: string[] = [];
+    for (const quotationData of data.quotations) {
+      const quotationId = nanoid();
+      await db.insert(quotationRequests).values({
+        id: quotationId,
+        custom_request_number: quotationData.custom_request_number,
+        client_id: clientId,
+        request_date: new Date(quotationData.request_date),
+        status: quotationData.status as any,
+        urgent: false,
+        notes: 'مستورد من Excel'
+      });
+      quotationIds.push(quotationId);
+    }
+    console.log(`✅ تم استيراد ${quotationIds.length} طلب تسعير`);
+    
+    // استيراد بنود طلبات التسعير
+    console.log('📝 استيراد بنود طلبات التسعير...');
+    for (const qiData of data.quotation_items) {
+      await db.insert(quotationItems).values({
+        id: nanoid(),
+        quotation_id: quotationIds[qiData.quotation_index],
+        item_id: itemIds[qiData.item_index],
+        quantity: qiData.quantity,
+        unit_price: qiData.unit_price,
+        total_price: qiData.total_price,
+        notes: 'مستورد من Excel'
+      });
+    }
+    console.log(`✅ تم استيراد ${data.quotation_items.length} بند طلب تسعير`);
+    
+    // استيراد أوامر الشراء
+    console.log('🛒 استيراد أوامر الشراء...');
+    const poIds: string[] = [];
+    for (const poData of data.purchase_orders) {
+      const poId = nanoid();
+      await db.insert(purchaseOrders).values({
+        id: poId,
+        po_number: poData.po_number,
+        client_id: clientId,
+        po_date: new Date(poData.po_date),
+        status: poData.status as any,
+        notes: 'مستورد من Excel'
+      });
+      poIds.push(poId);
+    }
+    console.log(`✅ تم استيراد ${poIds.length} أمر شراء`);
+    
+    // استيراد بنود أوامر الشراء
+    console.log('📦 استيراد بنود أوامر الشراء...');
+    for (const poiData of data.purchase_order_items) {
+      await db.insert(purchaseOrderItems).values({
+        id: nanoid(),
+        po_id: poIds[poiData.po_index],
+        item_id: itemIds[poiData.item_index],
+        quantity: poiData.quantity,
+        unit_price: poiData.unit_price,
+        total_price: poiData.total_price
+      });
+    }
+    console.log(`✅ تم استيراد ${data.purchase_order_items.length} بند أمر شراء`);
+    
+    // تحديث أسعار العملاء من بيانات طلبات التسعير
+    console.log('💰 تحديث أسعار العملاء...');
+    const priceUpdates = await db.select({
+      itemId: quotationItems.item_id,
+      avgPrice: db.sql<number>`AVG(${quotationItems.unit_price})`.as('avg_price')
+    })
+    .from(quotationItems)
+    .groupBy(quotationItems.item_id)
+    .where(db.gt(quotationItems.unit_price, 0));
+    
+    for (const update of priceUpdates) {
+      await db.update(items)
+        .set({ customer_price: update.avgPrice })
+        .where(db.eq(items.id, update.itemId));
+    }
+    console.log(`✅ تم تحديث ${priceUpdates.length} سعر عميل`);
+    
+    console.log('🎉 تم الانتهاء من استيراد البيانات بنجاح!');
     
     return {
       success: true,
-      importedItems: importedCount,
-      totalItems: importData.total_items,
-      suppliersCreated: importData.suppliers.length
+      stats: {
+        items: itemIds.length,
+        quotations: quotationIds.length,
+        quotation_items: data.quotation_items.length,
+        purchase_orders: poIds.length,
+        purchase_order_items: data.purchase_order_items.length
+      }
     };
     
   } catch (error) {
-    console.error('خطأ في استيراد البيانات:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    console.error('❌ خطأ في استيراد البيانات:', error);
+    throw error;
   }
 }
 
-// Run import if this file is executed directly
+// تشغيل الاستيراد
 if (import.meta.url === `file://${process.argv[1]}`) {
-  importExcelData().then(result => {
-    console.log('نتيجة الاستيراد:', result);
-    process.exit(0);
-  }).catch(error => {
-    console.error('فشل الاستيراد:', error);
-    process.exit(1);
-  });
+  importExcelData()
+    .then(result => {
+      console.log('✅ نتيجة الاستيراد:', result);
+      process.exit(0);
+    })
+    .catch(error => {
+      console.error('❌ فشل الاستيراد:', error);
+      process.exit(1);
+    });
 }
+
+export { importExcelData };
