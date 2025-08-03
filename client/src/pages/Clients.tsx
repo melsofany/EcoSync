@@ -10,6 +10,7 @@ import { hasRole } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import NewClientModal from "@/components/modals/NewClientModal";
+import EditClientModal from "@/components/modals/EditClientModal";
 import { 
   Users, 
   Plus, 
@@ -29,6 +30,8 @@ export default function Clients() {
   const queryClient = useQueryClient();
   
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
+  const [isEditClientModalOpen, setIsEditClientModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: clients, isLoading } = useQuery({
@@ -257,11 +260,8 @@ export default function Clients() {
                                 size="sm"
                                 className="h-8 w-8 p-0"
                                 onClick={() => {
-                                  // TODO: Implement edit functionality
-                                  toast({
-                                    title: "قريباً",
-                                    description: "سيتم تفعيل وظيفة التحرير قريباً",
-                                  });
+                                  setEditingClient(client);
+                                  setIsEditClientModalOpen(true);
                                 }}
                               >
                                 <Edit className="h-4 w-4" />
@@ -313,6 +313,16 @@ export default function Clients() {
       <NewClientModal
         isOpen={isNewClientModalOpen}
         onClose={() => setIsNewClientModalOpen(false)}
+      />
+
+      {/* Edit Client Modal */}
+      <EditClientModal
+        isOpen={isEditClientModalOpen}
+        onClose={() => {
+          setIsEditClientModalOpen(false);
+          setEditingClient(null);
+        }}
+        client={editingClient}
       />
     </div>
   );

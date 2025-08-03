@@ -239,6 +239,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/clients/:clientId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { clientId } = req.params;
+      const updates = req.body;
+      
+      const client = await storage.updateClient(clientId, updates);
+      if (!client) {
+        return res.status(404).json({ message: "Client not found" });
+      }
+
+      await logActivity(req, "update_client", "client", clientId, `Updated client: ${client.name}`);
+
+      res.json(client);
+    } catch (error) {
+      console.error("Update client error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.delete("/api/clients/:clientId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
       const { clientId } = req.params;
@@ -643,6 +662,25 @@ Respond in JSON format:
       res.status(201).json(supplier);
     } catch (error) {
       console.error("Create supplier error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/suppliers/:supplierId", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const { supplierId } = req.params;
+      const updates = req.body;
+      
+      const supplier = await storage.updateSupplier(supplierId, updates);
+      if (!supplier) {
+        return res.status(404).json({ message: "Supplier not found" });
+      }
+
+      await logActivity(req, "update_supplier", "supplier", supplierId, `Updated supplier: ${supplier.name}`);
+
+      res.json(supplier);
+    } catch (error) {
+      console.error("Update supplier error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

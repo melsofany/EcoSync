@@ -10,6 +10,7 @@ import { hasRole } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import NewSupplierModal from "@/components/modals/NewSupplierModal";
+import EditSupplierModal from "@/components/modals/EditSupplierModal";
 import { 
   Truck, 
   Plus, 
@@ -29,6 +30,8 @@ export default function Suppliers() {
   const queryClient = useQueryClient();
   
   const [isNewSupplierModalOpen, setIsNewSupplierModalOpen] = useState(false);
+  const [isEditSupplierModalOpen, setIsEditSupplierModalOpen] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: suppliers, isLoading } = useQuery({
@@ -271,11 +274,8 @@ export default function Suppliers() {
                                 size="sm"
                                 className="h-8 w-8 p-0"
                                 onClick={() => {
-                                  // TODO: Implement edit functionality
-                                  toast({
-                                    title: "قريباً",
-                                    description: "سيتم تفعيل وظيفة التحرير قريباً",
-                                  });
+                                  setEditingSupplier(supplier);
+                                  setIsEditSupplierModalOpen(true);
                                 }}
                               >
                                 <Edit className="h-4 w-4" />
@@ -327,6 +327,16 @@ export default function Suppliers() {
       <NewSupplierModal
         isOpen={isNewSupplierModalOpen}
         onClose={() => setIsNewSupplierModalOpen(false)}
+      />
+
+      {/* Edit Supplier Modal */}
+      <EditSupplierModal
+        isOpen={isEditSupplierModalOpen}
+        onClose={() => {
+          setIsEditSupplierModalOpen(false);
+          setEditingSupplier(null);
+        }}
+        supplier={editingSupplier}
       />
     </div>
   );
