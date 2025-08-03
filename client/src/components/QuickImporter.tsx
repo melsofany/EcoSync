@@ -226,33 +226,35 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
               {/* جدول المعاينة */}
               <div>
                 <h4 className="font-semibold mb-2">معاينة البيانات (أول 5 سجلات):</h4>
-                <div className="overflow-auto max-h-96">
-                  <table className="w-full text-sm border-collapse border border-gray-300">
+                <div className="overflow-x-auto overflow-y-auto max-h-96 border rounded-lg">
+                  <table className="w-full text-sm border-collapse border border-gray-300 min-w-[1200px]">
                     <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-2 text-right">الصف</th>
-                        <th className="border border-gray-300 p-2 text-right">العميل</th>
-                        <th className="border border-gray-300 p-2 text-right">رقم البند</th>
-                        <th className="border border-gray-300 p-2 text-right">رقم القطعة</th>
-                        <th className="border border-gray-300 p-2 text-right">التوصيف</th>
-                        <th className="border border-gray-300 p-2 text-right">الكمية</th>
-                        <th className="border border-gray-300 p-2 text-right">السعر</th>
-                        <th className="border border-gray-300 p-2 text-right">تاريخ الطلب</th>
+                      <tr className="bg-gray-100 sticky top-0">
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[60px]">الصف</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[100px]">العميل</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[180px]">رقم البند</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[120px]">رقم القطعة</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[300px]">التوصيف</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[80px]">الكمية</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[80px]">السعر</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[100px]">تاريخ الطلب</th>
                       </tr>
                     </thead>
                     <tbody>
                       {previewData.slice(0, 5).map((row, index) => (
-                        <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                          <td className="border border-gray-300 p-2">{row.rowIndex}</td>
-                          <td className="border border-gray-300 p-2">{row.clientName}</td>
-                          <td className="border border-gray-300 p-2 font-mono text-blue-600">{row.lineItem}</td>
-                          <td className="border border-gray-300 p-2">{row.partNumber}</td>
-                          <td className="border border-gray-300 p-2 max-w-xs truncate" title={row.description}>
-                            {row.description}
+                        <tr key={index} className={index % 2 === 0 ? "bg-white hover:bg-blue-50" : "bg-gray-50 hover:bg-blue-50"}>
+                          <td className="border border-gray-300 p-3 text-center font-medium">{row.rowIndex}</td>
+                          <td className="border border-gray-300 p-3 font-medium text-purple-700">{row.clientName}</td>
+                          <td className="border border-gray-300 p-3 font-mono text-blue-600 text-xs">{row.lineItem}</td>
+                          <td className="border border-gray-300 p-3 font-mono text-gray-700">{row.partNumber}</td>
+                          <td className="border border-gray-300 p-3 min-w-[300px]">
+                            <div className="whitespace-normal break-words text-sm leading-relaxed">
+                              <strong className="text-gray-800">{row.description}</strong>
+                            </div>
                           </td>
-                          <td className="border border-gray-300 p-2 text-center">{row.quantity}</td>
-                          <td className="border border-gray-300 p-2 text-center">{row.unitPrice}</td>
-                          <td className="border border-gray-300 p-2">{row.requestDate}</td>
+                          <td className="border border-gray-300 p-3 text-center font-semibold text-green-600">{row.quantity}</td>
+                          <td className="border border-gray-300 p-3 text-center font-semibold text-orange-600">{row.unitPrice}</td>
+                          <td className="border border-gray-300 p-3 text-sm text-gray-600">{row.requestDate}</td>
                         </tr>
                       ))}
                     </tbody>
