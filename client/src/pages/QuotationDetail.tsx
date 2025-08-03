@@ -383,22 +383,22 @@ export default function QuotationDetail() {
                   {quotationItems.map((quotationItem: QuotationItem) => (
                     <TableRow key={quotationItem.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">
-                        {quotationItem.item?.itemNumber || "غير محدد"}
+                        {quotationItem.itemNumber || "غير محدد"}
                       </TableCell>
                       <TableCell>
                         <div className="max-w-xs">
                           <p className="font-medium text-gray-800 truncate">
-                            {quotationItem.item?.description || "غير محدد"}
+                            {quotationItem.description || "غير محدد"}
                           </p>
-                          {quotationItem.item?.category && (
+                          {quotationItem.category && (
                             <p className="text-xs text-gray-500">
-                              {quotationItem.item.category}
+                              {quotationItem.category}
                             </p>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {quotationItem.item?.partNumber || "غير محدد"}
+                        {quotationItem.partNumber || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-medium">
                         {quotationItem.quantity}
