@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import NewUserModal from "@/components/modals/NewUserModal";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { UserDisplayName } from "@/components/UserDisplayName";
+import { UserAvatar } from "@/components/UserAvatar";
 import { 
   Users, 
   Shield, 
@@ -408,12 +409,64 @@ export default function Admin() {
         </Card>
       )}
 
+      {/* Activity Log */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 space-x-reverse">
+            <Activity className="h-5 w-5" />
+            <span>سجل النشاط</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {activities && activities.length > 0 ? (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {activities.slice(0, 10).map((activity: any) => (
+                <div key={activity.id} className="flex items-start space-x-3 space-x-reverse p-3 bg-gray-50 rounded-lg">
+                  <UserAvatar 
+                    user={{ 
+                      fullName: activity.userFullName || activity.username,
+                      profileImage: activity.userProfileImage 
+                    }} 
+                    size="sm" 
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                      <span className="font-medium text-sm text-gray-900">
+                        {activity.userFullName || activity.username}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatTime(activity.timestamp)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {activity.action}
+                      {activity.details && (
+                        <span className="text-gray-500"> - {activity.details}</span>
+                      )}
+                    </p>
+                    {activity.entityType && (
+                      <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded mt-1">
+                        {activity.entityType}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              لا توجد أنشطة حديثة
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Active Users */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2 space-x-reverse">
-              <Activity className="h-5 w-5" />
+              <Users className="h-5 w-5" />
               <span>المستخدمون النشطون</span>
             </CardTitle>
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">

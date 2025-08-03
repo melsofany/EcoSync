@@ -762,10 +762,27 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async getActivities(limit: number = 50): Promise<ActivityLog[]> {
-    return await db.select().from(activityLog)
+  async getActivities(limit: number = 50): Promise<any[]> {
+    const result = await db
+      .select({
+        id: activityLog.id,
+        userId: activityLog.userId,
+        action: activityLog.action,
+        entityType: activityLog.entityType,
+        entityId: activityLog.entityId,
+        details: activityLog.details,
+        ipAddress: activityLog.ipAddress,
+        timestamp: activityLog.timestamp,
+        userFullName: users.fullName,
+        username: users.username,
+        userProfileImage: users.profileImage
+      })
+      .from(activityLog)
+      .leftJoin(users, eq(activityLog.userId, users.id))
       .orderBy(desc(activityLog.timestamp))
       .limit(limit);
+    
+    return result;
   }
 
   // Statistics
