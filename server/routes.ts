@@ -320,6 +320,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
+      // Generate K-ID if not provided  
+      if (!req.body.kItemId) {
+        const itemCount = await storage.getItemCount();
+        req.body.kItemId = `K${(itemCount + 1).toString().padStart(8, '0')}`;
+      }
+
       const validatedData = insertItemSchema.parse({
         ...req.body,
         createdBy: userId,

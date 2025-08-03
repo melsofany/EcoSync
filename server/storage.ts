@@ -336,6 +336,11 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(items).orderBy(desc(items.createdAt));
   }
 
+  async getItemCount(): Promise<number> {
+    const result = await db.select().from(items);
+    return result.length;
+  }
+
   async getItem(id: string): Promise<Item | undefined> {
     const [item] = await db.select().from(items).where(eq(items.id, id));
     return item || undefined;
