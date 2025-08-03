@@ -109,6 +109,8 @@ Preferred communication style: Simple, everyday language.
 - **✅ Purchase Orders**: Updated purchase order creation and details screens to prominently show LINE ITEM
 - **✅ Supplier Pricing**: Added LINE ITEM column to pricing tables for clear item identification
 - **✅ Consistent Styling**: Applied uniform blue monospace font styling for all LINE ITEM displays
+- **✅ RTL Fix**: Added dir="ltr" attribute to ensure LINE ITEM displays numbers first, then letters (2281.004.GAITRO.7046)
+- **✅ Form Input**: Updated input fields to show correct placeholder format and LTR direction
 
 ### Intelligent Item Matching System
 - **Approach**: Manual intelligent analysis without external AI dependencies

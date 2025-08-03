@@ -405,7 +405,7 @@ export default function PurchaseOrders() {
                             <TableCell className="text-sm font-medium">
                               {item.itemNumber || 'غير محدد'}
                             </TableCell>
-                            <TableCell className="text-sm font-mono text-blue-600 font-semibold">
+                            <TableCell className="text-sm font-mono text-blue-600 font-semibold" dir="ltr">
                               {item.lineItem || 'غير محدد'}
                             </TableCell>
                             <TableCell className="max-w-xs">

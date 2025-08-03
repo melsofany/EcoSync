@@ -406,7 +406,7 @@ export default function Items() {
                   filteredItems.map((item: any) => (
                     <TableRow key={item.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">{item.itemNumber}</TableCell>
-                      <TableCell className="font-mono text-blue-600 text-sm">
+                      <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
                         {item.lineItem || "غير محدد"}
                       </TableCell>
                       <TableCell>{item.partNumber || "غير محدد"}</TableCell>

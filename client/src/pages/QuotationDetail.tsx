@@ -387,7 +387,7 @@ export default function QuotationDetail() {
                       <TableCell className="font-medium">
                         {quotationItem.itemNumber || "غير محدد"}
                       </TableCell>
-                      <TableCell className="font-mono text-blue-600 text-sm">
+                      <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
                         {quotationItem.lineItem || "غير محدد"}
                       </TableCell>
                       <TableCell>

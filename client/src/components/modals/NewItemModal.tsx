@@ -176,7 +176,8 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
               <Label htmlFor="lineItem">LINE ITEM</Label>
               <Input
                 id="lineItem"
-                placeholder="LINE ITEM (إن وجد)"
+                placeholder="1234.567.GENRAL.0001"
+                dir="ltr"
                 {...form.register("lineItem")}
               />
             </div>

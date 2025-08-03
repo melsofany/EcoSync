@@ -467,7 +467,7 @@ export default function CreatePurchaseOrder() {
                               <TableCell>
                                 <div className="space-y-1">
                                   <p className="text-xs text-green-600 font-medium">رقم البند: {quotationItem?.itemNumber || "غير محدد"}</p>
-                                  <p className="text-sm font-mono text-blue-600 font-semibold">
+                                  <p className="text-sm font-mono text-blue-600 font-semibold" dir="ltr">
                                     {quotationItem?.lineItem || "غير محدد"}
                                   </p>
                                   <p className="text-xs text-purple-600">PART NO: {quotationItem?.partNumber || "غير محدد"}</p>

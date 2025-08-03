@@ -131,7 +131,7 @@ export default function SupplierPricing() {
                   {itemsRequiringPricing.map((item: any) => (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.itemNumber}</TableCell>
-                      <TableCell className="font-mono text-blue-600 text-sm">
+                      <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
                         {item.lineItem || "غير محدد"}
                       </TableCell>
                       <TableCell>{item.description}</TableCell>

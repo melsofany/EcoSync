@@ -70,7 +70,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
           <div>
             <label className="font-medium">LINE ITEM:</label>
-            <p className="text-blue-600">{item.lineItem || "غير محدد"}</p>
+            <p className="text-blue-600 font-mono" dir="ltr">{item.lineItem || "غير محدد"}</p>
           </div>
           <div>
             <label className="font-medium">PART NO:</label>
