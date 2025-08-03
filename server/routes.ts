@@ -783,21 +783,20 @@ Respond in JSON format:
   });
 
   // Serve private objects (like profile images)
-  app.get("/objects/:objectPath(*)", requireAuth, async (req: Request, res: Response) => {
+  app.get("/objects/:objectPath(*)", async (req: Request, res: Response) => {
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
-      const userId = req.session.user?.id;
-      
-      const canAccess = await objectStorageService.canAccessObjectEntity({
-        objectFile,
-        userId: userId,
-        requestedPermission: "read" as any,
-      });
-      
-      if (!canAccess) {
-        return res.sendStatus(401);
-      }
+      // For profile images, allow public access
+      // const userId = req.session.user?.id;
+      // const canAccess = await objectStorageService.canAccessObjectEntity({
+      //   objectFile,
+      //   userId: userId,
+      //   requestedPermission: "read" as any,
+      // });
+      // if (!canAccess) {
+      //   return res.sendStatus(401);
+      // }
       
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
