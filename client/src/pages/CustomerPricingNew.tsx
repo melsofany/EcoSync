@@ -187,7 +187,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
           </h4>
           <p className="text-blue-100 text-sm mt-1">
-            عرض دقيق للبيانات المطابقة لـ LINE ITEM: {item.lineItem} و PART NO: {item.partNumber}
+            عرض جميع البيانات للـ PART NO: {item.partNumber} وجميع الـ CONTACTOR 32 AMP المشابهة
             {comprehensiveData && ` (${comprehensiveData.length} سجل)`}
           </p>
         </div>
