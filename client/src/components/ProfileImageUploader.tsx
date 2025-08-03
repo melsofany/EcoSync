@@ -39,25 +39,34 @@ export default function ProfileImageUploader({
       .use(AwsS3, {
         shouldUseMultipart: false,
         getUploadParameters: async () => {
-          const response = await apiRequest('/api/profile-images/upload', { method: 'POST' });
+          const response = await fetch('/api/profile-images/upload', { 
+            method: 'POST',
+            credentials: 'include'
+          });
+          const data = await response.json();
           return {
             method: 'PUT' as const,
-            url: response.uploadURL,
+            url: data.uploadURL,
           };
         },
       })
       .on("complete", async (result) => {
-        if (result.successful.length > 0) {
+        if (result.successful && result.successful.length > 0) {
           const uploadedFile = result.successful[0];
           const uploadURL = uploadedFile.uploadURL;
           
           try {
             // Update user profile with new image
-            const response = await apiRequest('/api/profile-images/update', {
+            const response = await fetch('/api/profile-images/update', {
               method: 'PUT',
+              headers: { 
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
               body: JSON.stringify({ imageURL: uploadURL }),
-              headers: { 'Content-Type': 'application/json' },
             });
+
+            const data = await response.json();
 
             toast({
               title: "تم تحديث الصورة الشخصية",
@@ -66,7 +75,7 @@ export default function ProfileImageUploader({
 
             // Callback to parent component
             if (onImageUploaded) {
-              onImageUploaded(response.profileImagePath);
+              onImageUploaded(data.profileImagePath);
             }
 
             // Refresh user data

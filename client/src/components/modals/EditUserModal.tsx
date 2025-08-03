@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { User, Mail, Phone, UserCheck } from "lucide-react";
+import { User, Mail, Phone, UserCheck, Camera, X } from "lucide-react";
+import ProfileImageUploader from "@/components/ProfileImageUploader";
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit, isLoadi
     email: "",
     phone: "",
     role: "",
+    profileImage: "",
     isActive: true
   });
 
@@ -35,6 +37,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit, isLoadi
         email: user.email || "",
         phone: user.phone || "",
         role: user.role || "",
+        profileImage: user.profileImage || "",
         isActive: user.isActive ?? true
       });
     }
@@ -227,6 +230,64 @@ export default function EditUserModal({ isOpen, onClose, user, onSubmit, isLoadi
               </Select>
             </div>
 
+          </div>
+
+          {/* Profile Image Section */}
+          <div className="space-y-2">
+            <Label>الصورة الشخصية</Label>
+            <div className="flex items-center gap-4">
+              {/* Profile Image Preview */}
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center overflow-hidden shadow-lg">
+                {formData.profileImage ? (
+                  <img 
+                    src={formData.profileImage} 
+                    alt="صورة المستخدم" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className="w-full h-full flex items-center justify-center text-white text-sm font-bold"
+                  style={{ display: formData.profileImage ? 'none' : 'flex' }}
+                >
+                  {formData.fullName 
+                    ? formData.fullName.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
+                    : <Camera className="h-6 w-6" />
+                  }
+                </div>
+              </div>
+
+              {/* Upload Controls */}
+              <div className="flex-1 space-y-2">
+                <div className="flex gap-2">
+                  <ProfileImageUploader
+                    currentImageUrl={formData.profileImage}
+                    onImageUploaded={(imageUrl) => {
+                      handleInputChange("profileImage", imageUrl);
+                    }}
+                  />
+                  {formData.profileImage && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleInputChange("profileImage", "")}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      إزالة
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="text-xs text-gray-500">
+                  يمكنك رفع صورة شخصية من جهازك (حد أقصى 5 ميجابايت)
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* User Status */}
