@@ -752,48 +752,33 @@ Respond in JSON format:
         const rowKeys = Object.keys(row);
         console.log(`Row ${index} keys:`, rowKeys, 'Values:', Object.values(row));
         
-        // Handle the "0" column issue - sometimes the price column gets labeled as "0"
-        // Search for price values in columns that might be mislabeled
-        let clientPrice = 0;
-        let actualPriceColumn = -1;
+        // Analyze the actual data structure based on console output
+        // The current data structure seems to be:
+        // [Line No, UOM, LINE ITEM, PART NO, Description, Source File, Request Date, Quantity, Response Date, Done]
         
-        // Look for numeric values that could be prices
-        for (let i = 1; i < rowKeys.length; i++) {
-          const value = row[rowKeys[i]];
-          const numValue = parseFloat(value);
-          if (!isNaN(numValue) && numValue > 0 && numValue < 1000000) {
-            // Check if this looks like a price (reasonable range)
-            const prevVal = i > 1 ? row[rowKeys[i-1]] : '';
-            const nextVal = i < rowKeys.length - 1 ? row[rowKeys[i+1]] : '';
-            
-            // If surrounded by non-numeric data, likely a price
-            if ((isNaN(parseFloat(prevVal)) || parseFloat(prevVal) <= 0) && 
-                (isNaN(parseFloat(nextVal)) || parseFloat(nextVal) <= 0 || typeof nextVal === 'string')) {
-              clientPrice = numValue;
-              actualPriceColumn = i;
-              break;
-            }
+        // Map according to actual data positions
+        const lineNumber = rowKeys.length > 0 ? row[rowKeys[0]] || 0 : 0;                   // Line No
+        const unit = rowKeys.length > 1 ? row[rowKeys[1]] || 'Each' : 'Each';              // UOM
+        const lineItem = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                   // LINE ITEM
+        const partNumber = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';                 // PART NO  
+        const description = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';                // Description
+        const rfqNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                  // Source File (RFQ Number)
+        const rfqDate = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                    // Request Date
+        const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // Quantity
+        const expiryDate = rowKeys.length > 8 ? row[rowKeys[8]] || '' : '';                 // Response Date (Expiry)
+        const clientName = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // Done/Status (use as client name fallback)
+        
+        // Extract price from LINE ITEM format (e.g., "1854.002.CARIER.7519" -> price = 1854.002)
+        let clientPrice = 0;
+        if (lineItem && typeof lineItem === 'string') {
+          const lineItemParts = lineItem.split('.');
+          if (lineItemParts.length >= 2) {
+            const priceStr = lineItemParts[0] + '.' + lineItemParts[1];
+            clientPrice = parseFloat(priceStr) || 0;
           }
         }
         
-        // Map columns correctly according to user specification, with fallback logic
-        const unit = rowKeys.length > 1 ? row[rowKeys[1]] || 'Each' : 'Each';              // B: UOM (الوحدة)
-        const lineItem = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                   // C: LINE ITEM
-        const partNumber = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';                 // D: PART NO
-        const description = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';                // E: DESCRIPTION (التوصيف)
-        const rfqNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                  // F: RFQ NO (رقم الطلب)
-        const rfqDate = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                    // G: RFQ DATE (تاريخ الطلب)
-        const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // H: QTY (الكمية)
-        
-        // Use detected price or fallback to column I
-        if (clientPrice === 0) {
-          clientPrice = rowKeys.length > 8 ? parseFloat(row[rowKeys[8]]) || 0 : 0;      // I: CLIENT PRICE (السعر الخاص بالعميل)
-        }
-        
-        const expiryDate = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // J: EXPIRY DATE (تاريخ انتهاء العرض)
-        const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // K: CLIENT NAME (اسم العميل)
-        
-        console.log(`Row ${index} - Price: ${clientPrice} (from column ${actualPriceColumn >= 0 ? rowKeys[actualPriceColumn] : 'I'})`);
+        console.log(`Row ${index} - Extracted price: ${clientPrice} from LINE ITEM: ${lineItem}`);
 
         // Format dates properly (convert Excel serial dates if needed)
         const formatDate = (dateValue: any) => {
@@ -812,8 +797,8 @@ Respond in JSON format:
 
         return {
           rowIndex: index + 1,
-          // Database fields mapping according to specification
-          clientName: clientName || 'غير محدد',
+          // Database fields mapping according to actual data structure
+          clientName: clientName === 'done' ? 'غير محدد' : (clientName || 'غير محدد'),
           requestNumber: rfqNumber || `REQ-${Date.now()}-${index + 1}`,
           customRequestNumber: rfqNumber,
           requestDate: formatDate(rfqDate),
@@ -824,7 +809,7 @@ Respond in JSON format:
           partNumber: partNumber,
           lineItem: lineItem,
           unit: unit,
-          lineNumber: index + 1,
+          lineNumber: lineNumber || (index + 1),
           status: 'pending',
           // Excel original data for reference
           excelData: row
