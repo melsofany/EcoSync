@@ -61,7 +61,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
         
         const historicalResponse = await fetch(`/api/items/${item.id}/historical-pricing`);
         console.log('Historical response status:', historicalResponse.status);
-        console.log('Historical response headers:', [...historicalResponse.headers.entries()]);
+        console.log('Historical response headers:', Object.fromEntries(historicalResponse.headers));
         
         if (historicalResponse.ok) {
           const historicalData = await historicalResponse.json();
@@ -94,6 +94,28 @@ function ItemDetailedPricing({ item }: { item: any }) {
     console.log('useEffect triggered for item:', item?.id);
     fetchPricingData();
   }, [item?.id]);
+
+  // Force fetch historical data on component mount regardless
+  React.useEffect(() => {
+    console.log('FORCE FETCH: Component mounted, item:', item);
+    if (item?.id) {
+      const forceHistoricalFetch = async () => {
+        console.log('FORCE FETCH: Calling historical API directly...');
+        try {
+          const response = await fetch(`/api/items/${item.id}/historical-pricing`);
+          console.log('FORCE FETCH: Response received:', response.status);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('FORCE FETCH: Data received:', data);
+            setHistoricalPricing(data);
+          }
+        } catch (error) {
+          console.error('FORCE FETCH: Error:', error);
+        }
+      };
+      forceHistoricalFetch();
+    }
+  }, [item]);
 
   if (isLoading) {
     return <div className="bg-muted/30 rounded-lg p-4 text-center">جاري تحميل التفاصيل...</div>;
