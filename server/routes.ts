@@ -74,13 +74,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const user = await storage.getUserByUsername(username);
       if (!user || !user.isActive) {
-        await logActivity(req, "login_failed", "user", undefined, `Failed login attempt for username: ${username}`);
+        await logActivity(req, "login_failed", "user", undefined, `محاولة دخول فاشلة لاسم المستخدم: ${username}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
-        await logActivity(req, "login_failed", "user", user.id, "Invalid password");
+        // Get first two names from fullName for failed password attempt
+        const nameParts = user.fullName.trim().split(' ');
+        const firstTwoNames = nameParts.slice(0, 2).join(' ');
+        
+        await logActivity(req, "login_failed", "user", user.id, `كلمة مرور خاطئة لـ ${firstTwoNames}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
@@ -101,7 +105,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: user.role,
       };
 
-      await logActivity(req, "login_success", "user", user.id, "User logged in successfully");
+      // Get first two names from fullName
+      const nameParts = user.fullName.trim().split(' ');
+      const firstTwoNames = nameParts.slice(0, 2).join(' ');
+      
+      await logActivity(req, "login_success", "user", user.id, `${firstTwoNames} logged in successfully`);
 
       const { password: _, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);
@@ -115,7 +123,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (req.session.user) {
         await storage.updateUserOnlineStatus(req.session.user.id, false);
-        await logActivity(req, "logout", "user", req.session.user.id, "User logged out");
+        // Get user details for logout message
+        const user = await storage.getUser(req.session.user.id);
+        if (user) {
+          const nameParts = user.fullName.trim().split(' ');
+          const firstTwoNames = nameParts.slice(0, 2).join(' ');
+          await logActivity(req, "logout", "user", req.session.user.id, `${firstTwoNames} logged out`);
+        } else {
+          await logActivity(req, "logout", "user", req.session.user.id, "تم تسجيل الخروج");
+        }
       }
 
       req.session.destroy((err) => {
