@@ -535,6 +535,22 @@ export class DatabaseStorage implements IStorage {
     return 'PO000001';
   }
 
+  async getNextItemNumber(): Promise<string> {
+    const [lastItem] = await db
+      .select({ itemNumber: items.itemNumber })
+      .from(items)
+      .orderBy(desc(items.itemNumber))
+      .limit(1);
+    
+    if (lastItem?.itemNumber) {
+      const lastNumber = parseInt(lastItem.itemNumber.replace('ELEK', ''));
+      const nextNumber = (lastNumber + 1).toString().padStart(8, '0');
+      return `ELEK${nextNumber}`;
+    }
+    
+    return 'ELEK00000001';
+  }
+
   async getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined> {
     const [po] = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, id));
     return po || undefined;

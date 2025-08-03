@@ -961,6 +961,19 @@ Respond in JSON format:
     }
   });
 
+  // Import quotations and purchase orders with pricing
+  app.post('/api/import-quotations-pos', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { importQuotationsAndPOs } = await import('./import-quotations-pos.js');
+      const result = await importQuotationsAndPOs();
+      await logActivity(req, "import_quotations_pos", "system", "", `Imported: ${result.quotationsCreated} quotations, ${result.purchaseOrdersCreated} POs, RFQ value: ${result.totalRFQValue.toLocaleString()}`);
+      res.json(result);
+    } catch (error) {
+      console.error('Error importing quotations/POs:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
