@@ -16,8 +16,7 @@ import {
   DollarSign,
   TrendingUp,
   Upload,
-  Activity,
-  FileSpreadsheet
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
