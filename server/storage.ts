@@ -105,6 +105,8 @@ export interface IStorage {
   // Purchase order items
   addPurchaseOrderItem(item: InsertPurchaseOrderItem): Promise<PurchaseOrderItem>;
   getPurchaseOrderItems(poId: string): Promise<PurchaseOrderItem[]>;
+  updatePurchaseOrderItem(itemId: string, updates: Partial<PurchaseOrderItem>): Promise<PurchaseOrderItem | undefined>;
+  deletePurchaseOrderItem(itemId: string): Promise<PurchaseOrderItem | undefined>;
 
   // Supplier quotes
   addSupplierQuote(quote: InsertSupplierQuote): Promise<SupplierQuote>;
@@ -1012,6 +1014,33 @@ export class DatabaseStorage implements IStorage {
       .where(eq(purchaseOrders.id, id))
       .returning();
     return purchaseOrder || undefined;
+  }
+
+  async updatePurchaseOrderItem(itemId: string, updates: Partial<PurchaseOrderItem>): Promise<PurchaseOrderItem | undefined> {
+    try {
+      const [updatedItem] = await db
+        .update(purchaseOrderItems)
+        .set(updates)
+        .where(eq(purchaseOrderItems.id, itemId))
+        .returning();
+      return updatedItem || undefined;
+    } catch (error) {
+      console.error("Error updating purchase order item:", error);
+      return undefined;
+    }
+  }
+
+  async deletePurchaseOrderItem(itemId: string): Promise<PurchaseOrderItem | undefined> {
+    try {
+      const [deletedItem] = await db
+        .delete(purchaseOrderItems)
+        .where(eq(purchaseOrderItems.id, itemId))
+        .returning();
+      return deletedItem || undefined;
+    } catch (error) {
+      console.error("Error deleting purchase order item:", error);
+      return undefined;
+    }
   }
 
   async getPurchaseOrdersForItem(itemId: string): Promise<any[]> {

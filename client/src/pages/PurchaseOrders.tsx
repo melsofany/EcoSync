@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import NewPurchaseOrderModal from "@/components/modals/NewPurchaseOrderModal";
 import EditPurchaseOrderModal from "@/components/modals/EditPurchaseOrderModal";
+import EditPOItemsModal from "@/components/modals/EditPOItemsModal";
 
 export default function PurchaseOrders() {
   const [isNewPOModalOpen, setIsNewPOModalOpen] = useState(false);
@@ -18,6 +19,8 @@ export default function PurchaseOrders() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingPO, setEditingPO] = useState<any>(null);
+  const [isEditItemsModalOpen, setIsEditItemsModalOpen] = useState(false);
+  const [editingItemsPO, setEditingItemsPO] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -187,19 +190,9 @@ export default function PurchaseOrders() {
     },
   });
 
-  const handleTrackOrder = (po: any) => {
-    const nextStatus = po.status === 'pending' ? 'confirmed' : 
-                     po.status === 'confirmed' ? 'delivered' : 
-                     po.status === 'delivered' ? 'invoiced' : po.status;
-                     
-    if (nextStatus !== po.status) {
-      updateStatusMutation.mutate({ poId: po.id, status: nextStatus });
-    } else {
-      toast({
-        title: "معلومات",
-        description: "أمر الشراء في المرحلة الأخيرة",
-      });
-    }
+  const handleEditPOItems = (po: any) => {
+    setEditingItemsPO(po);
+    setIsEditItemsModalOpen(true);
   };
 
   // Calculate statistics
@@ -348,12 +341,11 @@ export default function PurchaseOrders() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            title="تتبع الطلب" 
+                            title="تعديل البنود والكميات" 
                             className="text-purple-600 hover:text-purple-800"
-                            onClick={() => handleTrackOrder(po)}
-                            disabled={updateStatusMutation.isPending}
+                            onClick={() => handleEditPOItems(po)}
                           >
-                            <Truck className="h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="ghost" 
@@ -541,6 +533,18 @@ export default function PurchaseOrders() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Edit PO Items Modal */}
+      {isEditItemsModalOpen && editingItemsPO && (
+        <EditPOItemsModal
+          isOpen={isEditItemsModalOpen}
+          onClose={() => {
+            setIsEditItemsModalOpen(false);
+            setEditingItemsPO(null);
+          }}
+          purchaseOrder={editingItemsPO}
+        />
+      )}
     </div>
   );
 }
