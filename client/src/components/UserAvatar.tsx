@@ -48,7 +48,12 @@ export function UserAvatar({ user, size = "md", className = "" }: UserAvatarProp
             target.style.display = 'none';
             const parent = target.parentElement;
             if (parent) {
-              parent.innerHTML = `<span class="text-white font-medium">${getInitials(user.fullName)}</span>`;
+              // Safe DOM manipulation - create elements instead of using innerHTML
+              const span = document.createElement('span');
+              span.className = 'text-white font-medium';
+              span.textContent = getInitials(user.fullName); // textContent safely escapes content
+              parent.innerHTML = ''; // Clear existing content
+              parent.appendChild(span);
             }
           }}
         />
