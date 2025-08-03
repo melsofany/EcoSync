@@ -19,6 +19,7 @@ import {
   Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { UserDisplayName } from "@/components/UserDisplayName";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -147,42 +148,27 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         {/* User Info */}
         {isOpen && (
           <div className="p-3 lg:p-4 border-b border-gray-100 bg-gray-50">
-            <div className="flex items-center space-x-3 space-x-reverse">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
-                {user.profileImage ? (
-                  <img 
-                    src={user.profileImage} 
-                    alt={user.fullName}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // إذا فشل تحميل الصورة، إظهار الحروف الأولى
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent) {
-                        parent.innerHTML = `<span class="text-white text-sm font-medium">${getInitials(user.fullName)}</span>`;
-                      }
-                    }}
-                  />
-                ) : (
-                  <span className="text-white text-sm font-medium">
-                    {getInitials(user.fullName)}
-                  </span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">
-                  {user.fullName}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {getRoleLabel(user.role)}
-                </p>
-              </div>
+            <UserDisplayName 
+              user={user}
+              showUsername={false}
+              showEmail={false}
+              showPhone={false}
+              avatarSize="md"
+              layout="horizontal"
+              className="w-full"
+            />
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-500 truncate">
+                {getRoleLabel(user.role)}
+              </p>
               <div className="flex items-center">
                 <Circle className={cn(
                   "w-2 h-2 rounded-full",
                   user.isOnline ? "fill-green-400 text-green-400" : "fill-gray-400 text-gray-400"
                 )} />
+                <span className="text-xs text-gray-500 mr-1">
+                  {user.isOnline ? "متصل" : "غير متصل"}
+                </span>
               </div>
             </div>
           </div>

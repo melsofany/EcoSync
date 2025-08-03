@@ -14,6 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import NewUserModal from "@/components/modals/NewUserModal";
 import EditUserModal from "@/components/modals/EditUserModal";
+import { UserDisplayName } from "@/components/UserDisplayName";
 import { 
   Users, 
   Shield, 
@@ -450,40 +451,13 @@ export default function Admin() {
                     usersArray.map((userItem: any) => (
                       <TableRow key={userItem.id}>
                         <TableCell>
-                          <div className="flex items-center space-x-3 space-x-reverse">
-                            <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
-                              {userItem.profileImage && isValidImageUrl(userItem.profileImage) ? (
-                                <img 
-                                  src={userItem.profileImage} 
-                                  alt={userItem.fullName}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    // إذا فشل تحميل الصورة، إظهار الحروف الأولى
-                                    const target = e.target as HTMLImageElement;
-                                    target.style.display = 'none';
-                                    const parent = target.parentElement;
-                                    if (parent) {
-                                      parent.innerHTML = `<span class="text-white text-xs font-medium">${getInitials(userItem.fullName)}</span>`;
-                                    }
-                                  }}
-                                />
-                              ) : (
-                                <span className="text-white text-xs font-medium">
-                                  {getInitials(userItem.fullName)}
-                                </span>
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-800">{userItem.fullName}</p>
-                              <p className="text-sm text-gray-500">@{userItem.username}</p>
-                              {userItem.email && (
-                                <p className="text-xs text-gray-400">{userItem.email}</p>
-                              )}
-                              {userItem.phone && (
-                                <p className="text-xs text-gray-400">{userItem.phone}</p>
-                              )}
-                            </div>
-                          </div>
+                          <UserDisplayName 
+                            user={userItem}
+                            showUsername={true}
+                            showEmail={true}
+                            showPhone={true}
+                            avatarSize="md"
+                          />
                         </TableCell>
                         <TableCell>{getRoleLabel(userItem.role)}</TableCell>
                         <TableCell>
