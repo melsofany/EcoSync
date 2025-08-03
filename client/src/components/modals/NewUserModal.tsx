@@ -9,12 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { X, User, Lock, Shield } from "lucide-react";
+import { X, User, Lock, Shield, Mail, Phone, Camera, Upload } from "lucide-react";
 
 const userSchema = z.object({
   username: z.string().min(3, "اسم المستخدم يجب أن يكون 3 أحرف على الأقل"),
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
   fullName: z.string().min(1, "الاسم الكامل مطلوب"),
+  email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
+  phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل").optional().or(z.literal("")),
+  profileImage: z.string().optional(),
   role: z.string().min(1, "الدور مطلوب"),
   isActive: z.boolean().default(true),
 });
@@ -43,6 +46,9 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
       username: "",
       password: "",
       fullName: "",
+      email: "",
+      phone: "",
+      profileImage: "",
       role: undefined,
       isActive: true,
     },
@@ -148,6 +154,74 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                   {form.formState.errors.fullName.message}
                 </p>
               )}
+            </div>
+
+            <div>
+              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="example@company.com"
+                  className="pl-10"
+                  {...form.register("email")}
+                />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              </div>
+              {form.formState.errors.email && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="phone">رقم الهاتف</Label>
+              <div className="relative">
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="01234567890"
+                  className="pl-10"
+                  {...form.register("phone")}
+                />
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              </div>
+              {form.formState.errors.phone && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.phone.message}
+                </p>
+              )}
+            </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="profileImage">الصورة الشخصية</Label>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {form.watch("profileImage") ? (
+                      <img 
+                        src={form.watch("profileImage")} 
+                        alt="صورة المستخدم" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Camera className="h-8 w-8 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      id="profileImage"
+                      type="url"
+                      placeholder="رابط الصورة الشخصية (اختياري)"
+                      {...form.register("profileImage")}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      يمكنك إدخال رابط الصورة أو تركه فارغاً
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
