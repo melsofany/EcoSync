@@ -24,13 +24,13 @@ interface PreviewData {
   requestNumber: string;
   customRequestNumber: string;
   requestDate: string;
+  responseDate: string;
   quantity: number;
   description: string;
   partNumber: string;
   lineItem: string;
   uom: string;
-  clientPrice: string;
-  expiryDate: string;
+  lineNumber: number;
   status: string;
   excelData: any;
 }
@@ -183,9 +183,8 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
             <Download className="h-4 w-4" />
             <AlertDescription>
               هيكل ملف Excel المطلوب:
-              <br />العمود B: وحدة القياس (UOM) | العمود C: رقم البند (LINE ITEM) | العمود D: رقم القطعة (PART NO)
-              <br />العمود E: التوصيف | العمود F: رقم الطلب | العمود G: تاريخ الطلب | العمود H: الكمية
-              <br />العمود I: السعر للعميل | العمود J: تاريخ انتهاء العرض | العمود K: اسم العميل
+              <br />العمود A: الحالة | العمود B: اسم العميل | العمود C: تاريخ الرد | العمود D: الكمية | العمود E: تاريخ الطلب
+              <br />العمود F: ملف المصدر | العمود G: التوصيف | العمود H: رقم القطعة | العمود I: رقم البند | العمود J: وحدة القياس | العمود K: رقم السطر
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -231,15 +230,15 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                   <tr>
                     <th className="px-3 py-2 text-right">الصف</th>
                     <th className="px-3 py-2 text-right">اسم العميل</th>
-                    <th className="px-3 py-2 text-right">رقم الطلب</th>
+                    <th className="px-3 py-2 text-right">ملف المصدر</th>
                     <th className="px-3 py-2 text-right">تاريخ الطلب</th>
+                    <th className="px-3 py-2 text-right">تاريخ الرد</th>
                     <th className="px-3 py-2 text-right">التوصيف</th>
                     <th className="px-3 py-2 text-right">رقم القطعة</th>
                     <th className="px-3 py-2 text-right">رقم البند</th>
                     <th className="px-3 py-2 text-right">الكمية</th>
                     <th className="px-3 py-2 text-right">وحدة القياس</th>
-                    <th className="px-3 py-2 text-right">سعر العميل</th>
-                    <th className="px-3 py-2 text-right">تاريخ انتهاء العرض</th>
+                    <th className="px-3 py-2 text-right">رقم السطر</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -251,6 +250,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                         {row.customRequestNumber}
                       </td>
                       <td className="px-3 py-2">{row.requestDate}</td>
+                      <td className="px-3 py-2">{row.responseDate}</td>
                       <td className="px-3 py-2 max-w-xs truncate" title={row.description}>
                         {row.description}
                       </td>
@@ -262,10 +262,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
                       </td>
                       <td className="px-3 py-2">{row.quantity}</td>
                       <td className="px-3 py-2">{row.uom}</td>
-                      <td className="px-3 py-2 font-semibold text-green-600">
-                        {row.clientPrice}
-                      </td>
-                      <td className="px-3 py-2">{row.expiryDate}</td>
+                      <td className="px-3 py-2">{row.lineNumber}</td>
                     </tr>
                   ))}
                 </tbody>

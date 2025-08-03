@@ -717,36 +717,48 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
-      // Map Excel columns to database fields based on column positions
-      // B=UOM, C=LINE ITEM, D=PART NO, E=Description, F=Request Number, G=Request Date, H=Quantity, I=Client Price, J=Expiry Date, K=Client Name
+      // Map Excel columns to database fields based on header names and positions
+      // Expected structure: A=Done, B=Client, C=Response Date, D=Quantity, E=Request Date, F=Source File, G=Description, H=PART NO, I=LINE ITEM, J=UOM, K=Line No
       const mappedData = excelData.map((row: any, index: number) => {
-        // Get column values by position (Excel columns)
+        // Get values from specific columns or by property names
+        let clientName = row['Client'] || row['عميل'] || '';
+        let responseDate = row['Response Date'] || row['تاريخ الرد'] || '';
+        let quantity = parseInt(row['Quantity'] || row['الكمية'] || '0') || 0;
+        let requestDate = row['Request Date'] || row['تاريخ الطلب'] || '';
+        let sourceFile = row['Source File'] || row['ملف المصدر'] || '';
+        let description = row['Description'] || row['الوصف'] || '';
+        let partNumber = row['PART NO'] || row['رقم القطعة'] || '';
+        let lineItem = row['LINE ITEM'] || row['رقم البند'] || '';
+        let uom = row['UOM'] || row['وحدة القياس'] || '';
+        let lineNumber = parseInt(row['Line No'] || row['رقم السطر'] || '0') || 0;
+
+        // If above doesn't work, try by array position (fallback)
         const rowKeys = Object.keys(row);
-        const uom = row[rowKeys[1]] || ''; // Column B (index 1)
-        const lineItem = row[rowKeys[2]] || ''; // Column C (index 2)  
-        const partNumber = row[rowKeys[3]] || ''; // Column D (index 3)
-        const description = row[rowKeys[4]] || ''; // Column E (index 4)
-        const requestNumber = row[rowKeys[5]] || ''; // Column F (index 5)
-        const requestDate = row[rowKeys[6]] || ''; // Column G (index 6)
-        const quantity = parseInt(row[rowKeys[7]]) || 0; // Column H (index 7)
-        const clientPrice = row[rowKeys[8]] || ''; // Column I (index 8)
-        const expiryDate = row[rowKeys[9]] || ''; // Column J (index 9)
-        const clientName = row[rowKeys[10]] || ''; // Column K (index 10)
+        if (!clientName && rowKeys.length > 1) clientName = row[rowKeys[1]] || '';
+        if (!responseDate && rowKeys.length > 2) responseDate = row[rowKeys[2]] || '';
+        if (!quantity && rowKeys.length > 3) quantity = parseInt(row[rowKeys[3]]) || 0;
+        if (!requestDate && rowKeys.length > 4) requestDate = row[rowKeys[4]] || '';
+        if (!sourceFile && rowKeys.length > 5) sourceFile = row[rowKeys[5]] || '';
+        if (!description && rowKeys.length > 6) description = row[rowKeys[6]] || '';
+        if (!partNumber && rowKeys.length > 7) partNumber = row[rowKeys[7]] || '';
+        if (!lineItem && rowKeys.length > 8) lineItem = row[rowKeys[8]] || '';
+        if (!uom && rowKeys.length > 9) uom = row[rowKeys[9]] || '';
+        if (!lineNumber && rowKeys.length > 10) lineNumber = parseInt(row[rowKeys[10]]) || 0;
 
         return {
           rowIndex: index + 1,
           // Database fields mapping
           clientName,
-          requestNumber: requestNumber || `REQ-${Date.now()}-${index + 1}`,
-          customRequestNumber: requestNumber,
+          requestNumber: sourceFile || `REQ-${Date.now()}-${index + 1}`,
+          customRequestNumber: sourceFile,
           requestDate,
+          responseDate,
           quantity,
           description,
           partNumber,
           lineItem,
           uom,
-          clientPrice,
-          expiryDate,
+          lineNumber,
           status: 'pending', // Default status
           // Excel original data for reference
           excelData: row
@@ -759,16 +771,17 @@ Respond in JSON format:
         previewData: mappedData,
         totalRows: mappedData.length,
         mapping: {
-          'B': 'وحدة القياس (UOM)',
-          'C': 'رقم البند (LINE ITEM)', 
-          'D': 'رقم القطعة (PART NO)',
-          'E': 'التوصيف (Description)',
-          'F': 'رقم الطلب (Request Number)',
-          'G': 'تاريخ الطلب (Request Date)',
-          'H': 'الكمية (Quantity)',
-          'I': 'السعر للعميل (Client Price)',
-          'J': 'تاريخ انتهاء العرض (Expiry Date)',
-          'K': 'اسم العميل (Client Name)'
+          'A': 'الحالة (Done)',
+          'B': 'اسم العميل (Client)',
+          'C': 'تاريخ الرد (Response Date)',
+          'D': 'الكمية (Quantity)',
+          'E': 'تاريخ الطلب (Request Date)',
+          'F': 'ملف المصدر (Source File)',
+          'G': 'التوصيف (Description)',
+          'H': 'رقم القطعة (PART NO)',
+          'I': 'رقم البند (LINE ITEM)',
+          'J': 'وحدة القياس (UOM)',
+          'K': 'رقم السطر (Line No)'
         }
       });
     } catch (error) {
