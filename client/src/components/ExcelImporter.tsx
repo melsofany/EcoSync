@@ -136,10 +136,15 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
       setSelectedFile(file);
       setShowPreview(false);
       setPreviewData([]);
+      setShowColumnMapping(false);
+      setColumnMapping({});
+      setAvailableColumns([]);
+      setRequiredFields([]);
+      setExcelData([]);
     }
   };
 
-  const handlePreview = async () => {
+  const handleAnalyzeFile = async () => {
     if (!selectedFile) return;
 
     try {
@@ -229,7 +234,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
               className="flex-1"
             />
             <Button
-              onClick={handlePreview}
+              onClick={handleAnalyzeFile}
               disabled={!selectedFile || analyzeMutation.isPending}
               className="flex items-center space-x-2 space-x-reverse"
             >
@@ -241,11 +246,11 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
           <Alert>
             <Download className="h-4 w-4" />
             <AlertDescription>
-              <strong>🧠 نظام تحليل ذكي للبيانات:</strong>
-              <br />النظام يحلل محتوى ملف Excel تلقائياً ويحدد نوع كل عمود بناءً على البيانات
-              <br /><strong>✅ يدعم أي ترتيب للأعمدة:</strong> رقم البند، رقم القطعة، التوصيف، الكمية، السعر، العميل، التواريخ
-              <br /><strong>🔍 تحليل ذكي:</strong> يميز بين الأرقام (كمية/سعر) والنصوص (توصيف/عميل) والتواريخ تلقائياً
-              <br /><strong>معرف P-:</strong> يتم توليده تلقائياً بعد معالجة البيانات
+              <strong>🎯 نظام مطابقة الأعمدة الجديد:</strong>
+              <br /><strong>المرحلة 1:</strong> رفع الملف والضغط على "تحليل الملف"
+              <br /><strong>المرحلة 2:</strong> تحديد مطابقة الأعمدة (العميل = K، رقم البند = C، إلخ)
+              <br /><strong>المرحلة 3:</strong> معاينة البيانات والتأكيد
+              <br /><strong>✅ يدعم أي ترتيب أعمدة:</strong> حدد بنفسك أي عمود يطابق أي حقل
             </AlertDescription>
           </Alert>
         </CardContent>
