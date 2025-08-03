@@ -717,56 +717,98 @@ Respond in JSON format:
         return res.status(400).json({ message: "Invalid Excel data" });
       }
 
-      // Based on the actual output data, let me trace the correct mapping:
-      // Row 1: done | 25R009802 | 2025-07-20 | EDC | Description | 2503244 | 1854.002.CARIER.7519 | 6 | Each | (empty)
-      // This suggests: A=status, B=sourceFile, C=requestDate, D=clientName, E=description, F=partNumber, G=lineItem, H=quantity, I=unit, J=lineNumber
+      // Debug the actual Excel structure by looking at raw data
+      console.log('Raw Excel data sample:', excelData.slice(0, 2));
+      
       const mappedData = excelData.map((row: any, index: number) => {
         // Get all keys to access by position
         const rowKeys = Object.keys(row);
+        console.log(`Row ${index + 1} keys:`, rowKeys);
+        console.log(`Row ${index + 1} values:`, rowKeys.map(key => row[key]));
         
-        // Map columns based on actual output pattern
-        const status = rowKeys.length > 0 ? row[rowKeys[0]] || '' : '';                     // A: status (done)
-        const sourceFile = rowKeys.length > 1 ? row[rowKeys[1]] || '' : '';                 // B: Source File (25R009802)
-        const requestDate = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';                // C: Request Date (2025-07-20)
-        const clientName = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';                 // D: Client Name (EDC)
-        const description = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';                // E: Description
-        const partNumber = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';                 // F: PART NO (2503244)
-        const lineItem = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';                   // G: LINE ITEM (1854.002.CARIER.7519)
-        const quantity = rowKeys.length > 7 ? parseInt(row[rowKeys[7]]) || 0 : 0;           // H: Quantity (6)
-        const unit = rowKeys.length > 8 ? row[rowKeys[8]] || 'Each' : 'Each';              // I: UOM (Each)
-        const lineNumber = rowKeys.length > 9 ? parseInt(row[rowKeys[9]]) || 0 : 0;         // J: Line Number
-
-        // Format dates properly (convert Excel serial dates if needed)
-        const formatDate = (dateValue: any) => {
-          if (!dateValue) return '';
+        // Let's try to understand the actual structure from the Excel file
+        // Based on the images we saw earlier, the correct order should be:
+        // Col 1: Empty/Status, Col 2: Client (EDC), Col 3: Response Date, Col 4: Quantity, Col 5: Request Date, etc.
+        
+        const col1 = rowKeys.length > 0 ? row[rowKeys[0]] || '' : '';
+        const col2 = rowKeys.length > 1 ? row[rowKeys[1]] || '' : '';
+        const col3 = rowKeys.length > 2 ? row[rowKeys[2]] || '' : '';
+        const col4 = rowKeys.length > 3 ? row[rowKeys[3]] || '' : '';
+        const col5 = rowKeys.length > 4 ? row[rowKeys[4]] || '' : '';
+        const col6 = rowKeys.length > 5 ? row[rowKeys[5]] || '' : '';
+        const col7 = rowKeys.length > 6 ? row[rowKeys[6]] || '' : '';
+        const col8 = rowKeys.length > 7 ? row[rowKeys[7]] || '' : '';
+        const col9 = rowKeys.length > 8 ? row[rowKeys[8]] || '' : '';
+        const col10 = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';
+        
+        // Try to identify which column contains what based on data patterns
+        let clientName = 'غير محدد';
+        let sourceFile = '';
+        let partNumber = '';
+        let lineItem = '';
+        let quantity = 0;
+        let description = '';
+        let unit = 'Each';
+        let requestDate = '';
+        
+        // Look for patterns to identify correct columns
+        for (let i = 0; i < rowKeys.length; i++) {
+          const value = row[rowKeys[i]];
           
-          // If it's a number (Excel serial date), convert it
-          if (typeof dateValue === 'number') {
-            const excelEpoch = new Date(1900, 0, 1);
-            const jsDate = new Date(excelEpoch.getTime() + (dateValue - 2) * 24 * 60 * 60 * 1000);
-            return jsDate.toISOString().split('T')[0];
+          // Look for client names (EDC pattern)
+          if (typeof value === 'string' && value === 'EDC') {
+            clientName = value;
           }
           
-          // If it's already a string, return as is
-          return dateValue.toString();
-        };
+          // Look for request numbers (25R pattern)
+          if (typeof value === 'string' && value.match(/^25R\d+$/)) {
+            sourceFile = value;
+          }
+          
+          // Look for part numbers (numeric values that look like part numbers)
+          if (typeof value === 'string' && value.match(/^\d{6,}$/)) {
+            partNumber = value;
+          }
+          
+          // Look for line items (contains dots and letters)
+          if (typeof value === 'string' && value.match(/\d+\.\d+\.[A-Z]+\.\d+/)) {
+            lineItem = value;
+          }
+          
+          // Look for quantities (small numbers)
+          if (typeof value === 'number' && value > 0 && value < 1000) {
+            quantity = value;
+          }
+          
+          // Look for descriptions (long text with P/N)
+          if (typeof value === 'string' && value.includes('P/N')) {
+            description = value;
+          }
+          
+          // Look for dates (convert Excel serial dates)
+          if (typeof value === 'number' && value > 40000 && value < 50000) {
+            const excelEpoch = new Date(1900, 0, 1);
+            const jsDate = new Date(excelEpoch.getTime() + (value - 2) * 24 * 60 * 60 * 1000);
+            requestDate = jsDate.toISOString().split('T')[0];
+          }
+        }
 
         return {
           rowIndex: index + 1,
-          // Database fields mapping - corrected
-          clientName: clientName || 'غير محدد',
+          // Database fields mapping using pattern recognition
+          clientName: clientName,
           requestNumber: sourceFile || `REQ-${Date.now()}-${index + 1}`,
           customRequestNumber: sourceFile,
-          requestDate: formatDate(requestDate),
+          requestDate: requestDate || '',
           responseDate: '', // No response date in this format
-          quantity,
+          quantity: quantity,
           priceToClient: 0, // No price in this format
-          description,
-          partNumber,
-          lineItem,
-          unit,
-          lineNumber,
-          status: status === 'done' ? 'completed' : 'pending',
+          description: description,
+          partNumber: partNumber,
+          lineItem: lineItem,
+          unit: unit,
+          lineNumber: index + 1,
+          status: 'pending',
           // Excel original data for reference
           excelData: row
         };
@@ -778,16 +820,12 @@ Respond in JSON format:
         previewData: mappedData,
         totalRows: mappedData.length,
         mapping: {
-          'A': 'الحالة (Status)',
-          'B': 'ملف المصدر (Source File)',
-          'C': 'تاريخ الطلب (Request Date)',
-          'D': 'اسم العميل (Client Name)',
-          'E': 'التوصيف (Description)',
-          'F': 'رقم القطعة (PART NO)',
-          'G': 'رقم البند (LINE ITEM)',
-          'H': 'الكمية (Quantity)',
-          'I': 'وحدة القياس (UOM)',
-          'J': 'رقم السطر (Line No)'
+          'تلقائي': 'تم اكتشاف البيانات تلقائياً باستخدام التعرف على الأنماط',
+          'EDC': 'اسم العميل',
+          '25R*': 'رقم الطلب',
+          'P/N': 'التوصيف',
+          'أرقام': 'رقم القطعة وأرقام البنود',
+          'تواريخ': 'تم تحويل التواريخ من Excel'
         }
       });
     } catch (error) {
