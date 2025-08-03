@@ -227,7 +227,7 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
               <div>
                 <h4 className="font-semibold mb-2">معاينة البيانات (أول 5 سجلات):</h4>
                 <div className="overflow-x-auto overflow-y-auto max-h-96 border rounded-lg">
-                  <table className="w-full text-sm border-collapse border border-gray-300 min-w-[1300px]">
+                  <table className="w-full text-sm border-collapse border border-gray-300 min-w-[1400px]">
                     <thead>
                       <tr className="bg-gray-100 sticky top-0">
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[60px]">الصف</th>
@@ -239,6 +239,7 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[80px]">الكمية</th>
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[80px]">السعر</th>
                         <th className="border border-gray-300 p-3 text-right font-semibold min-w-[100px]">تاريخ الطلب</th>
+                        <th className="border border-gray-300 p-3 text-right font-semibold min-w-[110px]">انتهاء العرض</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -259,6 +260,7 @@ export function QuickImporter({ onImportComplete }: QuickImporterProps) {
                           <td className="border border-gray-300 p-3 text-center font-semibold text-green-600">{row.quantity}</td>
                           <td className="border border-gray-300 p-3 text-center font-semibold text-orange-600">{row.unitPrice}</td>
                           <td className="border border-gray-300 p-3 text-sm text-gray-600">{row.requestDate}</td>
+                          <td className="border border-gray-300 p-3 text-sm text-red-600 font-medium">{row.expiryDate}</td>
                         </tr>
                       ))}
                     </tbody>
