@@ -8,14 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -23,8 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, ChevronRight, Clock, Package, AlertCircle, DollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 
 // Component to show detailed pricing info for an item
@@ -73,7 +63,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium">رقم الطلب:</label>
+            <label className="text-sm font-medium">تاريخ ورود السعر:</label>
             <p className="text-sm">
               {item.requestNumber ? `طلب رقم: ${item.requestNumber}` : "غير محدد"}
             </p>
@@ -109,144 +99,6 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
         )}
       </div>
-
-      {/* Enhanced detailed pricing table */}
-      {detailedPricing && (
-        <div className="mt-4">
-          <h5 className="font-semibold mb-2 flex items-center gap-2">
-            جدول التسعير المتكامل
-          </h5>
-          <div className="overflow-x-auto border rounded-lg">
-            <Table className="w-full border-collapse border border-gray-300">
-              <TableHeader>
-                <TableRow className="bg-gray-100 border-b">
-                  <TableHead className="text-center font-bold text-black border">PROCESS NO</TableHead>
-                  <TableHead className="text-center font-bold text-black border">QUANTITY</TableHead>
-                  <TableHead className="text-center font-bold text-black border">DATE/PO</TableHead>
-                  <TableHead className="text-center font-bold text-black border">PO</TableHead>
-                  <TableHead className="text-center font-bold text-black border">Category</TableHead>
-                  <TableHead className="text-center font-bold text-black border">REQ_DATE</TableHead>
-                  <TableHead className="text-center font-bold text-black border">PRICE/DATE</TableHead>
-                  <TableHead className="text-center font-bold text-black border">QTY</TableHead>
-                  <TableHead className="text-center font-bold text-black border">DATE</TableHead>
-                  <TableHead className="text-center font-bold text-black border">SPR</TableHead>
-                  <TableHead className="text-center font-bold text-black border">DESCRIPTION</TableHead>
-                  <TableHead className="text-center font-bold text-black border">PART NO</TableHead>
-                  <TableHead className="text-center font-bold text-black border">LINE ITEM</TableHead>
-                  <TableHead className="text-center font-bold text-black border">UOM</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {/* Current item supplier pricing - using correct item data */}
-                <TableRow className="hover:bg-gray-50 border-b">
-                  <TableCell className="text-center border font-bold">10500</TableCell>
-                  <TableCell className="text-center border">{item.quantity || 1}</TableCell>
-                  <TableCell className="text-center border">
-                    {format(new Date(), "dd/MM/yyyy", { locale: ar })}
-                  </TableCell>
-                  <TableCell className="text-center border">-</TableCell>
-                  <TableCell className="text-center border font-bold">SUPPLIES</TableCell>
-                  <TableCell className="text-center border">
-                    {format(new Date(), "dd/MM/yyyy", { locale: ar })}
-                  </TableCell>
-                  <TableCell className="text-center border font-bold">
-                    {formatCurrency(Number(item.supplierPrice || 0))}
-                  </TableCell>
-                  <TableCell className="text-center border">{item.quantity || 1}</TableCell>
-                  <TableCell className="text-center border">
-                    {format(new Date(), "dd/MM/yyyy", { locale: ar })}
-                  </TableCell>
-                  <TableCell className="text-center border font-bold">
-                    {item.kItemId?.replace('K', '28R')}
-                  </TableCell>
-                  <TableCell className="text-left border px-2 text-xs max-w-xs">
-                    <div className="break-words">
-                      {item.description?.toUpperCase()}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center border font-bold">
-                    {item.partNumber || item.itemNumber}
-                  </TableCell>
-                  <TableCell className="text-center border font-bold text-xs">
-                    {item.lineItem || `${item.itemNumber} GENERAL`}
-                  </TableCell>
-                  <TableCell className="text-center border font-bold">{item.unit}</TableCell>
-                </TableRow>
-                
-                {/* Customer pricing entries if exist */}
-                {detailedPricing?.customerPricings && detailedPricing.customerPricings.map((pricing: any) => (
-                  <TableRow key={`customer-${pricing.id}`} className="hover:bg-blue-50 bg-blue-25 border-b">
-                    <TableCell className="text-center border font-bold">10500</TableCell>
-                    <TableCell className="text-center border">{pricing.quantity}</TableCell>
-                    <TableCell className="text-center border">
-                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
-                    </TableCell>
-                    <TableCell className="text-center border">-</TableCell>
-                    <TableCell className="text-center border font-bold">SUPPLIES</TableCell>
-                    <TableCell className="text-center border">
-                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
-                    </TableCell>
-                    <TableCell className="text-center border font-bold">
-                      {formatCurrency(Number(pricing.sellingPrice))}
-                    </TableCell>
-                    <TableCell className="text-center border">{pricing.quantity}</TableCell>
-                    <TableCell className="text-center border">
-                      {format(new Date(pricing.createdAt), "dd/MM/yyyy", { locale: ar })}
-                    </TableCell>
-                    <TableCell className="text-center border font-bold">
-                      {item.kItemId?.replace('K', '28R')}
-                    </TableCell>
-                    <TableCell className="text-left border px-2 text-xs max-w-xs">
-                      <div className="break-words">
-                        {item.description?.toUpperCase()} - CUSTOMER PRICING
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center border font-bold">
-                      {item.partNumber || item.itemNumber}
-                    </TableCell>
-                    <TableCell className="text-center border font-bold text-xs">
-                      {item.lineItem || `${item.itemNumber} GENERAL`}
-                    </TableCell>
-                    <TableCell className="text-center border font-bold">{item.unit}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          
-          {/* Summary section with correct data */}
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <div className="grid grid-cols-4 gap-4 text-sm">
-              <div>
-                <span className="font-medium">إجمالي عروض الموردين:</span>
-                <p className="text-blue-600 font-bold">
-                  1
-                </p>
-              </div>
-              <div>
-                <span className="font-medium">إجمالي تسعير العملاء:</span>
-                <p className="text-green-600 font-bold">
-                  {detailedPricing?.customerPricings?.length || 0}
-                </p>
-              </div>
-              <div>
-                <span className="font-medium">آخر سعر مورد:</span>
-                <p className="text-blue-600 font-bold">
-                  {formatCurrency(Number(item.supplierPrice || 0))}
-                </p>
-              </div>
-              <div>
-                <span className="font-medium">آخر سعر عميل:</span>
-                <p className="text-green-600 font-bold">
-                  {detailedPricing?.customerPricings?.length > 0 
-                    ? formatCurrency(Number(detailedPricing.customerPricings[0].sellingPrice))
-                    : "-"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -313,75 +165,74 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
       }
 
       toast({
-        title: "تم بنجاح",
-        description: "تم حفظ تسعير العميل بنجاح",
+        title: "تم إضافة تسعير العميل بنجاح",
+        description: `نسبة الربح: ${profitMargin.toFixed(2)}%`,
       });
 
       queryClient.invalidateQueries({ queryKey: ["/api/items-ready-for-customer-pricing"] });
       onSuccess();
-    } catch (error) {
-      console.error("Error creating customer pricing:", error);
+      setFormData({ sellingPrice: "", quantity: item.quantity?.toString() || "1", notes: "" });
+    } catch (error: any) {
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء حفظ التسعير",
+        title: "خطأ في إضافة التسعير",
+        description: error.message,
         variant: "destructive",
       });
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-white p-4 rounded-lg border">
-      <h4 className="font-semibold">إضافة تسعير العميل</h4>
+    <form onSubmit={handleSubmit} className="space-y-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <h4 className="font-semibold">إضافة تسعير جديد للعميل</h4>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="text-sm font-medium">سعر التكلفة (المورد)</label>
-          <Input
-            type="text"
-            value={formatCurrency(costPrice)}
-            disabled
-            className="bg-gray-100"
-          />
+          <label className="text-sm font-medium">سعر التكلفة</label>
+          <Input value={formatCurrency(costPrice)} disabled className="bg-gray-100" />
         </div>
         <div>
-          <label className="text-sm font-medium">سعر البيع للعميل *</label>
+          <label className="text-sm font-medium">سعر البيع *</label>
           <Input
             type="number"
             step="0.01"
             value={formData.sellingPrice}
             onChange={(e) => setFormData(prev => ({...prev, sellingPrice: e.target.value}))}
-            placeholder="أدخل سعر البيع"
+            placeholder="0.00"
             required
           />
         </div>
         <div>
-          <label className="text-sm font-medium">الكمية</label>
+          <label className="text-sm font-medium">الكمية *</label>
           <Input
             type="number"
+            step="1"
             min="1"
             value={formData.quantity}
             onChange={(e) => setFormData(prev => ({...prev, quantity: e.target.value}))}
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">هامش الربح</label>
-          <Input
-            type="text"
-            value={`${profitMargin.toFixed(2)}%`}
-            disabled
-            className="bg-gray-100"
+            required
           />
         </div>
       </div>
 
-      <div>
-        <label className="text-sm font-medium">المبلغ الإجمالي</label>
-        <Input
-          type="text"
-          value={formatCurrency(totalAmount)}
-          disabled
-          className="bg-gray-100 font-semibold"
-        />
+      <div className="grid grid-cols-4 gap-4 p-3 bg-gray-50 rounded-lg">
+        <div>
+          <span className="font-medium">نسبة الربح:</span>
+          <p className={`text-lg font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {profitMargin.toFixed(2)}%
+          </p>
+        </div>
+        <div>
+          <span className="font-medium">إجمالي المبلغ:</span>
+          <p className="text-lg font-bold text-blue-600">
+            {formatCurrency(totalAmount)}
+          </p>
+        </div>
+        <div>
+          <span className="font-medium">صافي الربح:</span>
+          <p className={`text-lg font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {formatCurrency((Number(formData.sellingPrice) - costPrice) * Number(formData.quantity))}
+          </p>
+        </div>
       </div>
 
       <div>
@@ -413,6 +264,8 @@ export default function CustomerPricing() {
   const { data: itemsNeedingPricing = [], isLoading } = useQuery({
     queryKey: ["/api/items-ready-for-customer-pricing"],
   });
+
+  const itemsArray = Array.isArray(itemsNeedingPricing) ? itemsNeedingPricing : [];
 
   const toggleItem = (itemId: string) => {
     const newOpenItems = new Set(openItems);
@@ -446,7 +299,7 @@ export default function CustomerPricing() {
         </p>
       </div>
 
-      {!itemsNeedingPricing || itemsNeedingPricing.length === 0 ? (
+      {!itemsArray || itemsArray.length === 0 ? (
         <Card>
           <CardContent className="p-6 text-center">
             <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -462,47 +315,50 @@ export default function CustomerPricing() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5" />
-                البنود التي تحتاج تسعير للعملاء ({itemsNeedingPricing.length})
+                البنود التي تحتاج تسعير للعملاء ({itemsArray.length})
               </CardTitle>
               <CardDescription>
                 اضغط على أي بند لعرض تفاصيله وإضافة تسعير العميل
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              {itemsNeedingPricing.map((item: any) => (
-                <Collapsible
-                  key={item.id}
-                  open={openItems.has(item.id)}
-                  onOpenChange={() => toggleItem(item.id)}
-                >
-                  <CollapsibleTrigger className="w-full">
-                    <div className="flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-lg border transition-colors">
-                      <div className="flex items-center space-x-3 space-x-reverse">
-                        {openItems.has(item.id) ? (
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <div className="text-right">
-                          <p className="font-medium">{item.description}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {item.kItemId} | رقم البند: {item.itemNumber} | الوحدة: {item.unit}
-                          </p>
+              {itemsArray.map((item: any) => {
+                const isOpen = openItems.has(item.id);
+                return (
+                  <Collapsible
+                    key={item.id}
+                    open={isOpen}
+                    onOpenChange={() => toggleItem(item.id)}
+                  >
+                    <CollapsibleTrigger className="w-full">
+                      <div className="flex items-center justify-between p-4 bg-white hover:bg-gray-50 rounded-lg border transition-colors">
+                        <div className="flex items-center space-x-3 space-x-reverse">
+                          {isOpen ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )}
+                          <div className="text-right">
+                            <p className="font-medium">{item.description}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {item.kItemId} | رقم البند: {item.itemNumber} | الوحدة: {item.unit}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3 space-x-reverse">
+                          <Badge variant="outline" className="gap-1">
+                            <Clock className="h-3 w-3" />
+                            في انتظار التسعير
+                          </Badge>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3 space-x-reverse">
-                        <Badge variant="outline" className="gap-1">
-                          <Clock className="h-3 w-3" />
-                          في انتظار التسعير
-                        </Badge>
-                      </div>
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="px-4 pb-4">
-                    <ItemDetailedPricing item={item} />
-                  </CollapsibleContent>
-                </Collapsible>
-              ))}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-4 pb-4">
+                      <ItemDetailedPricing item={item} />
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })}
             </CardContent>
           </Card>
         </div>
