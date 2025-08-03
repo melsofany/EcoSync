@@ -63,3 +63,13 @@ Preferred communication style: Simple, everyday language.
 - **nanoid**: Unique ID generation.
 - **clsx**: Conditional class name utilities.
 - **XLSX**: For Excel file operations (import/export).
+
+## Recent Updates
+
+### Three-Stage Excel Import System (2025-08-03)
+- **Stage 1**: File analysis - displays all available Excel columns (A-L) with sample data
+- **Stage 2**: Manual column mapping - user specifies which Excel column maps to each database field
+- **Stage 3**: Data preview and confirmation - shows processed data before final import
+- **Fixed Issues**: HTTP 400 Bad Request error, corrected data flow between import stages
+- **Terminology**: Corrected from "طلب الشراء" (purchase order) to "طلب التسعير" (quotation request)
+- **Date Conversion**: Perfect handling of Excel serial numbers to readable dates (45844 → 2025-07-06)

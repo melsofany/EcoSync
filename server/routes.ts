@@ -749,7 +749,7 @@ Respond in JSON format:
           { field: 'requestDate', label: 'تاريخ الطلب', description: 'تاريخ أو رقم Excel', required: true },
           { field: 'expiryDate', label: 'تاريخ انتهاء العرض', description: 'تاريخ أو رقم Excel', required: true },
           { field: 'clientName', label: 'اسم العميل', description: 'اسم الشركة أو العميل', required: true },
-          { field: 'rfqNumber', label: 'رقم الطلب', description: 'رقم طلب الشراء', required: true },
+          { field: 'rfqNumber', label: 'رقم الطلب', description: 'رقم طلب التسعير', required: true },
           { field: 'unitPrice', label: 'سعر الوحدة', description: 'سعر اختياري', required: false }
         ]
       });
