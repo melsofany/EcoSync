@@ -25,10 +25,12 @@ async function throwIfResNotOk(res: Response) {
         const text = await responseClone.text();
         const error = new Error(`${res.status}: ${text || res.statusText}`);
         (error as any).response = res;
+        console.log("Text parse error object:", error);
         throw error;
       } catch (textError) {
         const error = new Error(`${res.status}: ${res.statusText}`);
         (error as any).response = res;
+        console.log("Final fallback error object:", error);
         throw error;
       }
     }

@@ -58,12 +58,20 @@ export default function Suppliers() {
       queryClient.invalidateQueries({ queryKey: ["/api/suppliers"] });
     },
     onError: (error: any) => {
-      console.log("Delete supplier error:", error);
+      console.log("Delete supplier error object:", error);
+      console.log("Error details:", error?.details);
+      console.log("Error message:", error?.message);
+      
       let errorMessage = "حدث خطأ أثناء حذف المورد";
       
+      // Try different ways to get the Arabic error message
       if (error?.details) {
         errorMessage = error.details;
-      } else if (error?.message && error.message !== "حدث خطأ أثناء حذف المورد") {
+      } else if (error?.message?.includes("لا يمكن حذف المورد")) {
+        errorMessage = "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.";
+      } else if (error?.message?.includes("Cannot delete supplier")) {
+        errorMessage = "هذا المورد مرتبط بسجلات تسعير موجودة. يجب حذف السجلات أولاً.";
+      } else if (error?.message && !error.message.includes("400") && !error.message.includes("BAD REQUEST")) {
         errorMessage = error.message;
       }
       
