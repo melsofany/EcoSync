@@ -184,9 +184,9 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
             <Download className="h-4 w-4" />
             <AlertDescription>
               <strong>تنسيق ملف Excel المدعوم:</strong>
-              <br />Line No | UOM | LINE ITEM | PART NO | Description | Source File | Request Date | Quantity | <strong>السعر (العمود I اختياري)</strong> | Response Date | العميل | Done
-              <br /><strong>السعر:</strong> إذا كان متوفر في العمود I، يُقرأ تلقائياً. إذا لم يكن متوفر، يُحدد لاحقاً في نظام التسعير
-              <br /><em>البيانات المُستوردة: رقم البند، رقم القطعة، التوصيف، الكمية، العميل، التواريخ</em>
+              <br />Line No | UOM | LINE ITEM | PART NO | Description | Source File | Request Date | Quantity | السعر (I) | Response Date | العميل | Done
+              <br /><strong>السعر:</strong> يُقرأ من العمود I إذا كان متوفر وصحيح (أقل من 10,000). وإلا يُحدد لاحقاً
+              <br /><em>البيانات المُستوردة: رقم البند، رقم القطعة، التوصيف، الكمية، العميل</em>
               <br /><strong>ملاحظة:</strong> معرف P- يتم توليده تلقائياً بعد معالجة البيانات
             </AlertDescription>
           </Alert>

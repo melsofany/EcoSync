@@ -772,44 +772,18 @@ Respond in JSON format:
         const clientName = rowKeys.length > 10 ? row[rowKeys[10]] || '' : '';               // العميل
         const status = rowKeys.length > 11 ? row[rowKeys[11]] || '' : '';                   // Done/Status
         
-        // محاولة استخراج السعر من العمود I (Unnamed: 8) إذا كان موجود
+        // استخراج السعر - منطق مبسط وواضح
         let clientPrice = 0;
         
-        // أولاً، تحقق من العمود I المخصص للسعر
-        if (priceColumn !== undefined && priceColumn !== null && priceColumn !== '' && 
-            !isNaN(parseFloat(priceColumn)) && parseFloat(priceColumn) > 0) {
+        // تحقق من العمود I (Unnamed: 8) إذا كان يحتوي على سعر صحيح
+        if (priceColumn !== undefined && priceColumn !== null && 
+            !isNaN(parseFloat(priceColumn)) && parseFloat(priceColumn) > 0 && 
+            parseFloat(priceColumn) < 10000) { // سعر معقول أقل من 10000
           clientPrice = parseFloat(priceColumn);
-          console.log(`Row ${index} - Found price in column I: ${clientPrice}`);
         }
         
-        // إذا لم نجد سعر في العمود I، ابحث في كامل البيانات عن أي سعر معقول
-        // ولكن تجنب التواريخ وأرقام الصفوف والكميات
-        if (clientPrice === 0) {
-          // البحث عن أي قيمة رقمية معقولة كسعر
-          for (let i = 0; i < rowKeys.length; i++) {
-            const value = row[rowKeys[i]];
-            const numValue = parseFloat(value);
-            
-            if (!isNaN(numValue) && numValue > 0) {
-              // تجنب التواريخ Excel (45000+)، أرقام الصفوف الصغيرة، والكميات الصغيرة
-              const isExcelDate = (numValue >= 45000);
-              const isSmallInteger = (Number.isInteger(numValue) && numValue <= 1000);
-              const isQuantity = (numValue === quantity);
-              
-              // ابحث عن أسعار معقولة (بين 50 و 50000)
-              if (!isExcelDate && !isQuantity && numValue >= 50 && numValue <= 50000) {
-                clientPrice = numValue;
-                console.log(`Row ${index} - Found potential price: ${clientPrice} in column ${rowKeys[i]}`);
-                break;
-              }
-            }
-          }
-        }
-        
-        // إذا ما زال السعر 0، فهذا يعني أن السعر غير متوفر في البيانات
-        if (clientPrice === 0) {
-          console.log(`Row ${index} - No price found in data, will be set during pricing phase`);
-        }
+        // إذا لم نجد سعر صالح، اتركه 0 (سيُحدد لاحقاً)
+        console.log(`Row ${index} - Price: ${clientPrice}, LINE ITEM: ${lineItem}`);
         
         console.log(`Row ${index} - Final price: ${clientPrice}, LINE ITEM: ${lineItem}`);
 
