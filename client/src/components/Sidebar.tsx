@@ -175,14 +175,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </div>
         )}
 
-        {/* Enhanced Navigation */}
-        <nav className="flex-1 p-2 lg:p-4 space-y-2">
-          <div className="mb-4">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-2 mb-2">
-              {isOpen ? "القائمة الرئيسية" : ""}
-            </h3>
-          </div>
-          
+        {/* Navigation */}
+        <nav className="flex-1 p-2 lg:p-4 space-y-1 lg:space-y-2">
           {menuItems.map((item) => {
             if (!canAccessSection(user, item.section)) {
               return null;
@@ -194,45 +188,20 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             return (
               <Link key={item.href} href={item.href}>
                 <div className={cn(
-                  "group relative flex items-center space-x-4 space-x-reverse p-4 rounded-xl transition-all duration-200 transform hover:scale-102",
+                  "flex items-center space-x-3 space-x-reverse p-3 lg:p-4 rounded-lg transition-colors group relative",
                   isActive 
-                    ? "bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg shadow-primary/25" 
-                    : "text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 hover:shadow-md border border-transparent hover:border-gray-200"
+                    ? "bg-primary text-white shadow-md" 
+                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-800"
                 )}>
-                  <div className={cn(
-                    "flex items-center justify-center w-12 h-12 rounded-xl transition-colors",
-                    isActive 
-                      ? "bg-white/20" 
-                      : "bg-gray-100 group-hover:bg-primary/10"
-                  )}>
-                    <Icon className={cn(
-                      "h-6 w-6 flex-shrink-0 transition-colors",
-                      isActive ? "text-white" : "text-gray-600 group-hover:text-primary"
-                    )} />
-                  </div>
-                  
-                  <div className="flex-1">
-                    <span className={cn(
-                      "font-semibold text-base block",
-                      isActive ? "text-white" : "text-gray-800"
-                    )}>
+                  <Icon className="h-5 w-5 lg:h-6 lg:w-6 flex-shrink-0" />
+                  {isOpen && (
+                    <span className="font-medium text-sm lg:text-lg">
                       {item.title}
                     </span>
-                    {isActive && (
-                      <div className="w-full h-0.5 bg-white/30 mt-2 rounded-full"></div>
-                    )}
-                  </div>
-                  
-                  {!isOpen && (
-                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                      {item.title}
-                      <div className="absolute right-0 top-1/2 transform translate-x-1 -translate-y-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
-                    </div>
                   )}
-                  
-                  {isActive && (
-                    <div className="absolute -right-2 top-1/2 transform -translate-y-1/2">
-                      <div className="w-1 h-8 bg-primary rounded-full shadow-lg"></div>
+                  {!isOpen && isActive && (
+                    <div className="absolute right-2 w-2 h-2 bg-primary rounded-full">
+                      <Circle className="h-2 w-2 fill-current" />
                     </div>
                   )}
                 </div>
