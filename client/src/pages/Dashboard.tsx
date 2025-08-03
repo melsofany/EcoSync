@@ -3,6 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { RolePermissionsDisplay } from "@/components/RolePermissionsDisplay";
+import { UserRole } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { ExcelImporter } from "@/components/ExcelImporter";
@@ -340,6 +342,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Role Permissions Display */}
+      <RolePermissionsDisplay userRole={user?.role as UserRole} />
 
       {/* Data Export Section - Only for IT Admins */}
       {user?.role === 'it_admin' && (

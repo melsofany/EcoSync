@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { PermissionGuard } from "@/components/PermissionGuard";
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
 import Layout from "@/components/Layout";
@@ -19,6 +20,7 @@ import Suppliers from "@/pages/Suppliers";
 import SupplierPricing from "@/pages/SupplierPricing";
 import CustomerPricing from "@/pages/CustomerPricingNew";
 import CreatePurchaseOrder from "@/pages/CreatePurchaseOrder";
+import TestDataEntry from "@/pages/TestDataEntry";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -50,17 +52,66 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/" component={Dashboard} />
-        <Route path="/quotations" component={Quotations} />
-        <Route path="/quotations/:id" component={QuotationDetail} />
-        <Route path="/items" component={Items} />
-        <Route path="/clients" component={Clients} />
-        <Route path="/suppliers" component={Suppliers} />
-        <Route path="/supplier-pricing" component={SupplierPricing} />
-        <Route path="/customer-pricing" component={CustomerPricing} />
-        <Route path="/purchase-orders" component={PurchaseOrders} />
-        <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
-        <Route path="/reports" component={Reports} />
-        <Route path="/admin" component={Admin} />
+        <Route path="/quotations">
+          <PermissionGuard resource="quotations" action="read">
+            <Quotations />
+          </PermissionGuard>
+        </Route>
+        <Route path="/quotations/:id">
+          <PermissionGuard resource="quotations" action="read">
+            <QuotationDetail />
+          </PermissionGuard>
+        </Route>
+        <Route path="/items">
+          <PermissionGuard resource="items" action="read">
+            <Items />
+          </PermissionGuard>
+        </Route>
+        <Route path="/clients">
+          <PermissionGuard resource="clients" action="read">
+            <Clients />
+          </PermissionGuard>
+        </Route>
+        <Route path="/suppliers">
+          <PermissionGuard resource="suppliers" action="read">
+            <Suppliers />
+          </PermissionGuard>
+        </Route>
+        <Route path="/supplier-pricing">
+          <PermissionGuard resource="suppliers" action="read">
+            <SupplierPricing />
+          </PermissionGuard>
+        </Route>
+        <Route path="/customer-pricing">
+          <PermissionGuard resource="clients" action="read">
+            <CustomerPricing />
+          </PermissionGuard>
+        </Route>
+        <Route path="/purchase-orders">
+          <PermissionGuard resource="purchaseOrders" action="read">
+            <PurchaseOrders />
+          </PermissionGuard>
+        </Route>
+        <Route path="/create-purchase-order">
+          <PermissionGuard resource="purchaseOrders" action="create">
+            <CreatePurchaseOrder />
+          </PermissionGuard>
+        </Route>
+        <Route path="/reports">
+          <PermissionGuard resource="reports" action="read">
+            <Reports />
+          </PermissionGuard>
+        </Route>
+        <Route path="/admin">
+          <PermissionGuard resource="users" action="read" fallback={
+            <PermissionGuard resource="systemSettings" action="read">
+              <Admin />
+            </PermissionGuard>
+          }>
+            <Admin />
+          </PermissionGuard>
+        </Route>
+        <Route path="/test-permissions" component={TestDataEntry} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
