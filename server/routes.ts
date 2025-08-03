@@ -771,6 +771,18 @@ Respond in JSON format:
         columnMappingType: typeof columnMapping,
         columnMappingKeys: columnMapping ? Object.keys(columnMapping) : 'no keys'
       });
+
+      // عرض عينة من البيانات لتشخيص مشكلة العميل
+      console.log("🔍 Sample Excel data for client field analysis:");
+      if (columnMapping.clientName) {
+        const clientColumn = columnMapping.clientName;
+        console.log(`Client column mapped to: ${clientColumn}`);
+        excelData.slice(0, 10).forEach((row, index) => {
+          const clientValue = row[`العميل `] || row[`العميل`] || row[clientColumn] || row[`Client Name`] || row[`CLIENT NAME`];
+          console.log(`Row ${index + 1}: Client = "${clientValue}" (from column ${clientColumn})`);
+          console.log(`  Raw row keys:`, Object.keys(row));
+        });
+      }
       
       if (!Array.isArray(excelData) || excelData.length === 0) {
         console.log("❌ Invalid Excel data:", excelData);
@@ -823,8 +835,63 @@ Respond in JSON format:
 
       console.log(`Filtered ${excelData.length} rows down to ${filteredData.length} data rows`);
 
+      // تطبيق "Fill Down" للبيانات المدمجة (merged cells) 
+      const fillDownData = [...filteredData];
+      const clientColumnLetter = columnMapping.clientName;
+      const rfqColumnLetter = columnMapping.rfqNumber;
+      
+      if (clientColumnLetter) {
+        let lastClientName = '';
+        let lastRfqNumber = '';
+        
+        fillDownData.forEach((row, index) => {
+          // معالجة اسم العميل - البحث في مختلف المصادر
+          let currentClient = row[clientColumnLetter] || row['العميل '] || row['العميل'] || '';
+          
+          // البحث حسب فهرس العمود أيضاً
+          const keys = Object.keys(row);
+          const clientColumnIndex = clientColumnLetter.charCodeAt(0) - 65;
+          if (!currentClient && clientColumnIndex >= 0 && clientColumnIndex < keys.length) {
+            currentClient = row[keys[clientColumnIndex]] || '';
+          }
+          
+          if (currentClient && currentClient.trim() !== '' && currentClient.toLowerCase() !== 'done') {
+            lastClientName = currentClient.trim();
+            console.log(`Row ${index + 1}: Found client "${lastClientName}"`);
+          } else if (lastClientName) {
+            // نسخ اسم العميل من الصف السابق
+            row[clientColumnLetter] = lastClientName;
+            if (clientColumnIndex >= 0 && clientColumnIndex < keys.length) {
+              row[keys[clientColumnIndex]] = lastClientName;
+            }
+            console.log(`Row ${index + 1}: Filled client name with "${lastClientName}"`);
+          }
+          
+          // معالجة رقم الطلب
+          if (rfqColumnLetter) {
+            let currentRfq = row[rfqColumnLetter] || '';
+            const rfqColumnIndex = rfqColumnLetter.charCodeAt(0) - 65;
+            
+            if (!currentRfq && rfqColumnIndex >= 0 && rfqColumnIndex < keys.length) {
+              currentRfq = row[keys[rfqColumnIndex]] || '';
+            }
+            
+            if (currentRfq && currentRfq.trim() !== '') {
+              lastRfqNumber = currentRfq.trim();
+            } else if (lastRfqNumber) {
+              row[rfqColumnLetter] = lastRfqNumber;
+              if (rfqColumnIndex >= 0 && rfqColumnIndex < keys.length) {
+                row[keys[rfqColumnIndex]] = lastRfqNumber;
+              }
+            }
+          }
+        });
+        
+        console.log(`✅ Applied Fill Down - Client names filled for ${fillDownData.length} rows`);
+      }
+
       // تحليل ذكي للبيانات وربطها بقاعدة البيانات
-      const mappedData = filteredData.map((row: any, index: number) => {
+      const mappedData = fillDownData.map((row: any, index: number) => {
         const rowKeys = Object.keys(row);
         const rowValues = Object.values(row);
         
