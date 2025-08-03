@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Building, User, Lock, ArrowLeft, Mail } from "lucide-react";
 import qortobaLogo from "@/assets/qortoba-logo.png";
-import SupplyChainBackground from "@/components/SupplyChainBackground";
 
 const loginSchema = z.object({
   username: z.string().min(1, "اسم المستخدم مطلوب"),
@@ -63,10 +62,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden" dir="rtl">
-      <SupplyChainBackground />
-      <div className="relative z-10 w-full flex justify-center">
-        <Card className="w-full max-w-md shadow-2xl bg-white/95 backdrop-blur-sm border-0">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4" dir="rtl">
+      <Card className="w-full max-w-md shadow-xl bg-white border-0">
         <CardContent className="pt-8 pb-8 px-8">
           <div className="text-center mb-8">
             {/* Company Logo */}
@@ -210,8 +207,7 @@ export default function Login() {
             النسخة 1.0 - جميع الحقوق محفوظة لقرطبة للتوريدات © 2025
           </div>
         </CardContent>
-        </Card>
-      </div>
+      </Card>
     </div>
   );
 }
