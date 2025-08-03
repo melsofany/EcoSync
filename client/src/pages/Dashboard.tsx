@@ -240,7 +240,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">المستخدمون النشطون</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {(stats as any)?.activeUsers || 0}
+                  {users && Array.isArray(users) ? users.filter((u: any) => u.isOnline).length : 0}
                 </p>
                 <div className="text-xs text-gray-600 mt-1 flex items-center">
                   <div className="w-2 h-2 bg-green-400 rounded-full ml-1"></div>
