@@ -9,25 +9,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { User, Mail, Phone, Shield } from "lucide-react";
+import { X, User, Lock, Shield, Mail, Phone, Camera, Upload } from "lucide-react";
 
 const userSchema = z.object({
   username: z.string().min(3, "اسم المستخدم يجب أن يكون 3 أحرف على الأقل"),
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
   fullName: z.string().min(1, "الاسم الكامل مطلوب"),
-  email: z.string().optional().refine((val) => {
-    if (!val || val.trim() === '') return true;
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-  }, {
-    message: "البريد الإلكتروني غير صحيح"
-  }),
-  phone: z.string().optional().refine((val) => {
-    if (!val || val.trim() === '') return true;
-    return /^[0-9+\-\s()]{7,20}$/.test(val.replace(/\s/g, ''));
-  }, {
-    message: "رقم الهاتف غير صحيح"
-  }),
-  role: z.string().min(1, "يجب اختيار دور للمستخدم"),
+  email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
+  phone: z.string().min(10, "رقم الهاتف يجب أن يكون 10 أرقام على الأقل").optional().or(z.literal("")),
+  profileImage: z.string().optional(),
+  role: z.string().min(1, "الدور مطلوب"),
   isActive: z.boolean().default(true),
 });
 
@@ -57,7 +48,8 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
       fullName: "",
       email: "",
       phone: "",
-      role: "",
+      profileImage: "",
+      role: undefined,
       isActive: true,
     },
   });
@@ -85,7 +77,7 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
     },
   });
 
-  const handleSubmit = (data: UserForm) => {
+  const onSubmit = (data: UserForm) => {
     createUserMutation.mutate(data);
   };
 
@@ -96,101 +88,150 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl" dir="rtl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
-          <DialogTitle>إضافة مستخدم جديد</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>إضافة مستخدم جديد</DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </DialogHeader>
 
-        <div className="max-h-[70vh] overflow-y-auto">
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {/* Basic Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Username */}
-              <div>
-                <Label htmlFor="username">اسم المستخدم *</Label>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="username">اسم المستخدم *</Label>
+              <div className="relative">
                 <Input
                   id="username"
                   placeholder="اسم المستخدم للدخول"
+                  className="pl-10"
                   {...form.register("username")}
                 />
-                {form.formState.errors.username && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {form.formState.errors.username.message}
-                  </p>
-                )}
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
+              {form.formState.errors.username && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.username.message}
+                </p>
+              )}
+            </div>
 
-              {/* Password */}
-              <div>
-                <Label htmlFor="password">كلمة المرور *</Label>
+            <div>
+              <Label htmlFor="password">كلمة المرور *</Label>
+              <div className="relative">
                 <Input
                   id="password"
                   type="password"
                   placeholder="كلمة مرور قوية"
+                  className="pl-10"
                   {...form.register("password")}
                 />
-                {form.formState.errors.password && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {form.formState.errors.password.message}
-                  </p>
-                )}
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
+              {form.formState.errors.password && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.password.message}
+                </p>
+              )}
+            </div>
 
-              {/* Full Name */}
-              <div className="md:col-span-2">
-                <Label htmlFor="fullName">الاسم الكامل *</Label>
-                <Input
-                  id="fullName"
-                  placeholder="الاسم الكامل للموظف"
-                  {...form.register("fullName")}
-                />
-                {form.formState.errors.fullName && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {form.formState.errors.fullName.message}
-                  </p>
-                )}
-              </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="fullName">الاسم الكامل *</Label>
+              <Input
+                id="fullName"
+                placeholder="الاسم الكامل للموظف"
+                {...form.register("fullName")}
+              />
+              {form.formState.errors.fullName && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.fullName.message}
+                </p>
+              )}
+            </div>
 
-              {/* Email */}
-              <div>
-                <Label htmlFor="email">البريد الإلكتروني</Label>
+            <div>
+              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <div className="relative">
                 <Input
                   id="email"
                   type="email"
                   placeholder="example@company.com"
+                  className="pl-10"
                   {...form.register("email")}
                 />
-                {form.formState.errors.email && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {form.formState.errors.email.message}
-                  </p>
-                )}
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
+              {form.formState.errors.email && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.email.message}
+                </p>
+              )}
+            </div>
 
-              {/* Phone */}
-              <div>
-                <Label htmlFor="phone">رقم الهاتف</Label>
+            <div>
+              <Label htmlFor="phone">رقم الهاتف</Label>
+              <div className="relative">
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="01xxxxxxxxx"
+                  placeholder="01234567890"
+                  className="pl-10"
                   {...form.register("phone")}
                 />
-                {form.formState.errors.phone && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {form.formState.errors.phone.message}
-                  </p>
-                )}
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               </div>
+              {form.formState.errors.phone && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.phone.message}
+                </p>
+              )}
+            </div>
 
-              {/* Role */}
-              <div>
-                <Label htmlFor="role">الدور والصلاحيات *</Label>
+            <div className="md:col-span-2">
+              <Label htmlFor="profileImage">الصورة الشخصية</Label>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {form.watch("profileImage") ? (
+                      <img 
+                        src={form.watch("profileImage")} 
+                        alt="صورة المستخدم" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Camera className="h-8 w-8 text-gray-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      id="profileImage"
+                      type="url"
+                      placeholder="رابط الصورة الشخصية (اختياري)"
+                      {...form.register("profileImage")}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      يمكنك إدخال رابط الصورة أو تركه فارغاً
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="role">الدور والصلاحيات *</Label>
+              <div className="relative">
                 <Select
                   value={form.watch("role")}
                   onValueChange={(value) => form.setValue("role", value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="pl-10">
                     <SelectValue placeholder="اختر دور المستخدم" />
                   </SelectTrigger>
                   <SelectContent>
@@ -201,91 +242,97 @@ export default function NewUserModal({ isOpen, onClose }: NewUserModalProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                {form.formState.errors.role && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {form.formState.errors.role.message}
-                  </p>
+                <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+              </div>
+              {form.formState.errors.role && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.role.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="isActive">حالة المستخدم</Label>
+              <Select
+                value={form.watch("isActive") ? "active" : "inactive"}
+                onValueChange={(value) => form.setValue("isActive", value === "active")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">نشط</SelectItem>
+                  <SelectItem value="inactive">غير نشط</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Role Description */}
+          {form.watch("role") && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="font-semibold text-blue-800 mb-2">صلاحيات هذا الدور:</h4>
+              <div className="text-sm text-blue-700">
+                {form.watch("role") === "manager" && (
+                  <ul className="space-y-1">
+                    <li>• جميع الصلاحيات في النظام</li>
+                    <li>• إدارة المستخدمين والأدوار</li>
+                    <li>• عرض التقارير المالية والإدارية</li>
+                    <li>• الوصول لجميع البيانات</li>
+                  </ul>
+                )}
+                {form.watch("role") === "it_admin" && (
+                  <ul className="space-y-1">
+                    <li>• إدارة المستخدمين وحظرهم</li>
+                    <li>• إعدادات النظام والأمان</li>
+                    <li>• النسخ الاحتياطية</li>
+                    <li>• مراقبة أداء النظام</li>
+                  </ul>
+                )}
+                {form.watch("role") === "data_entry" && (
+                  <ul className="space-y-1">
+                    <li>• إدخال طلبات التسعير</li>
+                    <li>• إدارة الأصناف والعملاء</li>
+                    <li>• عرض التقارير الأساسية</li>
+                    <li>• إنشاء أوامر الشراء</li>
+                  </ul>
+                )}
+                {form.watch("role") === "purchasing" && (
+                  <ul className="space-y-1">
+                    <li>• عرض أوامر الشراء وحالتها</li>
+                    <li>• عرض التقارير والإحصائيات</li>
+                    <li>• لا يمكن رؤية الأسعار</li>
+                    <li>• متابعة حالة الطلبات</li>
+                  </ul>
                 )}
               </div>
-
-              {/* Status */}
-              <div>
-                <Label htmlFor="isActive">حالة المستخدم</Label>
-                <Select
-                  value={form.watch("isActive") ? "active" : "inactive"}
-                  onValueChange={(value) => form.setValue("isActive", value === "active")}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">نشط</SelectItem>
-                    <SelectItem value="inactive">غير نشط</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
+          )}
 
-            {/* Role Description */}
-            {form.watch("role") && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-800 mb-2">صلاحيات هذا الدور:</h4>
-                <div className="text-sm text-blue-700">
-                  {form.watch("role") === "manager" && (
-                    <ul className="space-y-1">
-                      <li>• جميع الصلاحيات في النظام</li>
-                      <li>• إدارة المستخدمين والأدوار</li>
-                      <li>• عرض التقارير المالية والإدارية</li>
-                      <li>• الوصول لجميع البيانات</li>
-                    </ul>
-                  )}
-                  {form.watch("role") === "it_admin" && (
-                    <ul className="space-y-1">
-                      <li>• إدارة المستخدمين وحظرهم</li>
-                      <li>• إعدادات النظام والأمان</li>
-                      <li>• النسخ الاحتياطية</li>
-                      <li>• مراقبة أداء النظام</li>
-                    </ul>
-                  )}
-                  {form.watch("role") === "data_entry" && (
-                    <ul className="space-y-1">
-                      <li>• إدخال طلبات التسعير</li>
-                      <li>• إدارة الأصناف</li>
-                      <li>• التقارير الأساسية</li>
-                      <li>• إنشاء أوامر الشراء</li>
-                    </ul>
-                  )}
-                  {form.watch("role") === "purchasing" && (
-                    <ul className="space-y-1">
-                      <li>• عرض أوامر الشراء وحالتها</li>
-                      <li>• عرض التقارير والإحصائيات</li>
-                      <li>• لا يمكن رؤية الأسعار</li>
-                      <li>• متابعة حالة الطلبات</li>
-                    </ul>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={createUserMutation.isPending}
-              >
-                إلغاء
-              </Button>
-              <Button
-                type="submit"
-                disabled={createUserMutation.isPending}
-              >
-                {createUserMutation.isPending ? "جاري الإنشاء..." : "إنشاء المستخدم"}
-              </Button>
-            </div>
-          </form>
-        </div>
+          <div className="flex justify-end space-x-3 space-x-reverse pt-6 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={createUserMutation.isPending}
+            >
+              إلغاء
+            </Button>
+            <Button
+              type="submit"
+              disabled={createUserMutation.isPending}
+            >
+              {createUserMutation.isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner ml-2"></div>
+                  جاري الإنشاء...
+                </>
+              ) : (
+                "إنشاء المستخدم"
+              )}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

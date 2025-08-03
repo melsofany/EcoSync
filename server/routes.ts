@@ -4,7 +4,6 @@ import { storage, initializeDatabase } from "./storage";
 import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
 import { autoMapExcelColumns, processExcelRowForQuotation } from "./simpleExcelImport";
 import { sendEmail, generatePasswordResetEmail } from "./emailService";
-import { ObjectStorageService } from "./objectStorage";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import { randomBytes } from "crypto";
@@ -75,29 +74,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const user = await storage.getUserByUsername(username);
       if (!user || !user.isActive) {
-        await logActivity(req, "login_failed", "user", undefined, `محاولة دخول فاشلة لاسم المستخدم: ${username}`);
+        await logActivity(req, "login_failed", "user", undefined, `Failed login attempt for username: ${username}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
-        // Get first two names from fullName for failed password attempt
-        const nameParts = user.fullName.trim().split(' ');
-        const firstTwoNames = nameParts.slice(0, 2).join(' ');
-        
-        await logActivity(req, "login_failed", "user", user.id, `كلمة مرور خاطئة لـ ${firstTwoNames}`);
+        await logActivity(req, "login_failed", "user", user.id, "Invalid password");
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Update user online status and get latest data
+      // Update user online status
       const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
       await storage.updateUserOnlineStatus(user.id, true, ipAddress);
-
-      // Get updated user data to include online status
-      const updatedUser = await storage.getUser(user.id);
-      if (!updatedUser) {
-        return res.status(500).json({ message: "Error updating user status" });
-      }
 
       req.session.user = {
         id: user.id,
@@ -106,26 +95,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: user.role,
       };
 
-      // Get first two names from fullName
-      const nameParts = user.fullName.trim().split(' ');
-      const firstTwoNames = nameParts.slice(0, 2).join(' ');
-      
-      await logActivity(req, "login_success", "user", user.id, `${firstTwoNames} logged in successfully`);
-      
-      // Create welcome notification
-      try {
-        await storage.createNotification({
-          userId: user.id,
-          title: "مرحباً بك",
-          message: `أهلاً وسهلاً ${firstTwoNames}، مرحباً بك في نظام قرطبة للتوريدات`,
-          type: "success",
-          isRead: false,
-        });
-      } catch (error) {
-        console.error("Error creating welcome notification:", error);
-      }
+      await logActivity(req, "login_success", "user", user.id, "User logged in successfully");
 
-      const { password: _, ...userWithoutPassword } = updatedUser;
+      const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
       console.error("Login error:", error);
@@ -137,15 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (req.session.user) {
         await storage.updateUserOnlineStatus(req.session.user.id, false);
-        // Get user details for logout message
-        const user = await storage.getUser(req.session.user.id);
-        if (user) {
-          const nameParts = user.fullName.trim().split(' ');
-          const firstTwoNames = nameParts.slice(0, 2).join(' ');
-          await logActivity(req, "logout", "user", req.session.user.id, `${firstTwoNames} logged out`);
-        } else {
-          await logActivity(req, "logout", "user", req.session.user.id, "تم تسجيل الخروج");
-        }
+        await logActivity(req, "logout", "user", req.session.user.id, "User logged out");
       }
 
       req.session.destroy((err) => {
@@ -256,9 +220,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Update user activity timestamp to keep them as "online"
-      await storage.updateUserOnlineStatus(user.id, true);
-
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
@@ -299,33 +260,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:userId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const updateData = req.body;
+      const { isActive } = req.body;
       
-      // Validate email format if provided
-      if (updateData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updateData.email)) {
-        return res.status(400).json({ message: "Invalid email format" });
-      }
-
-      // Validate phone format if provided (basic format)
-      if (updateData.phone && !/^[0-9+\-\s()]{7,20}$/.test(updateData.phone.replace(/\s/g, ''))) {
-        return res.status(400).json({ message: "Invalid phone number format" });
-      }
-
-      const updatedUser = await storage.updateUser(userId, updateData);
+      const updatedUser = await storage.updateUser(userId, { isActive });
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Determine activity based on what was updated
-      let activityAction = "update_user";
-      let activityDetails = `User ${updatedUser.username} was updated`;
-      
-      if (updateData.hasOwnProperty('isActive')) {
-        activityAction = updateData.isActive ? "activate_user" : "deactivate_user";
-        activityDetails = `User ${updatedUser.username} was ${updateData.isActive ? 'activated' : 'deactivated'}`;
-      }
-
-      await logActivity(req, activityAction, "user", userId, activityDetails);
+      await logActivity(req, isActive ? "activate_user" : "deactivate_user", "user", userId, 
+        `User ${updatedUser.username} was ${isActive ? 'activated' : 'deactivated'}`);
 
       const { password: _, ...userWithoutPassword } = updatedUser;
       res.json(userWithoutPassword);
@@ -601,48 +544,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Item deleted successfully" });
     } catch (error) {
       console.error("Delete item error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Profile image upload endpoint
-  app.post("/api/profile-images/upload", requireAuth, async (req: Request, res: Response) => {
-    try {
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
-    } catch (error) {
-      console.error("Profile image upload error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Profile image update endpoint
-  app.put("/api/profile-images/update", requireAuth, async (req: Request, res: Response) => {
-    try {
-      const { imageURL } = req.body;
-      const userId = req.user?.id;
-
-      if (!imageURL) {
-        return res.status(400).json({ message: "Image URL is required" });
-      }
-
-      const objectStorageService = new ObjectStorageService();
-      const profileImagePath = await objectStorageService.trySetObjectEntityAclPolicy(
-        imageURL,
-        {
-          owner: userId,
-          visibility: "private", // Profile images should be private
-        }
-      );
-
-      // Update user profile with new image path
-      const updatedUser = await storage.updateUser(userId, { profileImage: profileImagePath });
-      await logActivity(req, "update_profile_image", "user", userId, "Updated profile image");
-
-      res.json({ profileImagePath });
-    } catch (error) {
-      console.error("Profile image update error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -1993,135 +1894,6 @@ Respond in JSON format:
     } catch (error) {
       console.error("Error confirming import:", error);
       res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Notification endpoints
-  app.get("/api/notifications", async (req: Request, res: Response) => {
-    try {
-      if (!req.session.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const notifications = await storage.getUserNotifications(req.session.user.id);
-      res.json(notifications);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.get("/api/notifications/unread-count", async (req: Request, res: Response) => {
-    try {
-      if (!req.session.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const count = await storage.getUnreadNotificationCount(req.session.user.id);
-      res.json({ count });
-    } catch (error) {
-      console.error("Error fetching unread count:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.patch("/api/notifications/:id/read", async (req: Request, res: Response) => {
-    try {
-      if (!req.session.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      await storage.markNotificationRead(req.params.id);
-      await logActivity(req, "notification_read", "notification", req.params.id, "تم قراءة الإشعار");
-      
-      res.json({ message: "تم تحديث الإشعار" });
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.delete("/api/notifications/:id", async (req: Request, res: Response) => {
-    try {
-      if (!req.session.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      await storage.deleteNotification(req.params.id);
-      await logActivity(req, "notification_delete", "notification", req.params.id, "تم حذف الإشعار");
-      
-      res.json({ message: "تم حذف الإشعار" });
-    } catch (error) {
-      console.error("Error deleting notification:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Profile image endpoints
-  app.post("/api/profile-images/upload", async (req: Request, res: Response) => {
-    try {
-      if (!req.session.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const { ObjectStorageService } = await import("./objectStorage");
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getProfileImageUploadURL();
-      
-      res.json({ uploadURL });
-    } catch (error) {
-      console.error("Error generating profile image upload URL:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.put("/api/profile-images/update", async (req: Request, res: Response) => {
-    try {
-      if (!req.session.user) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const { imageURL } = req.body;
-      if (!imageURL) {
-        return res.status(400).json({ message: "imageURL is required" });
-      }
-
-      const { ObjectStorageService } = await import("./objectStorage");
-      const objectStorageService = new ObjectStorageService();
-      const profileImagePath = objectStorageService.normalizeProfileImagePath(imageURL);
-
-      // Update user profile with new image path
-      await storage.updateUser(req.session.user.id, {
-        profileImage: profileImagePath,
-      });
-
-      await logActivity(req, "profile_image_update", "user", req.session.user.id, "تم تحديث الصورة الشخصية");
-
-      res.json({ 
-        message: "تم تحديث الصورة الشخصية بنجاح",
-        profileImagePath 
-      });
-    } catch (error) {
-      console.error("Error updating profile image:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Serve profile images
-  app.get("/profile-images/:imagePath(*)", async (req: Request, res: Response) => {
-    try {
-      const imagePath = `/profile-images/${req.params.imagePath}`;
-      const { ObjectStorageService } = await import("./objectStorage");
-      const objectStorageService = new ObjectStorageService();
-      
-      const imageFile = await objectStorageService.getProfileImageFile(imagePath);
-      await objectStorageService.downloadObject(imageFile, res);
-    } catch (error) {
-      console.error("Error serving profile image:", error);
-      if (error.name === "ObjectNotFoundError") {
-        return res.status(404).json({ error: "Image not found" });
-      }
-      return res.status(500).json({ error: "Internal server error" });
     }
   });
 

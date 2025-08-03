@@ -33,20 +33,6 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Notifications table
-export const notifications = pgTable("notifications", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  type: text("type").notNull().default("info"), // "info", "success", "warning", "error"
-  isRead: boolean("is_read").default(false).notNull(),
-  relatedEntityType: text("related_entity_type"), // quotation, item, user, etc.
-  relatedEntityId: text("related_entity_id"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  readAt: timestamp("read_at"),
-});
-
 // Clients table
 export const clients = pgTable("clients", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -232,14 +218,6 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-}).extend({
-  phone: z.string().optional().refine((val) => {
-    if (!val || val.trim() === '') return true;
-    // Accept any phone number format with basic validation
-    return /^[0-9+\-\s()]{7,20}$/.test(val.replace(/\s/g, ''));
-  }, {
-    message: "رقم الهاتف غير صحيح"
-  })
 });
 
 export const insertClientSchema = createInsertSchema(clients).omit({
@@ -320,11 +298,6 @@ export const insertActivityLogSchema = createInsertSchema(activityLog).omit({
   timestamp: true,
 });
 
-export const insertNotificationSchema = createInsertSchema(notifications).omit({
-  id: true,
-  createdAt: true,
-});
-
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -352,8 +325,6 @@ export type PricingHistory = typeof pricingHistory.$inferSelect;
 export type InsertPricingHistory = z.infer<typeof insertPricingHistorySchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
-export type Notification = typeof notifications.$inferSelect;
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 // Extended types for joined queries
 export type QuotationItemWithDetails = QuotationItem & {

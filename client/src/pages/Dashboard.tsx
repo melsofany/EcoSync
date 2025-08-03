@@ -3,8 +3,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { RolePermissionsDisplay } from "@/components/RolePermissionsDisplay";
-import { UserRole } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { ExcelImporter } from "@/components/ExcelImporter";
@@ -163,39 +161,14 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 lg:space-y-8">
-      {/* Welcome Header with Profile */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4 space-x-reverse">
-          {/* Profile Image */}
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-            <span className="text-white text-xl font-bold">
-              {user?.fullName?.split(' ').slice(0, 2).map(name => name.charAt(0)).join('')}
-            </span>
-          </div>
-          
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-              مرحباً، {user?.fullName?.split(' ').slice(0, 2).join(' ')}
-            </h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">
-              نظرة عامة على أداء النظام اليوم
-            </p>
-            <div className="flex items-center space-x-2 space-x-reverse mt-2">
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-xs text-gray-500">متصل الآن</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="text-right hidden md:block">
-          <p className="text-sm text-gray-500">
-            {user?.role === 'manager' && 'مدير عام'}
-            {user?.role === 'it_admin' && 'مدير تقنية المعلومات'}
-            {user?.role === 'data_entry' && 'موظف إدخال بيانات'}
-            {user?.role === 'purchasing' && 'موظف مشتريات'}
-          </p>
-          <p className="text-xs text-gray-400 mt-1">@{user?.username}</p>
-        </div>
+      {/* Welcome Header */}
+      <div className="text-center sm:text-right">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
+          مرحباً، {user?.fullName}
+        </h1>
+        <p className="text-sm sm:text-base text-gray-600">
+          نظرة عامة على أداء النظام اليوم
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -332,19 +305,19 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-3">
               {users && Array.isArray(users) ? users.filter((u: any) => u.isOnline).map((onlineUser: any) => (
-                <div key={onlineUser.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div key={onlineUser.id} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3 space-x-reverse">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-white text-sm font-bold">
-                        {onlineUser.fullName?.split(' ').slice(0, 2).map((name: string) => name.charAt(0)).join('')}
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-medium">
+                        {getInitials(onlineUser.fullName)}
                       </span>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-800">
-                        {onlineUser.fullName?.split(' ').slice(0, 2).join(' ')}
+                        {onlineUser.fullName}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {onlineUser.role === 'manager' && 'مدير عام'}
+                        {onlineUser.role === 'manager' && 'مدير'}
                         {onlineUser.role === 'it_admin' && 'مدير تقنية المعلومات'}
                         {onlineUser.role === 'data_entry' && 'موظف إدخال بيانات'}
                         {onlineUser.role === 'purchasing' && 'موظف مشتريات'}
@@ -352,7 +325,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 space-x-reverse">
-                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                     <span className="text-xs text-gray-500">
                       {onlineUser.ipAddress || 'غير معروف'}
                     </span>
@@ -367,9 +340,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Role Permissions Display */}
-      <RolePermissionsDisplay userRole={user?.role as UserRole} />
 
       {/* Data Export Section - Only for IT Admins */}
       {user?.role === 'it_admin' && (
