@@ -23,7 +23,7 @@ Preferred communication style: Simple, everyday language.
 - **Form Handling**: React Hook Form with Zod validation.
 - **Backend Runtime**: Node.js with Express.js (TypeScript, ES modules).
 - **Database ORM**: Drizzle ORM with PostgreSQL dialect.
-- **Authentication**: Session-based authentication using Express sessions and bcrypt for password hashing, with comprehensive role-based access control (manager, it_admin, data_entry, purchasing).
+- **Authentication**: Session-based authentication using Express sessions and bcrypt for password hashing, with comprehensive role-based access control (manager, it_admin, data_entry, purchasing, accounting).
 - **API Design**: RESTful API with centralized error handling and activity logging.
 - **Data Validation**: Zod schemas for type-safe data validation.
 - **Database Migrations**: Drizzle Kit for schema management.
@@ -89,3 +89,13 @@ Preferred communication style: Simple, everyday language.
   - Online users list (Dashboard)
   - All user references throughout the system
 - **Fallback System**: Automatic display of user initials when no profile image is available
+
+### Role-Based Access Control Enhancement (2025-08-03)
+- **New Accounting Role**: Added "موظف حسابات" (Accounting Staff) role with specific permissions
+- **Accounting Permissions**: 
+  - Read-only access to quotations, purchase orders, and all pricing information
+  - Access to reports and dashboard for financial oversight
+  - Cannot create, edit, or delete any records (view-only permissions)
+  - Full access to client and supplier information for accounting purposes
+- **System-wide Integration**: Accounting role appears in all user interfaces, forms, and permission checks
+- **Database Schema**: Updated user role definitions to include accounting role
