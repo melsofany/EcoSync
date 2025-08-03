@@ -184,6 +184,16 @@ export default function Admin() {
     });
   };
 
+  const isValidImageUrl = (url: string) => {
+    if (!url) return false;
+    // Check if URL is a direct image link
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+    const lowercaseUrl = url.toLowerCase();
+    return imageExtensions.some(ext => lowercaseUrl.includes(ext)) && 
+           !lowercaseUrl.includes('ibb.co/') && // Exclude ImgBB page links
+           (lowercaseUrl.startsWith('http://') || lowercaseUrl.startsWith('https://'));
+  };
+
   const usersArray = Array.isArray(users) ? users : [];
   const onlineUsers = usersArray.filter((u: any) => u.isOnline === true);
   const totalUsers = usersArray.length || 0;
@@ -438,7 +448,7 @@ export default function Admin() {
                         <TableCell>
                           <div className="flex items-center space-x-3 space-x-reverse">
                             <div className="w-8 h-8 rounded-full overflow-hidden bg-primary flex items-center justify-center">
-                              {userItem.profileImage ? (
+                              {userItem.profileImage && isValidImageUrl(userItem.profileImage) ? (
                                 <img 
                                   src={userItem.profileImage} 
                                   alt={userItem.fullName}

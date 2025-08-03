@@ -24,6 +24,7 @@ export default function EditUserModal({ user, isOpen, onClose }: EditUserModalPr
     fullName: "",
     email: "",
     phone: "",
+    profileImage: "",
     role: "",
     isActive: true,
   });
@@ -35,6 +36,7 @@ export default function EditUserModal({ user, isOpen, onClose }: EditUserModalPr
         fullName: user.fullName || "",
         email: user.email || "",
         phone: user.phone || "",
+        profileImage: user.profileImage || "",
         role: user.role || "",
         isActive: user.isActive ?? true,
       });
@@ -123,6 +125,30 @@ export default function EditUserModal({ user, isOpen, onClose }: EditUserModalPr
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="profileImage">رابط الصورة الشخصية</Label>
+            <Input
+              id="profileImage"
+              type="url"
+              value={formData.profileImage}
+              onChange={(e) => setFormData({...formData, profileImage: e.target.value})}
+              placeholder="https://example.com/image.jpg"
+            />
+            {formData.profileImage && (
+              <div className="mt-2">
+                <img 
+                  src={formData.profileImage} 
+                  alt="معاينة الصورة"
+                  className="w-16 h-16 rounded-full object-cover border"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           <div>
