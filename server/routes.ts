@@ -795,7 +795,7 @@ Respond in JSON format:
       }
 
       // فلترة وتنظيف البيانات
-      const filteredData = excelData.filter((row: any, index: number) => {
+      const filteredData = excelData.filter((row: Record<string, any>, index: number) => {
         const rowKeys = Object.keys(row);
         const values = Object.values(row);
         
@@ -858,8 +858,8 @@ Respond in JSON format:
               currentRfq = row[keys[rfqColumnIndex]] || '';
             }
             
-            if (currentRfq && currentRfq.trim() !== '') {
-              const newRfq = currentRfq.trim();
+            if (currentRfq && typeof currentRfq === 'string' && String(currentRfq).trim() !== '') {
+              const newRfq = String(currentRfq).trim();
               if (newRfq !== lastRfqNumber) {
                 // طلب جديد - إعادة تعيين المتغيرات
                 lastRfqNumber = newRfq;
@@ -882,8 +882,8 @@ Respond in JSON format:
             currentClient = row[keys[clientColumnIndex]] || '';
           }
           
-          if (currentClient && currentClient.trim() !== '' && currentClient.toLowerCase() !== 'done') {
-            lastClientName = currentClient.trim();
+          if (currentClient && typeof currentClient === 'string' && String(currentClient).trim() !== '' && String(currentClient).toLowerCase() !== 'done') {
+            lastClientName = String(currentClient).trim();
           } else if (lastClientName) {
             // نسخ اسم العميل من الصف السابق (فقط ضمن نفس الطلب)
             row[clientColumnLetter] = lastClientName;
