@@ -768,17 +768,13 @@ Respond in JSON format:
         const expiryDate = rowKeys.length > 8 ? row[rowKeys[8]] || '' : '';                 // Response Date (Expiry)
         const clientName = rowKeys.length > 9 ? row[rowKeys[9]] || '' : '';                 // Done/Status (use as client name fallback)
         
-        // Extract price from LINE ITEM format (e.g., "1854.002.CARIER.7519" -> price = 1854.002)
-        let clientPrice = 0;
-        if (lineItem && typeof lineItem === 'string') {
-          const lineItemParts = lineItem.split('.');
-          if (lineItemParts.length >= 2) {
-            const priceStr = lineItemParts[0] + '.' + lineItemParts[1];
-            clientPrice = parseFloat(priceStr) || 0;
-          }
-        }
+        // بناءً على فحص البيانات الفعلية، ملف Excel لا يحتوي على عمود أسعار منفصل
+        // السعر يجب أن يُحدد لاحقاً من خلال نظام التسعير
+        // سنضع قيمة افتراضية مؤقتة حتى يتم تحديد السعر الفعلي
         
-        console.log(`Row ${index} - Extracted price: ${clientPrice} from LINE ITEM: ${lineItem}`);
+        let clientPrice = 0; // سيتم تحديد السعر لاحقاً من خلال نظام التسعير
+        
+        console.log(`Row ${index} - No price in Excel data. Price will be set during pricing phase. LINE ITEM: ${lineItem}`);
 
         // Format dates properly (convert Excel serial dates if needed)
         const formatDate = (dateValue: any) => {

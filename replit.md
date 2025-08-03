@@ -63,8 +63,9 @@ Preferred communication style: Simple, everyday language.
 - **✅ File Upload**: Support for .xlsx and .xls file formats with comprehensive file validation
 - **✅ Data Preview**: Shows imported data under actual database column headers for verification before import
 - **✅ Final Column Mapping**: Correct RTL Excel structure - B(UOM), C(LINE ITEM), D(PART NO), E(DESCRIPTION), F(RFQ NO), G(RFQ DATE), H(QTY), I(CLIENT PRICE), J(EXPIRY DATE), K(CLIENT NAME)
-- **✅ Dual Header Row Fix**: Smart filtering to remove multiple header rows and handle "0" column mislabeling
-- **✅ Intelligent Price Detection**: Advanced logic to detect client prices even when Excel mislabels price column as "0"
+- **✅ Dual Header Row Fix**: Smart filtering to remove multiple header rows and handle data structure issues  
+- **✅ Data Structure Analysis**: Determined actual Excel format: Line No | UOM | LINE ITEM | PART NO | Description | Source File | Request Date | Quantity | Response Date | Done
+- **✅ Price Discovery**: Found that Excel files contain no price data - prices to be set through pricing system workflow
 - **✅ Header Pattern Recognition**: Filters out rows containing header patterns in Arabic and English
 - **✅ Data Cleanup**: Removes empty rows and duplicate header information before processing
 - **✅ Approval Workflow**: Two-step process with preview and confirmation to ensure data accuracy
