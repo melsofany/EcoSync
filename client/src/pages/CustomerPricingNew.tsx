@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronDown, ChevronRight, Clock, Package, AlertCircle, DollarSign } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, Package, AlertCircle, DollarSign, Calculator } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 
@@ -437,7 +437,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
           <Input
             type="number"
             step="0.01"
-            value={formData.supplierPrice || costPrice}
+            value={formData.supplierPrice || ""}
             onChange={(e) => setFormData(prev => ({...prev, supplierPrice: e.target.value}))}
             placeholder="0.00"
             className="border-blue-300 focus:border-blue-500"
@@ -526,7 +526,40 @@ export default function CustomerPricing() {
     queryKey: ["/api/items-ready-for-customer-pricing"],
   });
 
-  const itemsArray = Array.isArray(itemsNeedingPricing) ? itemsNeedingPricing : [];
+  // دالة لحساب الأيام المتبقية
+  const getDaysRemaining = (expiryDate: string) => {
+    if (!expiryDate) return null;
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const diffTime = expiry.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // دالة لحصول على لون البادج حسب الأيام المتبقية
+  const getExpiryBadgeColor = (daysRemaining: number | null) => {
+    if (daysRemaining === null) return "secondary";
+    if (daysRemaining < 0) return "destructive"; // منتهي
+    if (daysRemaining <= 3) return "destructive"; // خطر
+    if (daysRemaining <= 7) return "default"; // تحذير
+    return "secondary"; // آمن
+  };
+
+  // ترتيب البنود: الأقرب للانتهاء أولاً
+  const itemsArray = Array.isArray(itemsNeedingPricing) 
+    ? itemsNeedingPricing.sort((a: any, b: any) => {
+        const aDays = getDaysRemaining(a.expiryDate);
+        const bDays = getDaysRemaining(b.expiryDate);
+        
+        // البنود بدون تاريخ انتهاء في النهاية
+        if (aDays === null && bDays === null) return 0;
+        if (aDays === null) return 1;
+        if (bDays === null) return -1;
+        
+        // ترتيب تصاعدي حسب الأيام المتبقية
+        return aDays - bDays;
+      })
+    : [];
 
   const toggleItem = (itemId: string) => {
     const newOpenItems = new Set(openItems);
@@ -579,7 +612,7 @@ export default function CustomerPricing() {
                 البنود التي تحتاج تسعير للعملاء ({itemsArray.length})
               </CardTitle>
               <CardDescription>
-                اضغط على أي بند لعرض تفاصيله وإضافة تسعير العميل
+                مرتبة حسب الأقرب للانتهاء - اضغط على أي بند لعرض تفاصيله وإضافة تسعير العميل
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -607,10 +640,25 @@ export default function CustomerPricing() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-3 space-x-reverse">
-                          <Badge variant="outline" className="gap-1">
-                            <Clock className="h-3 w-3" />
-                            في انتظار التسعير
-                          </Badge>
+                          {(() => {
+                            const daysRemaining = getDaysRemaining(item.expiryDate);
+                            return (
+                              <div className="flex gap-2">
+                                <Badge variant={getExpiryBadgeColor(daysRemaining)} className="gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {daysRemaining === null ? "بدون تاريخ انتهاء" :
+                                   daysRemaining < 0 ? `منتهي منذ ${Math.abs(daysRemaining)} يوم` :
+                                   daysRemaining === 0 ? "ينتهي اليوم" :
+                                   daysRemaining === 1 ? "ينتهي غداً" :
+                                   `${daysRemaining} يوم متبقي`}
+                                </Badge>
+                                <Badge variant="outline" className="gap-1">
+                                  <DollarSign className="h-3 w-3" />
+                                  في انتظار التسعير
+                                </Badge>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     </CollapsibleTrigger>
