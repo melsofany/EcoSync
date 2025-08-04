@@ -168,16 +168,20 @@ export default function CustomerPricingModal({
                   name="costPrice"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>سعر التكلفة (جنيه)</FormLabel>
+                      <FormLabel className="flex items-center gap-2 text-blue-700">
+                        <DollarSign className="h-4 w-4" />
+                        سعر المورد (التكلفة) *
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           type="number"
                           step="0.01"
                           placeholder="0.00"
-                          disabled
+                          className="border-blue-300 focus:border-blue-500"
                         />
                       </FormControl>
+                      <p className="text-xs text-gray-500">يمكن تعديل سعر المورد حسب الحاجة</p>
                       <FormMessage />
                     </FormItem>
                   )}

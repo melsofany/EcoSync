@@ -343,6 +343,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
 // Simplified inline customer pricing form
 function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => void }) {
   const [formData, setFormData] = useState({
+    supplierPrice: item.supplierPrice?.toString() || "",
     sellingPrice: "",
     quantity: item.quantity?.toString() || "1",
     notes: "",
@@ -352,22 +353,21 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const costPrice = Number(item.supplierPrice || 0);
-
-  // Calculate profit margin and total
+  // Calculate profit margin and total based on updated supplier price
   React.useEffect(() => {
+    const supplierPrice = Number(formData.supplierPrice) || Number(item.supplierPrice || 0);
     const sellingPrice = Number(formData.sellingPrice) || 0;
     const quantity = Number(formData.quantity) || 1;
 
-    if (costPrice > 0 && sellingPrice > 0) {
-      const margin = ((sellingPrice - costPrice) / costPrice) * 100;
+    if (supplierPrice > 0 && sellingPrice > 0) {
+      const margin = ((sellingPrice - supplierPrice) / supplierPrice) * 100;
       setProfitMargin(Number(margin.toFixed(2)));
     } else {
       setProfitMargin(0);
     }
 
     setTotalAmount(sellingPrice * quantity);
-  }, [formData.sellingPrice, formData.quantity, costPrice]);
+  }, [formData.supplierPrice, formData.sellingPrice, formData.quantity, item.supplierPrice]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -389,7 +389,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
         body: JSON.stringify({
           itemId: item.id,
           quotationId: item.quotationId,
-          costPrice: costPrice,
+          costPrice: Number(formData.supplierPrice) || Number(item.supplierPrice || 0),
           profitMargin: profitMargin / 100,
           sellingPrice: Number(formData.sellingPrice),
           quantity: Number(formData.quantity),
@@ -409,7 +409,12 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
 
       queryClient.invalidateQueries({ queryKey: ["/api/items-ready-for-customer-pricing"] });
       onSuccess();
-      setFormData({ sellingPrice: "", quantity: item.quantity?.toString() || "1", notes: "" });
+      setFormData({ 
+        supplierPrice: item.supplierPrice?.toString() || "",
+        sellingPrice: "", 
+        quantity: item.quantity?.toString() || "1", 
+        notes: "" 
+      });
     } catch (error: any) {
       toast({
         title: "خطأ في إضافة التسعير",
@@ -425,19 +430,35 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
       
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="text-sm font-medium">سعر التكلفة</label>
-          <Input value={formatCurrency(costPrice)} disabled className="bg-gray-100" />
+          <label className="text-sm font-medium text-blue-700 flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            سعر المورد (التكلفة) *
+          </label>
+          <Input
+            type="number"
+            step="0.01"
+            value={formData.supplierPrice || costPrice}
+            onChange={(e) => setFormData(prev => ({...prev, supplierPrice: e.target.value}))}
+            placeholder="0.00"
+            className="border-blue-300 focus:border-blue-500"
+          />
+          <p className="text-xs text-gray-500 mt-1">السعر الأساسي من المورد</p>
         </div>
         <div>
-          <label className="text-sm font-medium">سعر البيع *</label>
+          <label className="text-sm font-medium text-green-700 flex items-center gap-2">
+            <Calculator className="h-4 w-4" />
+            سعر البيع للعميل *
+          </label>
           <Input
             type="number"
             step="0.01"
             value={formData.sellingPrice}
             onChange={(e) => setFormData(prev => ({...prev, sellingPrice: e.target.value}))}
             placeholder="0.00"
+            className="border-green-300 focus:border-green-500"
             required
           />
+          <p className="text-xs text-gray-500 mt-1">السعر النهائي للعميل</p>
         </div>
         <div>
           <label className="text-sm font-medium">الكمية *</label>
@@ -448,7 +469,9 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
             value={formData.quantity}
             onChange={(e) => setFormData(prev => ({...prev, quantity: e.target.value}))}
             required
+            className="border-purple-300 focus:border-purple-500"
           />
+          <p className="text-xs text-gray-500 mt-1">عدد الوحدات المطلوبة</p>
         </div>
       </div>
 
@@ -468,7 +491,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
         <div>
           <span className="font-medium">صافي الربح:</span>
           <p className={`text-lg font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {formatCurrency((Number(formData.sellingPrice) - costPrice) * Number(formData.quantity))}
+            {formatCurrency((Number(formData.sellingPrice) - (Number(formData.supplierPrice) || Number(item.supplierPrice || 0))) * Number(formData.quantity))}
           </p>
         </div>
       </div>
