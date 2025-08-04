@@ -21,12 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
 
-interface SidebarProps {
-  isOpen: boolean;
-  onToggle: () => void;
-}
-
-export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
+export default function Sidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
   const logout = useLogout();
@@ -94,10 +89,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     },
   ];
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2);
-  };
-
   const getRoleLabel = (role: string) => {
     const roles = {
       manager: "مدير",
@@ -106,126 +97,99 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
       purchasing: "موظف مشتريات",
       accounting: "موظف حسابات",
     };
-    // Ensure safe fallback for unknown roles
     return roles[role as keyof typeof roles] || String(role).replace(/[<>]/g, '') || "مستخدم";
   };
 
   if (!user) return null;
 
   return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
-          onClick={onToggle} 
-        />
-      )}
-      
-      {/* Sidebar */}
-      <div className={cn(
-        "bg-white shadow-lg border-l border-gray-200 transition-all duration-300 z-30",
-        "fixed lg:relative lg:translate-x-0 h-full flex flex-col",
-        isOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 lg:w-16"
-      )}>
-        {/* Company Header */}
-        <div className="p-3 sm:p-4 lg:p-6 border-b border-gray-200">
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg flex items-center justify-center">
-              <img 
-                src="/assets/qortoba-logo.png" 
-                alt="قرطبة للتوريدات" 
-                className="h-8 w-8 lg:h-10 lg:w-10 object-contain"
-              />
-            </div>
-            {isOpen && (
-              <div>
-                <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام قرطبة</h2>
-                <p className="text-xs text-gray-500">للتوريدات</p>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* User Info */}
-        {isOpen && (
-          <div className="p-3 lg:p-4 border-b border-gray-100 bg-gray-50">
-            <UserDisplayName 
-              user={user}
-              showUsername={false}
-              showEmail={false}
-              showPhone={false}
-              avatarSize="md"
-              layout="horizontal"
-              className="w-full"
+    <div className="bg-white shadow-lg border-l border-gray-200 w-72 h-full flex flex-col relative">
+      {/* Company Header */}
+      <div className="p-4 lg:p-6 border-b border-gray-200">
+        <div className="flex items-center space-x-3 space-x-reverse">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+            <img 
+              src="/assets/qortoba-logo.png" 
+              alt="قرطبة للتوريدات" 
+              className="h-10 w-10 object-contain"
             />
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-gray-500 truncate">
-                {getRoleLabel(user.role)}
-              </p>
-              <div className="flex items-center">
-                <Circle className={cn(
-                  "w-2 h-2 rounded-full",
-                  user.isOnline ? "fill-green-400 text-green-400" : "fill-gray-400 text-gray-400"
-                )} />
-                <span className="text-xs text-gray-500 mr-1">
-                  {user.isOnline ? "متصل" : "غير متصل"}
-                </span>
-              </div>
-            </div>
           </div>
-        )}
-
-        {/* Navigation */}
-        <nav className="flex-1 p-3 lg:p-4 space-y-2 lg:space-y-3">
-          {menuItems.map((item) => {
-            if (!canAccessSection(user, item.section)) {
-              return null;
-            }
-
-            const Icon = item.icon;
-            const isActive = location === item.href || (item.href !== '/' && location.startsWith(item.href));
-
-            return (
-              <Link key={item.href} href={item.href}>
-                <div className={cn(
-                  "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 group relative border-2",
-                  isActive 
-                    ? "bg-primary text-white shadow-lg border-primary-600 transform scale-[1.02]" 
-                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent hover:border-gray-200 hover:shadow-sm"
-                )}>
-                  <Icon className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
-                  {isOpen && (
-                    <span className="font-semibold text-base lg:text-lg leading-tight">
-                      {item.title}
-                    </span>
-                  )}
-                  {!isOpen && isActive && (
-                    <div className="absolute right-2 w-3 h-3 bg-white rounded-full shadow-sm">
-                      <Circle className="h-3 w-3 fill-current text-primary" />
-                    </div>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Logout */}
-        <div className="p-3 lg:p-4 border-t border-gray-200">
-          <div
-            onClick={() => logout.mutate()}
-            className={cn(
-              "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
-              "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm",
-              logout.isPending && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            <LogOut className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
-            {isOpen && <span className="font-semibold text-base lg:text-lg leading-tight">تسجيل الخروج</span>}
+          <div>
+            <h2 className="font-bold text-gray-800 text-base">نظام قرطبة</h2>
+            <p className="text-xs text-gray-500">للتوريدات</p>
           </div>
         </div>
       </div>
-    </>
+      
+      {/* User Info */}
+      <div className="p-4 border-b border-gray-100 bg-gray-50">
+        <UserDisplayName 
+          user={user}
+          showUsername={false}
+          showEmail={false}
+          showPhone={false}
+          avatarSize="md"
+          layout="horizontal"
+          className="w-full"
+        />
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-xs text-gray-500 truncate">
+            {getRoleLabel(user.role)}
+          </p>
+          <div className="flex items-center">
+            <Circle className={cn(
+              "w-2 h-2 rounded-full",
+              user.isOnline ? "fill-green-400 text-green-400" : "fill-gray-400 text-gray-400"
+            )} />
+            <span className="text-xs text-gray-500 mr-1">
+              {user.isOnline ? "متصل" : "غير متصل"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 p-3 lg:p-4 space-y-2 lg:space-y-3">
+        {menuItems.map((item) => {
+          if (!canAccessSection(user, item.section)) {
+            return null;
+          }
+
+          const Icon = item.icon;
+          const isActive = location === item.href || (item.href !== '/' && location.startsWith(item.href));
+
+          return (
+            <Link key={item.href} href={item.href}>
+              <div className={cn(
+                "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 group relative border-2",
+                isActive 
+                  ? "bg-primary text-white shadow-lg border-primary-600 transform scale-[1.02]" 
+                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent hover:border-gray-200 hover:shadow-sm"
+              )}>
+                <Icon className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
+                <span className="font-semibold text-base lg:text-lg leading-tight">
+                  {item.title}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Logout */}
+      <div className="p-3 lg:p-4 border-t border-gray-200">
+        <div
+          onClick={() => logout.mutate()}
+          className={cn(
+            "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
+            "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm",
+            logout.isPending && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          <LogOut className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
+          <span className="font-semibold text-base lg:text-lg leading-tight">تسجيل الخروج</span>
+        </div>
+      </div>
+    </div>
   );
 }
