@@ -2,7 +2,15 @@
 
 ## التشغيل السريع (5 خطوات فقط!)
 
-### 1. تحميل البرامج المطلوبة
+### 1. تثبيت البرامج المطلوبة
+
+#### الطريقة الأولى: تثبيت تلقائي بـ PowerShell (موصى به)
+```
+انقر بزر الماوس الأيمن على PowerShell → "Run as administrator"
+انقر مرتين على: install-all.ps1
+```
+
+#### الطريقة الثانية: تحميل يدوي
 - [Node.js](https://nodejs.org/) - حمل النسخة LTS
 - [PostgreSQL](https://www.postgresql.org/download/windows/) - حمل النسخة الأحدث
 
@@ -38,6 +46,14 @@
 
 ## الملفات المفيدة
 
+### ملفات PowerShell للتثبيت:
+| الملف | الوظيفة |
+|-------|---------|
+| `install-all.ps1` | تثبيت جميع المتطلبات تلقائياً |
+| `install-nodejs.ps1` | تثبيت Node.js فقط |
+| `install-postgresql.ps1` | تثبيت PostgreSQL فقط |
+
+### ملفات Batch للتشغيل:
 | الملف | الوظيفة |
 |-------|---------|
 | `start-project.bat` | تشغيل المشروع |
