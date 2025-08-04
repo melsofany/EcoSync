@@ -96,9 +96,8 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
       // Handle duplicate error specifically
       if (error.status === 409 && error.error === "DUPLICATE_PART_NUMBER") {
         toast({
-          title: "صنف مكرر",
-          description: `يوجد صنف بنفس رقم القطعة: ${error.existingItem?.itemNumber}`,
-          variant: "destructive",
+          title: "صنف موجود مسبقاً",
+          description: `تم استخدام الصنف الموجود: ${error.existingItem?.itemNumber}`,
         });
       } else {
         toast({

@@ -540,18 +540,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         if (exactMatch) {
-          console.log('❌ Duplicate found, preventing creation:', exactMatch.itemNumber);
-          await logActivity(req, "prevented_duplicate_item", "item", exactMatch.id, `Prevented duplicate: ${exactMatch.itemNumber} - ${exactMatch.description}`);
+          console.log('✅ Duplicate found, using existing item:', exactMatch.itemNumber);
+          await logActivity(req, "reused_existing_item", "item", exactMatch.id, `Reused existing item: ${exactMatch.itemNumber} - ${exactMatch.description}`);
           
-          return res.status(409).json({
-            error: "DUPLICATE_PART_NUMBER",
-            message: "يوجد صنف بنفس رقم القطعة",
-            existingItem: {
-              itemNumber: exactMatch.itemNumber,
-              partNumber: exactMatch.partNumber,
-              description: exactMatch.description
-            }
-          });
+          // إرجاع الصنف الموجود بدلاً من إنشاء صنف جديد
+          return res.status(200).json(exactMatch);
         }
       }
       
