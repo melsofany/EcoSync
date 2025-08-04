@@ -226,7 +226,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Logout */}
           <div 
-            onClick={logout}
+            onClick={() => logout.mutate()}
             className={cn(
               "flex items-center space-x-4 space-x-reverse px-4 py-3 lg:px-5 lg:py-4 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
               "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm"
