@@ -1,14 +1,8 @@
 import { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useAuth } from "@/hooks/useAuth";
 
-interface HeaderProps {
-  onMenuClick: () => void;
-}
-
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function Header() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const { user } = useAuth();
 
@@ -36,14 +30,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
     <header className="bg-white shadow-sm border-b border-gray-200 p-3 sm:p-4 lg:p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3 sm:space-x-4 space-x-reverse">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMenuClick}
-            className="lg:hidden bg-gray-100 hover:bg-gray-200 border border-gray-300 shadow-inner"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
           <div>
             <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
               نظام إدارة التوريدات
