@@ -461,8 +461,11 @@ export class DatabaseStorage implements IStorage {
 
   async getNextItemNumber(): Promise<string> {
     try {
+      console.log('🔢 Generating next item number...');
+      
       // الحصول على جميع الأصناف التي تبدأ بـ P-
       const allItems = await db.select({ itemNumber: items.itemNumber }).from(items);
+      console.log(`📊 Found ${allItems.length} total items`);
       
       // البحث عن أعلى رقم P- صحيح
       let maxNumber = 0;
@@ -470,16 +473,23 @@ export class DatabaseStorage implements IStorage {
         if (item.itemNumber && item.itemNumber.startsWith('P-')) {
           const numberPart = item.itemNumber.replace('P-', '');
           const num = parseInt(numberPart, 10);
+          console.log(`🔍 Checking item: ${item.itemNumber}, number part: ${numberPart}, parsed: ${num}`);
           if (!isNaN(num) && num > maxNumber) {
             maxNumber = num;
           }
         }
       }
       
-      const nextNumber = (maxNumber + 1).toString().padStart(6, "0");
-      return `P-${nextNumber}`;
+      console.log(`📈 Max number found: ${maxNumber}`);
+      
+      // إنشاء الرقم التالي
+      const nextNumber = (maxNumber + 1).toString().padStart(6, '0');
+      const result = `P-${nextNumber}`;
+      console.log(`✅ Generated item number: ${result}`);
+      
+      return result;
     } catch (error) {
-      console.error("Error getting next item number:", error);
+      console.error("❌ Error getting next item number:", error);
       // في حالة الخطأ، ابدأ من P-000001
       return "P-000001";
     }

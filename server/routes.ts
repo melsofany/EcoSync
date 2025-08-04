@@ -688,6 +688,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         
         try {
           let content = aiResult.choices[0].message.content;
+          console.log('🤖 Raw AI Response:', content);
+          
           // تنظيف الاستجابة من علامات markdown إذا وجدت
           if (content.includes('```json')) {
             content = content.replace(/```json\s*/, '').replace(/```\s*$/, '');
@@ -695,15 +697,19 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           if (content.includes('```')) {
             content = content.replace(/```\s*/, '').replace(/```\s*$/, '');
           }
+          
           aiAnalysis = JSON.parse(content);
+          console.log('🧠 Parsed AI Analysis:', aiAnalysis);
+          
         } catch (parseError) {
-          console.error("Failed to parse AI response:", parseError, "Original content:", aiResult.choices[0].message.content);
+          console.error("❌ Failed to parse AI response:", parseError, "Original content:", aiResult.choices[0].message.content);
           // استخدام fallback في حالة فشل parsing
           throw new Error("AI response parsing failed");
         }
 
         return res.json({
           status: aiAnalysis.isDuplicate ? "duplicate" : "processed",
+          isDuplicate: aiAnalysis.isDuplicate,
           similarItems: aiAnalysis.isDuplicate ? similarItems : [],
           aiProvider: "deepseek",
           confidence: aiAnalysis.confidence,
