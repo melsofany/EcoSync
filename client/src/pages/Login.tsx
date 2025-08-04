@@ -19,7 +19,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const login = useLogin();
-  const [showCredentials, setShowCredentials] = useState(false);
+
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetMessage, setResetMessage] = useState("");
@@ -183,25 +183,7 @@ export default function Login() {
             </div>
           )}
 
-          <div className="mt-6">
-            <Button
-              variant="outline"
-              onClick={() => setShowCredentials(!showCredentials)}
-              className="w-full text-sm"
-            >
-              {showCredentials ? "إخفاء" : "عرض"} بيانات الاختبار
-            </Button>
 
-            {showCredentials && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg text-sm space-y-2">
-                <div className="font-medium text-gray-700">حسابات الاختبار:</div>
-                <div><strong>مدير:</strong> admin / admin123</div>
-                <div><strong>تقنية المعلومات:</strong> it_admin / it123</div>
-                <div><strong>إدخال البيانات:</strong> data_entry / data123</div>
-                <div><strong>المشتريات:</strong> purchasing / purchase123</div>
-              </div>
-            )}
-          </div>
 
           <div className="mt-6 text-center text-sm text-gray-500">
             النسخة 1.0 - جميع الحقوق محفوظة لقرطبة للتوريدات © 2025
