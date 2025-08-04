@@ -3,9 +3,13 @@ import { UserAvatar } from "@/components/UserAvatar";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "wouter";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { KeyRound, Settings, ChevronDown } from "lucide-react";
+import { KeyRound, Settings, ChevronDown, Menu } from "lucide-react";
 
-export default function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export default function Header({ onMenuClick }: HeaderProps = {}) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const { user } = useAuth();
 
@@ -33,6 +37,16 @@ export default function Header() {
     <header className="bg-white shadow-sm border-b border-gray-200 p-3 sm:p-4 lg:p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3 sm:space-x-4 space-x-reverse">
+          {/* Mobile menu button */}
+          {onMenuClick && (
+            <button
+              onClick={onMenuClick}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="فتح القائمة"
+            >
+              <Menu className="h-6 w-6 text-gray-600" />
+            </button>
+          )}
           <div>
             <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
               نظام إدارة التوريدات
