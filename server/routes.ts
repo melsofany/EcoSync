@@ -1024,29 +1024,125 @@ Respond in JSON format:
           sqlDump += `-- No quotation requests found\n\n`;
         }
 
-        // Customer Pricing
-        const customerPricing = await storage.getAllCustomerPricing();
-        sqlDump += `-- Table: customer_pricing (${customerPricing.length} records)\n`;
+        // Quotation Items
+        let allQuotationItems = [];
+        for (const quotation of quotations) {
+          try {
+            const quotationItems = await storage.getQuotationItems(quotation.id);
+            allQuotationItems.push(...quotationItems);
+          } catch (error) {
+            console.log(`Could not get items for quotation ${quotation.id}`);
+          }
+        }
+        
+        sqlDump += `-- Table: quotation_items (${allQuotationItems.length} records)\n`;
         sqlDump += `-- =====================\n`;
-        if (customerPricing.length > 0) {
-          sqlDump += `INSERT INTO customer_pricing (id, client_id, item_id, unit_price, currency, effective_date, created_at, created_by) VALUES\n`;
-          const pricingValues = customerPricing.map(pricing => {
+        if (allQuotationItems.length > 0) {
+          sqlDump += `INSERT INTO quotation_items (id, quotation_id, item_id, quantity, line_number, client_price, created_at) VALUES\n`;
+          const quotationItemValues = allQuotationItems.map(item => {
+            const values = [
+              `'${item.id}'`,
+              `'${item.quotationId}'`,
+              `'${item.itemId}'`,
+              `${item.quantity}`,
+              item.lineNumber || 'NULL',
+              item.clientPrice ? `'${item.clientPrice}'` : 'NULL',
+              item.createdAt ? `'${item.createdAt.toISOString()}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += quotationItemValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No quotation items found\n\n`;
+        }
+
+        // Supplier Pricing
+        const supplierPricing = await storage.getAllSupplierPricing();
+        sqlDump += `-- Table: supplier_pricing (${supplierPricing.length} records)\n`;
+        sqlDump += `-- =====================\n`;
+        if (supplierPricing.length > 0) {
+          sqlDump += `INSERT INTO supplier_pricing (id, supplier_id, item_id, unit_price, currency, minimum_quantity, lead_time, effective_date, created_at, created_by) VALUES\n`;
+          const supplierPricingValues = supplierPricing.map(pricing => {
             const values = [
               `'${pricing.id}'`,
-              `'${pricing.clientId}'`,
+              `'${pricing.supplierId}'`,
               `'${pricing.itemId}'`,
               `'${pricing.unitPrice}'`,
               pricing.currency ? `'${pricing.currency}'` : 'NULL',
+              pricing.minimumQuantity || 'NULL',
+              pricing.leadTime ? `'${pricing.leadTime}'` : 'NULL',
               pricing.effectiveDate ? `'${pricing.effectiveDate.toISOString()}'` : 'NULL',
               pricing.createdAt ? `'${pricing.createdAt.toISOString()}'` : 'NULL',
               pricing.createdBy ? `'${pricing.createdBy}'` : 'NULL'
             ];
             return `(${values.join(', ')})`;
           });
-          sqlDump += pricingValues.join(',\n');
+          sqlDump += supplierPricingValues.join(',\n');
           sqlDump += ';\n\n';
         } else {
-          sqlDump += `-- No customer pricing found\n\n`;
+          sqlDump += `-- No supplier pricing found\n\n`;
+        }
+
+        // Supplier Quotes
+        let allSupplierQuotes = [];
+        for (const item of items) {
+          try {
+            const quotes = await storage.getSupplierQuotes(item.id);
+            allSupplierQuotes.push(...quotes);
+          } catch (error) {
+            console.log(`Could not get quotes for item ${item.id}`);
+          }
+        }
+        
+        sqlDump += `-- Table: supplier_quotes (${allSupplierQuotes.length} records)\n`;
+        sqlDump += `-- =====================\n`;
+        if (allSupplierQuotes.length > 0) {
+          sqlDump += `INSERT INTO supplier_quotes (id, quotation_item_id, supplier_id, unit_price, currency, lead_time, notes, created_at) VALUES\n`;
+          const supplierQuoteValues = allSupplierQuotes.map(quote => {
+            const values = [
+              `'${quote.id}'`,
+              `'${quote.quotationItemId}'`,
+              `'${quote.supplierId}'`,
+              `'${quote.unitPrice}'`,
+              quote.currency ? `'${quote.currency}'` : 'NULL',
+              quote.leadTime ? `'${quote.leadTime}'` : 'NULL',
+              quote.notes ? `'${quote.notes.replace(/'/g, "''")}'` : 'NULL',
+              quote.createdAt ? `'${quote.createdAt.toISOString()}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += supplierQuoteValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No supplier quotes found\n\n`;
+        }
+
+        // Activity Log
+        const activities = await storage.getActivities(1000); // Get more activities
+        sqlDump += `-- Table: activity_log (${activities.length} records)\n`;
+        sqlDump += `-- =====================\n`;
+        if (activities.length > 0) {
+          sqlDump += `INSERT INTO activity_log (id, user_id, action, entity_type, entity_id, details, ip_address, timestamp, user_full_name, user_profile_image) VALUES\n`;
+          const activityValues = activities.map(activity => {
+            const values = [
+              `'${activity.id}'`,
+              `'${activity.userId}'`,
+              `'${activity.action.replace(/'/g, "''")}'`,
+              activity.entityType ? `'${activity.entityType}'` : 'NULL',
+              activity.entityId ? `'${activity.entityId}'` : 'NULL',
+              activity.details ? `'${activity.details.replace(/'/g, "''")}'` : 'NULL',
+              activity.ipAddress ? `'${activity.ipAddress}'` : 'NULL',
+              `'${activity.timestamp.toISOString()}'`,
+              activity.userFullName ? `'${activity.userFullName.replace(/'/g, "''")}'` : 'NULL',
+              activity.userProfileImage ? `'${activity.userProfileImage}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += activityValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No activities found\n\n`;
         }
 
       } catch (dataError) {
@@ -1054,11 +1150,31 @@ Respond in JSON format:
         sqlDump += `-- Error accessing data: ${dataError instanceof Error ? dataError.message : 'Unknown error'}\n\n`;
       }
 
-      // Add summary
-      sqlDump += `-- End of database export\n`;
+      // Add summary statistics
+      sqlDump += `-- ==========================================\n`;
+      sqlDump += `-- EXPORT SUMMARY\n`;
+      sqlDump += `-- ==========================================\n`;
       sqlDump += `-- Export completed at: ${new Date().toISOString()}\n`;
-      sqlDump += `-- This is a summary export containing table counts and basic information\n`;
-      sqlDump += `-- For full data recovery, use the individual table export functions\n`;
+      sqlDump += `-- Exported by: ${req.session.user?.fullName}\n`;
+      sqlDump += `-- \n`;
+      sqlDump += `-- TABLES EXPORTED:\n`;
+      sqlDump += `-- - Users: ${users.length} records\n`;
+      sqlDump += `-- - Clients: ${clients.length} records\n`;
+      sqlDump += `-- - Suppliers: ${suppliers.length} records\n`;
+      sqlDump += `-- - Items: ${items.length} records\n`;
+      sqlDump += `-- - Purchase Orders: ${purchaseOrders.length} records\n`;
+      sqlDump += `-- - Purchase Order Items: ${allPOItems.length} records\n`;
+      sqlDump += `-- - Quotation Requests: ${quotations.length} records\n`;
+      sqlDump += `-- - Quotation Items: ${allQuotationItems.length} records\n`;
+      sqlDump += `-- - Supplier Pricing: ${supplierPricing.length} records\n`;
+      sqlDump += `-- - Supplier Quotes: ${allSupplierQuotes.length} records\n`;
+      sqlDump += `-- - Activity Log: ${activities.length} records\n`;
+      sqlDump += `-- \n`;
+      sqlDump += `-- TOTAL RECORDS: ${users.length + clients.length + suppliers.length + items.length + purchaseOrders.length + allPOItems.length + quotations.length + allQuotationItems.length + supplierPricing.length + allSupplierQuotes.length + activities.length}\n`;
+      sqlDump += `-- \n`;
+      sqlDump += `-- This is a complete database backup containing all data.\n`;
+      sqlDump += `-- To restore: Execute this SQL file on a PostgreSQL database.\n`;
+      sqlDump += `-- ==========================================\n`;
 
       // Log the activity
       await logActivity(req, "database_export", "system", undefined, 
