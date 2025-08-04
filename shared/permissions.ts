@@ -64,6 +64,11 @@ export interface UserPermissions {
   activity: {
     view: boolean;
   };
+  pricing: {
+    viewPrices: boolean;
+    viewCosts: boolean;
+    viewMargins: boolean;
+  };
 }
 
 // الصلاحيات المتاحة
@@ -300,6 +305,26 @@ export const AVAILABLE_PERMISSIONS: Permission[] = [
     name: 'عرض سجل النشاطات',
     description: 'عرض سجل نشاطات المستخدمين',
     category: 'النشاطات'
+  },
+
+  // صلاحيات مشاهدة الأسعار
+  {
+    id: 'pricing.viewPrices',
+    name: 'مشاهدة أسعار البيع',
+    description: 'عرض أسعار البيع في الطلبات والفواتير',
+    category: 'الأسعار'
+  },
+  {
+    id: 'pricing.viewCosts',
+    name: 'مشاهدة أسعار التكلفة',
+    description: 'عرض أسعار التكلفة وأسعار الموردين',
+    category: 'الأسعار'
+  },
+  {
+    id: 'pricing.viewMargins',
+    name: 'مشاهدة هوامش الربح',
+    description: 'عرض هوامش الربح والتحليلات المالية',
+    category: 'الأسعار'
   }
 ];
 
@@ -317,7 +342,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     analytics: { view: true },
     admin: { userManagement: true, systemSettings: true, backupRestore: true },
     import: { quotations: true, items: true, purchaseOrders: true },
-    activity: { view: true }
+    activity: { view: true },
+    pricing: { viewPrices: true, viewCosts: true, viewMargins: true }
   },
   it_admin: {
     dashboard: true,
@@ -331,7 +357,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     analytics: { view: true },
     admin: { userManagement: true, systemSettings: true, backupRestore: true },
     import: { quotations: true, items: true, purchaseOrders: true },
-    activity: { view: true }
+    activity: { view: true },
+    pricing: { viewPrices: true, viewCosts: true, viewMargins: true }
   },
   data_entry: {
     dashboard: true,
@@ -345,7 +372,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     analytics: { view: false },
     admin: { userManagement: false, systemSettings: false, backupRestore: false },
     import: { quotations: false, items: false, purchaseOrders: false },
-    activity: { view: false }
+    activity: { view: false },
+    pricing: { viewPrices: false, viewCosts: false, viewMargins: false }
   },
   purchasing: {
     dashboard: true,
@@ -359,7 +387,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     analytics: { view: false },
     admin: { userManagement: false, systemSettings: false, backupRestore: false },
     import: { quotations: false, items: false, purchaseOrders: false },
-    activity: { view: false }
+    activity: { view: false },
+    pricing: { viewPrices: false, viewCosts: true, viewMargins: false }
   },
   accounting: {
     dashboard: true,
@@ -373,7 +402,8 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     analytics: { view: true },
     admin: { userManagement: false, systemSettings: false, backupRestore: false },
     import: { quotations: false, items: false, purchaseOrders: false },
-    activity: { view: false }
+    activity: { view: false },
+    pricing: { viewPrices: true, viewCosts: true, viewMargins: true }
   }
 };
 
@@ -407,7 +437,8 @@ export const getUserPermissions = (user: any): UserPermissions => {
     analytics: { view: false },
     admin: { userManagement: false, systemSettings: false, backupRestore: false },
     import: { quotations: false, items: false, purchaseOrders: false },
-    activity: { view: false }
+    activity: { view: false },
+    pricing: { viewPrices: false, viewCosts: false, viewMargins: false }
   };
 };
 
@@ -425,6 +456,24 @@ export const hasPermission = (user: any, permission: string): boolean => {
   }
   
   return current === true;
+};
+
+// دالة للتحقق من صلاحيات الأسعار
+export const canViewPricing = (user: any, priceType: 'prices' | 'costs' | 'margins' = 'prices'): boolean => {
+  if (!user) return false;
+  
+  const permissions = getUserPermissions(user);
+  
+  switch (priceType) {
+    case 'prices':
+      return permissions.pricing.viewPrices;
+    case 'costs': 
+      return permissions.pricing.viewCosts;
+    case 'margins':
+      return permissions.pricing.viewMargins;
+    default:
+      return false;
+  }
 };
 
 // دالة للتحقق من إمكانية الوصول للقسم (للتوافق مع النظام الحالي)
