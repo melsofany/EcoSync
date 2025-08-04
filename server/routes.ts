@@ -827,137 +827,227 @@ Respond in JSON format:
       sqlDump += `-- تم التصدير في: ${new Date().toISOString()}\n`;
       sqlDump += `-- بواسطة: ${req.session.user?.fullName}\n\n`;
 
-      // Export data using storage methods
+      // Export complete data from all tables
       try {
         // Users (without passwords)
         const users = await storage.getAllUsers();
-        sqlDump += `-- Table: users\n`;
+        sqlDump += `-- Table: users (${users.length} records)\n`;
         sqlDump += `-- =====================\n`;
+        sqlDump += `INSERT INTO users (id, username, full_name, email, role, is_online, created_at, last_login, ip_address, profile_image) VALUES\n`;
+        
         if (users.length > 0) {
-          sqlDump += `-- Data for table users (${users.length} records)\n`;
-          for (const user of users) {
-            const { password, ...userWithoutPassword } = user;
-            sqlDump += `-- User: ${user.fullName} (${user.username}) - Role: ${user.role}\n`;
-          }
+          const userValues = users.map(user => {
+            const values = [
+              `'${user.id}'`,
+              `'${user.username}'`,
+              `'${user.fullName}'`,
+              user.email ? `'${user.email}'` : 'NULL',
+              `'${user.role}'`,
+              user.isOnline ? 'true' : 'false',
+              user.createdAt ? `'${user.createdAt.toISOString()}'` : 'NULL',
+              user.lastLogin ? `'${user.lastLogin.toISOString()}'` : 'NULL',
+              user.ipAddress ? `'${user.ipAddress}'` : 'NULL',
+              user.profileImage ? `'${user.profileImage}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += userValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No users found\n\n`;
         }
-        sqlDump += `\n`;
 
         // Clients
         const clients = await storage.getAllClients();
-        sqlDump += `-- Table: clients\n`;
+        sqlDump += `-- Table: clients (${clients.length} records)\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total clients: ${clients.length}\n`;
+        sqlDump += `INSERT INTO clients (id, name, email, phone, address, created_at, created_by) VALUES\n`;
+        
         if (clients.length > 0) {
-          for (const client of clients.slice(0, 10)) { // Show first 10
-            sqlDump += `-- Client: ${client.name} - Email: ${client.email || 'N/A'}\n`;
-          }
-          if (clients.length > 10) {
-            sqlDump += `-- ... and ${clients.length - 10} more clients\n`;
-          }
+          const clientValues = clients.map(client => {
+            const values = [
+              `'${client.id}'`,
+              `'${client.name.replace(/'/g, "''")}'`,
+              client.email ? `'${client.email}'` : 'NULL',
+              client.phone ? `'${client.phone}'` : 'NULL',
+              client.address ? `'${client.address.replace(/'/g, "''")}'` : 'NULL',
+              client.createdAt ? `'${client.createdAt.toISOString()}'` : 'NULL',
+              client.createdBy ? `'${client.createdBy}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += clientValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No clients found\n\n`;
         }
-        sqlDump += `\n`;
 
         // Suppliers
         const suppliers = await storage.getAllSuppliers();
-        sqlDump += `-- Table: suppliers\n`;
+        sqlDump += `-- Table: suppliers (${suppliers.length} records)\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total suppliers: ${suppliers.length}\n`;
+        sqlDump += `INSERT INTO suppliers (id, name, email, phone, address, created_at, created_by) VALUES\n`;
+        
         if (suppliers.length > 0) {
-          for (const supplier of suppliers.slice(0, 10)) { // Show first 10
-            sqlDump += `-- Supplier: ${supplier.name} - Email: ${supplier.email || 'N/A'}\n`;
-          }
-          if (suppliers.length > 10) {
-            sqlDump += `-- ... and ${suppliers.length - 10} more suppliers\n`;
-          }
+          const supplierValues = suppliers.map(supplier => {
+            const values = [
+              `'${supplier.id}'`,
+              `'${supplier.name.replace(/'/g, "''")}'`,
+              supplier.email ? `'${supplier.email}'` : 'NULL',
+              supplier.phone ? `'${supplier.phone}'` : 'NULL',
+              supplier.address ? `'${supplier.address.replace(/'/g, "''")}'` : 'NULL',
+              supplier.createdAt ? `'${supplier.createdAt.toISOString()}'` : 'NULL',
+              supplier.createdBy ? `'${supplier.createdBy}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += supplierValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No suppliers found\n\n`;
         }
-        sqlDump += `\n`;
 
-        // Items with pricing details
+        // Items
         const items = await storage.getAllItems();
-        sqlDump += `-- Table: items (with pricing information)\n`;
+        sqlDump += `-- Table: items (${items.length} records)\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total items: ${items.length}\n`;
+        sqlDump += `INSERT INTO items (id, item_number, part_number, description, unit, created_at, created_by, category, subcategory, specifications) VALUES\n`;
+        
         if (items.length > 0) {
-          let itemsWithPricing = 0;
-          for (const item of items.slice(0, 20)) { // Show first 20 items
-            sqlDump += `-- Item: ${item.itemNumber || 'N/A'} - ${item.description}\n`;
-            sqlDump += `--   Part Number: ${item.partNumber || 'N/A'}\n`;
-            sqlDump += `--   Unit: ${item.unit || 'N/A'}\n`;
-            
-            // Get pricing for this item
-            try {
-              // Since getCustomerPricingByItem doesn't exist, we'll show basic item info
-              sqlDump += `--   Pricing: Available through customer pricing system\n`;
-            } catch (priceError) {
-              sqlDump += `--   Pricing: Error getting pricing\n`;
-            }
-            sqlDump += `\n`;
-          }
-          if (items.length > 20) {
-            sqlDump += `-- ... and ${items.length - 20} more items\n`;
-          }
-          sqlDump += `-- Items with pricing data: ${itemsWithPricing}\n`;
+          const itemValues = items.map(item => {
+            const values = [
+              `'${item.id}'`,
+              item.itemNumber ? `'${item.itemNumber}'` : 'NULL',
+              item.partNumber ? `'${item.partNumber.replace(/'/g, "''")}'` : 'NULL',
+              `'${item.description.replace(/'/g, "''")}'`,
+              item.unit ? `'${item.unit}'` : 'NULL',
+              item.createdAt ? `'${item.createdAt.toISOString()}'` : 'NULL',
+              item.createdBy ? `'${item.createdBy}'` : 'NULL',
+              item.category ? `'${item.category.replace(/'/g, "''")}'` : 'NULL',
+              item.subcategory ? `'${item.subcategory?.replace(/'/g, "''")}'` : 'NULL',
+              item.specifications ? `'${item.specifications.replace(/'/g, "''")}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += itemValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No items found\n\n`;
         }
-        sqlDump += `\n`;
 
-        // Purchase Orders with details
+        // Purchase Orders
         const purchaseOrders = await storage.getAllPurchaseOrders();
-        sqlDump += `-- Table: purchase_orders (with items)\n`;
+        sqlDump += `-- Table: purchase_orders (${purchaseOrders.length} records)\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total purchase orders: ${purchaseOrders.length}\n`;
+        sqlDump += `INSERT INTO purchase_orders (id, po_number, quotation_id, po_date, total_value, status, delivery_status, invoice_issued, created_at, created_by) VALUES\n`;
+        
         if (purchaseOrders.length > 0) {
-          for (const po of purchaseOrders.slice(0, 10)) { // Show first 10 POs
-            sqlDump += `-- PO: ${po.poNumber} - Status: ${po.status || 'N/A'}\n`;
-            sqlDump += `--   Total Value: ${po.totalValue || 'N/A'}\n`;
-            sqlDump += `--   Date: ${po.poDate || 'N/A'}\n`;
-            sqlDump += `--   Delivery Status: ${po.deliveryStatus ? 'Delivered' : 'Pending'}\n`;
-            
-            // Get PO items
-            try {
-              const poItems = await storage.getPurchaseOrderItems(po.id);
-              sqlDump += `--   Items: ${poItems.length} item(s)\n`;
-              for (const poItem of poItems.slice(0, 3)) { // Show first 3 items
-                const item = await storage.getItem(poItem.itemId);
-                sqlDump += `--     - ${item?.description || 'Unknown Item'} (Qty: ${poItem.quantity}, Price: ${poItem.unitPrice})\n`;
-              }
-            } catch (itemError) {
-              sqlDump += `--   Items: Error getting items\n`;
-            }
-            sqlDump += `\n`;
-          }
-          if (purchaseOrders.length > 10) {
-            sqlDump += `-- ... and ${purchaseOrders.length - 10} more purchase orders\n`;
+          const poValues = purchaseOrders.map(po => {
+            const values = [
+              `'${po.id}'`,
+              `'${po.poNumber}'`,
+              `'${po.quotationId}'`,
+              po.poDate ? `'${po.poDate.toISOString()}'` : 'NULL',
+              po.totalValue ? `'${po.totalValue}'` : 'NULL',
+              po.status ? `'${po.status}'` : 'NULL',
+              po.deliveryStatus ? 'true' : 'false',
+              po.invoiceIssued ? 'true' : 'false',
+              po.createdAt ? `'${po.createdAt.toISOString()}'` : 'NULL',
+              `'${po.createdBy}'`
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += poValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No purchase orders found\n\n`;
+        }
+
+        // Purchase Order Items
+        let allPOItems = [];
+        for (const po of purchaseOrders) {
+          try {
+            const poItems = await storage.getPurchaseOrderItems(po.id);
+            allPOItems.push(...poItems.map(item => ({ ...item, poId: po.id })));
+          } catch (error) {
+            console.log(`Could not get items for PO ${po.id}`);
           }
         }
-        sqlDump += `\n`;
+        
+        sqlDump += `-- Table: purchase_order_items (${allPOItems.length} records)\n`;
+        sqlDump += `-- =====================\n`;
+        if (allPOItems.length > 0) {
+          sqlDump += `INSERT INTO purchase_order_items (id, purchase_order_id, item_id, quantity, unit_price, total_price) VALUES\n`;
+          const poItemValues = allPOItems.map(item => {
+            const values = [
+              `'${item.id}'`,
+              `'${item.purchaseOrderId}'`,
+              `'${item.itemId}'`,
+              `${item.quantity}`,
+              item.unitPrice ? `'${item.unitPrice}'` : 'NULL',
+              item.totalPrice ? `'${item.totalPrice}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += poItemValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No purchase order items found\n\n`;
+        }
 
         // Quotation Requests
         const quotations = await storage.getAllQuotationRequests();
-        sqlDump += `-- Table: quotation_requests\n`;
+        sqlDump += `-- Table: quotation_requests (${quotations.length} records)\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total quotations: ${quotations.length}\n`;
+        sqlDump += `INSERT INTO quotation_requests (id, request_number, client_id, request_date, expiry_date, status, responsible_employee, custom_request_number, notes, created_at, created_by) VALUES\n`;
+        
         if (quotations.length > 0) {
-          for (const quotation of quotations.slice(0, 10)) { // Show first 10
-            const client = quotation.clientId ? await storage.getClient(quotation.clientId) : null;
-            sqlDump += `-- RFQ: ${quotation.requestNumber} - Client: ${client?.name || 'Unknown'} - Status: ${quotation.status || 'N/A'}\n`;
-          }
-          if (quotations.length > 10) {
-            sqlDump += `-- ... and ${quotations.length - 10} more quotations\n`;
-          }
+          const quotationValues = quotations.map(quotation => {
+            const values = [
+              `'${quotation.id}'`,
+              `'${quotation.requestNumber}'`,
+              quotation.clientId ? `'${quotation.clientId}'` : 'NULL',
+              `'${quotation.requestDate}'`,
+              quotation.expiryDate ? `'${quotation.expiryDate}'` : 'NULL',
+              quotation.status ? `'${quotation.status}'` : 'NULL',
+              quotation.responsibleEmployee ? `'${quotation.responsibleEmployee}'` : 'NULL',
+              quotation.customRequestNumber ? `'${quotation.customRequestNumber}'` : 'NULL',
+              quotation.notes ? `'${quotation.notes.replace(/'/g, "''")}'` : 'NULL',
+              quotation.createdAt ? `'${quotation.createdAt.toISOString()}'` : 'NULL',
+              `'${quotation.createdBy}'`
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += quotationValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No quotation requests found\n\n`;
         }
-        sqlDump += `\n`;
 
-        // Activity Log
-        const activities = await storage.getActivities(100);
-        sqlDump += `-- Table: activity_log\n`;
+        // Customer Pricing
+        const customerPricing = await storage.getAllCustomerPricing();
+        sqlDump += `-- Table: customer_pricing (${customerPricing.length} records)\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Recent activities: ${activities.length}\n`;
-        if (activities.length > 0) {
-          for (const activity of activities.slice(0, 5)) { // Show first 5 activities
-            sqlDump += `-- ${new Date(activity.timestamp).toLocaleDateString('ar-SA')}: ${activity.action}\n`;
-          }
+        if (customerPricing.length > 0) {
+          sqlDump += `INSERT INTO customer_pricing (id, client_id, item_id, unit_price, currency, effective_date, created_at, created_by) VALUES\n`;
+          const pricingValues = customerPricing.map(pricing => {
+            const values = [
+              `'${pricing.id}'`,
+              `'${pricing.clientId}'`,
+              `'${pricing.itemId}'`,
+              `'${pricing.unitPrice}'`,
+              pricing.currency ? `'${pricing.currency}'` : 'NULL',
+              pricing.effectiveDate ? `'${pricing.effectiveDate.toISOString()}'` : 'NULL',
+              pricing.createdAt ? `'${pricing.createdAt.toISOString()}'` : 'NULL',
+              pricing.createdBy ? `'${pricing.createdBy}'` : 'NULL'
+            ];
+            return `(${values.join(', ')})`;
+          });
+          sqlDump += pricingValues.join(',\n');
+          sqlDump += ';\n\n';
+        } else {
+          sqlDump += `-- No customer pricing found\n\n`;
         }
-        sqlDump += `\n`;
 
       } catch (dataError) {
         console.error("Error getting data:", dataError);
