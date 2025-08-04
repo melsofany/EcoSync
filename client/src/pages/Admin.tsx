@@ -16,6 +16,7 @@ import NewUserModal from "@/components/modals/NewUserModal";
 import EditUserModal from "@/components/modals/EditUserModal";
 import { UserDisplayName } from "@/components/UserDisplayName";
 import { UserAvatar } from "@/components/UserAvatar";
+import PermissionsManager from "@/components/PermissionsManager";
 import { 
   Users, 
   Shield, 
@@ -53,6 +54,8 @@ export default function Admin() {
   const [editingUser, setEditingUser] = useState<any>(null);
   const [passwordResetUser, setPasswordResetUser] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
+  const [permissionsUser, setPermissionsUser] = useState<any>(null);
+  const [pendingPermissions, setPendingPermissions] = useState<any>(null);
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     deepSeekApiKey: "",
     sessionTimeout: 30,
@@ -146,6 +149,30 @@ export default function Admin() {
     onError: (error: any) => {
       toast({
         title: "خطأ في تغيير كلمة المرور",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updatePermissionsMutation = useMutation({
+    mutationFn: async ({ userId, permissions }: { userId: string; permissions: any }) => {
+      await apiRequest("PATCH", `/api/users/${userId}`, { 
+        permissions: JSON.stringify(permissions) 
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setPermissionsUser(null);
+      setPendingPermissions(null);
+      toast({
+        title: "تم تحديث الصلاحيات",
+        description: "تم تحديث صلاحيات المستخدم بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في تحديث الصلاحيات",
         description: error.message,
         variant: "destructive",
       });
@@ -657,6 +684,17 @@ export default function Admin() {
                                 <Key className="h-4 w-4" />
                               </Button>
 
+                              {/* Permissions Button */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setPermissionsUser(userItem)}
+                                className="text-indigo-600 hover:text-indigo-800"
+                                title="إدارة الصلاحيات"
+                              >
+                                <Shield className="h-4 w-4" />
+                              </Button>
+
                               {/* Block/Unblock Button - Always show both options for clarity */}
                               <Button
                                 variant="ghost"
@@ -922,6 +960,64 @@ export default function Admin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Permissions Management Modal */}
+      {permissionsUser && (
+        <AlertDialog open={true} onOpenChange={() => {
+          setPermissionsUser(null);
+          setPendingPermissions(null);
+        }}>
+          <AlertDialogContent className="max-w-4xl max-h-[90vh] overflow-hidden" dir="rtl">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center space-x-2 space-x-reverse">
+                <Shield className="h-5 w-5 text-indigo-600" />
+                <span>إدارة صلاحيات المستخدم</span>
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                تخصيص الصلاحيات للمستخدم: {permissionsUser.fullName}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            
+            <div className="my-4 overflow-y-auto max-h-[60vh]">
+              <PermissionsManager
+                user={permissionsUser}
+                onPermissionsChange={(permissions) => setPendingPermissions(permissions)}
+                disabled={updatePermissionsMutation.isPending}
+              />
+            </div>
+            
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setPermissionsUser(null);
+                setPendingPermissions(null);
+              }}>
+                إلغاء
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (pendingPermissions) {
+                    updatePermissionsMutation.mutate({
+                      userId: permissionsUser.id,
+                      permissions: pendingPermissions
+                    });
+                  }
+                }}
+                disabled={!pendingPermissions || updatePermissionsMutation.isPending}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                {updatePermissionsMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner ml-2"></div>
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  "حفظ التغييرات"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
