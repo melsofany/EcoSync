@@ -625,98 +625,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get local similar items first for comparison context
         const similarItems = await storage.findSimilarItems(description, partNumber);
         
-        // Create context for AI analysis with existing items
-        const existingItemsContext = similarItems.length > 0 
-          ? `\n\nExisting similar items in database:\n${similarItems.map((item, index) => 
-              `${index + 1}. Item Number: ${item.itemNumber}, Part Number: ${item.partNumber}, Description: ${item.description}`
-            ).join('\n')}`
-          : '\n\nNo similar items found in database.';
+        // تحضير البيانات للذكاء الاصطناعي
+        const systemPrompt = `أنت خبير في تحليل قطع الغيار والمعدات الكهربائية والميكانيكية. 
+مهمتك هي تحديد ما إذا كان الصنف الجديد مطابق لأي من الأصناف الموجودة.
+قم بتحليل الوصف ورقم القطعة (إن وجد) مع قاعدة البيانات الموجودة.
 
-        // DeepSeek AI integration for item comparison
-        const prompt = `You are an inventory management expert. Analyze if this new item is a duplicate of existing items:
+قواعد التحليل:
+1. تحقق من التطابق في أرقام القطع (Part Numbers) - إذا كانت متطابقة فهي نفس القطعة
+2. تحقق من الوصف والمواصفات التقنية
+3. انتبه للعلامات التجارية المختلفة لنفس القطعة
+4. انتبه للوحدات المختلفة (متر، قدم، كيلو، طن...)
 
-NEW ITEM TO ADD:
-- Description: ${description}
-${partNumber ? `- Part Number: ${partNumber}` : '- Part Number: Not provided'}
-${existingItemsContext}
-
-ANALYSIS REQUIRED:
-1. Is this item a DUPLICATE of any existing item? (Consider exact part number matches as definite duplicates)
-2. If duplicate, which existing item number should be used instead?
-3. If not duplicate, confirm it's safe to add as a new item.
-
-RULES:
-- Items with identical part numbers are ALWAYS duplicates (regardless of description differences)
-- Consider variations in language (Arabic/English) and spelling
-- Account for abbreviations and common naming variations
-
-Respond in JSON format:
+أجب بـ JSON فقط:
 {
-  "isDuplicate": boolean,
-  "confidence": "high|medium|low",
-  "duplicateOf": "item_number_if_duplicate_or_null",
-  "reason": "explanation_of_decision",
-  "recommendation": "action_to_take"
+  "isDuplicate": true/false,
+  "confidence": 0-100,
+  "matchedItem": "رقم الصنف المطابق أو null",
+  "reason": "سبب القرار"
 }`;
 
-        const deepSeekResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        const userPrompt = `الصنف الجديد:
+الوصف: ${description}
+رقم القطعة: ${partNumber || "غير محدد"}
+
+الأصناف الموجودة في قاعدة البيانات:
+${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم القطعة: ${item.partNumber || "غير محدد"})`).join('\n')}
+
+هل الصنف الجديد مكرر؟`;
+
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${deepSeekApiKey}`,
+            'Authorization': `Bearer ${deepSeekApiKey}`
           },
           body: JSON.stringify({
             model: 'deepseek-chat',
             messages: [
-              {
-                role: 'user',
-                content: prompt
-              }
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
             ],
-            max_tokens: 1000,
             temperature: 0.1,
-            response_format: { type: "json_object" }
-          }),
+            max_tokens: 500
+          })
         });
 
-        if (!deepSeekResponse.ok) {
-          throw new Error(`DeepSeek API error: ${deepSeekResponse.status}`);
+        if (!response.ok) {
+          throw new Error(`DeepSeek API error: ${response.status}`);
         }
 
-        const deepSeekResult = await deepSeekResponse.json();
-        const aiAnalysis = deepSeekResult.choices[0]?.message?.content || '';
-        
-        let aiParsedResult = null;
-        try {
-          aiParsedResult = JSON.parse(aiAnalysis);
-        } catch (parseError) {
-          console.error("Failed to parse AI response:", parseError);
-        }
-        
-        await logActivity(req, "ai_item_comparison", "item", undefined, `DeepSeek AI analysis for: ${description}`);
+        const aiResult = await response.json();
+        const aiAnalysis = JSON.parse(aiResult.choices[0].message.content);
 
         return res.json({
-          status: "processed",
-          similarItems,
+          status: aiAnalysis.isDuplicate ? "duplicate" : "processed",
+          similarItems: aiAnalysis.isDuplicate ? similarItems : [],
           aiProvider: "deepseek",
+          confidence: aiAnalysis.confidence,
+          reason: aiAnalysis.reason,
+          matchedItem: aiAnalysis.matchedItem,
           apiKeyConfigured: true,
-          aiAnalysis,
-          aiParsedResult,
-          isDuplicate: aiParsedResult?.isDuplicate || false,
-          duplicateOf: aiParsedResult?.duplicateOf || null,
-          confidence: aiParsedResult?.confidence || "low",
-          recommendation: aiParsedResult?.recommendation || "Manual review required"
         });
-      } catch (error) {
-        console.error("DeepSeek API error:", error);
-        // Fallback to local matching if AI fails
+
+      } catch (aiError) {
+        console.error("AI analysis error:", aiError);
+        // Fallback to local matching
         const similarItems = await storage.findSimilarItems(description, partNumber);
         return res.json({
           status: "processed",
           similarItems,
           aiProvider: "local_matching_fallback",
           apiKeyConfigured: true,
-          error: "AI service temporarily unavailable",
+          error: "AI analysis failed, using local matching",
         });
       }
     } catch (error) {
