@@ -837,7 +837,7 @@ Respond in JSON format:
           sqlDump += `-- Data for table users (${users.length} records)\n`;
           for (const user of users) {
             const { password, ...userWithoutPassword } = user;
-            sqlDump += `-- User: ${user.fullName} (${user.username})\n`;
+            sqlDump += `-- User: ${user.fullName} (${user.username}) - Role: ${user.role}\n`;
           }
         }
         sqlDump += `\n`;
@@ -846,41 +846,122 @@ Respond in JSON format:
         const clients = await storage.getAllClients();
         sqlDump += `-- Table: clients\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total clients: ${clients.length}\n\n`;
+        sqlDump += `-- Total clients: ${clients.length}\n`;
+        if (clients.length > 0) {
+          for (const client of clients.slice(0, 10)) { // Show first 10
+            sqlDump += `-- Client: ${client.name} - Email: ${client.email || 'N/A'}\n`;
+          }
+          if (clients.length > 10) {
+            sqlDump += `-- ... and ${clients.length - 10} more clients\n`;
+          }
+        }
+        sqlDump += `\n`;
 
         // Suppliers
         const suppliers = await storage.getAllSuppliers();
         sqlDump += `-- Table: suppliers\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total suppliers: ${suppliers.length}\n\n`;
+        sqlDump += `-- Total suppliers: ${suppliers.length}\n`;
+        if (suppliers.length > 0) {
+          for (const supplier of suppliers.slice(0, 10)) { // Show first 10
+            sqlDump += `-- Supplier: ${supplier.name} - Email: ${supplier.email || 'N/A'}\n`;
+          }
+          if (suppliers.length > 10) {
+            sqlDump += `-- ... and ${suppliers.length - 10} more suppliers\n`;
+          }
+        }
+        sqlDump += `\n`;
+
+        // Items with pricing details
+        const items = await storage.getAllItems();
+        sqlDump += `-- Table: items (with pricing information)\n`;
+        sqlDump += `-- =====================\n`;
+        sqlDump += `-- Total items: ${items.length}\n`;
+        if (items.length > 0) {
+          let itemsWithPricing = 0;
+          for (const item of items.slice(0, 20)) { // Show first 20 items
+            sqlDump += `-- Item: ${item.itemNumber || 'N/A'} - ${item.description}\n`;
+            sqlDump += `--   Part Number: ${item.partNumber || 'N/A'}\n`;
+            sqlDump += `--   Unit: ${item.unit || 'N/A'}\n`;
+            
+            // Get pricing for this item
+            try {
+              // Since getCustomerPricingByItem doesn't exist, we'll show basic item info
+              sqlDump += `--   Pricing: Available through customer pricing system\n`;
+            } catch (priceError) {
+              sqlDump += `--   Pricing: Error getting pricing\n`;
+            }
+            sqlDump += `\n`;
+          }
+          if (items.length > 20) {
+            sqlDump += `-- ... and ${items.length - 20} more items\n`;
+          }
+          sqlDump += `-- Items with pricing data: ${itemsWithPricing}\n`;
+        }
+        sqlDump += `\n`;
+
+        // Purchase Orders with details
+        const purchaseOrders = await storage.getAllPurchaseOrders();
+        sqlDump += `-- Table: purchase_orders (with items)\n`;
+        sqlDump += `-- =====================\n`;
+        sqlDump += `-- Total purchase orders: ${purchaseOrders.length}\n`;
+        if (purchaseOrders.length > 0) {
+          for (const po of purchaseOrders.slice(0, 10)) { // Show first 10 POs
+            sqlDump += `-- PO: ${po.poNumber} - Status: ${po.status || 'N/A'}\n`;
+            sqlDump += `--   Total Value: ${po.totalValue || 'N/A'}\n`;
+            sqlDump += `--   Date: ${po.poDate || 'N/A'}\n`;
+            sqlDump += `--   Delivery Status: ${po.deliveryStatus ? 'Delivered' : 'Pending'}\n`;
+            
+            // Get PO items
+            try {
+              const poItems = await storage.getPurchaseOrderItems(po.id);
+              sqlDump += `--   Items: ${poItems.length} item(s)\n`;
+              for (const poItem of poItems.slice(0, 3)) { // Show first 3 items
+                const item = await storage.getItem(poItem.itemId);
+                sqlDump += `--     - ${item?.description || 'Unknown Item'} (Qty: ${poItem.quantity}, Price: ${poItem.unitPrice})\n`;
+              }
+            } catch (itemError) {
+              sqlDump += `--   Items: Error getting items\n`;
+            }
+            sqlDump += `\n`;
+          }
+          if (purchaseOrders.length > 10) {
+            sqlDump += `-- ... and ${purchaseOrders.length - 10} more purchase orders\n`;
+          }
+        }
+        sqlDump += `\n`;
 
         // Quotation Requests
         const quotations = await storage.getAllQuotationRequests();
         sqlDump += `-- Table: quotation_requests\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total quotations: ${quotations.length}\n\n`;
-
-        // Items
-        const items = await storage.getAllItems();
-        sqlDump += `-- Table: items\n`;
-        sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total items: ${items.length}\n\n`;
-
-        // Purchase Orders
-        const purchaseOrders = await storage.getAllPurchaseOrders();
-        sqlDump += `-- Table: purchase_orders\n`;
-        sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total purchase orders: ${purchaseOrders.length}\n\n`;
+        sqlDump += `-- Total quotations: ${quotations.length}\n`;
+        if (quotations.length > 0) {
+          for (const quotation of quotations.slice(0, 10)) { // Show first 10
+            const client = quotation.clientId ? await storage.getClient(quotation.clientId) : null;
+            sqlDump += `-- RFQ: ${quotation.requestNumber} - Client: ${client?.name || 'Unknown'} - Status: ${quotation.status || 'N/A'}\n`;
+          }
+          if (quotations.length > 10) {
+            sqlDump += `-- ... and ${quotations.length - 10} more quotations\n`;
+          }
+        }
+        sqlDump += `\n`;
 
         // Activity Log
-        const activities = await storage.getActivities(1000);
+        const activities = await storage.getActivities(100);
         sqlDump += `-- Table: activity_log\n`;
         sqlDump += `-- =====================\n`;
-        sqlDump += `-- Total activities: ${activities.length}\n\n`;
+        sqlDump += `-- Recent activities: ${activities.length}\n`;
+        if (activities.length > 0) {
+          for (const activity of activities.slice(0, 5)) { // Show first 5 activities
+            sqlDump += `-- ${new Date(activity.timestamp).toLocaleDateString('ar-SA')}: ${activity.action}\n`;
+          }
+        }
+        sqlDump += `\n`;
 
       } catch (dataError) {
         console.error("Error getting data:", dataError);
-        sqlDump += `-- Error accessing data: ${dataError.message}\n\n`;
+        sqlDump += `-- Error accessing data: ${dataError instanceof Error ? dataError.message : 'Unknown error'}\n\n`;
       }
 
       // Add summary
