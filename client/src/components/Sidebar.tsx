@@ -16,7 +16,8 @@ import {
   DollarSign,
   TrendingUp,
   Upload,
-  Activity
+  Activity,
+  KeyRound
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -176,18 +177,27 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="p-3 lg:p-4 border-t border-gray-200">
+      {/* User Actions */}
+      <div className="p-3 lg:p-4 border-t border-gray-200 space-y-2">
+        {/* Change Password */}
+        <Link href="/change-password">
+          <div className="flex items-center space-x-4 space-x-reverse px-4 py-3 lg:px-5 lg:py-4 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 hover:shadow-sm">
+            <KeyRound className="h-5 w-5 lg:h-6 lg:w-6 flex-shrink-0" />
+            <span className="font-medium text-sm lg:text-base leading-tight">تغيير كلمة المرور</span>
+          </div>
+        </Link>
+        
+        {/* Logout */}
         <div
           onClick={() => logout.mutate()}
           className={cn(
-            "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
+            "flex items-center space-x-4 space-x-reverse px-4 py-3 lg:px-5 lg:py-4 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
             "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm",
             logout.isPending && "opacity-50 cursor-not-allowed"
           )}
         >
-          <LogOut className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
-          <span className="font-semibold text-base lg:text-lg leading-tight">تسجيل الخروج</span>
+          <LogOut className="h-5 w-5 lg:h-6 lg:w-6 flex-shrink-0" />
+          <span className="font-medium text-sm lg:text-base leading-tight">تسجيل الخروج</span>
         </div>
       </div>
     </div>

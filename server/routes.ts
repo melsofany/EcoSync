@@ -229,6 +229,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Change password
+  app.post("/api/auth/change-password", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "كلمة المرور الحالية والجديدة مطلوبة" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل" });
+      }
+
+      // Get current user
+      const user = await storage.getUser(req.session.user!.id);
+      if (!user) {
+        return res.status(404).json({ message: "المستخدم غير موجود" });
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isCurrentPasswordValid) {
+        await logActivity(req, "failed_password_change", "user", user.id, "كلمة المرور الحالية غير صحيحة");
+        return res.status(400).json({ message: "كلمة المرور الحالية غير صحيحة" });
+      }
+
+      // Hash new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await storage.updateUser(user.id, { password: hashedNewPassword });
+
+      // Log activity
+      await logActivity(req, "password_changed", "user", user.id, "تم تغيير كلمة المرور بنجاح");
+
+      res.json({ message: "تم تغيير كلمة المرور بنجاح" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "خطأ في تغيير كلمة المرور" });
+    }
+  });
+
   // User management routes
   app.get("/api/users", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {

@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { KeyRound, Settings, ChevronDown } from "lucide-react";
 
 export default function Header() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -42,22 +45,33 @@ export default function Header() {
 
         <div className="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
           {/* User Info and Time */}
-          <div className="flex items-center space-x-3 space-x-reverse">
-            <UserAvatar 
-              user={user || { fullName: 'مستخدم', profileImage: null }} 
-              size="sm" 
-            />
-            <div className="text-right">
-              <div className="text-sm font-medium text-gray-800">
-                {user?.fullName || 'مستخدم'}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center space-x-3 space-x-reverse hover:bg-gray-50 rounded-lg p-2 transition-colors">
+              <UserAvatar 
+                user={user || { fullName: 'مستخدم', profileImage: null }} 
+                size="sm" 
+              />
+              <div className="text-right">
+                <div className="text-sm font-medium text-gray-800">
+                  {user?.fullName || 'مستخدم'}
+                </div>
+                <div className="text-xs text-gray-500 flex items-center space-x-1 space-x-reverse">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>-</span>
+                  <span>{formatDate(currentTime)}</span>
+                </div>
               </div>
-              <div className="text-xs text-gray-500 flex items-center space-x-1 space-x-reverse">
-                <span>{formatTime(currentTime)}</span>
-                <span>-</span>
-                <span>{formatDate(currentTime)}</span>
-              </div>
-            </div>
-          </div>
+              <ChevronDown className="h-4 w-4 text-gray-400" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link href="/change-password" className="flex items-center w-full">
+                  <KeyRound className="h-4 w-4 ml-2" />
+                  تغيير كلمة المرور
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
