@@ -179,8 +179,8 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
                     clientId: defaultClient.id,
                     customRequestNumber: originalItem.rfq,
                     requestDate: originalItem.date_rfq || new Date().toISOString(),
-                    status: originalItem.condition === 'منتهي' ? 'completed' : 'pending',
-                    notes: `استيراد شامل - RFQ: ${originalItem.rfq}`
+                    status: 'pending', // جميع طلبات Excel تبدأ من "في الانتظار" لتتبع نفس السير
+                    notes: `استيراد شامل - يتبع سير العمل: تسعير الموردين ← تسعير العملاء ← اكتمال - RFQ: ${originalItem.rfq}`
                   });
                 }
                 
