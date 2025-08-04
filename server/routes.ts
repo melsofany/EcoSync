@@ -565,8 +565,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { description, partNumber } = req.body;
       
-      // TODO: Integrate with Deep Seek AI API
-      const deepSeekApiKey = process.env.DEEP_SEEK_API_KEY || process.env.DEEPSEEK_API_KEY;
+      // استخدام DeepSeek AI API للتحقق من التكرار
+      const deepSeekApiKey = process.env.OPENAI_API_KEY; // نستخدم نفس مفتاح الـ API
       
       if (!deepSeekApiKey) {
         // Fallback to local similarity matching
