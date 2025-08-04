@@ -65,7 +65,9 @@ export interface UserPermissions {
     view: boolean;
   };
   pricing: {
-    viewPrices: boolean;
+    viewSalePrices: boolean;
+    viewSupplierPrices: boolean;
+    viewPurchaseOrderPrices: boolean;
     viewCosts: boolean;
     viewMargins: boolean;
   };
@@ -309,15 +311,27 @@ export const AVAILABLE_PERMISSIONS: Permission[] = [
 
   // صلاحيات مشاهدة الأسعار
   {
-    id: 'pricing.viewPrices',
+    id: 'pricing.viewSalePrices',
     name: 'مشاهدة أسعار البيع',
-    description: 'عرض أسعار البيع في الطلبات والفواتير',
+    description: 'عرض أسعار البيع في طلبات التسعير والعروض',
+    category: 'الأسعار'
+  },
+  {
+    id: 'pricing.viewSupplierPrices',
+    name: 'مشاهدة أسعار الموردين',
+    description: 'عرض أسعار الموردين وعروض الأسعار من الموردين',
+    category: 'الأسعار'
+  },
+  {
+    id: 'pricing.viewPurchaseOrderPrices',
+    name: 'مشاهدة أسعار أوامر الشراء',
+    description: 'عرض أسعار أوامر الشراء والتكاليف الفعلية',
     category: 'الأسعار'
   },
   {
     id: 'pricing.viewCosts',
     name: 'مشاهدة أسعار التكلفة',
-    description: 'عرض أسعار التكلفة وأسعار الموردين',
+    description: 'عرض أسعار التكلفة والتحليلات المالية',
     category: 'الأسعار'
   },
   {
@@ -343,7 +357,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     admin: { userManagement: true, systemSettings: true, backupRestore: true },
     import: { quotations: true, items: true, purchaseOrders: true },
     activity: { view: true },
-    pricing: { viewPrices: true, viewCosts: true, viewMargins: true }
+    pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true }
   },
   it_admin: {
     dashboard: true,
@@ -358,7 +372,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     admin: { userManagement: true, systemSettings: true, backupRestore: true },
     import: { quotations: true, items: true, purchaseOrders: true },
     activity: { view: true },
-    pricing: { viewPrices: true, viewCosts: true, viewMargins: true }
+    pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true }
   },
   data_entry: {
     dashboard: true,
@@ -373,7 +387,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     admin: { userManagement: false, systemSettings: false, backupRestore: false },
     import: { quotations: false, items: false, purchaseOrders: false },
     activity: { view: false },
-    pricing: { viewPrices: false, viewCosts: false, viewMargins: false }
+    pricing: { viewSalePrices: false, viewSupplierPrices: false, viewPurchaseOrderPrices: false, viewCosts: false, viewMargins: false }
   },
   purchasing: {
     dashboard: true,
@@ -388,7 +402,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     admin: { userManagement: false, systemSettings: false, backupRestore: false },
     import: { quotations: false, items: false, purchaseOrders: false },
     activity: { view: false },
-    pricing: { viewPrices: false, viewCosts: true, viewMargins: false }
+    pricing: { viewSalePrices: false, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: false }
   },
   accounting: {
     dashboard: true,
@@ -403,7 +417,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     admin: { userManagement: false, systemSettings: false, backupRestore: false },
     import: { quotations: false, items: false, purchaseOrders: false },
     activity: { view: false },
-    pricing: { viewPrices: true, viewCosts: true, viewMargins: true }
+    pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true }
   }
 };
 
@@ -438,7 +452,7 @@ export const getUserPermissions = (user: any): UserPermissions => {
     admin: { userManagement: false, systemSettings: false, backupRestore: false },
     import: { quotations: false, items: false, purchaseOrders: false },
     activity: { view: false },
-    pricing: { viewPrices: false, viewCosts: false, viewMargins: false }
+    pricing: { viewSalePrices: false, viewSupplierPrices: false, viewPurchaseOrderPrices: false, viewCosts: false, viewMargins: false }
   };
 };
 
@@ -459,14 +473,18 @@ export const hasPermission = (user: any, permission: string): boolean => {
 };
 
 // دالة للتحقق من صلاحيات الأسعار
-export const canViewPricing = (user: any, priceType: 'prices' | 'costs' | 'margins' = 'prices'): boolean => {
+export const canViewPricing = (user: any, priceType: 'salePrices' | 'supplierPrices' | 'purchaseOrderPrices' | 'costs' | 'margins' = 'salePrices'): boolean => {
   if (!user) return false;
   
   const permissions = getUserPermissions(user);
   
   switch (priceType) {
-    case 'prices':
-      return permissions.pricing.viewPrices;
+    case 'salePrices':
+      return permissions.pricing.viewSalePrices;
+    case 'supplierPrices':
+      return permissions.pricing.viewSupplierPrices;
+    case 'purchaseOrderPrices':
+      return permissions.pricing.viewPurchaseOrderPrices;
     case 'costs': 
       return permissions.pricing.viewCosts;
     case 'margins':
