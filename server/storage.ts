@@ -460,28 +460,30 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNextItemNumber(): Promise<string> {
-    // البحث عن آخر صنف برقم صحيح
-    const allItems = await db.select({ itemNumber: items.itemNumber })
-      .from(items)
-      .where(sql`item_number ~ '^ELEK[0-9]+$'`) // فقط الأرقام الصحيحة
-      .orderBy(desc(items.createdAt));
-    
-    if (allItems.length === 0) {
-      return "ELEK00000001";
-    }
-    
-    // البحث عن أعلى رقم
-    let maxNumber = 0;
-    for (const item of allItems) {
-      const numberPart = item.itemNumber.replace('ELEK', '');
-      const num = parseInt(numberPart, 10);
-      if (!isNaN(num) && num > maxNumber) {
-        maxNumber = num;
+    try {
+      // الحصول على عدد جميع الأصناف الموجودة
+      const allItems = await db.select({ itemNumber: items.itemNumber }).from(items);
+      
+      // البحث عن أعلى رقم ELEK صحيح
+      let maxNumber = 0;
+      for (const item of allItems) {
+        if (item.itemNumber && item.itemNumber.startsWith('ELEK')) {
+          const numberPart = item.itemNumber.replace('ELEK', '').replace(/^0+/, '') || '0';
+          const num = parseInt(numberPart, 10);
+          if (!isNaN(num) && num > maxNumber) {
+            maxNumber = num;
+          }
+        }
       }
+      
+      const nextNumber = (maxNumber + 1).toString().padStart(8, "0");
+      return `ELEK${nextNumber}`;
+    } catch (error) {
+      console.error("Error getting next item number:", error);
+      // في حالة الخطأ، استخدم timestamp
+      const timestamp = Date.now().toString().slice(-8);
+      return `ELEK${timestamp}`;
     }
-    
-    const nextNumber = (maxNumber + 1).toString().padStart(8, "0");
-    return `ELEK${nextNumber}`;
   }
 
   async findSimilarItems(description: string, partNumber?: string): Promise<Item[]> {
