@@ -1,48 +1,19 @@
 import {
   users,
   clients,
-  quotationRequests,
-  items, 
-  quotationItems,
-  suppliers,
-  purchaseOrders,
-  purchaseOrderItems,
-  supplierQuotes,
-  supplierPricing,
-  customerPricing,
-  pricingHistory,
   activityLog,
   passwordResetTokens,
   type User,
   type InsertUser,
   type Client,
   type InsertClient,
-  type QuotationRequest,
-  type InsertQuotationRequest,
-  type Item,
-  type InsertItem,
-  type QuotationItem,
-  type InsertQuotationItem,
-  type Supplier,
-  type InsertSupplier,
-  type PurchaseOrder,
-  type InsertPurchaseOrder,
-  type PurchaseOrderItem,
-  type InsertPurchaseOrderItem,
-  type SupplierQuote,
-  type InsertSupplierQuote,
-  type SupplierPricing,
-  type InsertSupplierPricing,
-  type CustomerPricing,
-  type InsertCustomerPricing,
-  type PricingHistory,
-  type InsertPricingHistory,
   type ActivityLog,
   type InsertActivityLog,
-} from "@shared/schema";
-import { db } from "./db";
+} from "@shared/sqlite-schema";
+import { db } from "./db";  
 import { eq, desc, like, and, isNull, isNotNull, sql } from "drizzle-orm";
 import bcrypt from "bcrypt";
+import { nanoid } from 'nanoid';
 
 export interface IStorage {
   // User operations
@@ -171,7 +142,7 @@ export class DatabaseStorage implements IStorage {
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
     const [user] = await db
       .update(users)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ ...updates, updatedAt: Date.now() })
       .where(eq(users.id, id))
       .returning();
     return user || undefined;
@@ -215,14 +186,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserOnlineStatus(id: string, isOnline: boolean, ipAddress?: string): Promise<void> {
+    const updateData: any = {
+      isOnline,
+      lastActivityAt: Date.now(),
+      ...(ipAddress && { ipAddress }),
+    };
+    
+    if (isOnline) {
+      updateData.lastLoginAt = Date.now();
+    }
+    
     await db
       .update(users)
-      .set({
-        isOnline,
-        lastActivityAt: new Date(),
-        ...(ipAddress && { ipAddress }),
-        ...(isOnline && { lastLoginAt: new Date() }),
-      })
+      .set(updateData)
       .where(eq(users.id, id));
   }
 
@@ -234,7 +210,7 @@ export class DatabaseStorage implements IStorage {
   async updateUserPassword(userId: string, hashedPassword: string): Promise<void> {
     await db
       .update(users)
-      .set({ password: hashedPassword, updatedAt: new Date() })
+      .set({ password: hashedPassword, updatedAt: Date.now() })
       .where(eq(users.id, userId));
   }
 
