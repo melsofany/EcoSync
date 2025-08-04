@@ -461,14 +461,14 @@ export class DatabaseStorage implements IStorage {
 
   async getNextItemNumber(): Promise<string> {
     try {
-      // الحصول على عدد جميع الأصناف الموجودة
+      // الحصول على جميع الأصناف التي تبدأ بـ P-
       const allItems = await db.select({ itemNumber: items.itemNumber }).from(items);
       
-      // البحث عن أعلى رقم ELEK صحيح
+      // البحث عن أعلى رقم P- صحيح
       let maxNumber = 0;
       for (const item of allItems) {
-        if (item.itemNumber && item.itemNumber.startsWith('ELEK')) {
-          const numberPart = item.itemNumber.replace('ELEK', '').replace(/^0+/, '') || '0';
+        if (item.itemNumber && item.itemNumber.startsWith('P-')) {
+          const numberPart = item.itemNumber.replace('P-', '');
           const num = parseInt(numberPart, 10);
           if (!isNaN(num) && num > maxNumber) {
             maxNumber = num;
@@ -476,13 +476,12 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      const nextNumber = (maxNumber + 1).toString().padStart(8, "0");
-      return `ELEK${nextNumber}`;
+      const nextNumber = (maxNumber + 1).toString().padStart(6, "0");
+      return `P-${nextNumber}`;
     } catch (error) {
       console.error("Error getting next item number:", error);
-      // في حالة الخطأ، استخدم timestamp
-      const timestamp = Date.now().toString().slice(-8);
-      return `ELEK${timestamp}`;
+      // في حالة الخطأ، ابدأ من P-000001
+      return "P-000001";
     }
   }
 
