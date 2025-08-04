@@ -1943,6 +1943,25 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const pricing = await storage.createSupplierPricing(pricingData);
       await logActivity(req, "create_supplier_pricing", "pricing", pricing.id, `Added supplier pricing for item ${pricing.itemId}`);
 
+      // تحديث حالة طلبات التسعير المرتبطة بهذا الصنف تلقائياً
+      try {
+        // البحث عن الطلبات التي تحتوي على هذا الصنف وما زالت في حالة "sent_for_pricing"
+        const quotationItems = await storage.getQuotationItemsByItemId(pricing.itemId);
+        
+        for (const quotationItem of quotationItems) {
+          const quotation = await storage.getQuotationById(quotationItem.quotationId);
+          if (quotation && quotation.status === "sent_for_pricing") {
+            // تحديث حالة الطلب إلى "pricing_received" عند إضافة أول سعر مورد
+            await storage.updateQuotationStatus(quotation.id, "pricing_received");
+            await logActivity(req, "auto_update_quotation_status", "quotation", quotation.id, 
+              `Auto-updated quotation ${quotation.requestNumber} status to 'pricing_received' after supplier pricing added`);
+          }
+        }
+      } catch (statusUpdateError) {
+        console.error("Error updating quotation status after supplier pricing:", statusUpdateError);
+        // لا نوقف العملية إذا فشل تحديث الحالة
+      }
+
       res.status(201).json(pricing);
     } catch (error) {
       console.error("Create supplier pricing error:", error);

@@ -828,6 +828,13 @@ export class DatabaseStorage implements IStorage {
     return pricing;
   }
 
+  async getQuotationItemsByItemId(itemId: string): Promise<any[]> {
+    return await db
+      .select()
+      .from(quotationItems)
+      .where(eq(quotationItems.itemId, itemId));
+  }
+
   async getSupplierPricingByItem(itemId: string): Promise<SupplierPricing[]> {
     return await db
       .select()
@@ -869,6 +876,8 @@ export class DatabaseStorage implements IStorage {
         quantity: quotationItems.quantity,
         quotationStatus: quotationRequests.status,
         requestNumber: quotationRequests.requestNumber,
+        requestDate: quotationRequests.requestDate,
+        expiryDate: quotationRequests.expiryDate,
       })
       .from(items)
       .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
@@ -1023,8 +1032,12 @@ export class DatabaseStorage implements IStorage {
       )
       .where(
         and(
-          eq(quotationRequests.status, "sent_for_pricing"),
-          isNull(customerPricing.itemId)
+          or(
+            eq(quotationRequests.status, "pricing_received"),
+            eq(quotationRequests.status, "customer_pricing")
+          ),
+          isNull(customerPricing.itemId),
+          isNotNull(supplierPricing.unitPrice) // يجب أن يكون هناك سعر مورد أولاً
         )
       )
       .orderBy(desc(quotationRequests.createdAt));
