@@ -257,13 +257,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = req.body;
       
+      console.log("Login attempt:", { username, password: password ? "***" : "missing" });
+      
       const user = await storage.getUserByUsername(username);
+      console.log("User lookup result:", user ? { id: user.id, username: user.username, isActive: user.isActive, passwordLength: user.password?.length } : "not found");
+      
       if (!user || !user.isActive) {
         await logActivity(req, "login_failed", "user", undefined, `Failed login attempt for username: ${username}`);
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
       const isValidPassword = await bcrypt.compare(password, user.password);
+      console.log("Password comparison result:", isValidPassword);
+      
       if (!isValidPassword) {
         await logActivity(req, "login_failed", "user", user.id, "Invalid password");
         return res.status(401).json({ message: "Invalid credentials" });

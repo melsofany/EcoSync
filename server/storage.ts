@@ -123,12 +123,28 @@ export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    if (user) {
+      // Convert SQLite numeric boolean to actual boolean
+      return {
+        ...user,
+        isActive: Boolean(user.isActive),
+        isOnline: Boolean(user.isOnline),
+      };
+    }
+    return undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    if (user) {
+      // Convert SQLite numeric boolean to actual boolean
+      return {
+        ...user,
+        isActive: Boolean(user.isActive),
+        isOnline: Boolean(user.isOnline),
+      };
+    }
+    return undefined;
   }
 
   async createUser(userData: InsertUser): Promise<User> {
