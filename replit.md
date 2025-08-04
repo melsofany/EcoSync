@@ -148,3 +148,12 @@ Preferred communication style: Simple, everyday language.
   - فاطمة علي (fatima) - Accounting with read-only financial permissions
   - محمد أحمد (mohammed) - IT Admin with system management permissions
 - **Unified Authentication**: All users use password "admin123" for development testing
+
+### Employee Password Change System (2025-08-04)
+- **Self-Service Password Updates**: Complete implementation enabling employees to change their account passwords
+- **Frontend Interface**: Dedicated ChangePassword.tsx page with modern, secure UI including password strength indicators
+- **Backend Security**: Robust API endpoint with current password verification and bcrypt hashing 
+- **Access Integration**: Password change link prominently displayed in sidebar navigation for easy access
+- **Activity Logging**: All password changes tracked in system activity log for security auditing
+- **Authentication Flow**: Seamless password updates with immediate effect and session management
+- **Validation**: Comprehensive password requirements and strength checking for enhanced security
