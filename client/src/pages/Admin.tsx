@@ -51,6 +51,8 @@ export default function Admin() {
   const [activeSection, setActiveSection] = useState<string>("");
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
+  const [passwordResetUser, setPasswordResetUser] = useState<any>(null);
+  const [newPassword, setNewPassword] = useState("");
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
     deepSeekApiKey: "",
     sessionTimeout: 30,
@@ -122,6 +124,28 @@ export default function Admin() {
     onError: (error: any) => {
       toast({
         title: "خطأ في حذف المستخدم",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, password }: { userId: string; password: string }) => {
+      await apiRequest("PATCH", `/api/users/${userId}`, { password });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setPasswordResetUser(null);
+      setNewPassword("");
+      toast({
+        title: "تم تغيير كلمة المرور",
+        description: "تم تغيير كلمة مرور المستخدم بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في تغيير كلمة المرور",
         description: error.message,
         variant: "destructive",
       });
@@ -546,6 +570,17 @@ export default function Admin() {
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
+                              
+                              {/* Reset Password Button */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setPasswordResetUser(userItem)}
+                                className="text-purple-600 hover:text-purple-800"
+                                title="تغيير كلمة المرور"
+                              >
+                                <Key className="h-4 w-4" />
+                              </Button>
 
                               {/* Block/Unblock Button - Always show both options for clarity */}
                               <Button
@@ -739,6 +774,79 @@ export default function Admin() {
           onClose={() => setEditingUser(null)}
         />
       )}
+
+      {/* Password Reset Dialog */}
+      <AlertDialog open={!!passwordResetUser} onOpenChange={() => setPasswordResetUser(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center space-x-2 space-x-reverse">
+              <Key className="h-5 w-5 text-purple-600" />
+              <span>تغيير كلمة المرور</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {passwordResetUser && (
+                <>
+                  سيتم تغيير كلمة مرور المستخدم "{passwordResetUser.fullName}".
+                  يُنصح بإبلاغ المستخدم بكلمة المرور الجديدة.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4 space-y-4">
+            <div>
+              <Label htmlFor="newPassword">كلمة المرور الجديدة</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                placeholder="أدخل كلمة المرور الجديدة"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mt-2"
+                minLength={6}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                يجب أن تكون كلمة المرور على الأقل 6 أحرف
+              </p>
+            </div>
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setPasswordResetUser(null);
+                setNewPassword("");
+              }}
+            >
+              إلغاء
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (passwordResetUser && newPassword.length >= 6) {
+                  resetPasswordMutation.mutate({
+                    userId: passwordResetUser.id,
+                    password: newPassword
+                  });
+                }
+              }}
+              disabled={!newPassword || newPassword.length < 6 || resetPasswordMutation.isPending}
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {resetPasswordMutation.isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner ml-2"></div>
+                  جاري التغيير...
+                </>
+              ) : (
+                <>
+                  <Key className="h-4 w-4 ml-2" />
+                  تغيير كلمة المرور
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
