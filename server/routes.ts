@@ -628,20 +628,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // تحضير البيانات للذكاء الاصطناعي
         const systemPrompt = `أنت خبير في تحليل قطع الغيار والمعدات الكهربائية والميكانيكية. 
 مهمتك هي تحديد ما إذا كان الصنف الجديد مطابق لأي من الأصناف الموجودة.
-قم بتحليل الوصف ورقم القطعة (إن وجد) مع قاعدة البيانات الموجودة.
 
-قواعد التحليل:
-1. تحقق من التطابق في أرقام القطع (Part Numbers) - إذا كانت متطابقة فهي نفس القطعة
-2. تحقق من الوصف والمواصفات التقنية
-3. انتبه للعلامات التجارية المختلفة لنفس القطعة
-4. انتبه للوحدات المختلفة (متر، قدم، كيلو، طن...)
+قواعد التحليل الصارمة:
+1. رقم القطعة (Part Number) هو المؤشر الأساسي:
+   - إذا كان رقم القطعة مطابق تماماً → إنه نفس الصنف (100% مكرر)
+   - إذا كان رقم القطعة مشابه مع اختلاف في المسافات أو الأحرف → فحص إضافي
+   - مثال: LC1D32M7 = LC1D 32 M7 = LC1D-32-M7 (نفس القطعة)
+
+2. الوصف والمواصفات:
+   - فحص العلامة التجارية (Schneider, Telemecanique, etc.)
+   - فحص المواصفات التقنية (الفولتية، القدرة، إلخ)
+   - فحص نوع المعدة (Contactor, Relay, etc.)
+
+3. القرار النهائي:
+   - مطابقة في رقم القطعة = مكرر (confidence: 90-100)
+   - تشابه قوي في الوصف بدون رقم قطعة = مراجعة (confidence: 60-80)
+   - اختلاف واضح = صنف جديد (confidence: 0-30)
 
 أجب بـ JSON فقط:
 {
   "isDuplicate": true/false,
   "confidence": 0-100,
   "matchedItem": "رقم الصنف المطابق أو null",
-  "reason": "سبب القرار"
+  "reason": "سبب القرار بالتفصيل"
 }`;
 
         const userPrompt = `الصنف الجديد:
@@ -675,7 +684,23 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         }
 
         const aiResult = await response.json();
-        const aiAnalysis = JSON.parse(aiResult.choices[0].message.content);
+        let aiAnalysis;
+        
+        try {
+          let content = aiResult.choices[0].message.content;
+          // تنظيف الاستجابة من علامات markdown إذا وجدت
+          if (content.includes('```json')) {
+            content = content.replace(/```json\s*/, '').replace(/```\s*$/, '');
+          }
+          if (content.includes('```')) {
+            content = content.replace(/```\s*/, '').replace(/```\s*$/, '');
+          }
+          aiAnalysis = JSON.parse(content);
+        } catch (parseError) {
+          console.error("Failed to parse AI response:", parseError, "Original content:", aiResult.choices[0].message.content);
+          // استخدام fallback في حالة فشل parsing
+          throw new Error("AI response parsing failed");
+        }
 
         return res.json({
           status: aiAnalysis.isDuplicate ? "duplicate" : "processed",

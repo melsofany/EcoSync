@@ -486,28 +486,55 @@ export class DatabaseStorage implements IStorage {
   }
 
   async findSimilarItems(description: string, partNumber?: string): Promise<Item[]> {
+    let results: Item[] = [];
+    
     if (partNumber) {
-      // First check for exact part number match (highest priority for duplicates)
-      const exactPartNumberMatch = await db.select().from(items).where(
+      // 1. البحث عن التطابق الدقيق في رقم القطعة (أولوية عالية)
+      const exactPartMatch = await db.select().from(items).where(
         eq(items.partNumber, partNumber)
-      ).limit(10);
+      ).limit(5);
+      results.push(...exactPartMatch);
       
-      if (exactPartNumberMatch.length > 0) {
-        return exactPartNumberMatch;
+      // 2. البحث عن التشابه في رقم القطعة (إزالة المسافات والأحرف الخاصة)
+      const cleanPartNumber = partNumber.replace(/[\s\-_]/g, '').toUpperCase();
+      if (cleanPartNumber !== partNumber.toUpperCase()) {
+        const similarPartMatch = await db.select().from(items).where(
+          or(
+            like(items.partNumber, `%${cleanPartNumber}%`),
+            like(items.partNumber, `%${partNumber.replace(/[\s]/g, '%')}%`)
+          )
+        ).limit(5);
+        results.push(...similarPartMatch);
       }
       
-      // If no exact match, check for similar descriptions with similar part numbers
-      return await db.select().from(items).where(
-        and(
-          like(items.description, `%${description}%`),
-          like(items.partNumber, `%${partNumber}%`)
-        )
-      ).limit(10);
-    } else {
-      return await db.select().from(items)
-        .where(like(items.description, `%${description}%`))
-        .limit(10);
+      // 3. البحث في LINE ITEM للنماذج المشابهة
+      const lineItemMatch = await db.select().from(items).where(
+        like(items.lineItem, `%${partNumber}%`)
+      ).limit(3);
+      results.push(...lineItemMatch);
     }
+    
+    // 4. البحث بالوصف للعناصر المشابهة
+    if (description && description.length > 5) {
+      // استخراج الكلمات المهمة من الوصف
+      const keywords = description.split(/[\s,\-_]+/)
+        .filter(word => word.length > 2)
+        .slice(0, 3); // أخذ أول 3 كلمات مهمة
+      
+      for (const keyword of keywords) {
+        const descriptionMatch = await db.select().from(items).where(
+          like(items.description, `%${keyword}%`)
+        ).limit(3);
+        results.push(...descriptionMatch);
+      }
+    }
+    
+    // إزالة التكرارات والحد من النتائج
+    const uniqueResults = results.filter((item, index, self) => 
+      index === self.findIndex(i => i.id === item.id)
+    );
+    
+    return uniqueResults.slice(0, 10);
   }
 
   // Quotation items
