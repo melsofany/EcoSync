@@ -111,6 +111,16 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
   });
 
   const onSubmit = (data: ItemForm) => {
+    // منع الإرسال إذا تم اكتشاف تكرار
+    if (aiResults?.isDuplicate) {
+      toast({
+        title: "تحذير: صنف مكرر",
+        description: "لا يمكن إضافة هذا الصنف لأنه موجود مسبقاً في النظام",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createItemMutation.mutate(data);
   };
 
@@ -274,13 +284,16 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
                           </span>
                         </div>
                         <p className="text-sm text-red-700 mb-2">
-                          {aiResults.recommendation || "يُنصح بعدم إضافة هذا الصنف لأنه موجود مسبقاً"}
+                          {aiResults.reason || "يُنصح بعدم إضافة هذا الصنف لأنه موجود مسبقاً"}
                         </p>
-                        {aiResults.duplicateOf && (
+                        {aiResults.matchedItem && (
                           <p className="text-xs text-red-600">
-                            الصنف المكرر: {aiResults.duplicateOf}
+                            الصنف المطابق: {aiResults.matchedItem}
                           </p>
                         )}
+                        <p className="text-xs text-red-600 mt-2 font-semibold">
+                          ⚠️ لا يمكن إضافة الصنف - يرجى استخدام الصنف الموجود
+                        </p>
                       </div>
                     )}
 
@@ -342,14 +355,16 @@ export default function NewItemModal({ isOpen, onClose }: NewItemModalProps) {
             </Button>
             <Button
               type="submit"
-              disabled={createItemMutation.isPending || (aiResults?.isDuplicate && aiResults?.confidence === "high")}
-              variant={aiResults?.isDuplicate && aiResults?.confidence === "high" ? "destructive" : "default"}
+              disabled={createItemMutation.isPending || (aiResults?.isDuplicate)}
+              variant={aiResults?.isDuplicate ? "destructive" : "default"}
             >
               {createItemMutation.isPending ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner ml-2"></div>
                   جاري الإضافة...
                 </>
+              ) : aiResults?.isDuplicate ? (
+                "صنف مكرر - لا يمكن الإضافة"
               ) : (
                 "إضافة الصنف"
               )}
