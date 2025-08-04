@@ -311,26 +311,6 @@
     text-align: right;
   }
 
-  /* Layout improvements for better spacing */
-  .content-container {
-    margin-right: auto;
-    margin-left: auto;
-    padding-left: 1rem;
-    padding-right: 0.5rem;
-  }
-
-  @media (min-width: 1024px) {
-    .content-container {
-      padding-left: 1.5rem;
-      padding-right: 0.75rem;
-    }
-  }
-
-  /* Sidebar spacing optimization */
-  .sidebar-spacing {
-    width: 18rem; /* 288px */
-  }
-
   /* Custom scrollbar for RTL */
   ::-webkit-scrollbar {
     width: 8px;
