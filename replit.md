@@ -125,3 +125,13 @@ Preferred communication style: Simple, everyday language.
   - Mobile-optimized user interface elements
 - **Cross-Device Compatibility**: Consistent experience across desktop, tablet, and mobile devices
 - **RTL Mobile Support**: Proper right-to-left layout maintained on all device sizes
+
+### Flexible Permissions Management System (2025-08-04)
+- **Checkbox-Based Permissions**: Replaced fixed roles with flexible permission system using checkboxes
+- **Granular Permission Control**: Detailed permissions for each section (view, create, edit, delete)
+- **PermissionsManager Component**: Interactive interface for managing user permissions with real-time preview
+- **Database Schema Update**: Added permissions column to users table for storing custom permissions as JSON
+- **Backward Compatibility**: Maintains support for existing role-based system while enabling new flexible permissions
+- **Permission Categories**: Organized permissions by functional areas (quotations, items, clients, suppliers, etc.)
+- **User Permission Interface**: Admin can now assign specific permissions to users instead of predefined roles
+- **Role-Based Defaults**: Each role has default permissions that can be customized per user
