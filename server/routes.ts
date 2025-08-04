@@ -525,13 +525,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check for exact duplicates before creating the item
       if (validatedData.partNumber) {
+        console.log('🔍 Checking for duplicate part number:', validatedData.partNumber);
+        
         const similarItems = await storage.findSimilarItems(validatedData.description, validatedData.partNumber);
-        const exactMatch = similarItems.find(item => item.partNumber === validatedData.partNumber);
+        
+        // البحث عن تطابق دقيق أو مشابه في رقم القطعة
+        const exactMatch = similarItems.find(item => {
+          if (!item.partNumber) return false;
+          
+          const cleanExisting = item.partNumber.replace(/[\s\-_]/g, '').toUpperCase();
+          const cleanNew = validatedData.partNumber.replace(/[\s\-_]/g, '').toUpperCase();
+          
+          return cleanExisting === cleanNew;
+        });
         
         if (exactMatch) {
-          // Instead of returning error, return the existing item
-          await logActivity(req, "find_existing_item", "item", exactMatch.id, `Found existing item: ${exactMatch.itemNumber} - ${exactMatch.description}`);
-          return res.status(200).json(exactMatch);
+          console.log('❌ Duplicate found, preventing creation:', exactMatch.itemNumber);
+          await logActivity(req, "prevented_duplicate_item", "item", exactMatch.id, `Prevented duplicate: ${exactMatch.itemNumber} - ${exactMatch.description}`);
+          
+          return res.status(409).json({
+            error: "DUPLICATE_PART_NUMBER",
+            message: "يوجد صنف بنفس رقم القطعة",
+            existingItem: {
+              itemNumber: exactMatch.itemNumber,
+              partNumber: exactMatch.partNumber,
+              description: exactMatch.description
+            }
+          });
         }
       }
       
