@@ -499,6 +499,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
+      await logActivity(req, "update_user", "user", userId, `Updated user: ${updatedUser.username}`);
+      
+      const { password: _, ...userWithoutPassword } = updatedUser;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      console.error("Update user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
