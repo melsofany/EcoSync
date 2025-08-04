@@ -14,7 +14,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import NewUserModal from "@/components/modals/NewUserModal";
 import EditUserModal from "@/components/modals/EditUserModal";
-import EditUserPermissionsModal from "@/components/modals/EditUserPermissionsModal";
 import { UserDisplayName } from "@/components/UserDisplayName";
 import { UserAvatar } from "@/components/UserAvatar";
 import { 
@@ -52,7 +51,6 @@ export default function Admin() {
   const [activeSection, setActiveSection] = useState<string>("");
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
-  const [editingPermissionsUser, setEditingPermissionsUser] = useState<any>(null);
   const [passwordResetUser, setPasswordResetUser] = useState<any>(null);
   const [newPassword, setNewPassword] = useState("");
   const [systemSettings, setSystemSettings] = useState<SystemSettings>({
@@ -521,7 +519,7 @@ export default function Admin() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activities && Array.isArray(activities) && activities.length > 0 ? (
+          {activities && activities.length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {activities.slice(0, 10).map((activity: any) => (
                 <div key={activity.id} className="flex items-start space-x-3 space-x-reverse p-3 bg-gray-50 rounded-lg">
@@ -646,17 +644,6 @@ export default function Admin() {
                                 title="تعديل المستخدم"
                               >
                                 <Edit className="h-4 w-4" />
-                              </Button>
-
-                              {/* Permissions Button */}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setEditingPermissionsUser(userItem)}
-                                className="text-green-600 hover:text-green-800"
-                                title="إدارة الصلاحيات"
-                              >
-                                <Shield className="h-4 w-4" />
                               </Button>
                               
                               {/* Reset Password Button */}
@@ -860,14 +847,6 @@ export default function Admin() {
           user={editingUser}
           isOpen={!!editingUser}
           onClose={() => setEditingUser(null)}
-        />
-      )}
-
-      {editingPermissionsUser && (
-        <EditUserPermissionsModal
-          user={editingPermissionsUser}
-          isOpen={!!editingPermissionsUser}
-          onClose={() => setEditingPermissionsUser(null)}
         />
       )}
 
