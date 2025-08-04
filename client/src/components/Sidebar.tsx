@@ -67,7 +67,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       title: "طلبات الشراء",
       href: "/purchase-orders",
       icon: ShoppingCart,
-      section: "purchase_orders",
+      section: "purchase-orders",
     },
     {
       title: "تسعير العملاء",

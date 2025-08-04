@@ -511,6 +511,7 @@ export const canAccessSection = (user: any, section: string): boolean => {
       return permissions.clients.view;
     case 'suppliers':
       return permissions.suppliers.view;
+    case 'purchase-orders':
     case 'purchase_orders':
       return permissions.purchaseOrders.view;
     case 'customer_pricing':
