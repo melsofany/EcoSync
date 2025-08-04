@@ -144,3 +144,10 @@ Preferred communication style: Simple, everyday language.
 - **Workflow Documentation**: Created comprehensive workflow guide explaining the unified process
 - **Status Update System**: Enhanced status update modal with descriptions for each workflow stage
 - **Role-Based Workflow**: Different roles can advance quotations through appropriate workflow stages
+
+### Integrated Pricing System Enhancement (2025-08-04)
+- **Dual Pricing Pages**: Both supplier and customer pricing pages show same items simultaneously for comprehensive workflow
+- **Automatic Expiry Management**: Items automatically disappear from pricing screens when quotation expires
+- **Supplier Pricing Navigation**: Added "تسعير الموردين" to sidebar navigation with proper permissions
+- **Synchronized Workflow**: Items requiring pricing appear in both pages to enable parallel supplier and customer pricing preparation
+- **Complete Pricing Guide**: Created comprehensive guide explaining the integrated pricing system behavior and benefits
