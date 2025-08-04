@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   phone: text("phone"),
   profileImage: text("profile_image"), // URL للصورة الشخصية
   role: text("role").notNull(), // "manager", "it_admin", "data_entry", "purchasing", "accounting"
+  permissions: text("permissions"), // JSON string for flexible permissions
   isActive: boolean("is_active").default(true),
   isOnline: boolean("is_online").default(false),
   lastLoginAt: timestamp("last_login_at"),

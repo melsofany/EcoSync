@@ -40,18 +40,25 @@ export const hasRole = (user: User | null, roles: string[]): boolean => {
 export const canAccessSection = (user: User | null, section: string): boolean => {
   if (!user) return false;
 
-  const permissions = {
-    dashboard: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-    quotations: ["manager", "it_admin", "data_entry", "accounting"], // accounting يمكنه الاطلاع على الطلبات
-    items: ["manager", "it_admin", "data_entry"],
-    clients: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-    suppliers: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-    "supplier-pricing": ["manager", "it_admin", "data_entry", "purchasing", "accounting"], // accounting يمكنه الاطلاع على الأسعار
-    "customer-pricing": ["manager", "accounting"], // accounting يمكنه الاطلاع على تسعير العملاء
-    "purchase-orders": ["manager", "it_admin", "data_entry", "accounting"], // accounting يمكنه الاطلاع على أوامر الشراء
-    reports: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-    admin: ["manager", "it_admin"],
-  };
+  // استخدام نظام الصلاحيات الجديد إذا كان متوفراً
+  try {
+    const { canAccessSection: newCanAccessSection } = require('../../shared/permissions');
+    return newCanAccessSection(user, section);
+  } catch (e) {
+    // العودة للنظام القديم في حالة عدم توفر الملف
+    const permissions = {
+      dashboard: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+      quotations: ["manager", "it_admin", "data_entry", "accounting"],
+      items: ["manager", "it_admin", "data_entry"],
+      clients: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+      suppliers: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+      "supplier-pricing": ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+      "customer-pricing": ["manager", "accounting"],
+      "purchase-orders": ["manager", "it_admin", "data_entry", "accounting"],
+      reports: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+      admin: ["manager", "it_admin"],
+    };
 
-  return permissions[section as keyof typeof permissions]?.includes(user.role) ?? false;
+    return permissions[section as keyof typeof permissions]?.includes(user.role) ?? false;
+  }
 };
