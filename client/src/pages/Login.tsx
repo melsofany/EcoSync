@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Building, User, Lock, ArrowLeft, Mail } from "lucide-react";
 import qortobaLogo from "@/assets/qortoba-logo.png";
+import logisticsBackground from "@/assets/logistics-background.jpg";
 
 const loginSchema = z.object({
   username: z.string().min(1, "اسم المستخدم مطلوب"),
@@ -62,9 +63,23 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden logistics-background" dir="rtl">
-      <Card className="w-full max-w-md shadow-2xl bg-white/95 backdrop-blur-sm border-0 relative z-10">
-        <CardContent className="pt-8 pb-8 px-8">
+    <div 
+      className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden"
+      style={{
+        backgroundImage: `url(${logisticsBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+      dir="rtl"
+    >
+      {/* طبقة شفافة داكنة للنص */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/20 z-0"></div>
+      
+      <Card className="w-full max-w-md shadow-2xl bg-white/75 backdrop-blur-lg border border-white/20 relative z-10 overflow-hidden">
+        {/* تأثير الضوء على الفريم */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent pointer-events-none"></div>
+        <CardContent className="pt-8 pb-8 px-8 relative z-10">
           <div className="text-center mb-8">
             {/* Company Logo */}
             <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -74,8 +89,8 @@ export default function Login() {
                 className="h-20 w-20 object-contain"
               />
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">نظام قرطبة</h1>
-            <p className="text-gray-600">للتوريدات</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2 drop-shadow-sm">نظام قرطبة</h1>
+            <p className="text-gray-700 drop-shadow-sm">للتوريدات</p>
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -86,10 +101,10 @@ export default function Login() {
                   id="username"
                   type="text"
                   placeholder="أدخل اسم المستخدم"
-                  className="pl-12"
+                  className="pl-12 bg-white/90 border-gray-200 focus:bg-white"
                   {...form.register("username")}
                 />
-                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
               </div>
               {form.formState.errors.username && (
                 <p className="text-sm text-red-600">{form.formState.errors.username.message}</p>
@@ -103,10 +118,10 @@ export default function Login() {
                   id="password"
                   type="password"
                   placeholder="أدخل كلمة المرور"
-                  className="pl-12"
+                  className="pl-12 bg-white/90 border-gray-200 focus:bg-white"
                   {...form.register("password")}
                 />
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
               </div>
               {form.formState.errors.password && (
                 <p className="text-sm text-red-600">{form.formState.errors.password.message}</p>
