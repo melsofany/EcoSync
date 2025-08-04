@@ -449,7 +449,7 @@ export default function Admin() {
                     <h4 className="font-semibold text-orange-800">تصدير قاعدة البيانات الكاملة</h4>
                   </div>
                   <p className="text-sm text-orange-700 mb-4">
-                    تصدير جميع جداول قاعدة البيانات مع البيانات بصيغة SQL للنسخ الاحتياطي أو النقل
+                    تصدير شامل يتضمن: الأصناف مع التسعير، أوامر الشراء، العملاء، الموردين، وجميع البيانات
                   </p>
                   <Button 
                     onClick={() => exportDatabaseMutation.mutate()}
@@ -485,8 +485,8 @@ export default function Admin() {
                       <span className="font-medium">{onlineUsers.length}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-blue-700">آخر تصدير:</span>
-                      <span className="font-medium">---</span>
+                      <span className="text-blue-700">يشمل التصدير:</span>
+                      <span className="font-medium text-xs">الأصناف + التسعير + أوامر الشراء</span>
                     </div>
                   </div>
                 </div>
@@ -498,7 +498,8 @@ export default function Admin() {
                   <h4 className="font-semibold text-red-800">تنبيه هام</h4>
                 </div>
                 <p className="text-sm text-red-700">
-                  تصدير قاعدة البيانات يحتوي على جميع البيانات الحساسة بما في ذلك معلومات المستخدمين والعملاء.
+                  تصدير قاعدة البيانات يحتوي على جميع البيانات الحساسة بما في ذلك:
+                  الأصناف مع أسعارها، أوامر الشراء، معلومات العملاء والموردين.
                   تأكد من حفظ الملف في مكان آمن ولا تشاركه مع أشخاص غير مخولين.
                 </p>
               </div>
