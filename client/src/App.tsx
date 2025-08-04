@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Login from "@/pages/Login";
 import ResetPassword from "@/pages/ResetPassword";
+import ChangePassword from "@/pages/ChangePassword";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Quotations from "@/pages/Quotations";
@@ -61,6 +62,7 @@ function Router() {
         <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
         <Route path="/reports" component={Reports} />
         <Route path="/admin" component={Admin} />
+        <Route path="/change-password" component={ChangePassword} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
