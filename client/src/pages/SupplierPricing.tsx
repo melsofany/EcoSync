@@ -15,9 +15,44 @@ export default function SupplierPricing() {
   const [showItemsList, setShowItemsList] = useState(true);
 
   // Fetch items requiring pricing
-  const { data: itemsRequiringPricing = [], isLoading: itemsLoading } = useQuery<any[]>({
+  const { data: rawItemsRequiringPricing = [], isLoading: itemsLoading } = useQuery<any[]>({
     queryKey: ["/api/items-requiring-pricing"],
   });
+
+  // دالة لحساب الأيام المتبقية
+  const getDaysRemaining = (expiryDate: string) => {
+    if (!expiryDate) return null;
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const diffTime = expiry.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // دالة لحصول على لون البادج حسب الأيام المتبقية
+  const getExpiryBadgeColor = (daysRemaining: number | null) => {
+    if (daysRemaining === null) return "secondary";
+    if (daysRemaining < 0) return "destructive"; // منتهي
+    if (daysRemaining <= 3) return "destructive"; // خطر
+    if (daysRemaining <= 7) return "default"; // تحذير
+    return "secondary"; // آمن
+  };
+
+  // ترتيب البنود: الأقرب للانتهاء أولاً
+  const itemsRequiringPricing = Array.isArray(rawItemsRequiringPricing) 
+    ? rawItemsRequiringPricing.sort((a: any, b: any) => {
+        const aDays = getDaysRemaining(a.expiryDate);
+        const bDays = getDaysRemaining(b.expiryDate);
+        
+        // البنود بدون تاريخ انتهاء في النهاية
+        if (aDays === null && bDays === null) return 0;
+        if (aDays === null) return 1;
+        if (bDays === null) return -1;
+        
+        // ترتيب تصاعدي حسب الأيام المتبقية
+        return aDays - bDays;
+      })
+    : [];
 
   // Fetch all suppliers
   const { data: suppliers = [] } = useQuery<any[]>({
@@ -107,6 +142,9 @@ export default function SupplierPricing() {
               <DollarSign className="h-5 w-5 ml-2" />
               البنود التي تحتاج للتسعير ({itemsRequiringPricing.length})
             </CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">
+              مرتبة حسب الأقرب للانتهاء - الطلبات العاجلة أولاً
+            </p>
           </CardHeader>
           <CardContent>
             {itemsLoading ? (
@@ -124,6 +162,7 @@ export default function SupplierPricing() {
                     <TableHead>الوصف</TableHead>
                     <TableHead>الوحدة</TableHead>
                     <TableHead>الفئة</TableHead>
+                    <TableHead>الأيام المتبقية</TableHead>
                     <TableHead>الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -137,6 +176,21 @@ export default function SupplierPricing() {
                       <TableCell>{item.description}</TableCell>
                       <TableCell>{item.unit}</TableCell>
                       <TableCell>{item.category || "غير محدد"}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const daysRemaining = getDaysRemaining(item.expiryDate);
+                          return (
+                            <Badge variant={getExpiryBadgeColor(daysRemaining)} className="gap-1">
+                              <Clock className="h-3 w-3" />
+                              {daysRemaining === null ? "بدون تاريخ" :
+                               daysRemaining < 0 ? `منتهي منذ ${Math.abs(daysRemaining)} يوم` :
+                               daysRemaining === 0 ? "ينتهي اليوم" :
+                               daysRemaining === 1 ? "ينتهي غداً" :
+                               `${daysRemaining} يوم متبقي`}
+                            </Badge>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell>
                         <div className="flex space-x-2 space-x-reverse">
                           <Button
