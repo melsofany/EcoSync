@@ -449,7 +449,7 @@ export default function Admin() {
                     <h4 className="font-semibold text-orange-800">تصدير قاعدة البيانات الكاملة</h4>
                   </div>
                   <p className="text-sm text-orange-700 mb-4">
-                    تصدير كامل يحتوي على جميع البيانات الفعلية من جميع الجداول بما في ذلك: الأصناف، التسعير، أوامر الشراء، العملاء، والموردين
+                    نسخة احتياطية كاملة تحتوي على جميع البيانات: المستخدمين، العملاء، الموردين، الأصناف، طلبات التسعير، أوامر الشراء، أسعار الموردين، عروض الأسعار، وسجل النشاط
                   </p>
                   <Button 
                     onClick={() => exportDatabaseMutation.mutate()}
@@ -464,7 +464,7 @@ export default function Admin() {
                     ) : (
                       <>
                         <Download className="h-4 w-4 ml-2" />
-                        تصدير قاعدة البيانات (.sql)
+                        إنشاء نسخة احتياطية كاملة (.sql)
                       </>
                     )}
                   </Button>
@@ -485,8 +485,8 @@ export default function Admin() {
                       <span className="font-medium">{onlineUsers.length}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-blue-700">نوع التصدير:</span>
-                      <span className="font-medium text-xs">بيانات كاملة + SQL قابل للتنفيذ</span>
+                      <span className="text-blue-700">نوع النسخة:</span>
+                      <span className="font-medium text-xs">نسخة احتياطية شاملة + SQL</span>
                     </div>
                   </div>
                 </div>
@@ -498,9 +498,9 @@ export default function Admin() {
                   <h4 className="font-semibold text-red-800">تنبيه هام</h4>
                 </div>
                 <p className="text-sm text-red-700">
-                  هذا التصدير يحتوي على البيانات الكاملة والحقيقية من جميع الجداول بما في ذلك:
-                  المستخدمين، الأصناف مع أسعارها، أوامر الشراء، العملاء والموردين.
-                  الملف بصيغة SQL قابل للتنفيذ لاستعادة البيانات. احفظه في مكان آمن!
+                  هذه نسخة احتياطية كاملة تحتوي على جميع البيانات الحقيقية من النظام:
+                  جميع المستخدمين، العملاء، الموردين، الأصناف، طلبات التسعير مع أصنافها، أوامر الشراء مع أصنافها، أسعار الموردين، عروض الأسعار، وسجل النشاط الكامل.
+                  يمكن استخدام هذا الملف لاستعادة النظام بالكامل!
                 </p>
               </div>
             </div>
