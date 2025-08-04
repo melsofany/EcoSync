@@ -64,16 +64,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "suppliers",
     },
     {
-      title: "طلبات الشراء",
-      href: "/purchase-orders",
-      icon: ShoppingCart,
-      section: "purchase-orders",
+      title: "تسعير الموردين",
+      href: "/supplier-pricing",
+      icon: TrendingUp,
+      section: "supplier_pricing",
     },
     {
       title: "تسعير العملاء",
       href: "/customer-pricing",
       icon: DollarSign,
       section: "customer_pricing",
+    },
+    {
+      title: "طلبات الشراء",
+      href: "/purchase-orders",
+      icon: ShoppingCart,
+      section: "purchase-orders",
     },
     {
       title: "التقارير",

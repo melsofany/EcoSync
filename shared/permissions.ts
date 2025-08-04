@@ -38,6 +38,12 @@ export interface UserPermissions {
     edit: boolean;
     delete: boolean;
   };
+  supplierPricing: {
+    view: boolean;
+    create: boolean;
+    edit: boolean;
+    delete: boolean;
+  };
   customerPricing: {
     view: boolean;
     create: boolean;
@@ -410,6 +416,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<string, Partial<UserPermissions>> 
     items: { view: true, create: false, edit: false, delete: false },
     clients: { view: true, create: false, edit: false, delete: false },
     suppliers: { view: true, create: false, edit: false, delete: false },
+    supplierPricing: { view: true, create: false, edit: false, delete: false },
     purchaseOrders: { view: true, create: false, edit: false, delete: false },
     customerPricing: { view: true, create: false, edit: false, delete: false },
     reports: { view: true, export: true },
@@ -445,6 +452,7 @@ export const getUserPermissions = (user: any): UserPermissions => {
     items: { view: false, create: false, edit: false, delete: false },
     clients: { view: false, create: false, edit: false, delete: false },
     suppliers: { view: false, create: false, edit: false, delete: false },
+    supplierPricing: { view: false, create: false, edit: false, delete: false },
     purchaseOrders: { view: false, create: false, edit: false, delete: false },
     customerPricing: { view: false, create: false, edit: false, delete: false },
     reports: { view: false, export: false },
