@@ -138,8 +138,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       
       {/* Sidebar */}
       <div className={cn(
-        "fixed top-0 right-0 h-full w-64 bg-white shadow-lg border-l border-gray-200 flex flex-col z-50 transform transition-transform duration-300 ease-in-out",
-        "lg:translate-x-0 lg:static lg:z-auto",
+        "h-full w-64 bg-white shadow-lg border-l border-gray-200 flex flex-col z-50 transform transition-transform duration-300 ease-in-out",
+        "fixed top-0 right-0 lg:relative lg:translate-x-0",
         isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
       )}>
         {/* Company Header */}
