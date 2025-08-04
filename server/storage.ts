@@ -40,8 +40,8 @@ import {
   type ActivityLog,
   type InsertActivityLog,
 } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, like, and, isNull, isNotNull, sql } from "drizzle-orm";
+import { db } from "./db.js";
+import { eq, desc, like, and, isNull, isNotNull, sql, or } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -460,17 +460,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNextItemNumber(): Promise<string> {
-    const lastItem = await db.select({ itemNumber: items.itemNumber })
+    // البحث عن آخر صنف برقم صحيح
+    const allItems = await db.select({ itemNumber: items.itemNumber })
       .from(items)
-      .orderBy(desc(items.createdAt))
-      .limit(1);
+      .where(sql`item_number ~ '^ELEK[0-9]+$'`) // فقط الأرقام الصحيحة
+      .orderBy(desc(items.createdAt));
     
-    if (lastItem.length === 0) {
+    if (allItems.length === 0) {
       return "ELEK00000001";
     }
     
-    const lastNumber = parseInt(lastItem[0].itemNumber.replace("ELEK", ""));
-    const nextNumber = (lastNumber + 1).toString().padStart(8, "0");
+    // البحث عن أعلى رقم
+    let maxNumber = 0;
+    for (const item of allItems) {
+      const numberPart = item.itemNumber.replace('ELEK', '');
+      const num = parseInt(numberPart, 10);
+      if (!isNaN(num) && num > maxNumber) {
+        maxNumber = num;
+      }
+    }
+    
+    const nextNumber = (maxNumber + 1).toString().padStart(8, "0");
     return `ELEK${nextNumber}`;
   }
 
