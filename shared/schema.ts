@@ -52,7 +52,7 @@ export const quotationRequests = pgTable("quotation_requests", {
   clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
   requestDate: text("request_date").notNull(), // Changed to text for easier form handling
   expiryDate: text("expiry_date"), // Changed to text for easier form handling
-  status: text("status").default("pending"), // "pending", "processing", "completed", "cancelled"
+  status: text("status").default("pending"), // "pending", "sent_for_pricing", "pricing_received", "customer_pricing", "quoted", "completed", "cancelled"
   responsibleEmployee: text("responsible_employee"),
   customRequestNumber: text("custom_request_number"), // Added field for client's request number
   notes: text("notes"),

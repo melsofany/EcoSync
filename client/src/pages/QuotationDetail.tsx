@@ -90,7 +90,10 @@ export default function QuotationDetail() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { label: "في الانتظار", variant: "secondary" as const, icon: Clock, color: "text-yellow-600" },
-      processing: { label: "قيد المعالجة", variant: "default" as const, icon: Edit, color: "text-blue-600" },
+      sent_for_pricing: { label: "مرسل للتسعير", variant: "default" as const, icon: Edit, color: "text-blue-600" },
+      pricing_received: { label: "تم استلام التسعير", variant: "default" as const, icon: Calculator, color: "text-purple-600" },
+      customer_pricing: { label: "تسعير العميل", variant: "default" as const, icon: FileText, color: "text-indigo-600" },
+      quoted: { label: "تم التسعير", variant: "default" as const, icon: CheckCircle, color: "text-green-600" },
       completed: { label: "مكتمل", variant: "default" as const, icon: CheckCircle, color: "text-green-600" },
       cancelled: { label: "ملغي", variant: "destructive" as const, icon: X, color: "text-red-600" },
     };
@@ -100,8 +103,10 @@ export default function QuotationDetail() {
     
     return (
       <Badge variant={config.variant} className={`${
-        status === "completed" ? "bg-green-100 text-green-800 hover:bg-green-100" :
-        status === "processing" ? "bg-blue-100 text-blue-800 hover:bg-blue-100" :
+        status === "completed" || status === "quoted" ? "bg-green-100 text-green-800 hover:bg-green-100" :
+        status === "sent_for_pricing" ? "bg-blue-100 text-blue-800 hover:bg-blue-100" :
+        status === "pricing_received" ? "bg-purple-100 text-purple-800 hover:bg-purple-100" :
+        status === "customer_pricing" ? "bg-indigo-100 text-indigo-800 hover:bg-indigo-100" :
         status === "cancelled" ? "bg-red-100 text-red-800 hover:bg-red-100" : ""
       } flex items-center space-x-1 space-x-reverse`}>
         <Icon className="h-3 w-3" />
@@ -735,7 +740,10 @@ function StatusUpdateModal({ isOpen, onClose, currentStatus, onUpdateStatus, isU
 
   const statusOptions = [
     { value: "pending", label: "في الانتظار", description: "الطلب في انتظار المعالجة" },
-    { value: "processing", label: "قيد المعالجة", description: "جاري العمل على الطلب" },
+    { value: "sent_for_pricing", label: "مرسل للتسعير", description: "تم إرسال الطلب للموردين للحصول على التسعير" },
+    { value: "pricing_received", label: "تم استلام التسعير", description: "تم استلام التسعير من الموردين" },
+    { value: "customer_pricing", label: "تسعير العميل", description: "جاري إعداد التسعير للعميل" },
+    { value: "quoted", label: "تم التسعير", description: "تم إرسال التسعير للعميل" },
     { value: "completed", label: "مكتمل", description: "تم إكمال الطلب بنجاح" },
     { value: "cancelled", label: "ملغي", description: "تم إلغاء الطلب" },
   ];

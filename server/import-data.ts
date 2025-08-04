@@ -117,7 +117,7 @@ async function importExcelData() {
         customRequestNumber: quotationData.custom_request_number,
         clientId: clientId,
         requestDate: new Date(quotationData.request_date),
-        status: quotationData.status as any,
+        status: "pending", // طلبات Excel تبدأ بحالة "في الانتظار" لتتبع نفس السير
         urgent: false,
         notes: 'مستورد من Excel',
         createdBy: createdById

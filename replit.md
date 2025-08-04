@@ -135,3 +135,12 @@ Preferred communication style: Simple, everyday language.
 - **Permission Categories**: Organized permissions by functional areas (quotations, items, clients, suppliers, etc.)
 - **User Permission Interface**: Admin can now assign specific permissions to users instead of predefined roles
 - **Role-Based Defaults**: Each role has default permissions that can be customized per user
+
+### Unified Quotation Workflow System (2025-08-04)
+- **Consistent Workflow**: Excel-imported quotations now follow the same workflow as manually entered ones
+- **Enhanced Status System**: Added new workflow stages: pending → sent_for_pricing → pricing_received → customer_pricing → quoted → completed
+- **Import Consistency**: All Excel imports start with "pending" status to ensure proper workflow progression
+- **Visual Status Indicators**: Color-coded status badges with distinct colors for each workflow stage
+- **Workflow Documentation**: Created comprehensive workflow guide explaining the unified process
+- **Status Update System**: Enhanced status update modal with descriptions for each workflow stage
+- **Role-Based Workflow**: Different roles can advance quotations through appropriate workflow stages
