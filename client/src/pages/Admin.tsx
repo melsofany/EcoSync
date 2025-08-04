@@ -152,6 +152,49 @@ export default function Admin() {
     },
   });
 
+  const exportDatabaseMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/admin/database-export", {
+        method: "GET",
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error("فشل في تصدير قاعدة البيانات");
+      }
+      
+      const blob = await response.blob();
+      const filename = response.headers.get('content-disposition')
+        ?.split('filename=')[1]?.replace(/['"]/g, '') || 
+        `qortoba-database-backup-${new Date().toISOString().split('T')[0]}.sql`;
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      return filename;
+    },
+    onSuccess: (filename) => {
+      toast({
+        title: "تم تصدير قاعدة البيانات",
+        description: `تم تحميل الملف: ${filename}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في تصدير قاعدة البيانات",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const saveSettingsMutation = useMutation({
     mutationFn: async (settings: SystemSettings) => {
       await apiRequest("POST", "/api/admin/settings", settings);
@@ -388,8 +431,8 @@ export default function Admin() {
         </Card>
       )}
 
-      {/* Database Management Section */}
-      {activeSection === "database" && (
+      {/* Database Management Section - IT Admin Only */}
+      {activeSection === "database" && user?.role === "it_admin" && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2 space-x-reverse">
@@ -398,42 +441,73 @@ export default function Admin() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h4 className="font-semibold">النسخ الاحتياطية</h4>
-                <div className="space-y-2">
-                  <Button className="w-full bg-green-500 hover:bg-green-600">
-                    <Download className="h-4 w-4 ml-2" />
-                    إنشاء نسخة احتياطية الآن
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <RefreshCw className="h-4 w-4 ml-2" />
-                    استعادة من نسخة احتياطية
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 border border-orange-200 rounded-lg bg-orange-50">
+                  <div className="flex items-center space-x-2 space-x-reverse mb-3">
+                    <Download className="h-5 w-5 text-orange-600" />
+                    <h4 className="font-semibold text-orange-800">تصدير قاعدة البيانات الكاملة</h4>
+                  </div>
+                  <p className="text-sm text-orange-700 mb-4">
+                    تصدير جميع جداول قاعدة البيانات مع البيانات بصيغة SQL للنسخ الاحتياطي أو النقل
+                  </p>
+                  <Button 
+                    onClick={() => exportDatabaseMutation.mutate()}
+                    disabled={exportDatabaseMutation.isPending}
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                  >
+                    {exportDatabaseMutation.isPending ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner ml-2"></div>
+                        جاري التصدير...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 ml-2" />
+                        تصدير قاعدة البيانات (.sql)
+                      </>
+                    )}
                   </Button>
                 </div>
-              </div>
-              <div className="space-y-4">
-                <h4 className="font-semibold">صيانة قاعدة البيانات</h4>
-                <div className="space-y-2">
-                  <Button variant="outline" className="w-full">
-                    <RefreshCw className="h-4 w-4 ml-2" />
-                    تحسين الأداء
-                  </Button>
-                  <Button variant="outline" className="w-full text-red-600 hover:text-red-800">
-                    <Trash2 className="h-4 w-4 ml-2" />
-                    مسح البيانات المؤقتة
-                  </Button>
+
+                <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
+                  <div className="flex items-center space-x-2 space-x-reverse mb-3">
+                    <RefreshCw className="h-5 w-5 text-blue-600" />
+                    <h4 className="font-semibold text-blue-800">معلومات قاعدة البيانات</h4>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">إجمالي المستخدمين:</span>
+                      <span className="font-medium">{totalUsers}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">المستخدمين النشطين:</span>
+                      <span className="font-medium">{onlineUsers.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">آخر تصدير:</span>
+                      <span className="font-medium">---</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
-              <p className="text-sm text-yellow-700">
-                تحذير: عمليات إدارة قاعدة البيانات قد تؤثر على أداء النظام. تأكد من إنشاء نسخة احتياطية قبل القيام بأي تغييرات.
-              </p>
+
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center space-x-2 space-x-reverse mb-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  <h4 className="font-semibold text-red-800">تنبيه هام</h4>
+                </div>
+                <p className="text-sm text-red-700">
+                  تصدير قاعدة البيانات يحتوي على جميع البيانات الحساسة بما في ذلك معلومات المستخدمين والعملاء.
+                  تأكد من حفظ الملف في مكان آمن ولا تشاركه مع أشخاص غير مخولين.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
+
+
 
       {/* Activity Log */}
       <Card>

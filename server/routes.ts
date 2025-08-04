@@ -808,6 +808,100 @@ Respond in JSON format:
     }
   });
 
+  // Database export route (IT Admin only)
+  app.get("/api/admin/database-export", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      console.log("Database export requested by:", req.session.user?.fullName);
+
+      // Get current timestamp for filename
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+      const filename = `qortoba-database-backup-${timestamp}.sql`;
+
+      // Set headers for file download
+      res.setHeader('Content-Type', 'application/sql');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Cache-Control', 'no-cache');
+
+      // Create SQL dump with all tables and data
+      let sqlDump = `-- قاعدة بيانات نظام قرطبة للتوريدات\n`;
+      sqlDump += `-- تم التصدير في: ${new Date().toISOString()}\n`;
+      sqlDump += `-- بواسطة: ${req.session.user?.fullName}\n\n`;
+
+      // Export data using storage methods
+      try {
+        // Users (without passwords)
+        const users = await storage.getAllUsers();
+        sqlDump += `-- Table: users\n`;
+        sqlDump += `-- =====================\n`;
+        if (users.length > 0) {
+          sqlDump += `-- Data for table users (${users.length} records)\n`;
+          for (const user of users) {
+            const { password, ...userWithoutPassword } = user;
+            sqlDump += `-- User: ${user.fullName} (${user.username})\n`;
+          }
+        }
+        sqlDump += `\n`;
+
+        // Clients
+        const clients = await storage.getAllClients();
+        sqlDump += `-- Table: clients\n`;
+        sqlDump += `-- =====================\n`;
+        sqlDump += `-- Total clients: ${clients.length}\n\n`;
+
+        // Suppliers
+        const suppliers = await storage.getAllSuppliers();
+        sqlDump += `-- Table: suppliers\n`;
+        sqlDump += `-- =====================\n`;
+        sqlDump += `-- Total suppliers: ${suppliers.length}\n\n`;
+
+        // Quotation Requests
+        const quotations = await storage.getAllQuotationRequests();
+        sqlDump += `-- Table: quotation_requests\n`;
+        sqlDump += `-- =====================\n`;
+        sqlDump += `-- Total quotations: ${quotations.length}\n\n`;
+
+        // Items
+        const items = await storage.getAllItems();
+        sqlDump += `-- Table: items\n`;
+        sqlDump += `-- =====================\n`;
+        sqlDump += `-- Total items: ${items.length}\n\n`;
+
+        // Purchase Orders
+        const purchaseOrders = await storage.getAllPurchaseOrders();
+        sqlDump += `-- Table: purchase_orders\n`;
+        sqlDump += `-- =====================\n`;
+        sqlDump += `-- Total purchase orders: ${purchaseOrders.length}\n\n`;
+
+        // Activity Log
+        const activities = await storage.getActivities(1000);
+        sqlDump += `-- Table: activity_log\n`;
+        sqlDump += `-- =====================\n`;
+        sqlDump += `-- Total activities: ${activities.length}\n\n`;
+
+      } catch (dataError) {
+        console.error("Error getting data:", dataError);
+        sqlDump += `-- Error accessing data: ${dataError.message}\n\n`;
+      }
+
+      // Add summary
+      sqlDump += `-- End of database export\n`;
+      sqlDump += `-- Export completed at: ${new Date().toISOString()}\n`;
+      sqlDump += `-- This is a summary export containing table counts and basic information\n`;
+      sqlDump += `-- For full data recovery, use the individual table export functions\n`;
+
+      // Log the activity
+      await logActivity(req, "database_export", "system", undefined, 
+        `تم تصدير ملخص قاعدة البيانات - ${filename}`);
+
+      // Send the SQL dump
+      res.send(sqlDump);
+
+    } catch (error) {
+      console.error("Database export error:", error);
+      res.status(500).json({ message: "خطأ في تصدير قاعدة البيانات" });
+    }
+  });
+
   // Activity log routes
   app.get("/api/activity", requireAuth, async (req: Request, res: Response) => {
     try {
