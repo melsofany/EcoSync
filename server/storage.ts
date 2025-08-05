@@ -928,7 +928,10 @@ export class DatabaseStorage implements IStorage {
       )
       .where(
         and(
-          eq(quotationRequests.status, "sent_for_pricing"),
+          or(
+            eq(quotationRequests.status, "pending"),
+            eq(quotationRequests.status, "sent_for_pricing")
+          ),
           isNull(supplierPricing.itemId)
         )
       )
@@ -1073,6 +1076,7 @@ export class DatabaseStorage implements IStorage {
         and(
           // Include all statuses that might need customer pricing
           or(
+            eq(quotationRequests.status, "pending"), // Added: new quotations can go to customer pricing directly
             eq(quotationRequests.status, "sent_for_pricing"), // Added: items sent for pricing can go to customer pricing directly
             eq(quotationRequests.status, "pricing_received"),
             eq(quotationRequests.status, "customer_pricing")
