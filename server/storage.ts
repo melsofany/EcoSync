@@ -935,7 +935,7 @@ export class DatabaseStorage implements IStorage {
           isNull(supplierPricing.itemId),
           or(
             isNotNull(quotationRequests.expiryDate), // الطلبات مع تاريخ انتهاء
-            sql`${quotationRequests.requestDate} >= CURRENT_DATE` // الطلبات الجديدة من اليوم حتى لو بدون تاريخ انتهاء
+            sql`${quotationRequests.requestDate}::date >= CURRENT_DATE` // الطلبات الجديدة من اليوم حتى لو بدون تاريخ انتهاء
           )
         )
       )
@@ -1088,7 +1088,7 @@ export class DatabaseStorage implements IStorage {
           isNull(customerPricing.itemId), // Only items without customer pricing
           or(
             isNotNull(quotationRequests.expiryDate), // الطلبات مع تاريخ انتهاء
-            sql`${quotationRequests.requestDate} >= CURRENT_DATE` // الطلبات الجديدة من اليوم حتى لو بدون تاريخ انتهاء
+            sql`${quotationRequests.requestDate}::date >= CURRENT_DATE` // الطلبات الجديدة من اليوم حتى لو بدون تاريخ انتهاء
           )
           // Removed supplier pricing requirement
         )
