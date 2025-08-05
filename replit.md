@@ -183,3 +183,13 @@ Preferred communication style: Simple, everyday language.
 - **Production Ready**: Includes automatic startup, error handling, comprehensive logging, and fallback options
 - **User Friendly**: Arabic interface with clear progress indicators, detailed error messages, and success confirmations
 - **Complete Package**: Transforms any Windows machine into a fully functional Qortoba Supplies server in minutes
+
+### ngrok Integration for Global Access (2025-08-05)
+- **Universal Access Solution**: Complete ngrok integration to bypass firewall and network restrictions
+- **One-Click Setup**: `SETUP_NGROK_SERVER.bat` automatically downloads, configures, and starts ngrok tunnel
+- **Secure HTTPS Access**: Automatic SSL encryption for all external connections through ngrok
+- **Real-time Monitoring**: ngrok dashboard integration at localhost:4040 for tunnel management and statistics
+- **Desktop Management Tools**: Complete set of shortcuts for starting, stopping, and monitoring ngrok tunnels
+- **Quick Start Guide**: `تشغيل_سريع.md` comprehensive Arabic guide for instant ngrok deployment
+- **Global Accessibility**: Enables worldwide access to Qortoba system without complex network configuration
+- **Production Alternative**: Perfect solution for demo environments, remote access, and bypassing network limitations
