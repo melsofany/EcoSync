@@ -1,163 +1,166 @@
-# تشغيل مشروع قرطبة على خادم RDP - التعليمات السريعة
+# ⚡ إعداد خادم سريع لمشروع قرطبة للتوريدات
 
-## الخطوات الأساسية
+## 🚀 خطوات التشغيل السريع
 
-### 1. تحضير الخادم
-```bash
-# تثبيت Node.js
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
-# تثبيت PostgreSQL
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-
-# تثبيت PM2 لإدارة التطبيق
-npm install -g pm2
+### الطريقة الأولى: تشغيل تلقائي (موصى بها)
+```cmd
+# حمل وشغل الملف
+ONE_CLICK_DEPLOY.bat
 ```
 
-### 2. إعداد قاعدة البيانات
-```bash
-sudo -u postgres psql
-```
+### الطريقة الثانية: تشغيل يدوي
+```cmd
+# 1. إنشاء المجلدات
+mkdir C:\Projects
+mkdir C:\Backups
 
-```sql
-CREATE DATABASE qortoba_supplies;
-CREATE USER qortoba_user WITH PASSWORD 'YourStrongPassword123!';
-GRANT ALL PRIVILEGES ON DATABASE qortoba_supplies TO qortoba_user;
-\q
-```
+# 2. تحميل المشروع
+cd C:\Projects
+git clone https://github.com/ahmed-lifeendy/qortoba-supplies.git
+cd qortoba-supplies
 
-### 3. نسخ المشروع
-```bash
-# إنشاء مجلد للمشروع
-mkdir /home/qortoba-supplies
-cd /home/qortoba-supplies
-
-# نسخ جميع ملفات المشروع من Replit إلى هنا
-# (يمكنك استخدام WinSCP أو FileZilla لنسخ الملفات)
-```
-
-### 4. إعداد متغيرات البيئة
-```bash
-# إنشاء ملف .env
-nano .env
-```
-
-أضف هذا المحتوى:
-```
-DATABASE_URL=postgresql://qortoba_user:YourStrongPassword123!@localhost:5432/qortoba_supplies
-SESSION_SECRET=your-very-long-random-secret-key-here-make-it-complex
-NODE_ENV=production
-PORT=5000
-DEEPSEEK_API_KEY=your-deepseek-api-key-if-needed
-```
-
-### 5. تثبيت وتشغيل المشروع
-```bash
-# تثبيت الحزم
+# 3. تثبيت التبعيات
 npm install
 
-# بناء المشروع
+# 4. إعداد البيئة
+copy .env.production.example .env
+
+# 5. بناء المشروع
 npm run build
 
-# تشغيل المشروع بـ PM2
-pm2 start dist/index.js --name "qortoba-supplies"
-
-# حفظ الإعداد للتشغيل التلقائي
-pm2 save
-pm2 startup
+# 6. تشغيل النظام
+npm start
 ```
 
-### 6. نسخ البيانات من Replit
-1. في Replit، سجل دخول كمسؤول تقنية
-2. اذهب إلى صفحة الإدارة
-3. اضغط على "إنشاء نسخة احتياطية كاملة"
-4. حمل الملف .sql
-5. انسخه إلى الخادم واستورده:
+## 🔧 المتطلبات الأساسية
 
-```bash
-# استيراد النسخة الاحتياطية
-psql -U qortoba_user -d qortoba_supplies -f backup-file.sql
+### برامج مطلوبة
+- **Node.js 18+**: https://nodejs.org
+- **PostgreSQL 13+**: https://postgresql.org
+- **Git**: https://git-scm.com
+
+### إعداد PostgreSQL
+```sql
+CREATE DATABASE qortoba_supplies;
+CREATE USER qortoba_user WITH PASSWORD 'QortobaDB2024!';
+GRANT ALL PRIVILEGES ON DATABASE qortoba_supplies TO qortoba_user;
 ```
 
-### 7. إعداد Nginx (اختياري للمنفذ 80)
-```bash
-sudo apt install nginx
+## ⚙️ إعداد ملف البيئة (.env)
 
-# إنشاء إعداد الموقع
-sudo nano /etc/nginx/sites-available/qortoba
+```env
+NODE_ENV=production
+DATABASE_URL=postgresql://qortoba_user:QortobaDB2024!@localhost:5432/qortoba_supplies
+PORT=5000
+SESSION_SECRET=YourSecureSessionSecret123!
+DEEPSEEK_API_KEY=your_ai_key_optional
 ```
 
-أضف هذا المحتوى:
-```nginx
-server {
-    listen 80;
-    server_name your-server-ip;
+## 🌐 الوصول للنظام
 
-    location / {
-        proxy_pass http://localhost:5000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
+بعد التشغيل:
+- **محلياً**: http://localhost:5000
+- **من الشبكة**: http://[IP-Address]:5000
+
+## 🔥 حل المشاكل السريع
+
+### لا يعمل Git
+```cmd
+# تحميل من المتصفح
+https://github.com/ahmed-lifeendy/qortoba-supplies/archive/refs/heads/main.zip
+# استخراج في C:\Projects\qortoba-supplies
 ```
 
-```bash
-# تفعيل الإعداد
-sudo ln -s /etc/nginx/sites-available/qortoba /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
+### مشكلة PostgreSQL
+```cmd
+# إعادة تشغيل الخدمة
+net stop postgresql-x64-13
+net start postgresql-x64-13
+
+# إنشاء قاعدة البيانات يدوياً
+psql -U postgres
+CREATE DATABASE qortoba_supplies;
 ```
 
-### 8. الوصول للمشروع
-- مباشرة على المنفذ 5000: `http://your-server-ip:5000`
-- عبر Nginx على المنفذ 80: `http://your-server-ip`
+### مشكلة Node.js
+```cmd
+# تحديث npm
+npm install -g npm@latest
 
-## أوامر مفيدة
+# تنظيف cache
+npm cache clean --force
+```
 
-```bash
-# مراقبة التطبيق
-pm2 status
+### المنفذ مشغول
+```cmd
+# العثور على العملية
+netstat -ano | findstr :5000
+
+# إنهاء العملية
+taskkill /PID [PID_NUMBER] /F
+```
+
+## 📱 اختصارات مفيدة
+
+### إدارة سريعة
+```cmd
+# بدء التشغيل
+npm start
+
+# إيقاف (Ctrl+C)
+
+# إعادة التشغيل
+npm restart
+
+# فحص الحالة
+netstat -an | findstr :5000
+```
+
+### نسخة احتياطية سريعة
+```cmd
+set PGPASSWORD=QortobaDB2024!
+pg_dump -U qortoba_user qortoba_supplies > backup.sql
+```
+
+## ✅ تحقق من نجاح التثبيت
+
+- [ ] Node.js يعمل: `node --version`
+- [ ] PostgreSQL يعمل: `psql --version`
+- [ ] Git يعمل: `git --version`
+- [ ] المشروع محمل في `C:\Projects\qortoba-supplies`
+- [ ] النظام يفتح على http://localhost:5000
+- [ ] تسجيل الدخول يعمل
+
+## 🎯 خطوات ما بعد التثبيت
+
+1. **تغيير كلمات المرور الافتراضية**
+2. **إنشاء مستخدمين جدد**
+3. **استيراد البيانات من Excel**
+4. **إعداد النسخ الاحتياطية**
+5. **تخصيص الإعدادات**
+
+## 🆘 دعم سريع
+
+### معلومات النظام
+```cmd
+systeminfo | findstr /C:"OS Name" /C:"Total Physical Memory"
+```
+
+### حالة الخدمات
+```cmd
+sc query postgresql-x64-13
+tasklist | findstr node
+```
+
+### السجلات
+```cmd
+# سجلات Windows
+eventvwr.msc
+
+# سجلات التطبيق (إذا كان PM2 مثبت)
 pm2 logs qortoba-supplies
-
-# إعادة تشغيل التطبيق
-pm2 restart qortoba-supplies
-
-# إيقاف التطبيق
-pm2 stop qortoba-supplies
-
-# فحص قاعدة البيانات
-psql -U qortoba_user -d qortoba_supplies -c "SELECT COUNT(*) FROM users;"
 ```
 
-## في حالة المشاكل
+---
 
-1. **التطبيق لا يعمل**: `pm2 logs qortoba-supplies`
-2. **خطأ في قاعدة البيانات**: تحقق من DATABASE_URL في .env
-3. **لا يمكن الوصول**: تحقق من الـ firewall والمنافذ
-
-```bash
-# فتح المنافذ المطلوبة
-sudo ufw allow 5000
-sudo ufw allow 80
-sudo ufw enable
-```
-
-## ملاحظات مهمة
-
-- احتفظ بنسخة احتياطية من .env
-- قم بتغيير كلمات المرور الافتراضية
-- راقب سجلات التطبيق بانتظام
-- اعمل نسخة احتياطية يومية من قاعدة البيانات
-
-```bash
-# نسخة احتياطية سريعة
-pg_dump -U qortoba_user -h localhost qortoba_supplies > backup_$(date +%Y%m%d).sql
-```
+**النظام جاهز للاستخدام في دقائق! 🚀**
