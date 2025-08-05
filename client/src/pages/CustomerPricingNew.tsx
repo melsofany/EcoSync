@@ -194,12 +194,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             عرض جميع البيانات لـ PART NO: {item.partNumber}
             {comprehensiveData && ` (${comprehensiveData.length} سجل في قاعدة البيانات)`}
           </p>
-          <div className="bg-green-100 border border-green-400 text-green-800 px-3 py-2 rounded text-sm mt-2">
-            <strong>✅ نظام المراجعة والمطابقة الذكية مفعل:</strong> تم تحليل 2,040 بند وتوحيد 20 مجموعة من البنود المتشابهة.
-            LC1D32M7 موحد بنجاح (35 بند، 33 سجل تسعير) تحت المعرف: LC1D32M7_CONTACTOR.
-            <br/>
-            <span className="text-sm">يعرض النظام الآن جميع البيانات للبنود المتطابقة بغض النظر عن اختلاف التنسيق أو المسافات.</span>
-          </div>
+
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
