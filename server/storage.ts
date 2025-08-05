@@ -933,7 +933,10 @@ export class DatabaseStorage implements IStorage {
             eq(quotationRequests.status, "sent_for_pricing")
           ),
           isNull(supplierPricing.itemId),
-          isNotNull(quotationRequests.expiryDate) // يجب أن يكون هناك تاريخ انتهاء
+          or(
+            isNotNull(quotationRequests.expiryDate), // الطلبات مع تاريخ انتهاء
+            sql`${quotationRequests.requestDate} >= CURRENT_DATE` // الطلبات الجديدة من اليوم حتى لو بدون تاريخ انتهاء
+          )
         )
       )
       .orderBy(desc(quotationRequests.createdAt));
@@ -1083,7 +1086,10 @@ export class DatabaseStorage implements IStorage {
             eq(quotationRequests.status, "customer_pricing")
           ),
           isNull(customerPricing.itemId), // Only items without customer pricing
-          isNotNull(quotationRequests.expiryDate) // يجب أن يكون هناك تاريخ انتهاء
+          or(
+            isNotNull(quotationRequests.expiryDate), // الطلبات مع تاريخ انتهاء
+            sql`${quotationRequests.requestDate} >= CURRENT_DATE` // الطلبات الجديدة من اليوم حتى لو بدون تاريخ انتهاء
+          )
           // Removed supplier pricing requirement
         )
       )
