@@ -1031,8 +1031,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getItemsReadyForCustomerPricing(): Promise<any[]> {
-    // Get items that have supplier pricing but don't have customer pricing yet
-    const itemsWithSupplierPricing = await db
+    // Get all items that need customer pricing - NO supplier pricing requirement
+    console.log('🎯 Getting items ready for customer pricing WITHOUT supplier pricing requirement');
+    
+    const itemsNeedingCustomerPricing = await db
       .select({
         id: items.id,
         itemNumber: items.itemNumber,
@@ -1049,13 +1051,13 @@ export class DatabaseStorage implements IStorage {
         requestNumber: quotationRequests.requestNumber,
         requestDate: quotationRequests.requestDate,
         expiryDate: quotationRequests.expiryDate,
-        supplierPrice: supplierPricing.unitPrice,
-        supplierName: suppliers.name,
+        supplierPrice: supplierPricing.unitPrice, // Optional - may be null
+        supplierName: suppliers.name, // Optional - may be null
       })
       .from(items)
       .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
       .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
-      .innerJoin(
+      .leftJoin( // Changed from innerJoin to leftJoin - supplier pricing is optional
         supplierPricing,
         and(
           eq(items.id, supplierPricing.itemId),
@@ -1069,17 +1071,20 @@ export class DatabaseStorage implements IStorage {
       )
       .where(
         and(
+          // Include all statuses that might need customer pricing
           or(
+            eq(quotationRequests.status, "sent_for_pricing"), // Added: items sent for pricing can go to customer pricing directly
             eq(quotationRequests.status, "pricing_received"),
             eq(quotationRequests.status, "customer_pricing")
           ),
-          isNull(customerPricing.itemId),
-          isNotNull(supplierPricing.unitPrice) // يجب أن يكون هناك سعر مورد أولاً
+          isNull(customerPricing.itemId), // Only items without customer pricing
+          // Removed supplier pricing requirement
         )
       )
       .orderBy(desc(quotationRequests.createdAt));
 
-    return itemsWithSupplierPricing;
+    console.log(`✅ Found ${itemsNeedingCustomerPricing.length} items ready for customer pricing`);
+    return itemsNeedingCustomerPricing;
   }
 
   // Pricing history operations
