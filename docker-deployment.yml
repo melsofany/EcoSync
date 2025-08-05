@@ -1,0 +1,75 @@
+# نشر مشروع قرطبة للتوريدات باستخدام Docker
+
+version: '3.8'
+
+services:
+  # قاعدة البيانات PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: qortoba-postgres
+    environment:
+      POSTGRES_DB: qortoba_supplies
+      POSTGRES_USER: qortoba_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-YourStrongPassword123!}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backup:/backup
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qortoba_user -d qortoba_supplies"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # تطبيق قرطبة للتوريدات
+  qortoba-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qortoba-supplies
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://qortoba_user:${DB_PASSWORD:-YourStrongPassword123!}@postgres:5432/qortoba_supplies
+      PORT: 5000
+      SESSION_SECRET: ${SESSION_SECRET:-your_very_secure_session_secret_minimum_32_characters_long}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - app_logs:/app/logs
+      - ./backup:/app/backup
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # خادم Nginx (Reverse Proxy)
+  nginx:
+    image: nginx:alpine
+    container_name: qortoba-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - qortoba-app
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  app_logs:
+    driver: local
+
+networks:
+  default:
+    name: qortoba-network
