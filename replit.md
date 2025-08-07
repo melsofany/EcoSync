@@ -1,11 +1,9 @@
 # قرطبة للتوريدات - نظام إدارة التوريدات
 
 ## Overview
-
-A comprehensive web application for قرطبة للتوريدات (Qurtoba Supplies) managing quotation requests, item cataloging, purchase orders, and administrative operations. It features role-based access control and AI-powered item analysis for duplicate detection. The system is designed as a demand-based procurement system without inventory management, aiming to streamline supply chain processes and improve data quality.
+A comprehensive web application for قرطبة للتوريدات (Qurtoba Supplies) managing quotation requests, item cataloging, purchase orders, and administrative operations. It features role-based access control and AI-powered item analysis for duplicate detection. The system is designed as a demand-based procurement system without inventory management, aiming to streamline supply chain processes and improve data quality. The project vision includes enhancing supply chain efficiency, providing robust data management, and leveraging AI for intelligent item analysis.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
@@ -14,8 +12,8 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: React with TypeScript and Vite.
 - **UI Library**: Shadcn/ui (built on Radix UI) with Tailwind CSS.
 - **Internationalization**: Arabic RTL (right-to-left) interface with Arabic content.
-- **Design Principles**: Focus on clear, intuitive workflows for various user roles, with consistent styling and a new company branding (قرطبة للتوريدات).
-- **Display Enhancements**: Consistent formatting for LINE ITEMs (e.g., "6666.001.GENRAL.0069") with blue monospace styling and RTL display correction.
+- **Design Principles**: Focus on clear, intuitive workflows for various user roles, with consistent styling and new company branding.
+- **Display Enhancements**: Consistent formatting for LINE ITEMs with blue monospace styling and RTL display correction. Fully responsive design optimized for smartphones and tablets.
 
 ### Technical Implementations
 - **Frontend State Management**: TanStack Query (React Query) for server state and caching.
@@ -28,16 +26,21 @@ Preferred communication style: Simple, everyday language.
 - **Data Validation**: Zod schemas for type-safe data validation.
 - **Database Migrations**: Drizzle Kit for schema management.
 - **Activity Tracking**: Comprehensive logging of user actions and online status.
-- **Item Numbering**: Automatic generation of P-format item numbers (P-000001, P-000002, etc.) with mass update capability.
+- **Item Numbering**: Automatic generation of P-format item numbers with mass update capability.
+- **Permissions Management**: Flexible, checkbox-based permissions system allowing granular control over view, create, edit, and delete operations for various sections.
+- **Profile Image System**: Displays profile images with fallback to user initials, with a file upload system supporting drag-drop, size limits, and image formats.
+- **Deployment**: Comprehensive deployment packages for Windows RDP and Linux servers, including Docker Compose setup, automated deployment scripts, and GitHub integration with CI/CD pipelines.
 
 ### Feature Specifications
-- **Quotation Management**: Full lifecycle from request to completion with accurate data import from Excel.
+- **Quotation Management**: Full lifecycle from request to completion with accurate data import from Excel, following a unified workflow with stages like pending, sent_for_pricing, pricing_received, customer_pricing, quoted, and completed.
 - **Item Catalog**: AI-enhanced item management with intelligent duplicate detection, focusing on part number normalization, description similarity, and keyword extraction without external AI dependencies.
 - **Purchase Order Processing**: Integration with the quotation system, including robust search capabilities and importing existing POs from Excel.
 - **User Management**: Role-based access and activity monitoring.
-- **Client & Supplier Management**: Functionality for adding, editing, and deleting clients and suppliers with proper foreign key constraint handling (soft delete logic).
-- **Data Import/Export**: IT admin-only functionality for importing quotation requests from .xlsx/.xls files (with dual header fix, data preview, and error handling) and exporting various system data to .xlsx.
-- **Customer Pricing**: Simplified interface for customer pricing without historical tables.
+- **Client & Supplier Management**: Functionality for adding, editing, and deleting clients and suppliers with soft delete logic.
+- **Data Import/Export**: IT admin-only functionality for importing quotation requests from .xlsx/.xls files (with dual header fix, data preview, and error handling) and exporting various system data to .xlsx. The Excel import system features complete data visibility, flexible part number requirements, enhanced table display, and auto-mapping intelligence.
+- **Customer Pricing**: Simplified interface for customer pricing without historical tables, integrated with supplier pricing for a comprehensive workflow.
+- **Database Backup**: Comprehensive backup system for IT administrators, generating executable SQL files for complete system restoration.
+- **RDP Server Integration**: System for deploying on Windows RDP servers with external network access, including SSH-based connection, network diagnostics, and webhook integration for GitHub updates.
 
 ## External Dependencies
 
@@ -63,123 +66,3 @@ Preferred communication style: Simple, everyday language.
 - **nanoid**: Unique ID generation.
 - **clsx**: Conditional class name utilities.
 - **XLSX**: For Excel file operations (import/export).
-
-## Recent Updates
-
-### Enhanced Excel Import System (2025-08-03)
-- **Complete Data Visibility**: Full scrollable preview showing ALL imported records (not just first 5) with vertical and horizontal scrollbars
-- **Flexible Part Number Requirements**: System now accepts items without Part Number - only requires LINE ITEM, Description, and Quantity > 0
-- **Enhanced Table Display**: 
-  - Complete text display for long descriptions with proper text wrapping
-  - All columns visible including Order Number (from Source File) and Quote Expiry Date (from Response Date)
-  - Color-coded columns with improved styling and hover effects
-  - Sticky headers for better navigation during scroll
-- **Auto-mapping Intelligence**: Recognizes real Excel column names and maps them automatically
-- **Data Integrity**: Exact copying without Fill Down logic - preserves Excel data as-is
-
-### Comprehensive Profile Image System (2025-08-03)
-- **UserAvatar Component**: Displays profile images with fallback to user initials in colored circles
-- **UserDisplayName Component**: Complete user information display with avatars, customizable layouts (horizontal/vertical)
-- **ProfileImageUploader Component**: File upload system with drag-drop support, 5MB limit, JPG/PNG/GIF support
-- **Object Storage Integration**: Secure cloud storage for profile images with public access URLs
-- **System-wide Implementation**: Profile images appear in:
-  - User management tables (Admin page)
-  - Sidebar user information
-  - Activity logs (Dashboard and Admin pages)
-  - Online users list (Dashboard)
-  - All user references throughout the system
-- **Fallback System**: Automatic display of user initials when no profile image is available
-
-### Role-Based Access Control Enhancement (2025-08-03)
-- **New Accounting Role**: Added "موظف حسابات" (Accounting Staff) role with specific permissions
-- **Accounting Permissions**: 
-  - Read-only access to quotations, purchase orders, and all pricing information
-  - Access to reports and dashboard for financial oversight
-  - Cannot create, edit, or delete any records (view-only permissions)
-  - Full access to client and supplier information for accounting purposes
-- **System-wide Integration**: Accounting role appears in all user interfaces, forms, and permission checks
-- **Database Schema**: Updated user role definitions to include accounting role
-
-### Complete Database Backup System (2025-08-04)
-- **Full Database Export**: Comprehensive backup system for IT administrators
-- **Complete Data Coverage**: Exports all tables with real data including:
-  - Users (without passwords for security)
-  - Clients and suppliers with full details
-  - Items with part numbers, descriptions, and specifications
-  - Quotation requests with their items and details
-  - Purchase orders with their items and pricing
-  - Supplier pricing and quotes
-  - Complete activity log (1000+ records)
-- **SQL Format**: Generates executable SQL file for complete system restoration
-- **Security Features**: Activity logging, role-based access (IT admin only), security warnings
-- **Production Ready**: Designed for server deployment with comprehensive deployment guide
-
-### Complete Mobile Responsive Design (2025-08-04)
-- **Mobile-First Layout**: Fully responsive design optimized for smartphones and tablets
-- **Collapsible Sidebar**: Mobile-friendly navigation with hamburger menu and overlay
-- **Touch-Optimized Interface**: Improved button sizes and touch targets for mobile devices
-- **Responsive Components**: 
-  - Header with mobile menu button (lg:hidden)
-  - Sidebar transforms from fixed desktop to sliding mobile menu
-  - Automatic padding and margin adjustments for different screen sizes
-  - Mobile-optimized user interface elements
-- **Cross-Device Compatibility**: Consistent experience across desktop, tablet, and mobile devices
-- **RTL Mobile Support**: Proper right-to-left layout maintained on all device sizes
-
-### Flexible Permissions Management System (2025-08-04)
-- **Checkbox-Based Permissions**: Replaced fixed roles with flexible permission system using checkboxes
-- **Granular Permission Control**: Detailed permissions for each section (view, create, edit, delete)
-- **PermissionsManager Component**: Interactive interface for managing user permissions with real-time preview
-- **Database Schema Update**: Added permissions column to users table for storing custom permissions as JSON
-- **Backward Compatibility**: Maintains support for existing role-based system while enabling new flexible permissions
-- **Permission Categories**: Organized permissions by functional areas (quotations, items, clients, suppliers, etc.)
-- **User Permission Interface**: Admin can now assign specific permissions to users instead of predefined roles
-- **Role-Based Defaults**: Each role has default permissions that can be customized per user
-
-### Unified Quotation Workflow System (2025-08-04)
-- **Consistent Workflow**: Excel-imported quotations now follow the same workflow as manually entered ones
-- **Enhanced Status System**: Added new workflow stages: pending → sent_for_pricing → pricing_received → customer_pricing → quoted → completed
-- **Import Consistency**: All Excel imports start with "pending" status to ensure proper workflow progression
-- **Visual Status Indicators**: Color-coded status badges with distinct colors for each workflow stage
-- **Workflow Documentation**: Created comprehensive workflow guide explaining the unified process
-- **Status Update System**: Enhanced status update modal with descriptions for each workflow stage
-- **Role-Based Workflow**: Different roles can advance quotations through appropriate workflow stages
-
-### Integrated Pricing System Enhancement (2025-08-04)
-- **Dual Pricing Pages**: Both supplier and customer pricing pages show same items simultaneously for comprehensive workflow
-- **Automatic Expiry Management**: Items automatically disappear from pricing screens when quotation expires
-- **Supplier Pricing Navigation**: Added "تسعير الموردين" to sidebar navigation with proper permissions
-- **Synchronized Workflow**: Items requiring pricing appear in both pages to enable parallel supplier and customer pricing preparation
-- **Complete Pricing Guide**: Created comprehensive guide explaining the integrated pricing system behavior and benefits
-
-### Production Deployment Package (2025-08-05)
-- **Comprehensive Deployment Guides**: Complete documentation for external server deployment including Windows RDP and Linux servers
-- **Docker Support**: Full Docker Compose setup with PostgreSQL, Nginx reverse proxy, and application containerization
-- **Automated Deployment Script**: `deploy.sh` script for one-command deployment with environment setup and validation
-- **Production Configuration**: Environment templates, database test scripts, and production-ready package.json configurations
-- **Multiple Deployment Options**: Traditional server deployment, Docker containers, PM2 process management, and systemd services
-- **Security and Monitoring**: Nginx configuration, SSL setup, firewall rules, automated backups, and performance monitoring guides
-- **External Server Ready**: Complete package for deploying outside Replit with all necessary files, configurations, and documentation
-
-### GitHub Repository Setup (2025-08-05)
-- **Professional Repository Structure**: Complete GitHub setup with README, LICENSE, CONTRIBUTING, and SECURITY documentation
-- **Automated CI/CD Pipeline**: GitHub Actions workflow for testing, building, and security scanning
-- **Issue and PR Templates**: Professional templates for bug reports, feature requests, and pull requests in Arabic and English
-- **RDP Server Deployment**: Specialized deployment package for Windows RDP servers with automated setup scripts
-- **One-Click Deployment**: `SETUP_RDP_SERVER.bat` and `DEPLOY_FROM_GITHUB.bat` for automated server setup and GitHub deployment
-- **Management Scripts**: Complete server management utilities for start, stop, restart, backup, and monitoring operations
-- **Production Ready**: Full documentation and scripts for deploying from GitHub to private RDP servers with all dependencies
-
-### One-Click Windows Deployment (2025-08-05)
-- **Ultimate Simplicity**: Single `ULTRA_SIMPLE_DEPLOY.bat` file that handles everything automatically from start to finish
-- **Direct Download Installation**: Downloads Node.js, Git, PostgreSQL directly from official sources, bypassing Chocolatey issues
-- **Smart PostgreSQL Detection**: Automatically detects existing PostgreSQL installations (versions 13-16) and reuses them
-- **Complete Automation**: Full setup including database creation, user management, and application deployment
-- **Desktop Integration**: Creates Arabic desktop shortcuts for system management (open, status, restart)
-- **Comprehensive Management Tools**: 
-  - `CHECK_SYSTEM.bat` - Complete system health check with automatic fixes
-  - `BACKUP_SYSTEM.bat` - Full backup system with compression and restore scripts
-  - `START_SERVER.bat` - Quick server startup with dependency verification
-- **Production Ready**: Includes automatic startup, error handling, comprehensive logging, and fallback options
-- **User Friendly**: Arabic interface with clear progress indicators, detailed error messages, and success confirmations
-- **Complete Package**: Transforms any Windows machine into a fully functional Qortoba Supplies server in minutes
