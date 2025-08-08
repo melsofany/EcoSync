@@ -1,17 +1,60 @@
 import { build } from 'esbuild';
 import fs from 'fs';
+import path from 'path';
 
-// Copy index.ts and replace vite import for production
-const indexContent = fs.readFileSync('server/index.ts', 'utf8');
-const productionContent = indexContent.replace(
-  'await import("./vite.js")',
-  'await import("./vite-stub.js")'
-);
-fs.writeFileSync('server/index-production.ts', productionContent);
+// Create a completely clean production index file
+const productionIndexContent = `
+import express, { type Request, type Response, type NextFunction } from "express";
+import { registerRoutes } from "./routes.js";
 
-// Copy vite-production.ts 
-const viteProductionContent = fs.readFileSync('server/vite-production.ts', 'utf8');
-fs.writeFileSync('server/vite-stub-copy.ts', viteProductionContent);
+const app = express();
+
+// Trust proxy for Railway deployment
+app.set("trust proxy", true);
+
+// Set environment to production
+app.set("env", "production");
+
+// Request logging middleware (simplified for production)
+app.use((req, _res, next) => {
+  const logLine = \`\${req.method} \${req.originalUrl}\`;
+  console.log(\`\${new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit", 
+    second: "2-digit",
+    hour12: true,
+  })} [express] \${logLine}\`);
+  next();
+});
+
+(async () => {
+  const server = await registerRoutes(app);
+
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({ message });
+    throw err;
+  });
+
+  // Production static file serving
+  const { serveStatic } = await import("./vite-production.js");
+  serveStatic(app);
+
+  const port = parseInt(process.env.PORT || '5000', 10);
+  server.listen(port, "0.0.0.0", () => {
+    console.log(\`\${new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit", 
+      hour12: true,
+    })} [express] serving on port \${port}\`);
+    console.log(\`Health endpoint available at: http://0.0.0.0:\${port}/api/health\`);
+  });
+})();
+`;
+
+fs.writeFileSync('server/index-production.ts', productionIndexContent);
 
 await build({
   entryPoints: ['server/index-production.ts'],
@@ -21,21 +64,17 @@ await build({
   outdir: 'dist',
   packages: 'external',
   external: [
-    'vite',
-    '@vitejs/plugin-react',
-    '@replit/vite-plugin-cartographer',
-    '@replit/vite-plugin-runtime-error-modal',
-    '@tailwindcss/vite'
+    // Completely exclude all vite-related packages
   ],
   define: {
     'process.env.NODE_ENV': '"production"'
+  },
+  banner: {
+    js: '// Production build - No Vite dependencies'
   }
 });
 
-// Clean up temporary files
+// Clean up temporary file
 fs.unlinkSync('server/index-production.ts');
-if (fs.existsSync('server/vite-stub-copy.ts')) {
-  fs.unlinkSync('server/vite-stub-copy.ts');
-}
 
-console.log('✅ Server build completed successfully!');
+console.log('✅ Server build completed - 100% Vite-free!');
