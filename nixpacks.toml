@@ -5,7 +5,7 @@ nixPkgs = ['nodejs_20', 'npm']
 cmds = ['npm ci']
 
 [phases.build]
-cmds = ['npm run build']
+cmds = ['vite build', 'node esbuild.config.js']
 
 [start]
 cmd = 'npm run start'
