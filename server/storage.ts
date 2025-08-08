@@ -243,10 +243,20 @@ export class DatabaseStorage implements IStorage {
 
   async getPasswordResetToken(token: string): Promise<{ userId: string; email: string; expiresAt: Date; used: boolean } | undefined> {
     const [resetToken] = await db
-      .select()
+      .select({
+        userId: passwordResetTokens.userId,
+        email: passwordResetTokens.email,
+        expiresAt: passwordResetTokens.expiresAt,
+        used: passwordResetTokens.used,
+      })
       .from(passwordResetTokens)
       .where(eq(passwordResetTokens.token, token));
-    return resetToken || undefined;
+    return resetToken ? {
+      userId: resetToken.userId,
+      email: resetToken.email,
+      expiresAt: resetToken.expiresAt,
+      used: resetToken.used ?? false,
+    } : undefined;
   }
 
   async markPasswordResetTokenUsed(token: string): Promise<void> {
@@ -431,10 +441,7 @@ export class DatabaseStorage implements IStorage {
     return item || undefined;
   }
 
-  async getItemById(id: string): Promise<Item | undefined> {
-    const [item] = await db.select().from(items).where(eq(items.id, id));
-    return item || undefined;
-  }
+
 
   async deleteItem(id: string): Promise<void> {
     // First delete related quotation items to avoid foreign key constraint violation
@@ -634,10 +641,7 @@ export class DatabaseStorage implements IStorage {
     return supplier || undefined;
   }
 
-  async getSupplierById(id: string): Promise<Supplier | undefined> {
-    const [supplier] = await db.select().from(suppliers).where(eq(suppliers.id, id));
-    return supplier || undefined;
-  }
+
 
   async updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier | undefined> {
     const [supplier] = await db
@@ -653,17 +657,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(suppliers).where(eq(suppliers.id, id));
   }
 
-  async createPurchaseOrder(poData: InsertPurchaseOrder): Promise<PurchaseOrder> {
-    const poNumber = await this.getNextPONumber();
-    const [po] = await db
-      .insert(purchaseOrders)
-      .values({
-        ...poData,
-        poNumber,
-      })
-      .returning();
-    return po;
-  }
+
 
   async getAllPurchaseOrders(): Promise<PurchaseOrder[]> {
     return await db.select().from(purchaseOrders).orderBy(desc(purchaseOrders.createdAt));
@@ -671,20 +665,20 @@ export class DatabaseStorage implements IStorage {
 
 
 
-  async getNextItemNumber(): Promise<string> {
-    const [lastItem] = await db
-      .select({ itemNumber: items.itemNumber })
-      .from(items)
-      .orderBy(desc(items.itemNumber))
+  async getNextPONumber(): Promise<string> {
+    const [lastPO] = await db
+      .select({ poNumber: purchaseOrders.poNumber })
+      .from(purchaseOrders)
+      .orderBy(desc(purchaseOrders.poNumber))
       .limit(1);
     
-    if (lastItem?.itemNumber) {
-      const lastNumber = parseInt(lastItem.itemNumber.replace('ELEK', ''));
-      const nextNumber = (lastNumber + 1).toString().padStart(8, '0');
-      return `ELEK${nextNumber}`;
+    if (lastPO?.poNumber) {
+      const lastNumber = parseInt(lastPO.poNumber.replace('PO-', ''));
+      const nextNumber = (lastNumber + 1).toString().padStart(6, '0');
+      return `PO-${nextNumber}`;
     }
     
-    return 'ELEK00000001';
+    return 'PO-000001';
   }
 
   async getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined> {
@@ -759,6 +753,18 @@ export class DatabaseStorage implements IStorage {
 
   async getAllQuotations(): Promise<any[]> {
     return await db.select().from(quotationRequests);
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getAllItems(): Promise<Item[]> {
+    return await db.select().from(items).orderBy(desc(items.createdAt));
+  }
+
+  async getAllClients(): Promise<Client[]> {
+    return await db.select().from(clients).orderBy(desc(clients.createdAt));
   }
 
 
@@ -1268,7 +1274,7 @@ export class DatabaseStorage implements IStorage {
       .from(purchaseOrderItems)
       .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
       .innerJoin(items, eq(purchaseOrderItems.itemId, items.id))
-      .where(eq(items.lineItem, lineItem))
+      .where(eq(items.lineItem, lineItem!))
       .orderBy(desc(purchaseOrders.poDate));
 
     return purchaseOrderData;
