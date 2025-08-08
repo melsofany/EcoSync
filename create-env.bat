@@ -14,8 +14,8 @@ if exist ".env" (
     )
 )
 
-echo DATABASE_URL=postgresql://qortoba_user:QortobaPass123!@localhost:5432/qortoba_supplies > .env
-echo SESSION_SECRET=qortoba-super-secret-session-key-2025-make-this-very-long-and-random >> .env
+echo DATABASE_URL=postgresql://YOUR_DB_USER:YOUR_DB_PASSWORD@localhost:5432/qortoba_supplies > .env
+echo SESSION_SECRET=YOUR_SECURE_SESSION_SECRET_HERE >> .env
 echo NODE_ENV=production >> .env
 echo PORT=5000 >> .env
 echo. >> .env
@@ -25,7 +25,9 @@ echo # DEEPSEEK_API_KEY=your_api_key_here >> .env
 echo.
 echo [معلومات] تم إنشاء ملف .env بنجاح!
 echo [معلومات] يحتوي على الإعدادات الأساسية
-echo [تحذير] يرجى تغيير كلمة المرور وSESSION_SECRET للأمان
+echo [تحذير هام] يجب استبدال YOUR_DB_USER وYOUR_DB_PASSWORD ببيانات قاعدة البيانات الفعلية
+echo [تحذير هام] يجب استبدال YOUR_SECURE_SESSION_SECRET_HERE بمفتاح آمن طويل وعشوائي
+echo [أمان] لا تشارك هذه المعلومات أو تضعها في نظام التحكم بالإصدارات
 echo.
 echo محتويات الملف:
 echo ===============================================
