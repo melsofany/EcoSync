@@ -50,6 +50,7 @@ export const quotationRequests = pgTable("quotation_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   requestNumber: text("request_number").notNull().unique(),
   clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
+  clientName: text("client_name"), // Added for compatibility
   requestDate: text("request_date").notNull(), // Changed to text for easier form handling
   expiryDate: text("expiry_date"), // Changed to text for easier form handling
   status: text("status").default("pending"), // "pending", "sent_for_pricing", "pricing_received", "customer_pricing", "quoted", "completed", "cancelled"
@@ -85,6 +86,9 @@ export const quotationItems = pgTable("quotation_items", {
   quotationId: varchar("quotation_id").references(() => quotationRequests.id).notNull(),
   itemId: varchar("item_id").references(() => items.id).notNull(),
   quantity: decimal("quantity").notNull(),
+  description: text("description"), // Added for compatibility
+  lineItem: text("line_item"), // Added for compatibility
+  partNumber: text("part_number"), // Added for compatibility
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }),
   currency: text("currency").default("EGP"),
@@ -125,6 +129,9 @@ export const purchaseOrderItems = pgTable("purchase_order_items", {
   poId: varchar("po_id").references(() => purchaseOrders.id).notNull(),
   itemId: varchar("item_id").references(() => items.id).notNull(),
   quantity: decimal("quantity").notNull(),
+  description: text("description"), // Added for compatibility
+  lineItem: text("line_item"), // Added for compatibility
+  partNumber: text("part_number"), // Added for compatibility
   unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").default("EGP"),

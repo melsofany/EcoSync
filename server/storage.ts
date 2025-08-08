@@ -188,31 +188,29 @@ export class DatabaseStorage implements IStorage {
     
     // 3. Update quotation requests to remove user reference (set createdBy to null)
     await db.update(quotationRequests)
-      .set({ createdBy: null })
+      .set({ createdBy: sql`NULL` })
       .where(eq(quotationRequests.createdBy, id));
     
     // 4. Update clients to remove user reference (set createdBy to null)
     await db.update(clients)
-      .set({ createdBy: null })
+      .set({ createdBy: sql`NULL` })
       .where(eq(clients.createdBy, id));
     
     // 5. Update items to remove user reference (set createdBy to null)
     await db.update(items)
-      .set({ createdBy: null })
+      .set({ createdBy: sql`NULL` })
       .where(eq(items.createdBy, id));
     
     // 6. Update purchase orders to remove user reference (set createdBy to null)
     await db.update(purchaseOrders)
-      .set({ createdBy: null })
+      .set({ createdBy: sql`NULL` })
       .where(eq(purchaseOrders.createdBy, id));
     
     // 7. Finally delete the user
     await db.delete(users).where(eq(users.id, id));
   }
 
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users).orderBy(desc(users.createdAt));
-  }
+
 
   async updateUserOnlineStatus(id: string, isOnline: boolean, ipAddress?: string): Promise<void> {
     await db
@@ -267,9 +265,7 @@ export class DatabaseStorage implements IStorage {
     return client;
   }
 
-  async getAllClients(): Promise<Client[]> {
-    return await db.select().from(clients).orderBy(desc(clients.createdAt));
-  }
+
 
   async getClient(id: string): Promise<Client | undefined> {
     const [client] = await db.select().from(clients).where(eq(clients.id, id));
@@ -423,9 +419,7 @@ export class DatabaseStorage implements IStorage {
     return item;
   }
 
-  async getAllItems(): Promise<Item[]> {
-    return await db.select().from(items).orderBy(desc(items.createdAt));
-  }
+
 
   async getItemCount(): Promise<number> {
     const result = await db.select().from(items);
@@ -675,21 +669,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(purchaseOrders).orderBy(desc(purchaseOrders.createdAt));
   }
 
-  async getNextPONumber(): Promise<string> {
-    const [lastPO] = await db
-      .select({ poNumber: purchaseOrders.poNumber })
-      .from(purchaseOrders)
-      .orderBy(desc(purchaseOrders.poNumber))
-      .limit(1);
-    
-    if (lastPO?.poNumber) {
-      const lastNumber = parseInt(lastPO.poNumber.replace('PO', ''));
-      const nextNumber = (lastNumber + 1).toString().padStart(6, '0');
-      return `PO${nextNumber}`;
-    }
-    
-    return 'PO000001';
-  }
+
 
   async getNextItemNumber(): Promise<string> {
     const [lastItem] = await db
@@ -771,7 +751,7 @@ export class DatabaseStorage implements IStorage {
     return activity;
   }
 
-  async getClientByName(name: string): Promise<SelectClient | null> {
+  async getClientByName(name: string): Promise<Client | null> {
     if (!name) return null;
     const results = await db.select().from(clients).where(eq(clients.name, name)).limit(1);
     return results.length > 0 ? results[0] : null;
@@ -781,34 +761,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(quotationRequests);
   }
 
-  async getAllItems(): Promise<any[]> {
-    return await db.select().from(items);
-  }
 
-  async getAllPurchaseOrders(): Promise<any[]> {
-    return await db.select().from(purchaseOrders);
-  }
-
-  async getAllClients(): Promise<any[]> {
-    return await db.select().from(clients);
-  }
-
-  async getAllSuppliers(): Promise<any[]> {
-    return await db.select().from(suppliers);
-  }
-
-  async getAllUsers(): Promise<any[]> {
-    return await db.select().from(users);
-  }
-
-  async addItemToQuotation(quotationId: string, itemData: { itemId: string; quantity: number; lineNumber: number }): Promise<void> {
-    await db.insert(quotationItems).values({
-      quotationId,
-      itemId: itemData.itemId,
-      quantity: itemData.quantity.toString(),
-      lineNumber: itemData.lineNumber
-    });
-  }
 
   async getActivities(limit: number = 50): Promise<any[]> {
     const result = await db
@@ -1486,8 +1439,8 @@ export class DatabaseStorage implements IStorage {
     console.log('Getting comprehensive historical data for LINE ITEM:', lineItem);
 
     try {
-      // Get quotation data with client information using this.db
-      const quotationData = await this.db
+      // Get quotation data with client information using db
+      const quotationData = await db
         .select({
           clientName: quotationRequests.clientName,
           kItemId: quotationItems.itemId,
@@ -1512,8 +1465,8 @@ export class DatabaseStorage implements IStorage {
         .where(eq(quotationItems.lineItem, lineItem))
         .orderBy(desc(quotationRequests.requestDate));
 
-      // Get purchase order data using this.db
-      const purchaseOrderData = await this.db
+      // Get purchase order data using db
+      const purchaseOrderData = await db
         .select({
           clientName: sql<string>`'Internal Order'`,
           kItemId: purchaseOrderItems.itemId,
