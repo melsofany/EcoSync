@@ -68,16 +68,13 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  server.listen(port, "0.0.0.0", () => {
     console.log(`${new Date().toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       second: "2-digit", 
       hour12: true,
     })} [express] serving on port ${port}`);
+    console.log(`Health endpoint available at: http://0.0.0.0:${port}/api/health`);
   });
 })();
