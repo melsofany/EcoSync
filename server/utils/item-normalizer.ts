@@ -3,6 +3,8 @@
  * تحويل الأسماء المختلفة لنفس البند إلى معرف موحد
  */
 
+import { sql } from 'drizzle-orm';
+
 /**
  * توحيد رقم القطعة بإزالة المسافات والرموز الإضافية
  * @param partNumber رقم القطعة الأصلي
@@ -62,7 +64,7 @@ export function findSimilarItems(normalizedId: string): string[] {
     similar.push(`${parts[0]}_${parts[1]}`);
   }
   
-  return [...new Set(similar)]; // إزالة التكرارات
+  return Array.from(new Set(similar)); // إزالة التكرارات
 }
 
 /**
