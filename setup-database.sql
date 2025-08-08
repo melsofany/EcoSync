@@ -44,4 +44,4 @@ SELECT 'Database qortoba_supplies created successfully' AS status;
 SELECT 'User qortoba_user created with full privileges' AS status;
 
 -- عرض معلومات الاتصال
-SELECT 'Connection string: postgresql://qortoba_user:QortobaPass2025!@localhost:5432/qortoba_supplies' AS connection_info;
+SELECT 'Connection string format: postgresql://qortoba_user:<PASSWORD>@localhost:5432/qortoba_supplies' AS connection_info;
