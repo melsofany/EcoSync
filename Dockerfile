@@ -27,7 +27,6 @@ RUN npm run build
 
 # إزالة devDependencies بعد البناء لتوفير المساحة
 RUN npm prune --production
-RUN npm prune --production
 
 # إنشاء مستخدم غير root للأمان
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
