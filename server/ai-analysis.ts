@@ -21,7 +21,9 @@ async function main() {
     console.log('✅ تم العثور على مفتاح OpenAI API');
     
     // تشغيل التحليل الشامل
-    const result = await runComprehensiveItemAnalysis(storage.db, items, eq);
+    // Temporarily disable AI analysis
+    console.log('AI analysis temporarily disabled');
+    const result = { totalItems: 0, processedGroups: 0, totalMatches: 0 };
     
     console.log('\n📊 نتائج التحليل النهائية:');
     console.log(`📦 إجمالي البنود: ${result.totalItems}`);
@@ -31,7 +33,7 @@ async function main() {
     // إحصائيات بعد التحليل
     console.log('\n📈 إحصائيات ما بعد التحليل:');
     
-    const duplicateStats = await storage.db.execute(`
+    const duplicateStats: any[] = []; // await storage.db.execute(`
       SELECT 
         normalized_part_number,
         COUNT(*) as count,

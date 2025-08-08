@@ -306,9 +306,9 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
               <span>{analyzeMutation.isPending ? "جاري التحليل..." : "تحليل الملف"}</span>
             </Button>
             <Button
-              onClick={handleAutoImport}
-              disabled={!selectedFile || autoImportMutation.isPending}
-              className="flex items-center space-x-2 space-x-reverse bg-green-600 hover:bg-green-700"
+              onClick={() => {/* Auto import functionality disabled */}}
+              disabled={true}
+              className="flex items-center space-x-2 space-x-reverse bg-gray-400"
             >
               <Zap className="h-4 w-4" />
               <span>{autoImportMutation.isPending ? "جاري الاستيراد التلقائي..." : "🚀 استيراد تلقائي"}</span>

@@ -41,13 +41,14 @@ export default function ChangePassword() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
-      return apiRequest("/api/auth/change-password", {
+      const response = await apiRequest("/api/auth/change-password", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json",
         },
       });
+      return response;
     },
     onSuccess: (data) => {
       setSuccess(true);
