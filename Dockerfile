@@ -13,8 +13,8 @@ WORKDIR /app
 # نسخ ملفات package.json أولاً للاستفادة من Docker layer caching
 COPY package*.json ./
 
-# تثبيت التبعيات
-RUN npm ci --only=production && npm cache clean --force
+# تثبيت جميع التبعيات (شاملة devDependencies للبناء)
+RUN npm ci && npm cache clean --force
 
 # نسخ بقية ملفات المشروع
 COPY . .
@@ -24,6 +24,10 @@ RUN mkdir -p logs backup
 
 # بناء المشروع
 RUN npm run build
+
+# إزالة devDependencies بعد البناء لتوفير المساحة
+RUN npm prune --production
+RUN npm prune --production
 
 # إنشاء مستخدم غير root للأمان
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
