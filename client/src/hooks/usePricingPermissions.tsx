@@ -1,6 +1,6 @@
+import React from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { canViewPricing } from "../../../shared/permissions";
-import React from "react";
 
 // Hook لاستخدام صلاحيات الأسعار
 export const usePricingPermissions = () => {

@@ -114,17 +114,18 @@ export default function Sidebar({ isOpen }: SidebarProps) {
       )}>
         {/* Company Header */}
         <div className="p-4 lg:p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3 space-x-reverse">
-          <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-            {/* COMPANY LOGO: Place Al-Khedawi company logo here */}
-            <Building className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
-          </div>
-          {isOpen && (
-            <div>
-              <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام قرطبة</h2>
-              <p className="text-xs text-gray-500">للتوريدات</p>
+          <div className="flex items-center space-x-3 space-x-reverse">
+            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              {/* COMPANY LOGO: Place Al-Khedawi company logo here */}
+              <Building className="h-5 w-5 lg:h-6 lg:w-6 text-primary" />
             </div>
-          )}
+            {isOpen && (
+              <div>
+                <h2 className="font-bold text-gray-800 text-sm lg:text-base">نظام قرطبة</h2>
+                <p className="text-xs text-gray-500">للتوريدات</p>
+              </div>
+            )}
+          </div>
         </div>
         
         {/* User Info */}
