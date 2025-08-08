@@ -69,6 +69,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // Health check endpoint for Railway
+  app.get("/api/health", (req: Request, res: Response) => {
+    res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
+  });
+
   // Role-based access control
   const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
