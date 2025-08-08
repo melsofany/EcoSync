@@ -42,6 +42,18 @@ Preferred communication style: Simple, everyday language.
 - **Database Backup**: Comprehensive backup system for IT administrators, generating executable SQL files for complete system restoration.
 - **RDP Server Integration**: System for deploying on Windows RDP servers with external network access, including SSH-based connection, network diagnostics, and webhook integration for GitHub updates.
 
+## Security
+
+### Recent Security Fixes
+- **2025-01-08**: Fixed hardcoded credentials vulnerability in `ONE_CLICK_DEPLOY.bat`. Replaced hardcoded database passwords and session secrets with environment variables and interactive prompts. This addresses the static code analysis alert for "Username And Password In URI detected."
+
+### Security Measures
+- Environment variable-based credential management
+- Interactive password prompts for deployment scripts
+- Session-based authentication with bcrypt password hashing
+- Role-based access control with granular permissions
+- Comprehensive activity logging and monitoring
+
 ## External Dependencies
 
 ### Core Infrastructure
