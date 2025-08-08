@@ -29,7 +29,7 @@ Preferred communication style: Simple, everyday language.
 - **Item Numbering**: Automatic generation of P-format item numbers with mass update capability.
 - **Permissions Management**: Flexible, checkbox-based permissions system allowing granular control over view, create, edit, and delete operations for various sections.
 - **Profile Image System**: Displays profile images with fallback to user initials, with a file upload system supporting drag-drop, size limits, and image formats.
-- **Deployment**: Comprehensive deployment packages for Windows RDP and Linux servers, including Docker Compose setup, automated deployment scripts, and GitHub integration with CI/CD pipelines.
+- **Deployment**: Comprehensive deployment packages for Windows RDP, Linux servers, and Railway.app cloud deployment, including Docker Compose setup, automated deployment scripts, and GitHub integration with CI/CD pipelines.
 
 ### Feature Specifications
 - **Quotation Management**: Full lifecycle from request to completion with accurate data import from Excel, following a unified workflow with stages like pending, sent_for_pricing, pricing_received, customer_pricing, quoted, and completed.
@@ -45,9 +45,9 @@ Preferred communication style: Simple, everyday language.
 ## Security
 
 ### Recent Security Fixes
-- **2025-01-08**: Fixed hardcoded credentials vulnerability in `ONE_CLICK_DEPLOY.bat`. Replaced hardcoded database passwords and session secrets with environment variables and interactive prompts. This addresses the static code analysis alert for "Username And Password In URI detected."
-- **2025-01-08**: Resolved compilation errors and JSX syntax issues in SidebarOld.tsx and usePricingPermissions.tsx. Fixed missing div closures and converted TypeScript files with JSX to .tsx extension for proper React support.
-- **2025-01-08**: Applied npm audit fixes to address dependency vulnerabilities while maintaining application functionality. Updated security documentation with comprehensive fix details.
+- **2025-08-08**: Fixed hardcoded credentials vulnerability in `create-env.bat`. Replaced hardcoded database passwords and session secrets with placeholder values and environment variable prompts.
+- **2025-08-08**: Resolved Railway deployment Vite dependency issue. Created production-only static file serving (`server/vite-production.ts`) to eliminate Vite imports in production builds, ensuring clean deployment without development dependencies.
+- **2025-01-08**: Applied npm audit fixes to address dependency vulnerabilities while maintaining application functionality.
 
 ### Security Measures
 - Environment variable-based credential management
