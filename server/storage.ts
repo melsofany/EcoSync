@@ -859,9 +859,10 @@ export class DatabaseStorage implements IStorage {
       .values({
         quotationId: itemData.quotationId,
         itemId: itemData.itemId,
-        quantity: itemData.quantity,
-        unitPrice: itemData.unitPrice || '0',
-        totalPrice: itemData.totalPrice || '0'
+        quantity: Number(itemData.quantity),
+        unitPrice: Number(itemData.unitPrice || '0'),
+        totalPrice: Number(itemData.totalPrice || '0'),
+        currency: 'EGP'
       })
       .returning();
     return quotationItem;
@@ -1469,7 +1470,7 @@ export class DatabaseStorage implements IStorage {
       // Get quotation data with client information using db
       const quotationData = await db
         .select({
-          clientName: quotationRequests.clientName,
+          clientName: clients.name,
           kItemId: quotationItems.itemId,
           description: quotationItems.description,
           lineItem: quotationItems.lineItem,
@@ -1489,6 +1490,7 @@ export class DatabaseStorage implements IStorage {
         })
         .from(quotationItems)
         .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
         .where(eq(quotationItems.lineItem, lineItem))
         .orderBy(desc(quotationRequests.requestDate));
 
