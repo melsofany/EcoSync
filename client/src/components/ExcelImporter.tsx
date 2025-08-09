@@ -152,7 +152,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
   const confirmMutation = useMutation({
     mutationFn: async (previewData: PreviewData[]) => {
       const response = await apiRequest("POST", "/api/import/quotations/confirm", {
-        previewData
+        quotationData: previewData
       });
       return response.json();
     },

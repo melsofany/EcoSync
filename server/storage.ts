@@ -846,6 +846,27 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(supplierPricing.createdAt));
   }
 
+  // إنشاء بند طلب تسعير مباشر للاستيراد
+  async createQuotationItemDirect(itemData: {
+    quotationId: string;
+    itemId: string;
+    quantity: string;
+    unitPrice?: string;
+    totalPrice?: string;
+  }): Promise<any> {
+    const [quotationItem] = await db
+      .insert(quotationItems)
+      .values({
+        quotationId: itemData.quotationId,
+        itemId: itemData.itemId,
+        quantity: itemData.quantity,
+        unitPrice: itemData.unitPrice || '0',
+        totalPrice: itemData.totalPrice || '0'
+      })
+      .returning();
+    return quotationItem;
+  }
+
   async updateSupplierPricing(id: string, updates: Partial<SupplierPricing>): Promise<SupplierPricing | undefined> {
     const [pricing] = await db
       .update(supplierPricing)

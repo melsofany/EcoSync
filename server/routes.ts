@@ -1700,90 +1700,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  app.post("/api/import/quotations/confirm", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
-    try {
-      const { previewData } = req.body;
-      
-      if (!Array.isArray(previewData) || previewData.length === 0) {
-        return res.status(400).json({ message: "No data to import" });
-      }
-
-      let successCount = 0;
-      let errorCount = 0;
-      const errors: string[] = [];
-
-      for (const row of previewData) {
-        try {
-          // Create or find client
-          let client = await storage.getClientByName(row.clientName);
-          if (!client && row.clientName) {
-            const newClient = await storage.createClient({
-              name: row.clientName,
-              email: `${row.clientName.toLowerCase().replace(/\s+/g, '')}@example.com`,
-              phone: '',
-              address: ''
-            });
-            client = newClient;
-          }
-
-          // Create quotation request
-          const quotationData = {
-            clientId: client?.id || '',
-            requestDate: row.requestDate,
-            expiryDate: row.expiryDate,
-            customRequestNumber: row.customRequestNumber,
-            status: row.status as any,
-            createdBy: req.session.user!.id,
-            notes: `Imported from Excel - Price: ${row.priceToClient}`,
-          };
-
-          const quotation = await storage.createQuotationRequest(quotationData);
-
-          // Create item for this quotation
-          if (row.partNumber || row.description) {
-            const itemData = {
-              kItemId: `P-${Date.now()}-${successCount + 1}`,
-              partNumber: row.partNumber || '',
-              lineItem: row.lineItem || '',
-              description: row.description || '',
-              category: 'general',
-              unit: row.unit || 'Each',
-              createdBy: req.session.user!.id,
-              notes: `Imported from RFQ ${row.customRequestNumber}`
-            };
-
-            const item = await storage.createItem(itemData);
-
-            // Link item to quotation with price
-            await storage.addItemToQuotation(quotation.id, {
-              itemId: item.id,
-              quantity: row.quantity,
-              lineNumber: row.lineNumber || 0,
-              clientPrice: row.priceToClient // إضافة السعر للعميل
-            });
-          }
-
-          successCount++;
-        } catch (error) {
-          errorCount++;
-          errors.push(`Row ${row.rowIndex}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
-
-      await logActivity(req, "confirm_import", "quotations", req.session.user!.id, 
-        `Imported ${successCount} quotations successfully, ${errorCount} errors`);
-
-      res.json({
-        success: true,
-        imported: successCount,
-        errors: errorCount,
-        errorDetails: errors.slice(0, 10) // Limit error details
-      });
-    } catch (error) {
-      console.error("Error confirming import:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // تم حذف النسخة القديمة المكررة من endpoint confirm import
+  // النسخة الموحدة موجودة في السطر 2381
 
   // Supplier routes
   app.get("/api/suppliers", requireAuth, async (req: Request, res: Response) => {
@@ -2401,18 +2319,26 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             status: record.status || 'pending',
             clientName: record.clientName || 'غير محدد',
             notes: '',
-            // totalValue removed - not in schema
-            currency: record.currency || 'EGP'
+            createdBy: req.session.user!.id
+          });
+
+          // إنشاء العنصر أولاً
+          const item = await storage.createItem({
+            description: record.description || 'غير محدد',
+            unit: record.unit || 'Each',
+            createdBy: req.session.user!.id,
+            kItemId: `ITEM-${Date.now()}-${imported}`,
+            partNumber: record.partNumber || '',
+            lineItem: record.lineItem || ''
           });
 
           // إنشاء بند طلب التسعير
-          await storage.createQuotationItem({
+          await storage.createQuotationItemDirect({
             quotationId: quotationRequest.id,
-            itemId: '', // سيتم إنشاؤه أولاً
+            itemId: item.id,
             quantity: String(record.quantity || 0),
             unitPrice: String(record.unitPrice || 0),
-            totalPrice: String(record.totalPrice || 0),
-            currency: record.currency || 'EGP'
+            totalPrice: String(record.totalPrice || 0)
           });
 
           imported++;
