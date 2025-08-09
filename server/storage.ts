@@ -1318,10 +1318,10 @@ export class DatabaseStorage implements IStorage {
       
       console.log(`🎯 Excel-style filter for part: ${partNumber}`);
 
-      // Direct SQL that exactly mimics Excel AutoFilter on Part Number column
-      const result = await db.execute(sql`
+      // Simple Excel filter: RFQ records + PO records for same part number
+      const rfqRecords = await db.execute(sql`
         SELECT DISTINCT
-          'Combined' as record_type,
+          'RFQ' as record_type,
           COALESCE(c.name, 'EDC') as client_name,
           i.item_number as item_id,
           i.description,
@@ -1329,33 +1329,56 @@ export class DatabaseStorage implements IStorage {
           COALESCE(i.part_number, '') as part_no,
           COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
           qr.request_date as rfq_date,
-          CASE 
-            WHEN po.id IS NOT NULL THEN NULL  -- Empty quantity for PO rows
-            ELSE qi.quantity 
-          END as rfq_qty,
+          qi.quantity as rfq_qty,
           COALESCE(qr.expiry_date::text, '') as res_date,
           COALESCE(qi.unit_price::text, '') as customer_price,
-          COALESCE(po.po_number, '') as po_number,
-          COALESCE(po.po_date::text, '') as po_date,
-          COALESCE(poi.quantity::text, '') as po_quantity,
-          COALESCE(poi.unit_price::text, '') as po_price,
-          COALESCE((poi.quantity * poi.unit_price)::text, '') as po_total,
+          '' as po_number,
+          '' as po_date,
+          '' as po_quantity,
+          '' as po_price,
+          '' as po_total,
           COALESCE(i.category, 'ELEC') as category,
           COALESCE(i.unit, 'Each') as uom
         FROM items i
-        LEFT JOIN quotation_items qi ON i.id = qi.item_id
-        LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id
+        JOIN quotation_items qi ON i.id = qi.item_id
+        JOIN quotation_requests qr ON qi.quotation_id = qr.id
         LEFT JOIN clients c ON qr.client_id = c.id
-        LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
-        LEFT JOIN purchase_orders po ON poi.po_id = po.id
         WHERE REPLACE(LOWER(COALESCE(i.part_number, '')), ' ', '') = LOWER(${cleanPartNumber})
-        AND (qi.id IS NOT NULL OR poi.id IS NOT NULL)  -- Must have RFQ or PO data
-        ORDER BY 
-          CASE WHEN qr.request_date IS NOT NULL THEN qr.request_date ELSE '1900-01-01'::date END DESC,
-          CASE WHEN po.po_date IS NOT NULL THEN po.po_date ELSE '1900-01-01'::date END DESC
+        ORDER BY qr.request_date DESC
       `);
 
-      console.log(`✅ Excel filter returned ${result.length} records`);
+      const poRecords = await db.execute(sql`
+        SELECT DISTINCT
+          'PO' as record_type,
+          'EDC' as client_name,
+          i.item_number as item_id,
+          i.description,
+          COALESCE(i.line_item, '') as line_item,
+          COALESCE(i.part_number, '') as part_no,
+          '' as rfq_number,
+          NULL as rfq_date,
+          NULL as rfq_qty,
+          '' as res_date,
+          '' as customer_price,
+          COALESCE(po.po_number, '') as po_number,
+          po.po_date::text as po_date,
+          poi.quantity::text as po_quantity,
+          poi.unit_price::text as po_price,
+          (poi.quantity * poi.unit_price)::text as po_total,
+          COALESCE(i.category, 'ELEC') as category,
+          COALESCE(i.unit, 'Each') as uom
+        FROM items i
+        JOIN purchase_order_items poi ON i.id = poi.item_id
+        JOIN purchase_orders po ON poi.po_id = po.id
+        WHERE REPLACE(LOWER(COALESCE(i.part_number, '')), ' ', '') = LOWER(${cleanPartNumber})
+        ORDER BY po.po_date DESC
+      `);
+
+      const result = [...rfqRecords, ...poRecords];
+
+      console.log(`✅ RFQ Records: ${rfqRecords.length}, PO Records: ${poRecords.length}`);
+      console.log(`📊 Total Excel filter result: ${result.length} records`);
+      
       return result;
       
     } catch (error) {
