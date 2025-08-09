@@ -122,22 +122,54 @@ export default function CreatePurchaseOrder() {
     }
   }, [useCustomPONumber]);
 
-  // Initialize PO items when quotation items are loaded
+  // When quotation is selected, keep PO items empty initially for manual selection
   React.useEffect(() => {
-    if (quotationItems && Array.isArray(quotationItems)) {
-      const items: POItem[] = quotationItems.map((item: any) => ({
-        itemId: item.itemId, // Always use itemId from quotation_items table
-        quotationItemId: item.id, // Track original quotation item
-        quantity: item.quantity || 1,
-        originalQuantity: item.quantity || 1,
-        remainingQuantity: item.quantity || 1, // Initially all quantity is remaining
-        unitPrice: item.unitPrice || 0,
-        totalPrice: (item.quantity || 1) * (item.unitPrice || 0),
-        notes: ""
-      }));
-      setPOItems(items);
+    if (selectedQuotationId && quotationItems) {
+      // Start with empty PO items, let user select which items to include
+      setPOItems([]);
+    } else {
+      setPOItems([]);
     }
-  }, [quotationItems]);
+  }, [selectedQuotationId, quotationItems]);
+
+  // Function to add an item to the PO
+  const addItemToPO = (quotationItem: any) => {
+    const existingItem = poItems.find(item => item.itemId === quotationItem.itemId);
+    if (existingItem) {
+      toast({
+        title: "البند موجود بالفعل",
+        description: "هذا البند مضاف بالفعل لأمر الشراء",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newPOItem = {
+      itemId: quotationItem.itemId,
+      quotationItemId: quotationItem.id,
+      quantity: quotationItem.quantity || 1,
+      originalQuantity: quotationItem.quantity || 1,
+      remainingQuantity: quotationItem.quantity || 1,
+      unitPrice: quotationItem.unitPrice || quotationItem.supplierPricing?.unitPrice ? parseFloat(quotationItem.supplierPricing.unitPrice) : 0,
+      totalPrice: (quotationItem.quantity || 1) * (quotationItem.unitPrice || quotationItem.supplierPricing?.unitPrice ? parseFloat(quotationItem.supplierPricing.unitPrice) : 0),
+      notes: "",
+    };
+    
+    setPOItems(prev => [...prev, newPOItem]);
+    toast({
+      title: "تم إضافة البند",
+      description: "تم إضافة البند لأمر الشراء بنجاح",
+    });
+  };
+
+  // Function to remove an item from PO
+  const removeItemFromPO = (itemId: string) => {
+    setPOItems(prev => prev.filter(item => item.itemId !== itemId));
+    toast({
+      title: "تم حذف البند",
+      description: "تم حذف البند من أمر الشراء",
+    });
+  };
 
   // Update item in PO
   const updatePOItem = (index: number, field: keyof POItem, value: any) => {
@@ -442,14 +474,141 @@ export default function CreatePurchaseOrder() {
 
               <Separator className="my-4" />
 
+              {/* Available Items Selection */}
+              <div className="space-y-4 mb-6">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  اختيار البنود من طلب التسعير
+                </h4>
+                
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h5 className="font-medium text-blue-800">البنود المتاحة في طلب التسعير ({quotationItems?.length || 0})</h5>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          quotationItems?.forEach((item: any) => {
+                            if (!poItems.some(poItem => poItem.itemId === item.itemId)) {
+                              addItemToPO(item);
+                            }
+                          });
+                        }}
+                        disabled={quotationItems?.length === 0 || poItems.length === quotationItems?.length}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <Plus className="h-4 w-4 ml-1" />
+                        إضافة جميع البنود
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setPOItems([]);
+                          toast({
+                            title: "تم إزالة جميع البنود",
+                            description: "تم إزالة جميع البنود من أمر الشراء",
+                          });
+                        }}
+                        disabled={poItems.length === 0}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        إزالة الكل
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-right">رقم الصنف / LINE ITEM</TableHead>
+                          <TableHead className="text-right">وصف البند</TableHead>
+                          <TableHead className="text-right">الكمية المطلوبة</TableHead>
+                          <TableHead className="text-right">السعر المتوقع</TableHead>
+                          <TableHead className="text-right">الإجراء</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {quotationItems?.map((quotationItem: any) => {
+                          const isAdded = poItems.some(item => item.itemId === quotationItem.itemId);
+                          return (
+                            <TableRow key={quotationItem.id}>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <p className="text-xs text-green-600 font-medium">رقم البند: {quotationItem.itemNumber || "غير محدد"}</p>
+                                  <p className="text-sm font-mono text-blue-600 font-semibold" dir="ltr">
+                                    {quotationItem.lineItem || "غير محدد"}
+                                  </p>
+                                  <p className="text-xs text-purple-600">PART NO: {quotationItem.partNumber || "غير محدد"}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="space-y-1">
+                                  <p className="font-semibold text-gray-900">{quotationItem.description || "وصف البند"}</p>
+                                  <p className="text-xs text-gray-500">الوحدة: {quotationItem.unit || "Each"}</p>
+                                  {quotationItem.category && (
+                                    <p className="text-xs text-gray-500">الفئة: {quotationItem.category}</p>
+                                  )}
+                                  {quotationItem.brand && (
+                                    <p className="text-xs text-gray-500">الماركة: {quotationItem.brand}</p>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <span className="font-semibold text-blue-600">{quotationItem.quantity || 1}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="font-semibold text-green-600">
+                                  {quotationItem.unitPrice ? formatCurrency(quotationItem.unitPrice) : 
+                                   quotationItem.supplierPricing?.unitPrice ? formatCurrency(parseFloat(quotationItem.supplierPricing.unitPrice)) : 
+                                   "غير محدد"}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                {isAdded ? (
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="default" className="text-xs">مضاف</Badge>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => removeItemFromPO(quotationItem.itemId)}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      إزالة
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addItemToPO(quotationItem)}
+                                    className="text-green-600 hover:text-green-800"
+                                  >
+                                    <Plus className="h-4 w-4 ml-1" />
+                                    إضافة
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="my-4" />
+
               {/* PO Items */}
               <div className="space-y-4">
                 <h4 className="font-semibold flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
-                  بنود أمر الشراء
+                  بنود أمر الشراء المحددة ({poItems.length})
                 </h4>
                 
-                {quotationItems && quotationItems.length > 0 ? (
+                {poItems.length > 0 ? (
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
@@ -588,9 +747,10 @@ export default function CreatePurchaseOrder() {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>لا توجد بنود في طلب التسعير المحدد</p>
-                    <p className="text-sm mt-2">اختر طلب تسعير يحتوي على بنود لإنشاء أمر الشراء</p>
+                    <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>لم يتم تحديد أي بنود لأمر الشراء</p>
+                    <p className="text-sm mt-2">استخدم القسم أعلاه لاختيار البنود التي تريد إضافتها لأمر الشراء</p>
+                    <p className="text-xs mt-1 text-blue-600">يمكن إصدار أمر الشراء لبند واحد أو أكثر من البنود المتاحة</p>
                   </div>
                 )}
 
