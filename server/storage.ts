@@ -645,6 +645,10 @@ export class DatabaseStorage implements IStorage {
     return supplier || undefined;
   }
 
+  async getSupplierById(id: string): Promise<Supplier | undefined> {
+    return this.getSupplier(id);
+  }
+
 
 
   async updateSupplier(id: string, updates: Partial<Supplier>): Promise<Supplier | undefined> {
