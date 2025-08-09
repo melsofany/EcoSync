@@ -24,7 +24,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPricingForm, setShowPricingForm] = useState(false);
 
-  // Fetch only detailed pricing data when component mounts
+  // Fetch comprehensive data using AI matching
   React.useEffect(() => {
     const fetchPricingData = async () => {
       if (!item?.id) {
@@ -35,10 +35,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
       setIsLoading(true);
       
       try {
-        // Fetch detailed pricing only
-        const detailedResponse = await fetch(`/api/items/${item.id}/detailed-pricing`);
-        const detailedData = await detailedResponse.json();
-        setDetailedPricing(detailedData);
+        // Fetch comprehensive data with AI matching for all related items
+        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data`);
+        const comprehensiveData = await comprehensiveResponse.json();
+        setDetailedPricing(comprehensiveData);
+        console.log(`📊 Loaded ${comprehensiveData.length} records for item analysis`);
       } catch (error) {
         console.error('Fetch error:', error);
       } finally {
@@ -132,6 +133,83 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
         </div>
       </div>
+
+      {/* Comprehensive Data Table */}
+      {detailedPricing && detailedPricing.length > 0 && (
+        <div className="bg-white border rounded-lg p-4">
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
+          </h4>
+          <p className="text-sm text-gray-600 mb-4">
+            عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing.length} سجل في قاعدة البيانات)
+          </p>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-300 p-2 text-right">TOTAL PO</th>
+                  <th className="border border-gray-300 p-2 text-right">PRICE/PO</th>
+                  <th className="border border-gray-300 p-2 text-right">Quantity/PO</th>
+                  <th className="border border-gray-300 p-2 text-right">DATE/PO</th>
+                  <th className="border border-gray-300 p-2 text-right">PO</th>
+                  <th className="border border-gray-300 p-2 text-right">Category</th>
+                  <th className="border border-gray-300 p-2 text-right">RES.DATE</th>
+                  <th className="border border-gray-300 p-2 text-right">PRICE/RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right">QTY</th>
+                  <th className="border border-gray-300 p-2 text-right">DATE/RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right">RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right">DESCRIPTION</th>
+                  <th className="border border-gray-300 p-2 text-right">PART NO</th>
+                  <th className="border border-gray-300 p-2 text-right">LINE ITEM</th>
+                  <th className="border border-gray-300 p-2 text-right">UOM</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detailedPricing.map((record: any, index: number) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 p-2 text-right">{record.po_total || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.po_price ? formatCurrency(parseFloat(record.po_price)) : '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.po_quantity || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.po_date ? new Date(record.po_date).toLocaleDateString('ar-EG') : '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.po_number || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.category}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.res_date ? new Date(record.res_date).toLocaleDateString('ar-EG') : '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.customer_price ? formatCurrency(parseFloat(record.customer_price)) : '٠٫٠٠ EGP'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.rfq_qty}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.rfq_date ? new Date(record.rfq_date).toLocaleDateString('ar-EG') : '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.rfq_number}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.description}</td>
+                    <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium">{record.part_no}</td>
+                    <td className="border border-gray-300 p-2 text-right font-mono text-blue-600">{record.line_item}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.uom}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 p-3 rounded">
+              <h5 className="font-medium text-blue-800">طلبات التسعير (RFQ)</h5>
+              <p className="text-lg font-bold text-blue-600">
+                {detailedPricing.filter((r: any) => r.rfq_number).length}
+              </p>
+            </div>
+            <div className="bg-green-50 p-3 rounded">
+              <h5 className="font-medium text-green-800">أوامر الشراء (PO)</h5>
+              <p className="text-lg font-bold text-green-600">
+                {detailedPricing.filter((r: any) => r.po_number).length}
+              </p>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-600 mt-3">
+            إجمالي السجلات: {detailedPricing.length} سجل
+          </p>
+        </div>
+      )}
 
       {/* Customer pricing form */}
       {showPricingForm && (

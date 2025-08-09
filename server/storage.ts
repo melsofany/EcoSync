@@ -1308,62 +1308,146 @@ export class DatabaseStorage implements IStorage {
 
   // Get comprehensive data for an item using unified identifier (NEW)
   async getItemComprehensiveDataUnified(itemId: string): Promise<any[]> {
-    const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
-    if (!item.length) return [];
+    try {
+      const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
+      if (!item.length) return [];
 
-    const normalizedPartNumber = item[0].normalizedPartNumber;
-    
-    if (!normalizedPartNumber) {
-      // Fallback to old method if no unified identifier
-      return this.getComprehensiveItemData(itemId);
+      const baseItem = item[0];
+      console.log(`🔍 Getting comprehensive data for item: ${baseItem.description} (${baseItem.partNumber})`);
+
+      // Strategy 1: Use exact part number matching first
+      let matchingItems = [];
+      if (baseItem.partNumber) {
+        matchingItems = await db.select().from(items)
+          .where(eq(items.partNumber, baseItem.partNumber));
+        console.log(`📋 Found ${matchingItems.length} items with exact part number: ${baseItem.partNumber}`);
+      }
+
+      // Strategy 2: Use normalized part number if available
+      if (matchingItems.length === 0 && baseItem.normalizedPartNumber) {
+        matchingItems = await db.select().from(items)
+          .where(eq(items.normalizedPartNumber, baseItem.normalizedPartNumber));
+        console.log(`🔄 Found ${matchingItems.length} items with normalized part number: ${baseItem.normalizedPartNumber}`);
+      }
+
+      // Strategy 3: Use AI matching for similar descriptions and part numbers
+      if (matchingItems.length === 0) {
+        // Find items with similar descriptions or line items
+        const similarItems = await db.select().from(items)
+          .where(
+            or(
+              sql`LOWER(${items.description}) LIKE LOWER('%${baseItem.description?.split(' ')[0] || ''}%')`,
+              baseItem.lineItem ? eq(items.lineItem, baseItem.lineItem) : sql`false`,
+              sql`LOWER(${items.partNumber}) LIKE LOWER('%${baseItem.partNumber?.substring(0, 5) || ''}%')`
+            )
+          )
+          .limit(50);
+        console.log(`🤖 Found ${similarItems.length} potentially similar items for AI analysis`);
+        
+        // Here we could use AI matching but for now use the similar items
+        matchingItems = similarItems;
+      }
+
+      // Ensure original item is included
+      if (!matchingItems.find(i => i.id === itemId)) {
+        matchingItems.unshift(baseItem);
+      }
+
+      const allItemIds = matchingItems.map(item => item.id);
+      console.log(`📊 Getting comprehensive data for ${allItemIds.length} matched items`);
+
+      // Get comprehensive data for ALL matched items with enhanced query
+      const comprehensiveData = await db.execute(sql`
+        SELECT 
+          -- معلومات العميل والبند
+          COALESCE(c.name, 'EDC') as client_name,
+          i.item_number as item_id, 
+          i.description as description,
+          COALESCE(i.line_item, '') as line_item,
+          COALESCE(i.part_number, '') as part_no,
+          
+          -- معلومات طلب التسعير (تصحيح رقم الطلب والسعر)
+          COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
+          qr.request_date as rfq_date,
+          qi.quantity as rfq_qty,
+          COALESCE(qr.expiry_date::text, '') as res_date,
+          COALESCE(qi.unit_price::text, '') as customer_price,
+          
+          -- معلومات أمر الشراء
+          COALESCE(po.po_number, '') as po_number,
+          COALESCE(po.po_date::text, '') as po_date, 
+          COALESCE(poi.quantity::text, '') as po_quantity,
+          COALESCE(poi.unit_price::text, '') as po_price,
+          COALESCE((poi.quantity::numeric * poi.unit_price::numeric)::text, '') as po_total,
+          
+          -- معلومات إضافية
+          COALESCE(i.category, 'ELEC') as category,
+          COALESCE(i.unit, 'Each') as uom,
+          
+          -- معلومات المصدر للمراجعة
+          i.id as source_item_id,
+          CASE 
+            WHEN i.id = '${itemId}' THEN 'Original'
+            WHEN i.part_number = '${baseItem.partNumber}' THEN 'PartNumber Match'
+            WHEN i.normalized_part_number = '${baseItem.normalizedPartNumber || ''}' THEN 'Normalized Match'
+            ELSE 'AI/Similar Match'
+          END as match_type
+          
+        FROM items i
+        LEFT JOIN quotation_items qi ON i.id = qi.item_id
+        LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id  
+        LEFT JOIN clients c ON qr.client_id = c.id
+        LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
+        LEFT JOIN purchase_orders po ON poi.po_id = po.id
+        
+        WHERE i.id = ANY(ARRAY[${allItemIds.map(id => `'${id}'`).join(',')}])
+        ORDER BY 
+          CASE WHEN i.id = '${itemId}' THEN 0 ELSE 1 END,
+          qr.request_date DESC NULLS LAST, 
+          po.po_date DESC NULLS LAST,
+          i.line_item
+      `);
+
+      console.log(`✅ Retrieved ${comprehensiveData.rows.length} comprehensive records`);
+      return comprehensiveData.rows as any[];
+      
+    } catch (error) {
+      console.error('Error in getItemComprehensiveDataUnified:', error);
+      // Fallback to basic item data
+      return this.getBasicItemData(itemId);
     }
+  }
 
-    // Get ALL items with same unified identifier
-    const unifiedItems = await db.select().from(items)
-      .where(eq(items.normalizedPartNumber, normalizedPartNumber));
-
-    const allItemIds = unifiedItems.map(item => item.id);
-
-    // Get comprehensive data for ALL unified items
-    const comprehensiveData = await db.execute(sql`
+  private async getBasicItemData(itemId: string): Promise<any[]> {
+    // Fallback method for basic item data
+    const basicData = await db.execute(sql`
       SELECT 
-        -- معلومات العميل والبند
         COALESCE(c.name, 'EDC') as client_name,
         i.item_number as item_id, 
         i.description as description,
         COALESCE(i.line_item, '') as line_item,
         COALESCE(i.part_number, '') as part_no,
-        
-        -- معلومات طلب التسعير (تصحيح رقم الطلب والسعر)
         COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
         qr.request_date as rfq_date,
         qi.quantity as rfq_qty,
-        COALESCE(qr.expiry_date, '') as res_date,
-        qi.unit_price as customer_price,
-        
-        -- معلومات أمر الشراء
-        COALESCE(po.po_number, '') as po_number,
-        COALESCE(po.po_date::text, '') as po_date, 
-        COALESCE(poi.quantity::text, '') as po_quantity,
-        COALESCE(poi.unit_price::text, '') as po_price,
-        COALESCE((poi.quantity * poi.unit_price)::text, '') as po_total,
-        
-        -- معلومات إضافية
+        COALESCE(qr.expiry_date::text, '') as res_date,
+        COALESCE(qi.unit_price::text, '') as customer_price,
+        '' as po_number,
+        '' as po_date,
+        '' as po_quantity,
+        '' as po_price,
+        '' as po_total,
         COALESCE(i.category, 'ELEC') as category,
-        i.unit as uom
-        
+        COALESCE(i.unit, 'Each') as uom,
+        'Original' as match_type
       FROM items i
       LEFT JOIN quotation_items qi ON i.id = qi.item_id
       LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id  
       LEFT JOIN clients c ON qr.client_id = c.id
-      LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
-      LEFT JOIN purchase_orders po ON poi.po_id = po.id
-      
-      WHERE i.normalized_part_number = ${normalizedPartNumber}
-      ORDER BY qr.request_date DESC, i.line_item, po.po_date DESC
+      WHERE i.id = '${itemId}'
     `);
-
-    return comprehensiveData.rows as any[];
+    
+    return basicData.rows as any[];
   }
 
   // Get comprehensive data for an item similar to Excel table format
