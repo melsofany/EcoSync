@@ -1749,18 +1749,20 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             client = newClient;
           }
 
-          // Create quotation request
+          // Create quotation request  
+          console.log(`📝 Creating quotation for client: ${row.clientName}, client_id: ${client?.id}`);
           const quotationData = {
             clientId: client?.id || '',
-            requestDate: row.requestDate,
-            expiryDate: row.expiryDate,
-            customRequestNumber: row.customRequestNumber,
-            status: row.status as any,
+            requestDate: new Date(row.requestDate || new Date()),
+            expiryDate: new Date(row.expiryDate || new Date()),
+            customRequestNumber: row.customRequestNumber || `RFQ-${Date.now()}`,
+            status: (row.status as any) || 'pending',
             createdBy: req.session.user!.id,
-            notes: `Imported from Excel - Price: ${row.priceToClient}`,
+            notes: `Imported from Excel - Client: ${row.clientName}`,
           };
 
           const quotation = await storage.createQuotationRequest(quotationData);
+          console.log(`✅ Created quotation with ID: ${quotation.id}, Number: ${quotation.requestNumber}`);
 
           // Create item for this quotation
           if (row.partNumber || row.description) {
