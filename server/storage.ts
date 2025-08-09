@@ -314,6 +314,9 @@ export class DatabaseStorage implements IStorage {
 
   async createQuotationRequest(requestData: InsertQuotationRequest): Promise<QuotationRequest> {
     const requestNumber = await this.getNextRequestNumber();
+    console.log(`💾 Inserting quotation with requestNumber: ${requestNumber}`);
+    console.log(`💾 Data:`, JSON.stringify(requestData, null, 2));
+    
     const [quotation] = await db
       .insert(quotationRequests)
       .values({
@@ -321,6 +324,8 @@ export class DatabaseStorage implements IStorage {
         requestNumber,
       })
       .returning();
+    
+    console.log(`✅ Database returned quotation:`, JSON.stringify(quotation, null, 2));
     return quotation;
   }
 
