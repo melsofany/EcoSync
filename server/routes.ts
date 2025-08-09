@@ -1702,17 +1702,40 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
   app.post("/api/import/quotations/confirm", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
-      const { previewData } = req.body;
+      const { previewData, quotationData } = req.body;
       
-      if (!Array.isArray(previewData) || previewData.length === 0) {
-        return res.status(400).json({ message: "No data to import" });
+      console.log("Confirm import request body keys:", Object.keys(req.body));
+      console.log("previewData type:", typeof previewData, "length:", Array.isArray(previewData) ? previewData.length : 'not array');
+      console.log("quotationData type:", typeof quotationData, "length:", Array.isArray(quotationData) ? quotationData.length : 'not array');
+      
+      // Try both previewData and quotationData for backward compatibility
+      const dataToImport = previewData || quotationData;
+      
+      if (!dataToImport) {
+        console.log("❌ No import data provided in request body");
+        return res.status(400).json({ message: "بيانات الاستيراد مطلوبة" });
       }
+      
+      if (!Array.isArray(dataToImport)) {
+        console.log("❌ Import data is not an array:", typeof dataToImport);
+        return res.status(400).json({ message: "تنسيق بيانات الاستيراد غير صحيح" });
+      }
+      
+      if (dataToImport.length === 0) {
+        console.log("❌ Empty import data array");
+        return res.status(400).json({ message: "لا توجد بيانات للاستيراد" });
+      }
+      
+      console.log(`✅ Processing ${dataToImport.length} rows for import`);
+      
+      // Use dataToImport instead of previewData
+      const importRows = dataToImport;
 
       let successCount = 0;
       let errorCount = 0;
       const errors: string[] = [];
 
-      for (const row of previewData) {
+      for (const row of importRows) {
         try {
           // Create or find client
           let client = await storage.getClientByName(row.clientName);

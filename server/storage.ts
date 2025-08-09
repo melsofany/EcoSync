@@ -282,6 +282,8 @@ export class DatabaseStorage implements IStorage {
     return client || undefined;
   }
 
+
+
   async getClientById(id: string): Promise<Client | undefined> {
     const [client] = await db.select().from(clients).where(eq(clients.id, id));
     return client || undefined;
@@ -753,10 +755,10 @@ export class DatabaseStorage implements IStorage {
     return activity;
   }
 
-  async getClientByName(name: string): Promise<Client | null> {
-    if (!name) return null;
+  async getClientByName(name: string): Promise<Client | undefined> {
+    if (!name) return undefined;
     const results = await db.select().from(clients).where(eq(clients.name, name)).limit(1);
-    return results.length > 0 ? results[0] : null;
+    return results.length > 0 ? results[0] : undefined;
   }
 
   async getAllQuotations(): Promise<any[]> {
