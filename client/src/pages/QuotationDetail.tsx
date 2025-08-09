@@ -59,8 +59,17 @@ export default function QuotationDetail() {
   const quotationId = params.id;
   const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
   const [isStatusUpdateModalOpen, setIsStatusUpdateModalOpen] = useState(false);
+  const [isEditQuotationModalOpen, setIsEditQuotationModalOpen] = useState(false);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<QuotationItem | null>(null);
   const [aiAnalysisResult, setAiAnalysisResult] = useState<any>(null);
+  
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    responsibleEmployee: "",
+    requestDate: "",
+    expiryDate: "",
+    notes: ""
+  });
 
   // Fetch quotation data
   const { data: quotation, isLoading } = useQuery({
@@ -215,6 +224,38 @@ export default function QuotationDetail() {
     return client?.name || "غير محدد";
   };
 
+  // Update quotation info mutation
+  const updateQuotationMutation = useMutation({
+    mutationFn: async (data: {
+      responsibleEmployee: string;
+      requestDate: string;
+      expiryDate: string;
+      notes: string;
+    }) => {
+      await apiRequest("PATCH", `/api/quotations/${quotationId}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/quotations", quotationId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
+      setIsEditQuotationModalOpen(false);
+      toast({
+        title: "تم حفظ التعديلات",
+        description: "تم تحديث معلومات طلب التسعير بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في حفظ التعديلات",
+        description: error.message || "حدث خطأ أثناء حفظ التعديلات",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveQuotationEdit = () => {
+    updateQuotationMutation.mutate(editForm);
+  };
+
   const calculateTotalAmount = () => {
     if (!quotationItems || !Array.isArray(quotationItems)) return 0;
     return quotationItems.reduce((total: number, item: QuotationItem) => {
@@ -266,8 +307,26 @@ export default function QuotationDetail() {
           </div>
         </div>
         <div className="flex items-center space-x-3 space-x-reverse">
-          {hasRole(safeUser, ["manager", "data_entry"]) && (
+          {hasRole(safeUser, ["manager", "data_entry", "it_admin"]) && (
             <>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  // Initialize form with current values
+                  const q = quotation as any;
+                  setEditForm({
+                    responsibleEmployee: q?.responsibleEmployee || "",
+                    requestDate: q?.requestDate ? new Date(q.requestDate).toISOString().split('T')[0] : "",
+                    expiryDate: q?.expiryDate ? new Date(q.expiryDate).toISOString().split('T')[0] : "",
+                    notes: q?.notes || ""
+                  });
+                  setIsEditQuotationModalOpen(true);
+                }}
+                className="flex items-center space-x-2 space-x-reverse text-green-600 hover:text-green-800"
+              >
+                <Edit className="h-4 w-4" />
+                <span>تعديل معلومات الطلب</span>
+              </Button>
               <Button
                 variant="outline"
                 onClick={() => setIsStatusUpdateModalOpen(true)}
@@ -499,6 +558,16 @@ export default function QuotationDetail() {
         currentStatus={(quotation as any)?.status}
         onUpdateStatus={(status) => updateQuotationStatusMutation.mutate({ status })}
         isUpdating={updateQuotationStatusMutation.isPending}
+      />
+
+      {/* Edit Quotation Modal */}
+      <EditQuotationModal
+        isOpen={isEditQuotationModalOpen}
+        onClose={() => setIsEditQuotationModalOpen(false)}
+        editForm={editForm}
+        setEditForm={setEditForm}
+        onSave={handleSaveQuotationEdit}
+        isSaving={updateQuotationMutation.isPending}
       />
     </div>
   );
@@ -802,6 +871,96 @@ function StatusUpdateModal({ isOpen, onClose, currentStatus, onUpdateStatus, isU
                 <>
                   <Save className="h-4 w-4 ml-2" />
                   تحديث الحالة
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Edit Quotation Modal Component
+interface EditQuotationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  editForm: {
+    responsibleEmployee: string;
+    requestDate: string;
+    expiryDate: string;
+    notes: string;
+  };
+  setEditForm: React.Dispatch<React.SetStateAction<{
+    responsibleEmployee: string;
+    requestDate: string;
+    expiryDate: string;
+    notes: string;
+  }>>;
+  onSave: () => void;
+  isSaving: boolean;
+}
+
+function EditQuotationModal({ isOpen, onClose, editForm, setEditForm, onSave, isSaving }: EditQuotationModalProps) {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg" dir="rtl">
+        <DialogHeader>
+          <DialogTitle>تعديل معلومات طلب التسعير</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4 mt-6">
+          <div>
+            <Label>الموظف المسؤول</Label>
+            <Input
+              value={editForm.responsibleEmployee}
+              onChange={(e) => setEditForm(prev => ({...prev, responsibleEmployee: e.target.value}))}
+              placeholder="اسم الموظف المسؤول"
+            />
+          </div>
+
+          <div>
+            <Label>تاريخ الطلب</Label>
+            <Input
+              type="date"
+              value={editForm.requestDate}
+              onChange={(e) => setEditForm(prev => ({...prev, requestDate: e.target.value}))}
+            />
+          </div>
+
+          <div>
+            <Label>تاريخ انتهاء العرض</Label>
+            <Input
+              type="date"
+              value={editForm.expiryDate}
+              onChange={(e) => setEditForm(prev => ({...prev, expiryDate: e.target.value}))}
+            />
+          </div>
+
+          <div>
+            <Label>ملاحظات</Label>
+            <Textarea
+              value={editForm.notes}
+              onChange={(e) => setEditForm(prev => ({...prev, notes: e.target.value}))}
+              placeholder="أي ملاحظات إضافية..."
+              rows={3}
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 space-x-reverse pt-4 border-t">
+            <Button variant="outline" onClick={onClose} disabled={isSaving}>
+              إلغاء
+            </Button>
+            <Button onClick={onSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner ml-2"></div>
+                  جاري الحفظ...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 ml-2" />
+                  حفظ التعديلات
                 </>
               )}
             </Button>

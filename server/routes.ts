@@ -495,13 +495,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/quotations/:id", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
+  app.patch("/api/quotations/:id", requireAuth, requireRole(["data_entry", "manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { status } = req.body;
+      const { status, responsibleEmployee, requestDate, expiryDate, notes } = req.body;
       
-      const quotation = await storage.updateQuotationRequest(id, { status });
-      await logActivity(req, "update_quotation", "quotation", id, `Updated quotation status to: ${status}`);
+      // Create update object with only provided fields
+      const updateData: any = {};
+      if (status !== undefined) updateData.status = status;
+      if (responsibleEmployee !== undefined) updateData.responsibleEmployee = responsibleEmployee;
+      if (requestDate !== undefined) updateData.requestDate = new Date(requestDate);
+      if (expiryDate !== undefined) updateData.expiryDate = new Date(expiryDate);
+      if (notes !== undefined) updateData.notes = notes;
+      
+      const quotation = await storage.updateQuotationRequest(id, updateData);
+      
+      // Log activity with appropriate message
+      const updateFields = Object.keys(updateData).join(', ');
+      await logActivity(req, "update_quotation", "quotation", id, `Updated quotation fields: ${updateFields}`);
 
       res.json(quotation);
     } catch (error) {
