@@ -554,7 +554,6 @@ export default function CreatePurchaseOrder() {
                                   <Input
                                     type="number"
                                     min="1"
-                                    max={poItem.originalQuantity}
                                     value={poItem.quantity || ""}
                                     onChange={(e) =>
                                       updatePOItem(index, "quantity", Number(e.target.value) || 1)
@@ -564,8 +563,8 @@ export default function CreatePurchaseOrder() {
                                     required
                                   />
                                   <div className="text-xs text-gray-600">
-                                    <p>المطلوب: {poItem.originalQuantity || 1}</p>
-                                    <p>المتبقي: {(poItem.originalQuantity || 1) - (poItem.quantity || 0)}</p>
+                                    <p>المطلوب أصلاً: {poItem.originalQuantity || 1}</p>
+                                    <p className="text-blue-600">يمكن طلب أي كمية (حتى أكبر من المطلوب)</p>
                                   </div>
                                 </div>
                               </TableCell>
