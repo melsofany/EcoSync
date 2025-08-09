@@ -45,6 +45,7 @@ Preferred communication style: Simple, everyday language.
 ## Security
 
 ### Recent Security Fixes
+- **2025-08-09**: Successfully resolved critical HTTP 400 error in Excel import confirmation system. Fixed database schema inconsistencies by adding missing columns (description, line_item, part_number) to quotation_items table via direct SQL migration. Excel import system now fully functional with complete data persistence and client auto-creation.
 - **2025-08-08**: Completed Railway deployment with full security fixes: hardcoded credentials removed, Vite production issues resolved, healthcheck endpoint added, and complete database migration (4 users, 1,539 quotations, 1,559 items, 257 purchase orders) successfully deployed.
 - **2025-08-08**: Resolved Railway deployment Vite dependency issue. Created production-only static file serving (`server/vite-production.ts`) to eliminate Vite imports in production builds, ensuring clean deployment without development dependencies.
 - **2025-01-08**: Applied npm audit fixes to address dependency vulnerabilities while maintaining application functionality.

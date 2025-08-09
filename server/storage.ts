@@ -859,9 +859,9 @@ export class DatabaseStorage implements IStorage {
       .values({
         quotationId: itemData.quotationId,
         itemId: itemData.itemId,
-        quantity: Number(itemData.quantity),
-        unitPrice: Number(itemData.unitPrice || '0'),
-        totalPrice: Number(itemData.totalPrice || '0'),
+        quantity: itemData.quantity,
+        unitPrice: itemData.unitPrice || '0',
+        totalPrice: itemData.totalPrice || '0',
         currency: 'EGP'
       })
       .returning();
