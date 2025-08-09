@@ -62,7 +62,12 @@ export default function Quotations() {
 
   // Edit quotation function
   const handleEditQuotation = (quotationId: string) => {
-    setLocation(`/quotations/${quotationId}/edit`);
+    toast({
+      title: "التعديل غير متاح حالياً",
+      description: "سيتم إضافة إمكانية تعديل طلبات التسعير قريباً",
+      variant: "default",
+    });
+    // setLocation(`/quotations/${quotationId}/edit`);
   };
 
   // Delete quotation function
@@ -258,7 +263,7 @@ export default function Quotations() {
                       <TableCell>{getStatusBadge(quotation.status)}</TableCell>
                       <TableCell>{quotation.responsibleEmployee || "غير محدد"}</TableCell>
                       <TableCell>
-                        <div className="flex items-center space-x-2 space-x-reverse">
+                        <div className="flex items-center gap-2">
                           <Button 
                             variant="ghost" 
                             size="sm"
@@ -282,12 +287,14 @@ export default function Quotations() {
                           
                           {user && hasRole(user, ["manager", "data_entry"]) && (
                             <Button 
-                              variant="ghost" 
+                              variant="outline" 
                               size="sm"
                               onClick={() => handleEditQuotation(quotation.id)}
-                              title="تعديل"
+                              title="تعديل الطلب"
+                              className="text-blue-600 hover:text-blue-800 border-blue-200 hover:bg-blue-50"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-4 w-4 ml-1" />
+                              تعديل
                             </Button>
                           )}
                           
@@ -295,12 +302,13 @@ export default function Quotations() {
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button 
-                                  variant="ghost" 
+                                  variant="outline" 
                                   size="sm" 
-                                  className="text-red-600 hover:text-red-800"
-                                  title="حذف"
+                                  className="text-red-600 hover:text-red-800 border-red-200 hover:bg-red-50"
+                                  title="حذف الطلب"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-4 w-4 ml-1" />
+                                  حذف
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent dir="rtl">
