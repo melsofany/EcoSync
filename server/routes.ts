@@ -2251,14 +2251,30 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const excelColumns = Object.keys(excelData[0]);
       console.log("📋 Available columns:", excelColumns);
       
-      // الخطوة 2: المطابقة التلقائية
-      const mapping = autoMapExcelColumns(excelColumns);
-      console.log("🤖 Column mapping:", mapping);
+      // الخطوة 2: المطابقة التلقائية الذكية
+      const { autoMapColumns } = await import('./utils/excel-auto-mapper.js');
+      const mappingResult = autoMapColumns(excelColumns);
+      console.log("🤖 Auto-mapping result:", mappingResult);
       
       // الخطوة 3: معالجة البيانات
-      const processedData = excelData.map((row: any, index: number) => 
-        processExcelRowForQuotation(row, mapping, index)
-      );
+      const processedData = excelData.map((row: any, index: number) => {
+        const mapping = mappingResult.columnMapping;
+        return {
+          rowIndex: index + 1,
+          lineItem: row[mapping.lineItem] || `${index + 1}`,
+          partNumber: row[mapping.partNumber] || '',
+          description: row[mapping.description] || 'غير محدد',
+          quantity: Number(row[mapping.quantity]) || 1,
+          unit: row[mapping.unit] || 'Each',
+          requestDate: row[mapping.requestDate] || new Date().toISOString().split('T')[0],
+          expiryDate: row[mapping.expiryDate] || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          clientName: row[mapping.clientName] || 'غير محدد',
+          customRequestNumber: row[mapping.rfqNumber] || `AUTO-${Date.now()}-${index}`,
+          unitPrice: Number(row[mapping.unitPrice]) || 0,
+          totalPrice: (Number(row[mapping.quantity]) || 1) * (Number(row[mapping.unitPrice]) || 0),
+          status: 'pending'
+        };
+      });
 
       // فلترة البيانات الصالحة - السماح بالبنود بدون رقم قطعة
       const validData = processedData.filter((row, index) => {
@@ -2276,7 +2292,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
       console.log(`✅ Processed ${processedData.length} rows, ${validData.length} valid`);
       
-      const confidence = Math.round((Object.keys(mapping).length / 10) * 100);
+      const confidence = mappingResult.confidence;
       
       await logActivity(req, "auto_import", "quotations", req.session.user!.id, 
         `Auto-imported ${validData.length} quotation records`);
@@ -2285,7 +2301,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         previewData: validData,
         totalRows: validData.length,
         confidence,
-        mapping,
+        mapping: mappingResult.columnMapping,
         message: `تم استيراد ${validData.length} سجل تلقائياً`
       });
 
