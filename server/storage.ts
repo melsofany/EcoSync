@@ -1315,50 +1315,31 @@ export class DatabaseStorage implements IStorage {
       const baseItem = item[0];
       console.log(`🔍 Getting comprehensive data for item: ${baseItem.description} (${baseItem.partNumber})`);
 
-      // Strategy 1: Use exact part number matching first (handle spaces)
-      let matchingItems = [];
+      // Focus on specific item data rather than similar items to get accurate count
+      console.log(`🎯 Getting data specifically for item ID: ${itemId}`);
+      
+      // Only get data for this specific item to avoid data multiplication
+      const matchingItems = [baseItem];
+      console.log(`📋 Processing single item: ${baseItem.description} (${baseItem.partNumber})`);
+      
+      // Additionally, get items with EXACT part number match only (for true duplicates)
       if (baseItem.partNumber) {
-        // Clean part number by removing spaces and try exact match
         const cleanPartNumber = baseItem.partNumber.replace(/\s+/g, '');
-        matchingItems = await db.select().from(items)
+        const exactMatches = await db.select().from(items)
           .where(
-            or(
-              eq(items.partNumber, baseItem.partNumber),
-              sql`REPLACE(${items.partNumber}, ' ', '') = ${cleanPartNumber}`,
-              sql`REPLACE(${items.partNumber}, ' ', '') ILIKE ${cleanPartNumber}`
+            and(
+              or(
+                eq(items.partNumber, baseItem.partNumber),
+                sql`REPLACE(${items.partNumber}, ' ', '') = ${cleanPartNumber}`
+              ),
+              sql`${items.id} != ${itemId}` // Exclude the original item
             )
           );
-        console.log(`📋 Found ${matchingItems.length} items with part number variations of: ${baseItem.partNumber}`);
-      }
-
-      // Strategy 2: Use normalized part number if available
-      if (matchingItems.length === 0 && baseItem.normalizedPartNumber) {
-        matchingItems = await db.select().from(items)
-          .where(eq(items.normalizedPartNumber, baseItem.normalizedPartNumber));
-        console.log(`🔄 Found ${matchingItems.length} items with normalized part number: ${baseItem.normalizedPartNumber}`);
-      }
-
-      // Strategy 3: Use AI matching for similar descriptions and part numbers
-      if (matchingItems.length === 0) {
-        // Find items with similar descriptions or line items
-        const similarItems = await db.select().from(items)
-          .where(
-            or(
-              sql`LOWER(${items.description}) LIKE LOWER('%${baseItem.description?.split(' ')[0] || ''}%')`,
-              baseItem.lineItem ? eq(items.lineItem, baseItem.lineItem) : sql`false`,
-              sql`LOWER(${items.partNumber}) LIKE LOWER('%${baseItem.partNumber?.substring(0, 5) || ''}%')`
-            )
-          )
-          .limit(50);
-        console.log(`🤖 Found ${similarItems.length} potentially similar items for AI analysis`);
         
-        // Here we could use AI matching but for now use the similar items
-        matchingItems = similarItems;
-      }
-
-      // Ensure original item is included
-      if (!matchingItems.find(i => i.id === itemId)) {
-        matchingItems.unshift(baseItem);
+        if (exactMatches.length > 0) {
+          console.log(`🔍 Found ${exactMatches.length} exact part number matches`);
+          matchingItems.push(...exactMatches);
+        }
       }
 
       const allItemIds = matchingItems.map(item => item.id);
@@ -1454,15 +1435,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   private removeDuplicateRecords(records: any[]): any[] {
-    // Group records by RFQ number and PO number to remove duplicates
+    // Remove duplicate combinations of RFQ and PO for the same logical record
     const uniqueMap = new Map<string, any>();
     
     records.forEach(record => {
-      // Create a unique key based on RFQ, item, and PO
+      // Create a more specific unique key
       const rfqKey = record.rfq_number || 'no-rfq';
       const poKey = record.po_number || 'no-po';
-      const itemKey = record.part_no || record.description?.substring(0, 20) || 'no-item';
-      const uniqueKey = `${rfqKey}_${itemKey}_${poKey}`;
+      const dateKey = record.rfq_date || 'no-date';
+      
+      // If both RFQ and PO are empty, skip to avoid empty rows
+      if (rfqKey === 'no-rfq' && poKey === 'no-po') {
+        return;
+      }
+      
+      const uniqueKey = `${rfqKey}_${dateKey}_${poKey}`;
       
       // Keep the record with the most complete data
       if (!uniqueMap.has(uniqueKey) || this.isMoreComplete(record, uniqueMap.get(uniqueKey))) {
@@ -1470,8 +1457,11 @@ export class DatabaseStorage implements IStorage {
       }
     });
     
+    const result = Array.from(uniqueMap.values());
+    console.log(`📊 Unique records after deduplication: ${result.length}`);
+    
     // Sort by RFQ date (newest first), then by PO date
-    return Array.from(uniqueMap.values()).sort((a, b) => {
+    return result.sort((a, b) => {
       const dateA = new Date(a.rfq_date || 0);
       const dateB = new Date(b.rfq_date || 0);
       if (dateA.getTime() !== dateB.getTime()) {
