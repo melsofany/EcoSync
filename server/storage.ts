@@ -441,6 +441,10 @@ export class DatabaseStorage implements IStorage {
     return item || undefined;
   }
 
+  async getItemById(id: string): Promise<Item | undefined> {
+    return this.getItem(id);
+  }
+
 
 
   async deleteItem(id: string): Promise<void> {
