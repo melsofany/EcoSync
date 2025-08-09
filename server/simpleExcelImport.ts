@@ -9,9 +9,9 @@ export function autoMapExcelColumns(excelColumns: string[]): Record<string, stri
     description: ['Description', 'DESCRIPTION', 'description', 'DESC', 'desc'],
     quantity: ['Quantity', 'QUANTITY', 'quantity', 'QTY', 'qty', 'Qty'],
     unit: ['uom', 'UOM', 'Unit', 'UNIT', 'unit'],
-    requestDate: ['Request Date', 'REQUEST DATE', 'request date', 'RFQ Date'],
+    requestDate: ['Request Date', 'REQUEST DATE', 'request date', 'RFQ Date', 'Date', 'DATE', 'date', 'تاريخ الطلب', 'تاريخ', 'Request_Date'],
     expiryDate: ['Response Date', 'RESPONSE DATE', 'response date', 'Expiry Date'],
-    clientName: ['العميل ', 'العميل', 'Client', 'CLIENT', 'client', 'Customer'],
+    clientName: ['العميل ', 'العميل', 'العملاء', 'Client', 'CLIENT', 'client', 'Customer', 'CUSTOMER', 'Buyer', 'BUYER', 'المشتري', 'الجهة', 'Company', 'COMPANY'],
     rfqNumber: ['Source File', 'SOURCE FILE', 'source file', 'RFQ No', 'rfq no'],
     unitPrice: ['price', 'PRICE', 'Price', 'Unit Price', 'unit price']
   };
@@ -104,7 +104,7 @@ export function processExcelRowForQuotation(row: any, mapping: Record<string, st
     requestDate: convertExcelDate(row[mapping.requestDate]),
     expiryDate: convertExcelDate(row[mapping.expiryDate]),
     status: 'pending',
-    clientName: row[mapping.clientName] || 'غير محدد',
+    clientName: (row[mapping.clientName] && row[mapping.clientName].toString().trim()) || 'غير محدد',
     itemNumber: '',
     kItemId: '',
     partNumber: row[mapping.partNumber] || '',
