@@ -168,11 +168,14 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
     },
     onError: (error: any) => {
       console.error("Import error details:", error);
+      console.error("Error response:", error?.response);
+      console.error("Error data:", error?.response?.data);
+      
       const errorMessage = error?.response?.status === 400 
-        ? "بيانات غير صالحة - تحقق من تنسيق الملف"
+        ? `خطأ HTTP 400: ${error?.response?.data?.message || "بيانات غير صالحة"}`
         : error?.response?.status === 401
         ? "يجب تسجيل الدخول أولاً"
-        : error.message || "حدث خطأ أثناء استيراد البيانات";
+        : error?.response?.data?.message || error.message || "حدث خطأ أثناء استيراد البيانات";
         
       toast({
         title: "خطأ في استيراد البيانات",
