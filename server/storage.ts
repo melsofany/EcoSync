@@ -1345,8 +1345,8 @@ export class DatabaseStorage implements IStorage {
       const allItemIds = matchingItems.map(item => item.id);
       console.log(`📊 Getting comprehensive data for ${allItemIds.length} matched items`);
 
-      // Get comprehensive data for ALL matched items with parameterized query
-      const comprehensiveData = await db
+      // Get RFQ data first
+      const rfqData = await db
         .select({
           client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
           item_id: items.itemNumber,
@@ -1358,6 +1358,40 @@ export class DatabaseStorage implements IStorage {
           rfq_qty: quotationItems.quantity,
           res_date: sql<string>`COALESCE(${quotationRequests.expiryDate}::text, '')`,
           customer_price: sql<string>`COALESCE(${quotationItems.unitPrice}::text, '')`,
+          po_number: sql<string>`''`,
+          po_date: sql<string>`''`,
+          po_quantity: sql<string>`''`,
+          po_price: sql<string>`''`,
+          po_total: sql<string>`''`,
+          category: sql<string>`COALESCE(${items.category}, 'ELEC')`,
+          uom: sql<string>`COALESCE(${items.unit}, 'Each')`,
+          source_item_id: items.id,
+          record_type: sql<string>`'RFQ'`,
+          match_type: sql<string>`CASE 
+            WHEN ${items.id} = ${itemId} THEN 'Original'
+            WHEN ${items.partNumber} = ${baseItem.partNumber} THEN 'PartNumber Match'
+            ELSE 'Similar Match'
+          END`
+        })
+        .from(items)
+        .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
+        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+        .where(inArray(items.id, allItemIds));
+
+      // Get PO data separately
+      const poData = await db
+        .select({
+          client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
+          item_id: items.itemNumber,
+          description: items.description,
+          line_item: sql<string>`COALESCE(${items.lineItem}, '')`,
+          part_no: sql<string>`COALESCE(${items.partNumber}, '')`,
+          rfq_number: sql<string>`''`,
+          rfq_date: sql<Date>`NULL`,
+          rfq_qty: sql<number>`NULL`,
+          res_date: sql<string>`''`,
+          customer_price: sql<string>`''`,
           po_number: sql<string>`COALESCE(${purchaseOrders.poNumber}, '')`,
           po_date: sql<string>`COALESCE(${purchaseOrders.poDate}::text, '')`,
           po_quantity: sql<string>`COALESCE(${purchaseOrderItems.quantity}::text, '')`,
@@ -1366,26 +1400,21 @@ export class DatabaseStorage implements IStorage {
           category: sql<string>`COALESCE(${items.category}, 'ELEC')`,
           uom: sql<string>`COALESCE(${items.unit}, 'Each')`,
           source_item_id: items.id,
+          record_type: sql<string>`'PO'`,
           match_type: sql<string>`CASE 
             WHEN ${items.id} = ${itemId} THEN 'Original'
             WHEN ${items.partNumber} = ${baseItem.partNumber} THEN 'PartNumber Match'
-            WHEN ${items.normalizedPartNumber} = ${baseItem.normalizedPartNumber || ''} THEN 'Normalized Match'
-            ELSE 'AI/Similar Match'
+            ELSE 'Similar Match'
           END`
         })
         .from(items)
-        .leftJoin(quotationItems, eq(items.id, quotationItems.itemId))
-        .leftJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
-        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
-        .leftJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
-        .leftJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
-        .where(inArray(items.id, allItemIds))
-        .orderBy(
-          sql`CASE WHEN ${items.id} = ${itemId} THEN 0 ELSE 1 END`,
-          desc(quotationRequests.requestDate),
-          desc(purchaseOrders.poDate),
-          items.lineItem
-        );
+        .innerJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
+        .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+        .leftJoin(clients, sql`false`) // No direct client relation for PO
+        .where(inArray(items.id, allItemIds));
+
+      // Combine RFQ and PO data
+      const comprehensiveData = [...rfqData, ...poData];
 
       console.log(`✅ Retrieved ${comprehensiveData.length} comprehensive records`);
       
@@ -1435,43 +1464,39 @@ export class DatabaseStorage implements IStorage {
   }
 
   private removeDuplicateRecords(records: any[]): any[] {
-    // Remove duplicate combinations of RFQ and PO for the same logical record
-    const uniqueMap = new Map<string, any>();
+    // Separate RFQ and PO records
+    const rfqRecords = records.filter(r => r.record_type === 'RFQ' && r.rfq_number);
+    const poRecords = records.filter(r => r.record_type === 'PO' && r.po_number);
     
-    records.forEach(record => {
-      // Create a more specific unique key
-      const rfqKey = record.rfq_number || 'no-rfq';
-      const poKey = record.po_number || 'no-po';
-      const dateKey = record.rfq_date || 'no-date';
-      
-      // If both RFQ and PO are empty, skip to avoid empty rows
-      if (rfqKey === 'no-rfq' && poKey === 'no-po') {
-        return;
-      }
-      
-      const uniqueKey = `${rfqKey}_${dateKey}_${poKey}`;
-      
-      // Keep the record with the most complete data
-      if (!uniqueMap.has(uniqueKey) || this.isMoreComplete(record, uniqueMap.get(uniqueKey))) {
-        uniqueMap.set(uniqueKey, record);
+    console.log(`📊 Processing ${rfqRecords.length} RFQ records and ${poRecords.length} PO records`);
+    
+    // Remove duplicates within each type
+    const uniqueRfq = new Map<string, any>();
+    const uniquePo = new Map<string, any>();
+    
+    rfqRecords.forEach(record => {
+      const key = `${record.rfq_number}_${record.rfq_date}`;
+      if (!uniqueRfq.has(key) || this.isMoreComplete(record, uniqueRfq.get(key))) {
+        uniqueRfq.set(key, record);
       }
     });
     
-    const result = Array.from(uniqueMap.values());
-    console.log(`📊 Unique records after deduplication: ${result.length}`);
-    
-    // Sort by RFQ date (newest first), then by PO date
-    return result.sort((a, b) => {
-      const dateA = new Date(a.rfq_date || 0);
-      const dateB = new Date(b.rfq_date || 0);
-      if (dateA.getTime() !== dateB.getTime()) {
-        return dateB.getTime() - dateA.getTime(); // Newest first
+    poRecords.forEach(record => {
+      const key = `${record.po_number}_${record.po_date}`;
+      if (!uniquePo.has(key) || this.isMoreComplete(record, uniquePo.get(key))) {
+        uniquePo.set(key, record);
       }
-      
-      // If same RFQ date, sort by PO date
-      const poDateA = new Date(a.po_date || 0);
-      const poDateB = new Date(b.po_date || 0);
-      return poDateB.getTime() - poDateA.getTime();
+    });
+    
+    // Combine unique records
+    const result = [...Array.from(uniqueRfq.values()), ...Array.from(uniquePo.values())];
+    console.log(`📊 Final unique records: ${result.length} (${uniqueRfq.size} RFQ + ${uniquePo.size} PO)`);
+    
+    // Sort by date (newest first)
+    return result.sort((a, b) => {
+      const dateA = new Date(a.rfq_date || a.po_date || 0);
+      const dateB = new Date(b.rfq_date || b.po_date || 0);
+      return dateB.getTime() - dateA.getTime();
     });
   }
 
