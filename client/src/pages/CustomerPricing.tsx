@@ -144,26 +144,29 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <p className="text-sm text-gray-600 mb-4">
             عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing.length} سجل فريد بعد إزالة التكرار)
           </p>
+          <p className="text-xs text-blue-600 mb-3">
+            💡 استخدم شريط التمرير لعرض جميع الأعمدة والصفوف. مرر فوق الوصف لعرضه كاملاً
+          </p>
           
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs border-collapse border border-gray-300">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 p-2 text-right">TOTAL PO</th>
-                  <th className="border border-gray-300 p-2 text-right">PRICE/PO</th>
-                  <th className="border border-gray-300 p-2 text-right">Quantity/PO</th>
-                  <th className="border border-gray-300 p-2 text-right">DATE/PO</th>
-                  <th className="border border-gray-300 p-2 text-right">PO</th>
-                  <th className="border border-gray-300 p-2 text-right">Category</th>
-                  <th className="border border-gray-300 p-2 text-right">RES.DATE</th>
-                  <th className="border border-gray-300 p-2 text-right">PRICE/RFQ</th>
-                  <th className="border border-gray-300 p-2 text-right">QTY</th>
-                  <th className="border border-gray-300 p-2 text-right">DATE/RFQ</th>
-                  <th className="border border-gray-300 p-2 text-right">RFQ</th>
-                  <th className="border border-gray-300 p-2 text-right">DESCRIPTION</th>
-                  <th className="border border-gray-300 p-2 text-right">PART NO</th>
-                  <th className="border border-gray-300 p-2 text-right">LINE ITEM</th>
-                  <th className="border border-gray-300 p-2 text-right">UOM</th>
+          <div className="overflow-auto max-h-96 border border-gray-300" style={{scrollbarWidth: 'thin'}}>
+            <table className="w-full min-w-max text-xs border-collapse border border-gray-300">
+              <thead className="sticky top-0 bg-gray-100 z-10">
+                <tr>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">TOTAL PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">PRICE/PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[70px]">Quantity/PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">DATE/PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[100px]">PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[70px]">Category</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">RES.DATE</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">PRICE/RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[50px]">QTY</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">DATE/RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[120px]">RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[300px] max-w-[400px]">DESCRIPTION</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[120px]">PART NO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[100px]">LINE ITEM</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[60px]">UOM</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,8 +183,16 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     <td className="border border-gray-300 p-2 text-right">{record.rfq_qty}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.rfq_date ? new Date(record.rfq_date).toLocaleDateString('ar-EG') : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.rfq_number}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.description}</td>
-                    <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium">{record.part_no}</td>
+                    <td className="border border-gray-300 p-2 text-right break-words" style={{wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: '1.4'}}>
+                      <div className="max-w-[400px]" title={record.description}>
+                        {record.description}
+                      </div>
+                    </td>
+                    <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium break-words">
+                      <div className="max-w-[120px]" title={record.part_no}>
+                        {record.part_no}
+                      </div>
+                    </td>
                     <td className="border border-gray-300 p-2 text-right font-mono text-blue-600">{record.line_item}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.uom}</td>
                   </tr>
