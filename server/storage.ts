@@ -1482,7 +1482,8 @@ export class DatabaseStorage implements IStorage {
     });
     
     poRecords.forEach(record => {
-      const key = `${record.po_number}_${record.po_date}`;
+      // Use only PO number as key to avoid duplicates from same PO
+      const key = record.po_number;
       if (!uniquePo.has(key) || this.isMoreComplete(record, uniquePo.get(key))) {
         uniquePo.set(key, record);
       }
