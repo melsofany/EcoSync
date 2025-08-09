@@ -145,7 +145,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing.length} سجل فريد بعد إزالة التكرار)
           </p>
           <p className="text-xs text-blue-600 mb-3">
-            💡 استخدم شريط التمرير لعرض جميع الأعمدة والصفوف. مرر فوق الوصف لعرضه كاملاً
+            💡 العرض مطابق لنموذج Excel: طلب التسعير يظهر مع كامل البيانات، أوامر الشراء تظهر في صفوف منفصلة
           </p>
           
           <div className="overflow-auto max-h-96 border border-gray-300" style={{scrollbarWidth: 'thin'}}>
@@ -179,10 +179,10 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     <td className="border border-gray-300 p-2 text-right">{record.po_number || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.category}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.res_date ? new Date(record.res_date).toLocaleDateString('ar-EG') : '-'}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.customer_price ? formatCurrency(parseFloat(record.customer_price)) : '٠٫٠٠ EGP'}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.rfq_qty}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.rfq_date ? new Date(record.rfq_date).toLocaleDateString('ar-EG') : '-'}</td>
-                    <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.rfq_number}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.customer_price ? formatCurrency(parseFloat(record.customer_price)) : (record.record_type === 'PO' ? '-' : '٠٫٠٠ EGP')}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.record_type === 'PO' ? '-' : (record.rfq_qty || '-')}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.record_type === 'PO' ? '-' : (record.rfq_date ? new Date(record.rfq_date).toLocaleDateString('ar-EG') : '-')}</td>
+                    <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.record_type === 'PO' ? '-' : (record.rfq_number || '-')}</td>
                     <td className="border border-gray-300 p-2 text-right break-words" style={{wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: '1.4'}}>
                       <div className="max-w-[400px]" title={record.description}>
                         {record.description}

@@ -1490,16 +1490,19 @@ export class DatabaseStorage implements IStorage {
       }
     });
     
-    // Apply the rule: If RFQ has corresponding PO, keep RFQ but don't duplicate PO
+    // Apply the business logic: RFQ shows first, then POs show as separate rows
+    // Each unique RFQ should appear once, each unique PO should appear once
     console.log(`🎯 After initial dedup: ${uniqueRfq.size} unique RFQ, ${uniquePo.size} unique PO`);
     
     const finalRfqs = Array.from(uniqueRfq.values());
     const finalPos = Array.from(uniquePo.values());
     
-    // Remove duplicate entries - if we have both RFQ and PO for same logical transaction
-    // For now, keep all unique RFQs and all unique POs since we don't have direct mapping
+    // This matches the Excel format shown in the images:
+    // - First row: RFQ with full data
+    // - Subsequent rows: POs with empty RFQ columns (handled in display)
     const result = [...finalRfqs, ...finalPos];
     console.log(`📊 Final result: ${result.length} records (${finalRfqs.length} RFQ + ${finalPos.length} PO)`);
+    console.log(`📋 This represents unique transactions as shown in Excel format`);
     
     // Sort by date (newest first)
     return result.sort((a, b) => {
