@@ -62,12 +62,7 @@ export default function Quotations() {
 
   // Edit quotation function
   const handleEditQuotation = (quotationId: string) => {
-    toast({
-      title: "التعديل غير متاح حالياً",
-      description: "سيتم إضافة إمكانية تعديل طلبات التسعير قريباً",
-      variant: "default",
-    });
-    // setLocation(`/quotations/${quotationId}/edit`);
+    setLocation(`/quotations/${quotationId}`);
   };
 
   // Delete quotation function
@@ -273,7 +268,7 @@ export default function Quotations() {
                             <Eye className="h-4 w-4" />
                           </Button>
                           
-                          {user && hasRole(user, ["manager", "data_entry"]) && quotation.status === "pending" && (
+                          {user && hasRole(user, ["manager", "data_entry", "it_admin"]) && quotation.status === "pending" && (
                             <Button 
                               variant="ghost" 
                               size="sm"
@@ -285,7 +280,7 @@ export default function Quotations() {
                             </Button>
                           )}
                           
-                          {user && hasRole(user, ["manager", "data_entry"]) && (
+                          {user && hasRole(user, ["manager", "data_entry", "it_admin"]) && (
                             <Button 
                               variant="outline" 
                               size="sm"
@@ -298,7 +293,7 @@ export default function Quotations() {
                             </Button>
                           )}
                           
-                          {user && hasRole(user, ["manager"]) && (
+                          {user && hasRole(user, ["manager", "it_admin"]) && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button 
