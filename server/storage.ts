@@ -1036,7 +1036,8 @@ export class DatabaseStorage implements IStorage {
         quotationId: quotationItems.quotationId,
         quantity: quotationItems.quantity,
         quotationStatus: quotationRequests.status,
-        requestNumber: quotationRequests.requestNumber,
+        requestNumber: quotationRequests.customRequestNumber, // Use custom request number (user input)
+        systemRequestNumber: quotationRequests.requestNumber, // Keep system number as backup
         requestDate: quotationRequests.requestDate,
         expiryDate: quotationRequests.expiryDate,
         supplierPrice: supplierPricing.unitPrice, // Optional - may be null

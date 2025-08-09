@@ -98,6 +98,41 @@ function ItemDetailedPricing({ item }: { item: any }) {
         </div>
       </div>
 
+      {/* RFQ Information */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <h4 className="font-semibold mb-3 flex items-center gap-2">
+          <Package className="h-4 w-4" />
+          معلومات طلب التسعير (RFQ)
+        </h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium">رقم طلب التسعير:</label>
+            <p className="font-semibold text-blue-600">
+              {item.requestNumber || item.systemRequestNumber || "غير محدد"}
+            </p>
+            {item.requestNumber && item.systemRequestNumber && item.requestNumber !== item.systemRequestNumber && (
+              <p className="text-xs text-gray-500 mt-1">رقم النظام: {item.systemRequestNumber}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm font-medium">تاريخ الطلب:</label>
+            <p className="text-sm">
+              {item.requestDate ? new Date(item.requestDate).toLocaleDateString('ar-EG') : "غير محدد"}
+            </p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">تاريخ انتهاء العرض:</label>
+            <p className="text-sm">
+              {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString('ar-EG') : "غير محدد"}
+            </p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">الكمية المطلوبة:</label>
+            <p className="font-semibold text-green-600">{item.quantity || 1}</p>
+          </div>
+        </div>
+      </div>
+
       {/* Customer pricing form */}
       {showPricingForm && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
