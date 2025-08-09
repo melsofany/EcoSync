@@ -128,7 +128,10 @@ export const purchaseOrderItems = pgTable("purchase_order_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   poId: varchar("po_id").references(() => purchaseOrders.id).notNull(),
   itemId: varchar("item_id").references(() => items.id).notNull(),
+  quotationItemId: varchar("quotation_item_id").references(() => quotationItems.id), // Track original quotation item
   quantity: decimal("quantity").notNull(),
+  originalQuantity: decimal("original_quantity"), // Original quantity requested in quotation
+  remainingQuantity: decimal("remaining_quantity"), // Remaining quantity to be ordered
   description: text("description"), // Added for compatibility
   lineItem: text("line_item"), // Added for compatibility
   partNumber: text("part_number"), // Added for compatibility

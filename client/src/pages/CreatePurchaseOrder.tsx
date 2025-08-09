@@ -40,6 +40,7 @@ interface QuotationItem {
 interface Quotation {
   id: string;
   requestNumber: string;
+  customRequestNumber?: string;
   clientName?: string;
   requestDate: string;
   expiryDate?: string;
@@ -51,7 +52,10 @@ interface Quotation {
 
 interface POItem {
   itemId: string;
+  quotationItemId?: string;
   quantity: number;
+  originalQuantity?: number;
+  remainingQuantity?: number;
   unitPrice: number;
   totalPrice: number;
   notes?: string;
@@ -123,7 +127,10 @@ export default function CreatePurchaseOrder() {
     if (quotationItems && Array.isArray(quotationItems)) {
       const items: POItem[] = quotationItems.map((item: any) => ({
         itemId: item.itemId, // Always use itemId from quotation_items table
+        quotationItemId: item.id, // Track original quotation item
         quantity: item.quantity || 1,
+        originalQuantity: item.quantity || 1,
+        remainingQuantity: item.quantity || 1, // Initially all quantity is remaining
         unitPrice: item.unitPrice || 0,
         totalPrice: (item.quantity || 1) * (item.unitPrice || 0),
         notes: ""
@@ -543,17 +550,24 @@ export default function CreatePurchaseOrder() {
                                 />
                               </TableCell>
                               <TableCell>
-                                <Input
-                                  type="number"
-                                  min="1"
-                                  value={poItem.quantity || ""}
-                                  onChange={(e) =>
-                                    updatePOItem(index, "quantity", Number(e.target.value) || 1)
-                                  }
-                                  placeholder="الكمية"
-                                  className="w-24"
-                                  required
-                                />
+                                <div className="space-y-2">
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    max={poItem.originalQuantity}
+                                    value={poItem.quantity || ""}
+                                    onChange={(e) =>
+                                      updatePOItem(index, "quantity", Number(e.target.value) || 1)
+                                    }
+                                    placeholder="الكمية"
+                                    className="w-24"
+                                    required
+                                  />
+                                  <div className="text-xs text-gray-600">
+                                    <p>المطلوب: {poItem.originalQuantity || 1}</p>
+                                    <p>المتبقي: {(poItem.originalQuantity || 1) - (poItem.quantity || 0)}</p>
+                                  </div>
+                                </div>
                               </TableCell>
                               <TableCell className="font-semibold text-green-600">
                                 {formatCurrency(poItem.totalPrice || 0)}

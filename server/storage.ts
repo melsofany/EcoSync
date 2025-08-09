@@ -721,10 +721,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Purchase order items
-  async addPurchaseOrderItem(itemData: InsertPurchaseOrderItem): Promise<PurchaseOrderItem> {
+  async addPurchaseOrderItem(itemData: InsertPurchaseOrderItem & { quotationItemId?: string; originalQuantity?: number; remainingQuantity?: number }): Promise<PurchaseOrderItem> {
     const [item] = await db
       .insert(purchaseOrderItems)
-      .values(itemData)
+      .values({
+        ...itemData,
+        quotationItemId: itemData.quotationItemId,
+        originalQuantity: itemData.originalQuantity?.toString(),
+        remainingQuantity: itemData.remainingQuantity?.toString()
+      })
       .returning();
     return item;
   }
@@ -1140,7 +1145,10 @@ export class DatabaseStorage implements IStorage {
         const poItems = poData.items.map((item: any) => ({
           poId: purchaseOrder.id,
           itemId: item.itemId,
+          quotationItemId: item.quotationItemId,
           quantity: item.quantity.toString(),
+          originalQuantity: item.originalQuantity?.toString(),
+          remainingQuantity: (item.originalQuantity - item.quantity)?.toString(),
           unitPrice: item.unitPrice.toString(),
           totalPrice: item.totalPrice.toString(),
           notes: item.notes || "",
