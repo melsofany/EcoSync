@@ -456,10 +456,8 @@ export default function CreatePurchaseOrder() {
                         <TableRow>
                           <TableHead>رقم الصنف / LINE ITEM</TableHead>
                           <TableHead>تفاصيل البند</TableHead>
-                          <TableHead>طلب التسعير</TableHead>
-                          <TableHead>المورد</TableHead>
-                          <TableHead>السعر المتفق عليه *</TableHead>
-                          <TableHead>الكمية *</TableHead>
+                          <TableHead>بيانات طلب التسعير</TableHead>
+                          <TableHead>بيانات أمر الشراء</TableHead>
                           <TableHead>الإجمالي</TableHead>
                           <TableHead>ملاحظات</TableHead>
                         </TableRow>
@@ -493,23 +491,27 @@ export default function CreatePurchaseOrder() {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <div className="space-y-1">
-                                  <p className="font-medium text-green-700">
-                                    {selectedQuotation?.customRequestNumber || selectedQuotation?.requestNumber || "غير محدد"}
-                                  </p>
-                                  <p className="text-sm text-blue-600 font-medium">العميل: {selectedQuotation?.clientName || "غير محدد"}</p>
-                                  <p className="text-xs text-gray-500">
+                                <div className="space-y-1 bg-blue-50 p-3 rounded">
+                                  <div className="border-b border-blue-200 pb-2 mb-2">
+                                    <p className="font-medium text-blue-800">
+                                      {selectedQuotation?.customRequestNumber || selectedQuotation?.requestNumber || "غير محدد"}
+                                    </p>
+                                    <p className="text-sm text-blue-600 font-medium">العميل: {selectedQuotation?.clientName || "غير محدد"}</p>
+                                  </div>
+                                  <p className="text-xs text-gray-600">
                                     تاريخ الطلب: {selectedQuotation?.requestDate ? 
                                       format(new Date(selectedQuotation.requestDate), "dd/MM/yyyy", { locale: ar }) : 
                                       "غير محدد"
                                     }
                                   </p>
-                                  <p className="text-xs text-red-600 font-medium">
-                                    انتهاء العرض: {selectedQuotation?.expiryDate ? 
-                                      format(new Date(selectedQuotation.expiryDate), "dd/MM/yyyy", { locale: ar }) : 
-                                      "غير محدد"
-                                    }
+                                  <p className="text-xs text-green-600 font-medium">
+                                    الكمية المطلوبة: {quotationItem?.quantity || 1}
                                   </p>
+                                  {quotationItem?.unitPrice && quotationItem.unitPrice > 0 && (
+                                    <p className="text-xs text-green-600 font-medium">
+                                      السعر في التسعير: {formatCurrency(quotationItem.unitPrice)}
+                                    </p>
+                                  )}
                                   <div className="flex items-center gap-1">
                                     <Badge variant={selectedQuotation?.status === "approved" ? "default" : "secondary"} className="text-xs">
                                       {selectedQuotation?.status === "approved" ? "معتمد" : 
@@ -519,52 +521,40 @@ export default function CreatePurchaseOrder() {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <div className="space-y-1">
-                                  <p className="text-sm font-medium text-gray-700">سيتم تحديده بأمر الشراء</p>
-                                  <p className="text-xs text-gray-500">
-                                    الكمية الأصلية: {quotationItem?.quantity || 1}
-                                  </p>
-                                  {quotationItem?.unitPrice && quotationItem.unitPrice > 0 ? (
-                                    <p className="text-xs text-green-600 font-medium">
-                                      السعر المحدد: {formatCurrency(quotationItem.unitPrice)}
-                                    </p>
-                                  ) : (
-                                    <p className="text-xs text-blue-600">
-                                      أدخل السعر النهائي المتفق عليه
-                                    </p>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  min="0"
-                                  value={poItem.unitPrice || ""}
-                                  onChange={(e) =>
-                                    updatePOItem(index, "unitPrice", Number(e.target.value) || 0)
-                                  }
-                                  placeholder="أدخل السعر"
-                                  className="w-32"
-                                  required
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <div className="space-y-2">
-                                  <Input
-                                    type="number"
-                                    min="1"
-                                    value={poItem.quantity || ""}
-                                    onChange={(e) =>
-                                      updatePOItem(index, "quantity", Number(e.target.value) || 1)
-                                    }
-                                    placeholder="الكمية"
-                                    className="w-24"
-                                    required
-                                  />
-                                  <div className="text-xs text-gray-600">
-                                    <p>المطلوب أصلاً: {poItem.originalQuantity || 1}</p>
-                                    <p className="text-blue-600">يمكن طلب أي كمية (حتى أكبر من المطلوب)</p>
+                                <div className="space-y-3 bg-green-50 p-3 rounded">
+                                  <div className="border-b border-green-200 pb-2">
+                                    <p className="text-sm font-medium text-green-800 mb-2">أمر الشراء:</p>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <div>
+                                      <Label className="text-xs text-gray-600">السعر المتفق عليه *</Label>
+                                      <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={poItem.unitPrice || ""}
+                                        onChange={(e) =>
+                                          updatePOItem(index, "unitPrice", Number(e.target.value) || 0)
+                                        }
+                                        placeholder="أدخل السعر"
+                                        className="w-full mt-1"
+                                        required
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-gray-600">الكمية المطلوبة *</Label>
+                                      <Input
+                                        type="number"
+                                        min="1"
+                                        value={poItem.quantity || ""}
+                                        onChange={(e) =>
+                                          updatePOItem(index, "quantity", Number(e.target.value) || 1)
+                                        }
+                                        placeholder="الكمية"
+                                        className="w-full mt-1"
+                                        required
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               </TableCell>
