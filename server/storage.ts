@@ -1475,7 +1475,8 @@ export class DatabaseStorage implements IStorage {
     const uniquePo = new Map<string, any>();
     
     rfqRecords.forEach(record => {
-      const key = `${record.rfq_number}_${record.rfq_date}`;
+      // Use only RFQ number as key to avoid duplicates from same RFQ
+      const key = record.rfq_number;
       if (!uniqueRfq.has(key) || this.isMoreComplete(record, uniqueRfq.get(key))) {
         uniqueRfq.set(key, record);
       }
@@ -1489,9 +1490,16 @@ export class DatabaseStorage implements IStorage {
       }
     });
     
-    // Combine unique records
-    const result = [...Array.from(uniqueRfq.values()), ...Array.from(uniquePo.values())];
-    console.log(`📊 Final unique records: ${result.length} (${uniqueRfq.size} RFQ + ${uniquePo.size} PO)`);
+    // Apply the rule: If RFQ has corresponding PO, keep RFQ but don't duplicate PO
+    console.log(`🎯 After initial dedup: ${uniqueRfq.size} unique RFQ, ${uniquePo.size} unique PO`);
+    
+    const finalRfqs = Array.from(uniqueRfq.values());
+    const finalPos = Array.from(uniquePo.values());
+    
+    // Remove duplicate entries - if we have both RFQ and PO for same logical transaction
+    // For now, keep all unique RFQs and all unique POs since we don't have direct mapping
+    const result = [...finalRfqs, ...finalPos];
+    console.log(`📊 Final result: ${result.length} records (${finalRfqs.length} RFQ + ${finalPos.length} PO)`);
     
     // Sort by date (newest first)
     return result.sort((a, b) => {
