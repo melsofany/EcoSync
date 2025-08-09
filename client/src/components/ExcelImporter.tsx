@@ -152,7 +152,7 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
   const confirmMutation = useMutation({
     mutationFn: async (previewData: PreviewData[]) => {
       const response = await apiRequest("POST", "/api/import/quotations/confirm", {
-        quotationData: previewData
+        previewData
       });
       return response.json();
     },
@@ -167,19 +167,9 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
       onImportComplete?.();
     },
     onError: (error: any) => {
-      console.error("Import error details:", error);
-      console.error("Error response:", error?.response);
-      console.error("Error data:", error?.response?.data);
-      
-      const errorMessage = error?.response?.status === 400 
-        ? `خطأ HTTP 400: ${error?.response?.data?.message || "بيانات غير صالحة"}`
-        : error?.response?.status === 401
-        ? "يجب تسجيل الدخول أولاً"
-        : error?.response?.data?.message || error.message || "حدث خطأ أثناء استيراد البيانات";
-        
       toast({
         title: "خطأ في استيراد البيانات",
-        description: errorMessage,
+        description: error.message || "حدث خطأ أثناء استيراد البيانات",
         variant: "destructive",
       });
     },
@@ -289,24 +279,6 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
     }));
   };
 
-  const handleAutoImport = async () => {
-    if (!selectedFile) return;
-
-    try {
-      const workbook = await import('xlsx').then(XLSX => XLSX.read(await selectedFile.arrayBuffer()));
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const excelData = await import('xlsx').then(XLSX => XLSX.utils.sheet_to_json(worksheet));
-
-      autoImportMutation.mutate(excelData);
-    } catch (error) {
-      toast({
-        title: "خطأ في قراءة الملف",
-        description: "تأكد من أن الملف بصيغة Excel صحيحة",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* File Upload Section */}
@@ -334,9 +306,9 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
               <span>{analyzeMutation.isPending ? "جاري التحليل..." : "تحليل الملف"}</span>
             </Button>
             <Button
-              onClick={handleAutoImport}
-              disabled={!selectedFile || autoImportMutation.isPending}
-              className="flex items-center space-x-2 space-x-reverse bg-green-600 hover:bg-green-700"
+              onClick={() => {/* Auto import functionality disabled */}}
+              disabled={true}
+              className="flex items-center space-x-2 space-x-reverse bg-gray-400"
             >
               <Zap className="h-4 w-4" />
               <span>{autoImportMutation.isPending ? "جاري الاستيراد التلقائي..." : "🚀 استيراد تلقائي"}</span>

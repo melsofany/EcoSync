@@ -846,28 +846,6 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(supplierPricing.createdAt));
   }
 
-  // إنشاء بند طلب تسعير مباشر للاستيراد
-  async createQuotationItemDirect(itemData: {
-    quotationId: string;
-    itemId: string;
-    quantity: string;
-    unitPrice?: string;
-    totalPrice?: string;
-  }): Promise<any> {
-    const [quotationItem] = await db
-      .insert(quotationItems)
-      .values({
-        quotationId: itemData.quotationId,
-        itemId: itemData.itemId,
-        quantity: itemData.quantity,
-        unitPrice: itemData.unitPrice || '0',
-        totalPrice: itemData.totalPrice || '0',
-        currency: 'EGP'
-      })
-      .returning();
-    return quotationItem;
-  }
-
   async updateSupplierPricing(id: string, updates: Partial<SupplierPricing>): Promise<SupplierPricing | undefined> {
     const [pricing] = await db
       .update(supplierPricing)
@@ -1470,7 +1448,7 @@ export class DatabaseStorage implements IStorage {
       // Get quotation data with client information using db
       const quotationData = await db
         .select({
-          clientName: clients.name,
+          clientName: quotationRequests.clientName,
           kItemId: quotationItems.itemId,
           description: quotationItems.description,
           lineItem: quotationItems.lineItem,
@@ -1490,7 +1468,6 @@ export class DatabaseStorage implements IStorage {
         })
         .from(quotationItems)
         .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
-        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
         .where(eq(quotationItems.lineItem, lineItem))
         .orderBy(desc(quotationRequests.requestDate));
 

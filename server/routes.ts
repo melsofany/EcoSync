@@ -1700,8 +1700,90 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // تم حذف النسخة القديمة المكررة من endpoint confirm import
-  // النسخة الموحدة موجودة في السطر 2381
+  app.post("/api/import/quotations/confirm", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { previewData } = req.body;
+      
+      if (!Array.isArray(previewData) || previewData.length === 0) {
+        return res.status(400).json({ message: "No data to import" });
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors: string[] = [];
+
+      for (const row of previewData) {
+        try {
+          // Create or find client
+          let client = await storage.getClientByName(row.clientName);
+          if (!client && row.clientName) {
+            const newClient = await storage.createClient({
+              name: row.clientName,
+              email: `${row.clientName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+              phone: '',
+              address: ''
+            });
+            client = newClient;
+          }
+
+          // Create quotation request
+          const quotationData = {
+            clientId: client?.id || '',
+            requestDate: row.requestDate,
+            expiryDate: row.expiryDate,
+            customRequestNumber: row.customRequestNumber,
+            status: row.status as any,
+            createdBy: req.session.user!.id,
+            notes: `Imported from Excel - Price: ${row.priceToClient}`,
+          };
+
+          const quotation = await storage.createQuotationRequest(quotationData);
+
+          // Create item for this quotation
+          if (row.partNumber || row.description) {
+            const itemData = {
+              kItemId: `P-${Date.now()}-${successCount + 1}`,
+              partNumber: row.partNumber || '',
+              lineItem: row.lineItem || '',
+              description: row.description || '',
+              category: 'general',
+              unit: row.unit || 'Each',
+              createdBy: req.session.user!.id,
+              notes: `Imported from RFQ ${row.customRequestNumber}`
+            };
+
+            const item = await storage.createItem(itemData);
+
+            // Link item to quotation with price
+            await storage.addItemToQuotation(quotation.id, {
+              itemId: item.id,
+              quantity: row.quantity,
+              lineNumber: row.lineNumber || 0,
+              clientPrice: row.priceToClient // إضافة السعر للعميل
+            });
+          }
+
+          successCount++;
+        } catch (error) {
+          errorCount++;
+          errors.push(`Row ${row.rowIndex}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      await logActivity(req, "confirm_import", "quotations", req.session.user!.id, 
+        `Imported ${successCount} quotations successfully, ${errorCount} errors`);
+
+      res.json({
+        success: true,
+        imported: successCount,
+        errors: errorCount,
+        errorDetails: errors.slice(0, 10) // Limit error details
+      });
+    } catch (error) {
+      console.error("Error confirming import:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   // Supplier routes
   app.get("/api/suppliers", requireAuth, async (req: Request, res: Response) => {
@@ -2251,37 +2333,14 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const excelColumns = Object.keys(excelData[0]);
       console.log("📋 Available columns:", excelColumns);
       
-      // الخطوة 2: المطابقة التلقائية الذكية
-      const { autoMapColumns } = await import('./utils/excel-auto-mapper.js');
-      const mappingResult = autoMapColumns(excelColumns);
-      console.log("🤖 Auto-mapping result:", mappingResult);
+      // الخطوة 2: المطابقة التلقائية
+      const mapping = autoMapExcelColumns(excelColumns);
+      console.log("🤖 Column mapping:", mapping);
       
-      // الخطوة 3: معالجة البيانات مع التحقق من المطابقة
-      const processedData = excelData.map((row: any, index: number) => {
-        const mapping = mappingResult.columnMapping;
-        
-        // التحقق من وجود المطابقة قبل الاستخدام
-        const getColumnValue = (mappingKey: keyof typeof mapping) => {
-          const columnName = mapping[mappingKey];
-          return columnName ? row[columnName] : null;
-        };
-        
-        return {
-          rowIndex: index + 1,
-          lineItem: getColumnValue('lineItem') || `${index + 1}`,
-          partNumber: getColumnValue('partNumber') || '',
-          description: getColumnValue('description') || 'غير محدد',
-          quantity: Number(getColumnValue('quantity')) || 1,
-          unit: getColumnValue('unit') || 'Each',
-          requestDate: getColumnValue('requestDate') || new Date().toISOString().split('T')[0],
-          expiryDate: getColumnValue('expiryDate') || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          clientName: getColumnValue('clientName') || 'غير محدد',
-          customRequestNumber: getColumnValue('rfqNumber') || `AUTO-${Date.now()}-${index}`,
-          unitPrice: Number(getColumnValue('unitPrice')) || 0,
-          totalPrice: (Number(getColumnValue('quantity')) || 1) * (Number(getColumnValue('unitPrice')) || 0),
-          status: 'pending'
-        };
-      });
+      // الخطوة 3: معالجة البيانات
+      const processedData = excelData.map((row: any, index: number) => 
+        processExcelRowForQuotation(row, mapping, index)
+      );
 
       // فلترة البيانات الصالحة - السماح بالبنود بدون رقم قطعة
       const validData = processedData.filter((row, index) => {
@@ -2299,7 +2358,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
       console.log(`✅ Processed ${processedData.length} rows, ${validData.length} valid`);
       
-      const confidence = mappingResult.confidence;
+      const confidence = Math.round((Object.keys(mapping).length / 10) * 100);
       
       await logActivity(req, "auto_import", "quotations", req.session.user!.id, 
         `Auto-imported ${validData.length} quotation records`);
@@ -2308,7 +2367,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         previewData: validData,
         totalRows: validData.length,
         confidence,
-        mapping: mappingResult.columnMapping,
+        mapping,
         message: `تم استيراد ${validData.length} سجل تلقائياً`
       });
 
@@ -2334,53 +2393,35 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
       for (const record of quotationData) {
         try {
-          // إنشاء العميل أو العثور عليه
-          let clientId = '';
-          if (record.clientName && record.clientName !== 'غير محدد') {
-            try {
-              let client = await storage.getClientByName(record.clientName);
-              if (!client) {
-                client = await storage.createClient({
-                  name: record.clientName,
-                  email: `${record.clientName.toLowerCase().replace(/\s+/g, '')}@example.com`,
-                  phone: '',
-                  address: ''
-                });
-              }
-              clientId = client.id;
-            } catch (error) {
-              console.log('Client creation failed, using empty client ID');
-            }
-          }
-
-          // إنشاء طلب التسعير بدون clientName لتجنب خطأ قاعدة البيانات
+          // إنشاء طلب التسعير
           const quotationRequest = await storage.createQuotationRequest({
             customRequestNumber: record.customRequestNumber,
             requestDate: record.requestDate || new Date().toISOString().split('T')[0],
             expiryDate: record.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             status: record.status || 'pending',
-            clientId: clientId || null,
-            notes: `Imported from Excel: ${record.clientName || 'غير محدد'}`,
-            createdBy: req.session.user!.id
-          });
-
-          // إنشاء العنصر أولاً
-          const item = await storage.createItem({
-            description: record.description || 'غير محدد',
-            unit: record.unit || 'Each',
-            createdBy: req.session.user!.id,
-            kItemId: `ITEM-${Date.now()}-${imported}`,
-            partNumber: record.partNumber || '',
-            lineItem: record.lineItem || ''
+            clientName: record.clientName || 'غير محدد',
+            notes: '',
+            totalValue: record.totalPrice || 0,
+            currency: record.currency || 'EGP'
           });
 
           // إنشاء بند طلب التسعير
-          await storage.createQuotationItemDirect({
-            quotationId: quotationRequest.id,
-            itemId: item.id,
-            quantity: String(record.quantity || 0),
-            unitPrice: String(record.unitPrice || 0),
-            totalPrice: String(record.totalPrice || 0)
+          await storage.createQuotationRequestItem({
+            quotationRequestId: quotationRequest.id,
+            itemNumber: record.itemNumber || '',
+            kItemId: record.kItemId || '',
+            partNumber: record.partNumber || '',
+            lineItem: record.lineItem || '',
+            description: record.description || '',
+            unit: record.unit || 'غير محدد',
+            category: record.category || '',
+            brand: record.brand || '',
+            quantity: record.quantity || 0,
+            unitPrice: record.unitPrice || 0,
+            totalPrice: record.totalPrice || 0,
+            currency: record.currency || 'EGP',
+            aiStatus: record.aiStatus || 'pending',
+            aiMatchedItemId: record.aiMatchedItemId || null
           });
 
           imported++;
