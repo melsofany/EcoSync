@@ -317,16 +317,21 @@ export class DatabaseStorage implements IStorage {
     console.log(`💾 Inserting quotation with requestNumber: ${requestNumber}`);
     console.log(`💾 Data:`, JSON.stringify(requestData, null, 2));
     
-    const [quotation] = await db
-      .insert(quotationRequests)
-      .values({
-        ...requestData,
-        requestNumber,
-      })
-      .returning();
-    
-    console.log(`✅ Database returned quotation:`, JSON.stringify(quotation, null, 2));
-    return quotation;
+    try {
+      const [quotation] = await db
+        .insert(quotationRequests)
+        .values({
+          ...requestData,
+          requestNumber,
+        })
+        .returning();
+      
+      console.log(`✅ Database returned quotation:`, JSON.stringify(quotation, null, 2));
+      return quotation;
+    } catch (error) {
+      console.error(`❌ Error inserting quotation:`, error);
+      throw error;
+    }
   }
 
   async getAllQuotationRequests(): Promise<QuotationRequest[]> {
@@ -409,18 +414,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNextRequestNumber(): Promise<string> {
-    const lastRequest = await db.select({ requestNumber: quotationRequests.requestNumber })
-      .from(quotationRequests)
-      .orderBy(desc(quotationRequests.createdAt))
-      .limit(1);
+    console.log('🔢 Generating next request number...');
     
-    if (lastRequest.length === 0) {
-      return "REQ00000001";
-    }
+    // Use timestamp-based unique number
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const requestNumber = `REQ-${timestamp}-${randomSuffix}`;
     
-    const lastNumber = parseInt(lastRequest[0].requestNumber.replace("REQ", ""));
-    const nextNumber = (lastNumber + 1).toString().padStart(8, "0");
-    return `REQ${nextNumber}`;
+    console.log(`✅ Generated request number: ${requestNumber}`);
+    return requestNumber;
   }
 
   // Item operations
