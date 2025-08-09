@@ -1728,79 +1728,103 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       console.log(`✅ Processing ${dataToImport.length} rows for import`);
       
-      // Use dataToImport instead of previewData
-      const importRows = dataToImport;
+      // Group rows by customRequestNumber to avoid duplicate quotations
+      const groupedRows = new Map<string, any[]>();
+      dataToImport.forEach((row: any) => {
+        const key = row.customRequestNumber || 'UNDEFINED';
+        if (!groupedRows.has(key)) {
+          groupedRows.set(key, []);
+        }
+        groupedRows.get(key)!.push(row);
+      });
 
       let successCount = 0;
       let errorCount = 0;
+      let itemsCreated = 0;
       const errors: string[] = [];
 
-      for (const row of importRows) {
+      console.log(`📋 Processing ${groupedRows.size} unique quotations with ${dataToImport.length} total items`);
+
+      for (const [customRequestNumber, rows] of groupedRows) {
         try {
+          const firstRow = rows[0];
+          
           // Create or find client
-          let client = await storage.getClientByName(row.clientName);
-          if (!client && row.clientName) {
+          let client = await storage.getClientByName(firstRow.clientName);
+          if (!client && firstRow.clientName) {
             const newClient = await storage.createClient({
-              name: row.clientName,
-              email: `${row.clientName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+              name: firstRow.clientName,
+              email: `${firstRow.clientName.toLowerCase().replace(/\s+/g, '')}@example.com`,
               phone: '',
               address: ''
             });
             client = newClient;
           }
 
-          // Create quotation request  
-          console.log(`📝 Creating quotation for client: ${row.clientName}, client_id: ${client?.id}`);
+          // Create quotation request once per group
+          console.log(`📝 Creating quotation for client: ${firstRow.clientName}, RFQ: ${customRequestNumber}`);
           const quotationData = {
             clientId: client?.id || '',
-            requestDate: new Date(row.requestDate || new Date()),
-            expiryDate: new Date(row.expiryDate || new Date()),
-            customRequestNumber: row.customRequestNumber || `RFQ-${Date.now()}`,
-            status: (row.status as any) || 'pending',
+            requestDate: new Date(firstRow.requestDate || new Date()),
+            expiryDate: new Date(firstRow.expiryDate || new Date()),
+            customRequestNumber: customRequestNumber,
+            status: (firstRow.status as any) || 'pending',
             createdBy: req.session.user!.id,
-            notes: `Imported from Excel - Client: ${row.clientName}`,
+            notes: `Imported from Excel - Client: ${firstRow.clientName} - ${rows.length} items`,
           };
 
           const quotation = await storage.createQuotationRequest(quotationData);
           console.log(`✅ Created quotation with ID: ${quotation.id}, Number: ${quotation.requestNumber}`);
 
-          // Create item for this quotation
-          if (row.partNumber || row.description) {
-            const itemData = {
-              kItemId: `P-${Date.now()}-${successCount + 1}`,
-              partNumber: row.partNumber || '',
-              lineItem: row.lineItem || '',
-              description: row.description || '',
-              category: 'general',
-              unit: row.unit || 'Each',
-              createdBy: req.session.user!.id,
-              notes: `Imported from RFQ ${row.customRequestNumber}`
-            };
+          // Create items for this quotation
+          for (const row of rows) {
+            try {
+              if (row.partNumber || row.description) {
+                const itemData = {
+                  kItemId: `P-${Date.now()}-${itemsCreated + 1}`,
+                  partNumber: row.partNumber || '',
+                  lineItem: row.lineItem || '',
+                  description: row.description || '',
+                  category: 'general',
+                  unit: row.unit || 'Each',
+                  createdBy: req.session.user!.id,
+                  notes: `Imported from RFQ ${customRequestNumber}`
+                };
 
-            const item = await storage.createItem(itemData);
+                const item = await storage.createItem(itemData);
+                console.log(`📦 Created item: ${item.description} for quotation ${customRequestNumber}`);
 
-            // Link item to quotation with price
-            await storage.addItemToQuotation(quotation.id, {
-              itemId: item.id,
-              quantity: row.quantity,
-              lineNumber: row.lineNumber || 0,
-              clientPrice: row.priceToClient // إضافة السعر للعميل
-            });
+                // Link item to quotation with price
+                await storage.addItemToQuotation(quotation.id, {
+                  itemId: item.id,
+                  quantity: row.quantity || 1,
+                  lineNumber: row.lineNumber || itemsCreated + 1,
+                  clientPrice: row.unitPrice || 0
+                });
+
+                itemsCreated++;
+              }
+            } catch (itemError) {
+              console.error(`❌ Error creating item for row ${row.rowIndex}:`, itemError);
+              errors.push(`Row ${row.rowIndex} item: ${itemError instanceof Error ? itemError.message : 'Unknown error'}`);
+            }
           }
 
           successCount++;
         } catch (error) {
           errorCount++;
-          errors.push(`Row ${row.rowIndex}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.error(`❌ Error creating quotation for ${customRequestNumber}:`, error);
+          errors.push(`Quotation ${customRequestNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       }
 
       await logActivity(req, "confirm_import", "quotations", req.session.user!.id, 
-        `Imported ${successCount} quotations successfully, ${errorCount} errors`);
+        `Imported ${successCount} quotations with ${itemsCreated} items, ${errorCount} errors`);
 
       res.json({
         success: true,
         imported: successCount,
+        items: itemsCreated,
         errors: errorCount,
         errorDetails: errors.slice(0, 10) // Limit error details
       });
