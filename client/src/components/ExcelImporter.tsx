@@ -167,9 +167,16 @@ export function ExcelImporter({ onImportComplete }: ExcelImporterProps) {
       onImportComplete?.();
     },
     onError: (error: any) => {
+      console.error("Import error details:", error);
+      const errorMessage = error?.response?.status === 400 
+        ? "بيانات غير صالحة - تحقق من تنسيق الملف"
+        : error?.response?.status === 401
+        ? "يجب تسجيل الدخول أولاً"
+        : error.message || "حدث خطأ أثناء استيراد البيانات";
+        
       toast({
         title: "خطأ في استيراد البيانات",
-        description: error.message || "حدث خطأ أثناء استيراد البيانات",
+        description: errorMessage,
         variant: "destructive",
       });
     },

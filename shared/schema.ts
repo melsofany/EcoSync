@@ -50,7 +50,6 @@ export const quotationRequests = pgTable("quotation_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   requestNumber: text("request_number").notNull().unique(),
   clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
-  clientName: text("client_name"), // Added for compatibility
   requestDate: text("request_date").notNull(), // Changed to text for easier form handling
   expiryDate: text("expiry_date"), // Changed to text for easier form handling
   status: text("status").default("pending"), // "pending", "sent_for_pricing", "pricing_received", "customer_pricing", "quoted", "completed", "cancelled"

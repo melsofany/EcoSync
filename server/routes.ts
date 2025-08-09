@@ -2256,22 +2256,29 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const mappingResult = autoMapColumns(excelColumns);
       console.log("🤖 Auto-mapping result:", mappingResult);
       
-      // الخطوة 3: معالجة البيانات
+      // الخطوة 3: معالجة البيانات مع التحقق من المطابقة
       const processedData = excelData.map((row: any, index: number) => {
         const mapping = mappingResult.columnMapping;
+        
+        // التحقق من وجود المطابقة قبل الاستخدام
+        const getColumnValue = (mappingKey: keyof typeof mapping) => {
+          const columnName = mapping[mappingKey];
+          return columnName ? row[columnName] : null;
+        };
+        
         return {
           rowIndex: index + 1,
-          lineItem: row[mapping.lineItem] || `${index + 1}`,
-          partNumber: row[mapping.partNumber] || '',
-          description: row[mapping.description] || 'غير محدد',
-          quantity: Number(row[mapping.quantity]) || 1,
-          unit: row[mapping.unit] || 'Each',
-          requestDate: row[mapping.requestDate] || new Date().toISOString().split('T')[0],
-          expiryDate: row[mapping.expiryDate] || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          clientName: row[mapping.clientName] || 'غير محدد',
-          customRequestNumber: row[mapping.rfqNumber] || `AUTO-${Date.now()}-${index}`,
-          unitPrice: Number(row[mapping.unitPrice]) || 0,
-          totalPrice: (Number(row[mapping.quantity]) || 1) * (Number(row[mapping.unitPrice]) || 0),
+          lineItem: getColumnValue('lineItem') || `${index + 1}`,
+          partNumber: getColumnValue('partNumber') || '',
+          description: getColumnValue('description') || 'غير محدد',
+          quantity: Number(getColumnValue('quantity')) || 1,
+          unit: getColumnValue('unit') || 'Each',
+          requestDate: getColumnValue('requestDate') || new Date().toISOString().split('T')[0],
+          expiryDate: getColumnValue('expiryDate') || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          clientName: getColumnValue('clientName') || 'غير محدد',
+          customRequestNumber: getColumnValue('rfqNumber') || `AUTO-${Date.now()}-${index}`,
+          unitPrice: Number(getColumnValue('unitPrice')) || 0,
+          totalPrice: (Number(getColumnValue('quantity')) || 1) * (Number(getColumnValue('unitPrice')) || 0),
           status: 'pending'
         };
       });
@@ -2327,14 +2334,33 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
       for (const record of quotationData) {
         try {
-          // إنشاء طلب التسعير
+          // إنشاء العميل أو العثور عليه
+          let clientId = '';
+          if (record.clientName && record.clientName !== 'غير محدد') {
+            try {
+              let client = await storage.getClientByName(record.clientName);
+              if (!client) {
+                client = await storage.createClient({
+                  name: record.clientName,
+                  email: `${record.clientName.toLowerCase().replace(/\s+/g, '')}@example.com`,
+                  phone: '',
+                  address: ''
+                });
+              }
+              clientId = client.id;
+            } catch (error) {
+              console.log('Client creation failed, using empty client ID');
+            }
+          }
+
+          // إنشاء طلب التسعير بدون clientName لتجنب خطأ قاعدة البيانات
           const quotationRequest = await storage.createQuotationRequest({
             customRequestNumber: record.customRequestNumber,
             requestDate: record.requestDate || new Date().toISOString().split('T')[0],
             expiryDate: record.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             status: record.status || 'pending',
-            clientName: record.clientName || 'غير محدد',
-            notes: '',
+            clientId: clientId || null,
+            notes: `Imported from Excel: ${record.clientName || 'غير محدد'}`,
             createdBy: req.session.user!.id
           });
 
