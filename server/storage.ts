@@ -1318,9 +1318,9 @@ export class DatabaseStorage implements IStorage {
       
       console.log(`🎯 Excel-style filter for part: ${partNumber}`);
 
-      // Simple Excel filter: RFQ records + PO records for same part number
-      const rfqRecords = await db.execute(sql`
-        SELECT DISTINCT
+      // Direct Excel filter: All records for part number LC1D32M7
+      const result = await db.execute(sql`
+        SELECT 
           'RFQ' as record_type,
           COALESCE(c.name, 'EDC') as client_name,
           i.item_number as item_id,
@@ -1344,11 +1344,10 @@ export class DatabaseStorage implements IStorage {
         JOIN quotation_requests qr ON qi.quotation_id = qr.id
         LEFT JOIN clients c ON qr.client_id = c.id
         WHERE REPLACE(LOWER(COALESCE(i.part_number, '')), ' ', '') = LOWER(${cleanPartNumber})
-        ORDER BY qr.request_date DESC
-      `);
-
-      const poRecords = await db.execute(sql`
-        SELECT DISTINCT
+        
+        UNION ALL
+        
+        SELECT 
           'PO' as record_type,
           'EDC' as client_name,
           i.item_number as item_id,
@@ -1371,13 +1370,13 @@ export class DatabaseStorage implements IStorage {
         JOIN purchase_order_items poi ON i.id = poi.item_id
         JOIN purchase_orders po ON poi.po_id = po.id
         WHERE REPLACE(LOWER(COALESCE(i.part_number, '')), ' ', '') = LOWER(${cleanPartNumber})
-        ORDER BY po.po_date DESC
+        
+        ORDER BY 
+          CASE WHEN rfq_date IS NOT NULL THEN rfq_date ELSE '1900-01-01'::date END DESC,
+          CASE WHEN po_date IS NOT NULL THEN po_date::date ELSE '1900-01-01'::date END DESC
       `);
 
-      const result = [...rfqRecords, ...poRecords];
-
-      console.log(`✅ RFQ Records: ${rfqRecords.length}, PO Records: ${poRecords.length}`);
-      console.log(`📊 Total Excel filter result: ${result.length} records`);
+      console.log(`📊 Excel filter result: ${result.length} records for part ${partNumber}`);
       
       return result;
       
