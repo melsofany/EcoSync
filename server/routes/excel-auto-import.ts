@@ -1,6 +1,6 @@
 // حل بديل: نقطة نهاية جديدة للاستيراد التلقائي السريع
 import type { Express, Request, Response } from "express";
-import { autoMapColumns, formatMappingResults } from "../excelAutoMapper";
+import { autoMapColumns, formatMappingResults } from "../utils/excel-auto-mapper.js";
 
 export function registerAutoImportRoutes(app: Express, requireAuth: any, requireRole: any, logActivity: any) {
   

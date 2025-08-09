@@ -2401,27 +2401,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             status: record.status || 'pending',
             clientName: record.clientName || 'غير محدد',
             notes: '',
-            totalValue: record.totalPrice || 0,
+            // totalValue removed - not in schema
             currency: record.currency || 'EGP'
           });
 
           // إنشاء بند طلب التسعير
-          await storage.createQuotationRequestItem({
-            quotationRequestId: quotationRequest.id,
-            itemNumber: record.itemNumber || '',
-            kItemId: record.kItemId || '',
-            partNumber: record.partNumber || '',
-            lineItem: record.lineItem || '',
-            description: record.description || '',
-            unit: record.unit || 'غير محدد',
-            category: record.category || '',
-            brand: record.brand || '',
-            quantity: record.quantity || 0,
-            unitPrice: record.unitPrice || 0,
-            totalPrice: record.totalPrice || 0,
-            currency: record.currency || 'EGP',
-            aiStatus: record.aiStatus || 'pending',
-            aiMatchedItemId: record.aiMatchedItemId || null
+          await storage.createQuotationItem({
+            quotationId: quotationRequest.id,
+            itemId: '', // سيتم إنشاؤه أولاً
+            quantity: String(record.quantity || 0),
+            unitPrice: String(record.unitPrice || 0),
+            totalPrice: String(record.totalPrice || 0),
+            currency: record.currency || 'EGP'
           });
 
           imported++;
