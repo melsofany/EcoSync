@@ -1306,119 +1306,57 @@ export class DatabaseStorage implements IStorage {
     return purchaseOrderData;
   }
 
-  // Get comprehensive data for an item using unified identifier (NEW)
+  // Excel-style filter for part number - FINAL SOLUTION
   async getItemComprehensiveDataUnified(itemId: string): Promise<any[]> {
     try {
       const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
       if (!item.length) return [];
-
+      
       const baseItem = item[0];
-      console.log(`🔍 Getting comprehensive data for item: ${baseItem.description} (${baseItem.partNumber})`);
-
-      // Get ALL historical data for this part number to show comprehensive history
-      console.log(`🎯 Getting comprehensive historical data for part: ${baseItem.partNumber}`);
-      console.log(`📋 Item details: ${baseItem.description} (${baseItem.partNumber})`);
+      const partNumber = baseItem.partNumber;
+      const cleanPartNumber = partNumber?.replace(/\s+/g, '') || '';
       
-      // Find ALL items with the same part number for comprehensive history
-      let matchingItems = [];
-      if (baseItem.partNumber) {
-        const cleanPartNumber = baseItem.partNumber.replace(/\s+/g, '');
-        matchingItems = await db.select().from(items)
-          .where(
-            or(
-              eq(items.partNumber, baseItem.partNumber),
-              sql`REPLACE(${items.partNumber}, ' ', '') = ${cleanPartNumber}`
-            )
-          );
-        console.log(`📊 Found ${matchingItems.length} items with part number: ${baseItem.partNumber}`);
-      }
-      
-      // Ensure original item is included
-      if (!matchingItems.find(i => i.id === itemId)) {
-        matchingItems.unshift(baseItem);
-      }
+      console.log(`🎯 Excel-style filter for part: ${partNumber}`);
 
-      const allItemIds = matchingItems.map(item => item.id);
-      console.log(`📊 Getting comprehensive data for ${allItemIds.length} matched items`);
+      // Direct SQL that exactly mimics Excel AutoFilter on Part Number column
+      const result = await db.execute(sql`
+        SELECT DISTINCT
+          'Combined' as record_type,
+          COALESCE(c.name, 'EDC') as client_name,
+          i.item_number as item_id,
+          i.description,
+          COALESCE(i.line_item, '') as line_item,
+          COALESCE(i.part_number, '') as part_no,
+          COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
+          qr.request_date as rfq_date,
+          CASE 
+            WHEN po.id IS NOT NULL THEN NULL  -- Empty quantity for PO rows
+            ELSE qi.quantity 
+          END as rfq_qty,
+          COALESCE(qr.expiry_date::text, '') as res_date,
+          COALESCE(qi.unit_price::text, '') as customer_price,
+          COALESCE(po.po_number, '') as po_number,
+          COALESCE(po.po_date::text, '') as po_date,
+          COALESCE(poi.quantity::text, '') as po_quantity,
+          COALESCE(poi.unit_price::text, '') as po_price,
+          COALESCE((poi.quantity * poi.unit_price)::text, '') as po_total,
+          COALESCE(i.category, 'ELEC') as category,
+          COALESCE(i.unit, 'Each') as uom
+        FROM items i
+        LEFT JOIN quotation_items qi ON i.id = qi.item_id
+        LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id
+        LEFT JOIN clients c ON qr.client_id = c.id
+        LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
+        LEFT JOIN purchase_orders po ON poi.po_id = po.id
+        WHERE REPLACE(LOWER(COALESCE(i.part_number, '')), ' ', '') = LOWER(${cleanPartNumber})
+        AND (qi.id IS NOT NULL OR poi.id IS NOT NULL)  -- Must have RFQ or PO data
+        ORDER BY 
+          CASE WHEN qr.request_date IS NOT NULL THEN qr.request_date ELSE '1900-01-01'::date END DESC,
+          CASE WHEN po.po_date IS NOT NULL THEN po.po_date ELSE '1900-01-01'::date END DESC
+      `);
 
-      // Get RFQ data first
-      const rfqData = await db
-        .select({
-          client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
-          item_id: items.itemNumber,
-          description: items.description,
-          line_item: sql<string>`COALESCE(${items.lineItem}, '')`,
-          part_no: sql<string>`COALESCE(${items.partNumber}, '')`,
-          rfq_number: sql<string>`COALESCE(${quotationRequests.customRequestNumber}, ${quotationRequests.requestNumber})`,
-          rfq_date: quotationRequests.requestDate,
-          rfq_qty: quotationItems.quantity,
-          res_date: sql<string>`COALESCE(${quotationRequests.expiryDate}::text, '')`,
-          customer_price: sql<string>`COALESCE(${quotationItems.unitPrice}::text, '')`,
-          po_number: sql<string>`''`,
-          po_date: sql<string>`''`,
-          po_quantity: sql<string>`''`,
-          po_price: sql<string>`''`,
-          po_total: sql<string>`''`,
-          category: sql<string>`COALESCE(${items.category}, 'ELEC')`,
-          uom: sql<string>`COALESCE(${items.unit}, 'Each')`,
-          source_item_id: items.id,
-          record_type: sql<string>`'RFQ'`,
-          match_type: sql<string>`CASE 
-            WHEN ${items.id} = ${itemId} THEN 'Original'
-            WHEN ${items.partNumber} = ${baseItem.partNumber} THEN 'PartNumber Match'
-            ELSE 'Similar Match'
-          END`
-        })
-        .from(items)
-        .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
-        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
-        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
-        .where(inArray(items.id, allItemIds));
-
-      // Get PO data separately
-      const poData = await db
-        .select({
-          client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
-          item_id: items.itemNumber,
-          description: items.description,
-          line_item: sql<string>`COALESCE(${items.lineItem}, '')`,
-          part_no: sql<string>`COALESCE(${items.partNumber}, '')`,
-          rfq_number: sql<string>`''`,
-          rfq_date: sql<Date>`NULL`,
-          rfq_qty: sql<number>`NULL`,
-          res_date: sql<string>`''`,
-          customer_price: sql<string>`''`,
-          po_number: sql<string>`COALESCE(${purchaseOrders.poNumber}, '')`,
-          po_date: sql<string>`COALESCE(${purchaseOrders.poDate}::text, '')`,
-          po_quantity: sql<string>`COALESCE(${purchaseOrderItems.quantity}::text, '')`,
-          po_price: sql<string>`COALESCE(${purchaseOrderItems.unitPrice}::text, '')`,
-          po_total: sql<string>`COALESCE((${purchaseOrderItems.quantity}::numeric * ${purchaseOrderItems.unitPrice}::numeric)::text, '')`,
-          category: sql<string>`COALESCE(${items.category}, 'ELEC')`,
-          uom: sql<string>`COALESCE(${items.unit}, 'Each')`,
-          source_item_id: items.id,
-          record_type: sql<string>`'PO'`,
-          match_type: sql<string>`CASE 
-            WHEN ${items.id} = ${itemId} THEN 'Original'
-            WHEN ${items.partNumber} = ${baseItem.partNumber} THEN 'PartNumber Match'
-            ELSE 'Similar Match'
-          END`
-        })
-        .from(items)
-        .innerJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
-        .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
-        .leftJoin(clients, sql`false`) // No direct client relation for PO
-        .where(inArray(items.id, allItemIds));
-
-      // Combine RFQ and PO data
-      const comprehensiveData = [...rfqData, ...poData];
-
-      console.log(`✅ Retrieved ${comprehensiveData.length} comprehensive records`);
-      
-      // Remove duplicates and group intelligently
-      const uniqueRecords = this.removeDuplicateRecords(comprehensiveData);
-      console.log(`🔄 After deduplication: ${uniqueRecords.length} unique records`);
-      
-      return uniqueRecords;
+      console.log(`✅ Excel filter returned ${result.length} records`);
+      return result;
       
     } catch (error) {
       console.error('Error in getItemComprehensiveDataUnified:', error);

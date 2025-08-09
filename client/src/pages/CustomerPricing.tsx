@@ -145,7 +145,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing.length} سجل فريد بعد إزالة التكرار)
           </p>
           <p className="text-xs text-blue-600 mb-3">
-            💡 عرض شامل لكامل التاريخ: جميع طلبات التسعير وأوامر الشراء لرقم القطعة {item.partNumber}
+            📊 فلتر Excel لرقم القطعة {item.partNumber} - عرض كامل التاريخ من قاعدة البيانات
           </p>
           
           <div className="overflow-auto max-h-96 border border-gray-300" style={{scrollbarWidth: 'thin'}}>
