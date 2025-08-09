@@ -142,7 +142,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
           </h4>
           <p className="text-sm text-gray-600 mb-4">
-            عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing.length} سجل في قاعدة البيانات)
+            عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing.length} سجل فريد بعد إزالة التكرار)
           </p>
           
           <div className="overflow-x-auto">

@@ -1407,7 +1407,12 @@ export class DatabaseStorage implements IStorage {
         );
 
       console.log(`✅ Retrieved ${comprehensiveData.length} comprehensive records`);
-      return comprehensiveData;
+      
+      // Remove duplicates and group intelligently
+      const uniqueRecords = this.removeDuplicateRecords(comprehensiveData);
+      console.log(`🔄 After deduplication: ${uniqueRecords.length} unique records`);
+      
+      return uniqueRecords;
       
     } catch (error) {
       console.error('Error in getItemComprehensiveDataUnified:', error);
@@ -1446,6 +1451,54 @@ export class DatabaseStorage implements IStorage {
       .where(eq(items.id, itemId));
     
     return basicData;
+  }
+
+  private removeDuplicateRecords(records: any[]): any[] {
+    // Group records by RFQ number and PO number to remove duplicates
+    const uniqueMap = new Map<string, any>();
+    
+    records.forEach(record => {
+      // Create a unique key based on RFQ, item, and PO
+      const rfqKey = record.rfq_number || 'no-rfq';
+      const poKey = record.po_number || 'no-po';
+      const itemKey = record.part_no || record.description?.substring(0, 20) || 'no-item';
+      const uniqueKey = `${rfqKey}_${itemKey}_${poKey}`;
+      
+      // Keep the record with the most complete data
+      if (!uniqueMap.has(uniqueKey) || this.isMoreComplete(record, uniqueMap.get(uniqueKey))) {
+        uniqueMap.set(uniqueKey, record);
+      }
+    });
+    
+    // Sort by RFQ date (newest first), then by PO date
+    return Array.from(uniqueMap.values()).sort((a, b) => {
+      const dateA = new Date(a.rfq_date || 0);
+      const dateB = new Date(b.rfq_date || 0);
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateB.getTime() - dateA.getTime(); // Newest first
+      }
+      
+      // If same RFQ date, sort by PO date
+      const poDateA = new Date(a.po_date || 0);
+      const poDateB = new Date(b.po_date || 0);
+      return poDateB.getTime() - poDateA.getTime();
+    });
+  }
+
+  private isMoreComplete(newRecord: any, existingRecord: any): boolean {
+    // Count non-empty fields to determine which record is more complete
+    const countFields = (record: any) => {
+      let count = 0;
+      if (record.rfq_number) count++;
+      if (record.po_number) count++;
+      if (record.customer_price && record.customer_price !== '0') count++;
+      if (record.po_price) count++;
+      if (record.rfq_date) count++;
+      if (record.po_date) count++;
+      return count;
+    };
+    
+    return countFields(newRecord) > countFields(existingRecord);
   }
 
   // Get comprehensive data for an item similar to Excel table format
