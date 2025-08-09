@@ -144,14 +144,17 @@ export default function CreatePurchaseOrder() {
       return;
     }
 
+    const unitPrice = quotationItem.unitPrice || 
+                     (quotationItem.supplierPricing?.unitPrice ? parseFloat(quotationItem.supplierPricing.unitPrice) : 0);
+    
     const newPOItem = {
       itemId: quotationItem.itemId,
       quotationItemId: quotationItem.id,
       quantity: quotationItem.quantity || 1,
       originalQuantity: quotationItem.quantity || 1,
       remainingQuantity: quotationItem.quantity || 1,
-      unitPrice: quotationItem.unitPrice || quotationItem.supplierPricing?.unitPrice ? parseFloat(quotationItem.supplierPricing.unitPrice) : 0,
-      totalPrice: (quotationItem.quantity || 1) * (quotationItem.unitPrice || quotationItem.supplierPricing?.unitPrice ? parseFloat(quotationItem.supplierPricing.unitPrice) : 0),
+      unitPrice: unitPrice,
+      totalPrice: (quotationItem.quantity || 1) * unitPrice,
       notes: "",
     };
     
@@ -560,9 +563,11 @@ export default function CreatePurchaseOrder() {
                               </TableCell>
                               <TableCell>
                                 <span className="font-semibold text-green-600">
-                                  {quotationItem.unitPrice ? formatCurrency(quotationItem.unitPrice) : 
-                                   quotationItem.supplierPricing?.unitPrice ? formatCurrency(parseFloat(quotationItem.supplierPricing.unitPrice)) : 
-                                   "غير محدد"}
+                                  {(() => {
+                                    const price = quotationItem.unitPrice || 
+                                                 (quotationItem.supplierPricing?.unitPrice ? parseFloat(quotationItem.supplierPricing.unitPrice) : null);
+                                    return price ? formatCurrency(price) : "غير محدد";
+                                  })()}
                                 </span>
                               </TableCell>
                               <TableCell>
