@@ -1315,13 +1315,28 @@ export class DatabaseStorage implements IStorage {
       const baseItem = item[0];
       console.log(`🔍 Getting comprehensive data for item: ${baseItem.description} (${baseItem.partNumber})`);
 
-      // Focus on THIS specific item only for customer pricing
-      console.log(`🎯 Getting data for SPECIFIC item only: ${itemId}`);
+      // Get ALL historical data for this part number to show comprehensive history
+      console.log(`🎯 Getting comprehensive historical data for part: ${baseItem.partNumber}`);
       console.log(`📋 Item details: ${baseItem.description} (${baseItem.partNumber})`);
       
-      // For customer pricing, show data for THIS item only, not similar items
-      const matchingItems = [baseItem];
-      console.log(`📊 Processing ONLY the selected item to avoid confusion with other similar items`);
+      // Find ALL items with the same part number for comprehensive history
+      let matchingItems = [];
+      if (baseItem.partNumber) {
+        const cleanPartNumber = baseItem.partNumber.replace(/\s+/g, '');
+        matchingItems = await db.select().from(items)
+          .where(
+            or(
+              eq(items.partNumber, baseItem.partNumber),
+              sql`REPLACE(${items.partNumber}, ' ', '') = ${cleanPartNumber}`
+            )
+          );
+        console.log(`📊 Found ${matchingItems.length} items with part number: ${baseItem.partNumber}`);
+      }
+      
+      // Ensure original item is included
+      if (!matchingItems.find(i => i.id === itemId)) {
+        matchingItems.unshift(baseItem);
+      }
 
       const allItemIds = matchingItems.map(item => item.id);
       console.log(`📊 Getting comprehensive data for ${allItemIds.length} matched items`);
