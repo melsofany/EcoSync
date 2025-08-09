@@ -1315,32 +1315,13 @@ export class DatabaseStorage implements IStorage {
       const baseItem = item[0];
       console.log(`🔍 Getting comprehensive data for item: ${baseItem.description} (${baseItem.partNumber})`);
 
-      // Focus on specific item data rather than similar items to get accurate count
-      console.log(`🎯 Getting data specifically for item ID: ${itemId}`);
+      // Focus on THIS specific item only for customer pricing
+      console.log(`🎯 Getting data for SPECIFIC item only: ${itemId}`);
+      console.log(`📋 Item details: ${baseItem.description} (${baseItem.partNumber})`);
       
-      // Only get data for this specific item to avoid data multiplication
+      // For customer pricing, show data for THIS item only, not similar items
       const matchingItems = [baseItem];
-      console.log(`📋 Processing single item: ${baseItem.description} (${baseItem.partNumber})`);
-      
-      // Additionally, get items with EXACT part number match only (for true duplicates)
-      if (baseItem.partNumber) {
-        const cleanPartNumber = baseItem.partNumber.replace(/\s+/g, '');
-        const exactMatches = await db.select().from(items)
-          .where(
-            and(
-              or(
-                eq(items.partNumber, baseItem.partNumber),
-                sql`REPLACE(${items.partNumber}, ' ', '') = ${cleanPartNumber}`
-              ),
-              sql`${items.id} != ${itemId}` // Exclude the original item
-            )
-          );
-        
-        if (exactMatches.length > 0) {
-          console.log(`🔍 Found ${exactMatches.length} exact part number matches`);
-          matchingItems.push(...exactMatches);
-        }
-      }
+      console.log(`📊 Processing ONLY the selected item to avoid confusion with other similar items`);
 
       const allItemIds = matchingItems.map(item => item.id);
       console.log(`📊 Getting comprehensive data for ${allItemIds.length} matched items`);
