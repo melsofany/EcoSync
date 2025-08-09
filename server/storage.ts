@@ -41,7 +41,7 @@ import {
   type InsertActivityLog,
 } from "@shared/schema";
 import { db } from "./db.js";
-import { eq, desc, like, and, isNull, isNotNull, sql, or } from "drizzle-orm";
+import { eq, desc, like, and, isNull, isNotNull, sql, or, inArray } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -1315,12 +1315,20 @@ export class DatabaseStorage implements IStorage {
       const baseItem = item[0];
       console.log(`🔍 Getting comprehensive data for item: ${baseItem.description} (${baseItem.partNumber})`);
 
-      // Strategy 1: Use exact part number matching first
+      // Strategy 1: Use exact part number matching first (handle spaces)
       let matchingItems = [];
       if (baseItem.partNumber) {
+        // Clean part number by removing spaces and try exact match
+        const cleanPartNumber = baseItem.partNumber.replace(/\s+/g, '');
         matchingItems = await db.select().from(items)
-          .where(eq(items.partNumber, baseItem.partNumber));
-        console.log(`📋 Found ${matchingItems.length} items with exact part number: ${baseItem.partNumber}`);
+          .where(
+            or(
+              eq(items.partNumber, baseItem.partNumber),
+              sql`REPLACE(${items.partNumber}, ' ', '') = ${cleanPartNumber}`,
+              sql`REPLACE(${items.partNumber}, ' ', '') ILIKE ${cleanPartNumber}`
+            )
+          );
+        console.log(`📋 Found ${matchingItems.length} items with part number variations of: ${baseItem.partNumber}`);
       }
 
       // Strategy 2: Use normalized part number if available
@@ -1356,60 +1364,50 @@ export class DatabaseStorage implements IStorage {
       const allItemIds = matchingItems.map(item => item.id);
       console.log(`📊 Getting comprehensive data for ${allItemIds.length} matched items`);
 
-      // Get comprehensive data for ALL matched items with enhanced query
-      const comprehensiveData = await db.execute(sql`
-        SELECT 
-          -- معلومات العميل والبند
-          COALESCE(c.name, 'EDC') as client_name,
-          i.item_number as item_id, 
-          i.description as description,
-          COALESCE(i.line_item, '') as line_item,
-          COALESCE(i.part_number, '') as part_no,
-          
-          -- معلومات طلب التسعير (تصحيح رقم الطلب والسعر)
-          COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
-          qr.request_date as rfq_date,
-          qi.quantity as rfq_qty,
-          COALESCE(qr.expiry_date::text, '') as res_date,
-          COALESCE(qi.unit_price::text, '') as customer_price,
-          
-          -- معلومات أمر الشراء
-          COALESCE(po.po_number, '') as po_number,
-          COALESCE(po.po_date::text, '') as po_date, 
-          COALESCE(poi.quantity::text, '') as po_quantity,
-          COALESCE(poi.unit_price::text, '') as po_price,
-          COALESCE((poi.quantity::numeric * poi.unit_price::numeric)::text, '') as po_total,
-          
-          -- معلومات إضافية
-          COALESCE(i.category, 'ELEC') as category,
-          COALESCE(i.unit, 'Each') as uom,
-          
-          -- معلومات المصدر للمراجعة
-          i.id as source_item_id,
-          CASE 
-            WHEN i.id = '${itemId}' THEN 'Original'
-            WHEN i.part_number = '${baseItem.partNumber}' THEN 'PartNumber Match'
-            WHEN i.normalized_part_number = '${baseItem.normalizedPartNumber || ''}' THEN 'Normalized Match'
+      // Get comprehensive data for ALL matched items with parameterized query
+      const comprehensiveData = await db
+        .select({
+          client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
+          item_id: items.itemNumber,
+          description: items.description,
+          line_item: sql<string>`COALESCE(${items.lineItem}, '')`,
+          part_no: sql<string>`COALESCE(${items.partNumber}, '')`,
+          rfq_number: sql<string>`COALESCE(${quotationRequests.customRequestNumber}, ${quotationRequests.requestNumber})`,
+          rfq_date: quotationRequests.requestDate,
+          rfq_qty: quotationItems.quantity,
+          res_date: sql<string>`COALESCE(${quotationRequests.expiryDate}::text, '')`,
+          customer_price: sql<string>`COALESCE(${quotationItems.unitPrice}::text, '')`,
+          po_number: sql<string>`COALESCE(${purchaseOrders.poNumber}, '')`,
+          po_date: sql<string>`COALESCE(${purchaseOrders.poDate}::text, '')`,
+          po_quantity: sql<string>`COALESCE(${purchaseOrderItems.quantity}::text, '')`,
+          po_price: sql<string>`COALESCE(${purchaseOrderItems.unitPrice}::text, '')`,
+          po_total: sql<string>`COALESCE((${purchaseOrderItems.quantity}::numeric * ${purchaseOrderItems.unitPrice}::numeric)::text, '')`,
+          category: sql<string>`COALESCE(${items.category}, 'ELEC')`,
+          uom: sql<string>`COALESCE(${items.unit}, 'Each')`,
+          source_item_id: items.id,
+          match_type: sql<string>`CASE 
+            WHEN ${items.id} = ${itemId} THEN 'Original'
+            WHEN ${items.partNumber} = ${baseItem.partNumber} THEN 'PartNumber Match'
+            WHEN ${items.normalizedPartNumber} = ${baseItem.normalizedPartNumber || ''} THEN 'Normalized Match'
             ELSE 'AI/Similar Match'
-          END as match_type
-          
-        FROM items i
-        LEFT JOIN quotation_items qi ON i.id = qi.item_id
-        LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id  
-        LEFT JOIN clients c ON qr.client_id = c.id
-        LEFT JOIN purchase_order_items poi ON i.id = poi.item_id
-        LEFT JOIN purchase_orders po ON poi.po_id = po.id
-        
-        WHERE i.id = ANY(ARRAY[${allItemIds.map(id => `'${id}'`).join(',')}])
-        ORDER BY 
-          CASE WHEN i.id = '${itemId}' THEN 0 ELSE 1 END,
-          qr.request_date DESC NULLS LAST, 
-          po.po_date DESC NULLS LAST,
-          i.line_item
-      `);
+          END`
+        })
+        .from(items)
+        .leftJoin(quotationItems, eq(items.id, quotationItems.itemId))
+        .leftJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+        .leftJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
+        .leftJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+        .where(inArray(items.id, allItemIds))
+        .orderBy(
+          sql`CASE WHEN ${items.id} = ${itemId} THEN 0 ELSE 1 END`,
+          desc(quotationRequests.requestDate),
+          desc(purchaseOrders.poDate),
+          items.lineItem
+        );
 
-      console.log(`✅ Retrieved ${comprehensiveData.rows.length} comprehensive records`);
-      return comprehensiveData.rows as any[];
+      console.log(`✅ Retrieved ${comprehensiveData.length} comprehensive records`);
+      return comprehensiveData;
       
     } catch (error) {
       console.error('Error in getItemComprehensiveDataUnified:', error);
@@ -1419,35 +1417,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async getBasicItemData(itemId: string): Promise<any[]> {
-    // Fallback method for basic item data
-    const basicData = await db.execute(sql`
-      SELECT 
-        COALESCE(c.name, 'EDC') as client_name,
-        i.item_number as item_id, 
-        i.description as description,
-        COALESCE(i.line_item, '') as line_item,
-        COALESCE(i.part_number, '') as part_no,
-        COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
-        qr.request_date as rfq_date,
-        qi.quantity as rfq_qty,
-        COALESCE(qr.expiry_date::text, '') as res_date,
-        COALESCE(qi.unit_price::text, '') as customer_price,
-        '' as po_number,
-        '' as po_date,
-        '' as po_quantity,
-        '' as po_price,
-        '' as po_total,
-        COALESCE(i.category, 'ELEC') as category,
-        COALESCE(i.unit, 'Each') as uom,
-        'Original' as match_type
-      FROM items i
-      LEFT JOIN quotation_items qi ON i.id = qi.item_id
-      LEFT JOIN quotation_requests qr ON qi.quotation_id = qr.id  
-      LEFT JOIN clients c ON qr.client_id = c.id
-      WHERE i.id = '${itemId}'
-    `);
+    // Fallback method for basic item data using Drizzle
+    const basicData = await db
+      .select({
+        client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
+        item_id: items.itemNumber,
+        description: items.description,
+        line_item: sql<string>`COALESCE(${items.lineItem}, '')`,
+        part_no: sql<string>`COALESCE(${items.partNumber}, '')`,
+        rfq_number: sql<string>`COALESCE(${quotationRequests.customRequestNumber}, ${quotationRequests.requestNumber})`,
+        rfq_date: quotationRequests.requestDate,
+        rfq_qty: quotationItems.quantity,
+        res_date: sql<string>`COALESCE(${quotationRequests.expiryDate}::text, '')`,
+        customer_price: sql<string>`COALESCE(${quotationItems.unitPrice}::text, '')`,
+        po_number: sql<string>`''`,
+        po_date: sql<string>`''`,
+        po_quantity: sql<string>`''`,
+        po_price: sql<string>`''`,
+        po_total: sql<string>`''`,
+        category: sql<string>`COALESCE(${items.category}, 'ELEC')`,
+        uom: sql<string>`COALESCE(${items.unit}, 'Each')`,
+        match_type: sql<string>`'Original'`
+      })
+      .from(items)
+      .leftJoin(quotationItems, eq(items.id, quotationItems.itemId))
+      .leftJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+      .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+      .where(eq(items.id, itemId));
     
-    return basicData.rows as any[];
+    return basicData;
   }
 
   // Get comprehensive data for an item similar to Excel table format
