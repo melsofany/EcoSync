@@ -28,15 +28,13 @@ const SMART_MAPPING_DICTIONARY = {
     'uom', 'UOM', 'Unit', 'UNIT', 'unit', 'وحدة القياس', 'الوحدة'
   ],
   requestDate: [
-    'Request Date', 'REQUEST DATE', 'request date', 'RFQ Date', 'rfq date', 'تاريخ الطلب', 
-    'Date', 'DATE', 'date', 'تاريخ', 'Request_Date', 'RFQ_Date', 'Inquiry Date', 'Order Date'
+    'Request Date', 'REQUEST DATE', 'request date', 'RFQ Date', 'rfq date', 'تاريخ الطلب'
   ],
   expiryDate: [
     'Response Date', 'RESPONSE DATE', 'response date', 'Expiry Date', 'expiry date', 'تاريخ انتهاء العرض'
   ],
   clientName: [
-    'العميل ', 'العميل', 'العملاء', 'Client', 'CLIENT', 'client', 'Customer', 'CUSTOMER', 'customer', 'اسم العميل', 
-    'Buyer', 'BUYER', 'buyer', 'المشتري', 'الجهة', 'جهة الطلب', 'طالب العرض', 'Company', 'COMPANY'
+    'العميل ', 'العميل', 'Client', 'CLIENT', 'client', 'Customer', 'CUSTOMER', 'customer', 'اسم العميل'
   ],
   rfqNumber: [
     'Source File', 'SOURCE FILE', 'source file', 'RFQ No', 'rfq no', 'RFQ NUMBER', 'رقم الطلب'

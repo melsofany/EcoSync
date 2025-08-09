@@ -9,9 +9,9 @@ export function autoMapExcelColumns(excelColumns: string[]): Record<string, stri
     description: ['Description', 'DESCRIPTION', 'description', 'DESC', 'desc'],
     quantity: ['Quantity', 'QUANTITY', 'quantity', 'QTY', 'qty', 'Qty'],
     unit: ['uom', 'UOM', 'Unit', 'UNIT', 'unit'],
-    requestDate: ['Request Date', 'REQUEST DATE', 'request date', 'RFQ Date', 'Date', 'DATE', 'date', 'تاريخ الطلب', 'تاريخ', 'Request_Date'],
+    requestDate: ['Request Date', 'REQUEST DATE', 'request date', 'RFQ Date'],
     expiryDate: ['Response Date', 'RESPONSE DATE', 'response date', 'Expiry Date'],
-    clientName: ['العميل ', 'العميل', 'العملاء', 'Client', 'CLIENT', 'client', 'Customer', 'CUSTOMER', 'Buyer', 'BUYER', 'المشتري', 'الجهة', 'Company', 'COMPANY'],
+    clientName: ['العميل ', 'العميل', 'Client', 'CLIENT', 'client', 'Customer'],
     rfqNumber: ['Source File', 'SOURCE FILE', 'source file', 'RFQ No', 'rfq no'],
     unitPrice: ['price', 'PRICE', 'Price', 'Unit Price', 'unit price']
   };
@@ -35,64 +35,15 @@ export function autoMapExcelColumns(excelColumns: string[]): Record<string, stri
   return mapping;
 }
 
-export function convertExcelDate(value: any): string {
-  if (!value) return '';
-
-  // إذا كان التاريخ عبارة عن string
-  if (typeof value === 'string') {
-    const cleanValue = value.trim();
-    
-    // تجربة تحويل التواريخ النصية المختلفة
-    const dateFormats = [
-      // تنسيقات مختلفة للتاريخ
-      /(\d{1,2})\/(\d{1,2})\/(\d{4})/,  // DD/MM/YYYY or MM/DD/YYYY
-      /(\d{1,2})-(\d{1,2})-(\d{4})/,   // DD-MM-YYYY or MM-DD-YYYY
-      /(\d{4})-(\d{1,2})-(\d{1,2})/,   // YYYY-MM-DD
-      /(\d{1,2})\.(\d{1,2})\.(\d{4})/  // DD.MM.YYYY
-    ];
-
-    for (const format of dateFormats) {
-      const match = cleanValue.match(format);
-      if (match) {
-        let day, month, year;
-        if (format.source.startsWith('(\\d{4})')) {
-          // YYYY-MM-DD format
-          [, year, month, day] = match;
-        } else {
-          // Other formats - assume DD/MM/YYYY
-          [, day, month, year] = match;
-        }
-        
-        const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        if (!isNaN(parsedDate.getTime())) {
-          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        }
-      }
-    }
-
-    // تجربة تحويل مباشر للتاريخ
-    const directDate = new Date(cleanValue);
-    if (!isNaN(directDate.getTime())) {
-      const year = directDate.getFullYear();
-      const month = String(directDate.getMonth() + 1).padStart(2, '0');
-      const day = String(directDate.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-  }
-
-  // إذا كان رقم تسلسلي لـ Excel
-  if (typeof value === 'number' && !isNaN(value)) {
-    const utc_days = Math.floor(value - 25569);
-    const utc_value = utc_days * 86400;
-    const date_info = new Date(utc_value * 1000);
-    const year = date_info.getFullYear();
-    const month = String(date_info.getMonth() + 1).padStart(2, '0');
-    const day = String(date_info.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  // تاريخ افتراضي إذا فشل التحويل
-  return new Date().toISOString().split('T')[0];
+export function convertExcelDate(serialDate: any): string {
+  if (!serialDate || isNaN(serialDate)) return '';
+  const utc_days = Math.floor(serialDate - 25569);
+  const utc_value = utc_days * 86400;
+  const date_info = new Date(utc_value * 1000);
+  const year = date_info.getFullYear();
+  const month = String(date_info.getMonth() + 1).padStart(2, '0');
+  const day = String(date_info.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 export function processExcelRowForQuotation(row: any, mapping: Record<string, string>, index: number) {
@@ -104,7 +55,7 @@ export function processExcelRowForQuotation(row: any, mapping: Record<string, st
     requestDate: convertExcelDate(row[mapping.requestDate]),
     expiryDate: convertExcelDate(row[mapping.expiryDate]),
     status: 'pending',
-    clientName: (row[mapping.clientName] && row[mapping.clientName].toString().trim()) || 'غير محدد',
+    clientName: row[mapping.clientName] || 'غير محدد',
     itemNumber: '',
     kItemId: '',
     partNumber: row[mapping.partNumber] || '',
