@@ -1372,8 +1372,8 @@ export class DatabaseStorage implements IStorage {
         WHERE REPLACE(LOWER(COALESCE(i.part_number, '')), ' ', '') = LOWER(${cleanPartNumber})
         
         ORDER BY 
-          CASE WHEN rfq_date IS NOT NULL THEN rfq_date ELSE '1900-01-01'::date END DESC,
-          CASE WHEN po_date IS NOT NULL THEN po_date::date ELSE '1900-01-01'::date END DESC
+          rfq_date DESC NULLS LAST,
+          po_date DESC NULLS LAST
       `);
 
       console.log(`📊 Excel filter result: ${result.length} records for part ${partNumber}`);
