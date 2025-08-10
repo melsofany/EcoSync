@@ -1458,18 +1458,12 @@ export class DatabaseStorage implements IStorage {
         .where(eq(items.id, itemId));
 
       console.log(`🎯 Total RFQ records: ${rfqData.length}`);
+      console.log(`🎯 Total PO records: ${poData.length}`);
       
-      // Show ALL records for this item (no filtering)
-      const historicalRfqData = rfqData;
+      // Show ALL records INCLUDING ZERO QUANTITIES - NO FILTERING
+      const allResults = [...rfqData, ...poData];
       
-      console.log(`✅ All RFQ records for item: ${historicalRfqData.length}`);
-      
-      // Remove exact duplicates that might cause confusion
-      const uniqueRfqData = this.removeDuplicatesByKey(historicalRfqData, ['rfq_number', 'rfq_date']);
-      const uniquePoData = this.removeDuplicatesByKey(poData, ['po_number', 'po_date']);
-      
-      // Combine and sort results
-      const allResults = [...uniqueRfqData, ...uniquePoData];
+      console.log(`✅ All records (including zero quantities): ${allResults.length}`);
       
       // Sort by date (RFQ date first, then PO date)
       allResults.sort((a, b) => {
@@ -1478,7 +1472,6 @@ export class DatabaseStorage implements IStorage {
         return bDate.getTime() - aDate.getTime(); // Most recent first
       });
 
-      console.log(`📊 After dedup: ${uniqueRfqData.length} unique RFQ, ${uniquePoData.length} unique PO`);
       console.log(`✅ Final result: ${allResults.length} records for item ${baseItem.itemNumber}`);
       
       return allResults;

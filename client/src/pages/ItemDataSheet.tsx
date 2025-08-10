@@ -258,12 +258,13 @@ export default function ItemDataSheet() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* عرض طلبات التسعير مع أوامر الشراء المرتبطة */}
+                {/* عرض جميع طلبات التسعير INCLUDING ZERO QUANTITIES مع أوامر الشراء المرتبطة */}
                 {itemData.pricingRequests?.map((req, reqIndex) => {
-                  // البحث عن أوامر الشراء المرتبطة بنفس الكمية أو السعر تقريباً
+                  // البحث عن أوامر الشراء المرتبطة - بما في ذلك الكميات الصفر
                   const relatedPOs = itemData.purchaseOrders?.filter(po => 
                     Math.abs(po.unitPrice - req.unitPrice) < 500 || // نفس السعر تقريباً
-                    po.quantity === req.quantity // أو نفس الكمية
+                    po.quantity === req.quantity || // أو نفس الكمية
+                    (req.quantity === 0 && po.quantity === 0) // أو كلاهما صفر
                   ) || [];
                   
                   if (relatedPOs.length === 0) {
@@ -274,9 +275,12 @@ export default function ItemDataSheet() {
                           {req.requestNumber}
                         </TableCell>
                         <TableCell className="border bg-blue-50">{req.clientName || 'عميل غير محدد'}</TableCell>
-                        <TableCell className="border text-center font-semibold bg-blue-50">{req.quantity}</TableCell>
+                        <TableCell className="border text-center font-semibold bg-blue-50">
+                          {req.quantity} {req.quantity === 0 && <span className="text-yellow-600">(صفر)</span>}
+                        </TableCell>
                         <TableCell className="border text-left font-mono bg-blue-50">
                           {req.unitPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                          {req.unitPrice === 0 && <span className="text-yellow-600"> (صفر)</span>}
                         </TableCell>
                         <TableCell className="border text-center text-gray-500 bg-gray-50" colSpan={4}>
                           <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
@@ -299,10 +303,11 @@ export default function ItemDataSheet() {
                             {req.clientName || 'عميل غير محدد'}
                           </TableCell>
                           <TableCell className="border text-center font-semibold bg-blue-50" rowSpan={relatedPOs.length}>
-                            {req.quantity}
+                            {req.quantity} {req.quantity === 0 && <span className="text-yellow-600">(صفر)</span>}
                           </TableCell>
                           <TableCell className="border text-left font-mono bg-blue-50" rowSpan={relatedPOs.length}>
                             {req.unitPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                            {req.unitPrice === 0 && <span className="text-yellow-600"> (صفر)</span>}
                           </TableCell>
                         </>
                       )}
