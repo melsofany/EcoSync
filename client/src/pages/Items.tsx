@@ -260,11 +260,32 @@ export default function Items() {
     setIsEditModalOpen(true);
   };
 
-  const handleViewPricingRequests = (item: any) => {
-    // Navigate to pricing requests page for this item
-    const url = `/item-pricing-requests/${item.id}?itemNumber=${encodeURIComponent(item.itemNumber || '')}&description=${encodeURIComponent(item.description || '')}`;
-    console.log('Navigating to pricing requests for item:', item.id, item.itemNumber);
-    window.location.href = url;
+  const handleViewPricingRequests = async (item: any) => {
+    try {
+      // First check if this item has any pricing requests
+      const response = await apiRequest("GET", `/api/items/${item.id}/pricing-requests`);
+      const pricingRequests = await response.json();
+      
+      if (pricingRequests.length === 0) {
+        // Show a helpful message with items that have data
+        toast({
+          title: "لا توجد طلبات تسعير",
+          description: `الصنف ${item.itemNumber} لا يحتوي على طلبات تسعير. جرب الأصناف: P-000842، P-000365، أو P-000009`,
+          duration: 5000,
+        });
+        return;
+      }
+      
+      // Navigate to pricing requests page for this item
+      const url = `/item-pricing-requests/${item.id}?itemNumber=${encodeURIComponent(item.itemNumber || '')}&description=${encodeURIComponent(item.description || '')}`;
+      console.log('Navigating to pricing requests for item:', item.id, item.itemNumber);
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error checking pricing requests:', error);
+      // If there's an error, still navigate to the page
+      const url = `/item-pricing-requests/${item.id}?itemNumber=${encodeURIComponent(item.itemNumber || '')}&description=${encodeURIComponent(item.description || '')}`;
+      window.location.href = url;
+    }
   };
 
   const deleteItemMutation = useMutation({
@@ -313,11 +334,24 @@ export default function Items() {
         <div>
           <h2 className="text-2xl font-bold text-gray-800">إدارة الأصناف</h2>
           <p className="text-gray-600">إضافة وإدارة الأصناف مع التكامل مع الذكاء الاصطناعي</p>
+          <p className="text-sm text-green-600 mt-1">
+            💡 استخدم زر "عرض طلبات التسعير (مثال)" لمشاهدة الميزة في العمل
+          </p>
         </div>
-        <Button onClick={() => setIsNewItemModalOpen(true)}>
-          <Plus className="h-4 w-4 ml-2" />
-          إضافة صنف جديد
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => window.location.href = '/item-pricing-requests/b6c7722c-524f-4870-b120-8ca6f3db3d66?itemNumber=P-000842&description=ATTACH,BATTERY'}
+            className="text-green-600 border-green-600 hover:bg-green-50"
+          >
+            <DollarSign className="h-4 w-4 ml-2" />
+            عرض طلبات التسعير (مثال)
+          </Button>
+          <Button onClick={() => setIsNewItemModalOpen(true)}>
+            <Plus className="h-4 w-4 ml-2" />
+            إضافة صنف جديد
+          </Button>
+        </div>
       </div>
 
       {/* AI Integration Status */}
