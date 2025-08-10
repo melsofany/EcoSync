@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Eye, Edit, Trash2, Check, Clock } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Check, Clock, DollarSign } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Textarea } from "@/components/ui/textarea";
 import NewItemModal from "@/components/modals/NewItemModal";
@@ -254,6 +254,12 @@ export default function Items() {
     setIsEditModalOpen(true);
   };
 
+  const handleViewPricingRequests = (item: any) => {
+    // Navigate to pricing requests page for this item
+    const url = `/item-pricing-requests/${item.id}?itemNumber=${encodeURIComponent(item.itemNumber || '')}&description=${encodeURIComponent(item.description || '')}`;
+    window.location.href = url;
+  };
+
   const deleteItemMutation = useMutation({
     mutationFn: async (itemId: string) => {
       const response = await apiRequest("DELETE", `/api/items/${itemId}`);
@@ -448,6 +454,15 @@ export default function Items() {
                             onClick={() => handleViewItem(item)}
                           >
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="طلبات التسعير"
+                            onClick={() => handleViewPricingRequests(item)}
+                            className="text-green-600 hover:text-green-800"
+                          >
+                            <DollarSign className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="ghost" 

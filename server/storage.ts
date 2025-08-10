@@ -88,6 +88,7 @@ export interface IStorage {
   deleteItem(id: string): Promise<void>;
   getNextItemNumber(): Promise<string>;
   findSimilarItems(description: string, partNumber?: string): Promise<Item[]>;
+  getItemPricingRequests(itemId: string): Promise<any[]>;
 
   // Quotation items
   addQuotationItem(item: InsertQuotationItem): Promise<QuotationItem>;
@@ -1753,6 +1754,61 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // Get pricing requests for a specific item
+  async getItemPricingRequests(itemId: string): Promise<any[]> {
+    try {
+      console.log('Getting pricing requests for item ID:', itemId);
+      
+      const results = await db
+        .select({
+          id: quotationItems.id,
+          quotationNumber: quotationRequests.requestNumber,
+          customQuotationNumber: quotationRequests.customRequestNumber,
+          clientName: clients.name,
+          requestDate: quotationRequests.requestDate,
+          status: quotationRequests.status,
+          quantity: quotationItems.quantity,
+          unit: items.unit,
+          customerPrice: quotationItems.unitPrice,
+          supplierPrice: quotationItems.supplierPrice,
+          notes: quotationRequests.notes,
+          // Purchase order info if exists
+          purchaseOrderNumber: purchaseOrders.poNumber,
+          purchaseOrderStatus: purchaseOrders.status,
+          purchaseOrderDate: purchaseOrders.poDate,
+        })
+        .from(quotationItems)
+        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+        .innerJoin(items, eq(quotationItems.itemId, items.id))
+        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+        .leftJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
+        .leftJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+        .where(eq(quotationItems.itemId, itemId))
+        .orderBy(desc(quotationRequests.requestDate));
+
+      // Format the results
+      const formattedResults = results.map(row => ({
+        id: row.id,
+        quotationNumber: row.customQuotationNumber || row.quotationNumber,
+        clientName: row.clientName || 'عميل غير محدد',
+        requestDate: row.requestDate?.toISOString() || new Date().toISOString(),
+        status: row.status || 'pending',
+        quantity: parseInt(row.quantity) || 0,
+        unit: row.unit || 'Piece',
+        customerPrice: row.customerPrice ? parseFloat(row.customerPrice) : undefined,
+        supplierPrice: row.supplierPrice ? parseFloat(row.supplierPrice) : undefined,
+        purchaseOrderNumber: row.purchaseOrderNumber || undefined,
+        purchaseOrderStatus: row.purchaseOrderStatus || undefined,
+        notes: row.notes || undefined,
+      }));
+
+      console.log('Found pricing requests:', formattedResults.length);
+      return formattedResults;
+    } catch (error) {
+      console.error('Error getting item pricing requests:', error);
+      return [];
+    }
+  }
 
 }
 

@@ -572,6 +572,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get pricing requests for a specific item
+  app.get("/api/items/:itemId/pricing-requests", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      console.log('Getting pricing requests for item:', itemId);
+      
+      const pricingRequests = await storage.getItemPricingRequests(itemId);
+      console.log('Found pricing requests:', pricingRequests.length);
+      
+      res.json(pricingRequests);
+    } catch (error) {
+      console.error("Get item pricing requests error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.post("/api/items", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
     try {
       const userId = req.session?.user?.id;

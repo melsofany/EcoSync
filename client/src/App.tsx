@@ -20,6 +20,7 @@ import Suppliers from "@/pages/Suppliers";
 import SupplierPricing from "@/pages/SupplierPricing";
 import CustomerPricing from "@/pages/CustomerPricingNew";
 import CreatePurchaseOrder from "@/pages/CreatePurchaseOrder";
+import ItemPricingRequests from "@/pages/ItemPricingRequests";
 import NotFound from "@/pages/not-found";
 import TelegramBot from "@/pages/TelegramBot";
 
@@ -55,6 +56,7 @@ function Router() {
         <Route path="/quotations" component={Quotations} />
         <Route path="/quotations/:id" component={QuotationDetail} />
         <Route path="/items" component={Items} />
+        <Route path="/item-pricing-requests/:itemId" component={ItemPricingRequests} />
         <Route path="/clients" component={Clients} />
         <Route path="/suppliers" component={Suppliers} />
         <Route path="/supplier-pricing" component={SupplierPricing} />
