@@ -1798,17 +1798,37 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log('Getting related purchase orders for item ID:', itemId);
       
-      // First get pricing requests for this item to find quotation numbers
+      // Method 1: Get purchase orders through quotation numbers
       const pricingRequests = await this.getItemPricingRequests(itemId);
       const quotationNumbers = pricingRequests.map(pr => pr.quotationNumber);
       
-      if (quotationNumbers.length === 0) {
-        console.log('No pricing requests found for item, returning empty purchase orders');
-        return [];
+      let quotationBasedPOs: any[] = [];
+      if (quotationNumbers.length > 0) {
+        quotationBasedPOs = await db
+          .select({
+            id: purchaseOrders.id,
+            poNumber: purchaseOrders.poNumber,
+            quotationNumber: purchaseOrders.quotationNumber,
+            supplierName: suppliers.name,
+            orderDate: purchaseOrders.orderDate,
+            expectedDelivery: purchaseOrders.expectedDelivery,
+            status: purchaseOrders.status,
+            totalAmount: purchaseOrders.totalAmount,
+            currency: purchaseOrders.currency,
+            notes: purchaseOrders.notes,
+            poDate: purchaseOrders.orderDate,
+            unitPrice: sql<string>`NULL`,
+            quantity: sql<number>`NULL`,
+            source: sql<string>`'quotation'`
+          })
+          .from(purchaseOrders)
+          .leftJoin(suppliers, eq(purchaseOrders.supplierId, suppliers.id))
+          .where(sql`${purchaseOrders.quotationNumber} IN (${sql.raw(quotationNumbers.map(q => `'${q}'`).join(','))})`)
+          .orderBy(desc(purchaseOrders.orderDate));
       }
-      
-      // Get purchase orders linked to these quotation numbers
-      const results = await db
+
+      // Method 2: Get purchase orders that directly contain this item through purchaseOrderItems
+      const directPOs = await db
         .select({
           id: purchaseOrders.id,
           poNumber: purchaseOrders.poNumber,
@@ -1820,29 +1840,50 @@ export class DatabaseStorage implements IStorage {
           totalAmount: purchaseOrders.totalAmount,
           currency: purchaseOrders.currency,
           notes: purchaseOrders.notes,
+          poDate: purchaseOrders.orderDate,
+          unitPrice: purchaseOrderItems.unitPrice,
+          quantity: purchaseOrderItems.quantity,
+          source: sql<string>`'direct'`
         })
-        .from(purchaseOrders)
+        .from(purchaseOrderItems)
+        .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
         .leftJoin(suppliers, eq(purchaseOrders.supplierId, suppliers.id))
-        .where(quotationNumbers.length > 0 ? 
-          sql`${purchaseOrders.quotationNumber} IN (${sql.raw(quotationNumbers.map(q => `'${q}'`).join(','))})` : 
-          sql`1=0`)
+        .where(eq(purchaseOrderItems.itemId, itemId))
         .orderBy(desc(purchaseOrders.orderDate));
 
-      console.log('Found related purchase orders:', results.length);
-      return results.map(result => ({
+      // Combine and deduplicate results
+      const allPOs = [...quotationBasedPOs, ...directPOs];
+      const uniquePOs = allPOs.reduce((acc, current) => {
+        const existing = acc.find(po => po.id === current.id);
+        if (!existing) {
+          acc.push(current);
+        } else if (current.source === 'direct' && existing.source === 'quotation') {
+          // Prefer direct PO data as it has actual quantities and prices
+          const index = acc.findIndex(po => po.id === current.id);
+          acc[index] = current;
+        }
+        return acc;
+      }, [] as any[]);
+
+      console.log('Found quotation-based purchase orders:', quotationBasedPOs.length);
+      console.log('Found direct purchase orders:', directPOs.length);
+      console.log('Total unique purchase orders:', uniquePOs.length);
+      
+      return uniquePOs.map(result => ({
         id: result.id,
         poNumber: result.poNumber,
         quotationNumber: result.quotationNumber,
         supplierName: result.supplierName || 'مورد غير محدد',
         orderDate: result.orderDate,
+        poDate: result.poDate,
         expectedDelivery: result.expectedDelivery,
         status: result.status,
         totalAmount: result.totalAmount,
         currency: result.currency || 'EGP',
         notes: result.notes,
-        itemQuantity: 1,
-        itemUnitPrice: result.totalAmount || 0,
-        itemTotalPrice: result.totalAmount || 0
+        unitPrice: result.unitPrice,
+        quantity: result.quantity,
+        source: result.source
       }));
     } catch (error) {
       console.error('Error getting related purchase orders:', error);
