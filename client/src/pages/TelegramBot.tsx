@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Bot, Send, CheckCircle, XCircle, Users, MessageSquare, Settings, UserPlus, Edit, Trash2 } from "lucide-react";
+import { Bot, Send, CheckCircle, XCircle, Users, MessageSquare, Settings, UserPlus, Edit, Trash2, Plus, Building } from "lucide-react";
 
 interface BotStatus {
   status: string;
@@ -34,6 +34,8 @@ export default function TelegramBot() {
   const [testPartNumber, setTestPartNumber] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [telegramUserId, setTelegramUserId] = useState("");
+  const [showExternalUserDialog, setShowExternalUserDialog] = useState(false);
+  const [externalTelegramUserId, setExternalTelegramUserId] = useState("");
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
@@ -61,9 +63,14 @@ export default function TelegramBot() {
     refetchInterval: 10000 // Refresh every 10 seconds
   });
 
-  // Get all users
-  const { data: users, isLoading: usersLoading } = useQuery<User[]>({
+  // Get all users (internal system users)
+  const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useQuery<User[]>({
     queryKey: ["/api/users"]
+  });
+
+  // Get all authorized telegram users (internal + external)
+  const { data: telegramUsers, isLoading: telegramUsersLoading, refetch: refetchTelegramUsers } = useQuery({
+    queryKey: ["/api/telegram/users"]
   });
 
   // Test analysis mutation
@@ -126,12 +133,76 @@ export default function TelegramBot() {
     },
   });
 
+  // Add external user mutation
+  const addExternalUserMutation = useMutation({
+    mutationFn: async (telegramUserId: string) => {
+      const response = await fetch("/api/telegram/external-users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegramUserId })
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "✅ تم بنجاح",
+        description: "تم إضافة المستخدم الخارجي بنجاح",
+      });
+      refetchTelegramUsers();
+      setShowExternalUserDialog(false);
+      setExternalTelegramUserId("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ خطأ",
+        description: error.message || "فشل في إضافة المستخدم الخارجي",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Remove external user mutation
+  const removeExternalUserMutation = useMutation({
+    mutationFn: async (telegramUserId: string) => {
+      const response = await fetch(`/api/telegram/external-users/${telegramUserId}`, {
+        method: "DELETE"
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "✅ تم بنجاح",
+        description: "تم حذف المستخدم الخارجي بنجاح",
+      });
+      refetchTelegramUsers();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ خطأ",
+        description: error.message || "فشل في حذف المستخدم الخارجي",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSaveTelegramId = () => {
     if (editingUser && telegramUserId.trim()) {
       updateTelegramUserMutation.mutate({
         userId: editingUser.id,
         telegramUserId: telegramUserId.trim()
       });
+    }
+  };
+
+  const handleAddExternalUser = () => {
+    if (externalTelegramUserId.trim()) {
+      addExternalUserMutation.mutate(externalTelegramUserId.trim());
     }
   };
 
@@ -339,11 +410,21 @@ export default function TelegramBot() {
             إدارة المستخدمين المخولين
           </CardTitle>
           <CardDescription>
-            جميع المستخدمين المخولين لاستخدام البوت
+            جميع المستخدمين المخولين لاستخدام البوت (داخليين وخارجيين)
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {usersLoading ? (
+          <div className="flex gap-2 mb-6">
+            <Button 
+              variant="default"
+              size="sm"
+              onClick={() => setShowExternalUserDialog(true)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              إضافة مستخدم خارجي
+            </Button>
+          </div>
+          {telegramUsersLoading ? (
             <div className="space-y-2">
               <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
               <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
@@ -353,7 +434,7 @@ export default function TelegramBot() {
               <TableHeader>
                 <TableRow>
                   <TableHead>الاسم الكامل</TableHead>
-                  <TableHead>اسم المستخدم</TableHead>
+                  <TableHead>النوع</TableHead>
                   <TableHead>الدور</TableHead>
                   <TableHead>معرف تليجرام</TableHead>
                   <TableHead>الحالة</TableHead>
@@ -361,10 +442,16 @@ export default function TelegramBot() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users?.map((user) => (
-                  <TableRow key={user.id}>
+                {/* Internal Users */}
+                {telegramUsers?.internal?.map((user: any) => (
+                  <TableRow key={user.telegramUserId}>
                     <TableCell className="font-medium">{user.fullName}</TableCell>
-                    <TableCell>{user.username}</TableCell>
+                    <TableCell>
+                      <Badge variant="default">
+                        <Building className="h-3 w-3 mr-1" />
+                        داخلي
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={user.role === 'it_admin' ? 'default' : 'secondary'}>
                         {user.role === 'it_admin' ? 'مدير تقني' : 
@@ -375,24 +462,13 @@ export default function TelegramBot() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {user.telegramUserId ? (
-                        <Badge variant="outline">{user.telegramUserId}</Badge>
-                      ) : (
-                        <Badge variant="secondary">غير محدد</Badge>
-                      )}
+                      <Badge variant="outline">{user.telegramUserId}</Badge>
                     </TableCell>
                     <TableCell>
-                      {user.telegramUserId ? (
-                        <Badge className="bg-green-100 text-green-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          مفعل
-                        </Badge>
-                      ) : (
-                        <Badge variant="destructive">
-                          <XCircle className="h-3 w-3 mr-1" />
-                          غير مفعل
-                        </Badge>
-                      )}
+                      <Badge className="bg-green-100 text-green-800">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        مفعل
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Dialog>
@@ -465,6 +541,42 @@ export default function TelegramBot() {
                     </TableCell>
                   </TableRow>
                 ))}
+                
+                {/* External Users */}
+                {telegramUsers?.external?.map((user: any) => (
+                  <TableRow key={user.telegramUserId}>
+                    <TableCell className="font-medium">{user.fullName}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        <UserPlus className="h-3 w-3 mr-1" />
+                        خارجي
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">خارجي</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{user.telegramUserId}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-green-100 text-green-800">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        مفعل
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeExternalUserMutation.mutate(user.telegramUserId)}
+                        disabled={removeExternalUserMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        حذف
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           )}
@@ -503,6 +615,55 @@ export default function TelegramBot() {
           </div>
         </CardContent>
       </Card>
+
+      {/* External User Add Dialog */}
+      <Dialog open={showExternalUserDialog} onOpenChange={setShowExternalUserDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>إضافة مستخدم خارجي</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="externalTelegramId">معرف تليجرام (User ID)</Label>
+              <Input
+                id="externalTelegramId"
+                value={externalTelegramUserId}
+                onChange={(e) => setExternalTelegramUserId(e.target.value)}
+                placeholder="123456789"
+                type="number"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                يمكن الحصول على المعرف عبر البوت @userinfobot في تليجرام
+              </p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleAddExternalUser}
+                disabled={!externalTelegramUserId.trim() || addExternalUserMutation.isPending}
+              >
+                {addExternalUserMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    جاري الإضافة...
+                  </>
+                ) : (
+                  "إضافة"
+                )}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowExternalUserDialog(false);
+                  setExternalTelegramUserId("");
+                }}
+              >
+                إلغاء
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

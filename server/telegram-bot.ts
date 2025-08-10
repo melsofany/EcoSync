@@ -1,7 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { db } from './db';
 import { items, quotationRequests, quotationItems, clients, users } from '../shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 // Configuration
 const TELEGRAM_BOT_TOKEN = '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
@@ -388,6 +388,71 @@ class QortobaAnalysisBot {
   async reloadAuthorizedUsers() {
     AUTHORIZED_USERS = []; // Clear current list
     await this.loadAuthorizedUsers();
+  }
+
+  // Add external user by Telegram ID only
+  async addExternalUser(telegramUserId: string) {
+    try {
+      // Check if already exists
+      if (AUTHORIZED_USERS.includes(telegramUserId)) {
+        return { success: false, message: 'المستخدم موجود مسبقاً' };
+      }
+      
+      // Add to authorized users list
+      AUTHORIZED_USERS.push(telegramUserId);
+      
+      console.log(`📱 [TELEGRAM BOT] Added external user: ${telegramUserId}`);
+      return { success: true, message: 'تم إضافة المستخدم الخارجي بنجاح' };
+    } catch (error) {
+      console.error('Error adding external user:', error);
+      return { success: false, message: 'حدث خطأ في إضافة المستخدم' };
+    }
+  }
+
+  // Remove external user
+  async removeExternalUser(telegramUserId: string) {
+    try {
+      const index = AUTHORIZED_USERS.indexOf(telegramUserId);
+      if (index > -1) {
+        AUTHORIZED_USERS.splice(index, 1);
+        console.log(`📱 [TELEGRAM BOT] Removed external user: ${telegramUserId}`);
+        return { success: true, message: 'تم حذف المستخدم الخارجي بنجاح' };
+      }
+      return { success: false, message: 'المستخدم غير موجود' };
+    } catch (error) {
+      console.error('Error removing external user:', error);
+      return { success: false, message: 'حدث خطأ في حذف المستخدم' };
+    }
+  }
+
+  // Get all authorized users (both internal and external)
+  async getAllAuthorizedUsers() {
+    // Get internal users with Telegram IDs
+    const internalUsers = await db
+      .select({
+        telegramUserId: users.telegramUserId,
+        fullName: users.fullName,
+        role: users.role
+      })
+      .from(users)
+      .where(sql`${users.telegramUserId} IS NOT NULL`);
+
+    // External users (those in AUTHORIZED_USERS but not in database)
+    const internalTelegramIds = internalUsers.map(u => u.telegramUserId);
+    const externalUsers = AUTHORIZED_USERS
+      .filter(id => !internalTelegramIds.includes(id))
+      .map(id => ({
+        telegramUserId: id,
+        fullName: 'مستخدم خارجي',
+        role: 'external',
+        type: 'external'
+      }));
+
+    return {
+      internal: internalUsers.map(u => ({...u, type: 'internal'})),
+      external: externalUsers,
+      all: [...internalUsers.map(u => ({...u, type: 'internal'})), ...externalUsers]
+    };
   }
 
   private async formatNewItemMessage(

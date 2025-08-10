@@ -2554,6 +2554,62 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Get all authorized users (internal + external)
+  app.get("/api/telegram/users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { telegramBot } = await import("./telegram-bot");
+      const users = await telegramBot.getAllAuthorizedUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Get telegram users error:", error);
+      res.status(500).json({ message: "خطأ في جلب المستخدمين" });
+    }
+  });
+
+  // Add external user to bot
+  app.post("/api/telegram/external-users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { telegramUserId } = req.body;
+      
+      if (!telegramUserId) {
+        return res.status(400).json({ message: "معرف تليجرام مطلوب" });
+      }
+
+      const { telegramBot } = await import("./telegram-bot");
+      const result = await telegramBot.addExternalUser(telegramUserId);
+      
+      if (result.success) {
+        await logActivity(req, "add_external_telegram_user", "telegram", telegramUserId, `Added external user: ${telegramUserId}`);
+        res.json(result);
+      } else {
+        res.status(400).json(result);
+      }
+    } catch (error) {
+      console.error("Add external user error:", error);
+      res.status(500).json({ message: "خطأ في إضافة المستخدم الخارجي" });
+    }
+  });
+
+  // Remove external user from bot
+  app.delete("/api/telegram/external-users/:telegramUserId", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { telegramUserId } = req.params;
+      
+      const { telegramBot } = await import("./telegram-bot");
+      const result = await telegramBot.removeExternalUser(telegramUserId);
+      
+      if (result.success) {
+        await logActivity(req, "remove_external_telegram_user", "telegram", telegramUserId, `Removed external user: ${telegramUserId}`);
+        res.json(result);
+      } else {
+        res.status(400).json(result);
+      }
+    } catch (error) {
+      console.error("Remove external user error:", error);
+      res.status(500).json({ message: "خطأ في حذف المستخدم الخارجي" });
+    }
+  });
+
   // Update user telegram ID (IT admin only)
   app.patch("/api/users/:userId", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
