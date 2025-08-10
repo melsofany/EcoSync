@@ -443,14 +443,16 @@ export class DatabaseStorage implements IStorage {
       // Import dynamically to avoid circular dependency
       setTimeout(async () => {
         try {
+          console.log(`📱 [STORAGE] Triggering Telegram analysis for item: ${item.id} - ${item.partNumber}`);
           const { telegramBot } = await import('./telegram-bot');
           await telegramBot.sendNewItemAnalysis(item.id);
+          console.log(`✅ [STORAGE] Telegram analysis triggered successfully for: ${item.partNumber}`);
         } catch (error) {
-          console.error('Error sending Telegram notification for new item:', error);
+          console.error('❌ [STORAGE] Error sending Telegram notification for new item:', error);
         }
       }, 1000); // Delay to ensure database transaction is committed
     } catch (error) {
-      console.error('Error initiating Telegram notification:', error);
+      console.error('❌ [STORAGE] Error initiating Telegram notification:', error);
     }
     
     return item;
