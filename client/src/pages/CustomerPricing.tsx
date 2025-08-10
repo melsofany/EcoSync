@@ -170,7 +170,9 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 </tr>
               </thead>
               <tbody>
-                {detailedPricing.map((record: any, index: number) => (
+                {detailedPricing
+                  .filter((record: any) => record.rfq_number !== '25R00001') // Filter out current RFQ from historical display
+                  .map((record: any, index: number) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 p-2 text-right">{record.po_total || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.po_price ? formatCurrency(parseFloat(record.po_price)) : '-'}</td>
