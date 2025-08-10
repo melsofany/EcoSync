@@ -234,7 +234,7 @@ export default function ItemPricingRequests() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-blue-600" />
-            طلبات التسعير وأوامر الشراء المرتبطة
+            طلبات التسعير وأوامر الشراء من العملاء (P25E)
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -249,13 +249,13 @@ export default function ItemPricingRequests() {
                   <TableHead className="text-right bg-blue-50">الكمية</TableHead>
                   <TableHead className="text-right bg-blue-50">سعر العميل</TableHead>
                   <TableHead className="text-right bg-blue-50">حالة الطلب</TableHead>
-                  {/* أمر الشراء */}
-                  <TableHead className="text-right bg-green-50">رقم أمر الشراء</TableHead>
-                  <TableHead className="text-right bg-green-50">المورد</TableHead>
+                  {/* أمر الشراء من العميل */}
+                  <TableHead className="text-right bg-green-50">أمر شراء العميل (P25E)</TableHead>
+                  <TableHead className="text-right bg-green-50">العميل</TableHead>
                   <TableHead className="text-right bg-green-50">تاريخ الأمر</TableHead>
-                  <TableHead className="text-right bg-green-50">سعر الوحدة</TableHead>
-                  <TableHead className="text-right bg-green-50">الإجمالي</TableHead>
-                  <TableHead className="text-right bg-green-50">حالة الأمر</TableHead>
+                  <TableHead className="text-right bg-green-50">قيمة الطلب</TableHead>
+                  <TableHead className="text-right bg-green-50">إجمالي الطلب</TableHead>
+                  <TableHead className="text-right bg-green-50">حالة الطلب</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -333,23 +333,25 @@ export default function ItemPricingRequests() {
                         </TableCell>
                         <TableCell className="bg-blue-50/50">{getStatusBadge(request.status)}</TableCell>
                         
-                        {/* أمر الشراء */}
+                        {/* أمر الشراء من العميل */}
                         <TableCell className="font-medium text-green-600 bg-green-50/50">
                           {matchingPO?.poNumber ? (
                             <div className="flex items-center gap-2">
-                              <span className="font-mono">{matchingPO.poNumber}</span>
-                              <span className="text-xs text-green-600">← {request.quotationNumber}</span>
+                              <span className="font-mono bg-green-100 px-2 py-1 rounded">{matchingPO.poNumber}</span>
+                              <span className="text-xs text-green-600">← طلب {request.quotationNumber}</span>
                             </div>
                           ) : (
                             <div className="text-gray-400 text-center">
-                              <span>لا يوجد أمر شراء</span>
-                              <div className="text-xs">لـ {request.quotationNumber}</div>
+                              <span>لا يوجد أمر شراء من العميل</span>
+                              <div className="text-xs">لطلب التسعير {request.quotationNumber}</div>
                             </div>
                           )}
                         </TableCell>
                         <TableCell className="bg-green-50/50">
-                          {matchingPO?.supplierName || (
-                            <span className="text-gray-400">لا يوجد</span>
+                          {matchingPO?.poNumber ? (
+                            <span className="text-green-600 font-medium">{request.clientName}</span>
+                          ) : (
+                            <span className="text-gray-400">لا يوجد عميل</span>
                           )}
                         </TableCell>
                         <TableCell className="bg-green-50/50">
@@ -425,7 +427,7 @@ export default function ItemPricingRequests() {
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <ShoppingCart className="h-4 w-4 text-green-500" />
-                  <span className="text-gray-600">أوامر الشراء:</span>
+                  <span className="text-gray-600">أوامر شراء العملاء (P25E):</span>
                   <span className="font-medium text-green-600">{(purchaseOrders || []).length}</span>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">

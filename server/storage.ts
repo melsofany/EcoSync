@@ -1836,9 +1836,12 @@ export class DatabaseStorage implements IStorage {
         })
         .from(purchaseOrders)
         .leftJoin(suppliers, eq(purchaseOrders.supplierId, suppliers.id))
-        .where(quotationNumbers.length > 0 ? 
-          sql`${purchaseOrders.quotationNumber} = ANY(${quotationNumbers})` : 
-          sql`1=0`)
+        .where(and(
+          quotationNumbers.length > 0 ? 
+            sql`${purchaseOrders.quotationNumber} IN (${sql.raw(quotationNumbers.map(q => `'${q}'`).join(','))})` : 
+            sql`1=0`,
+          sql`${purchaseOrders.poNumber} LIKE 'P25E%'`
+        ))
         .orderBy(desc(purchaseOrders.orderDate));
 
       console.log('Found related purchase orders:', results.length);
