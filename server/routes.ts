@@ -2732,6 +2732,34 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Item unification with AI
+  app.post('/api/unify-items', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { limit = 50 } = req.body;
+      const { unifyItemsWithAI } = await import('./item-unification.js');
+      const result = await unifyItemsWithAI(limit);
+      await logActivity(req, "unify_items", "system", "", `AI Unification: ${result.itemsUnified} items unified from ${result.totalItemsAnalyzed} analyzed (${result.confidence}% confidence)`);
+      res.json(result);
+    } catch (error) {
+      console.error('Error in item unification:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
+  // Analyze items for duplication
+  app.post('/api/analyze-duplicates', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
+    try {
+      const criteria = req.body;
+      const { analyzeItemsDuplication } = await import('./item-unification.js');
+      const result = await analyzeItemsDuplication(criteria);
+      await logActivity(req, "analyze_duplicates", "system", "", `Duplicate analysis: ${result.totalDuplicatesFound} duplicates found`);
+      res.json(result);
+    } catch (error) {
+      console.error('Error in duplicate analysis:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
