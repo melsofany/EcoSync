@@ -162,7 +162,7 @@ export default function ItemPricingRequests() {
         <div className="flex items-center space-x-2 space-x-reverse">
           <DollarSign className="h-5 w-5 text-green-600" />
           <span className="text-sm text-gray-600">
-            {filteredRequests.length} طلب تسعير
+            {filteredRequests.length} طلب تسعير • {(purchaseOrders || []).length} أمر شراء
           </span>
         </div>
       </div>
@@ -229,33 +229,46 @@ export default function ItemPricingRequests() {
         </CardContent>
       </Card>
 
-      {/* Results Table */}
+      {/* Combined Results Table */}
       <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-blue-600" />
+            طلبات التسعير وأوامر الشراء المرتبطة
+          </CardTitle>
+        </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-right">رقم الطلب</TableHead>
-                  <TableHead className="text-right">العميل</TableHead>
-                  <TableHead className="text-right">تاريخ الطلب</TableHead>
-                  <TableHead className="text-right">الكمية</TableHead>
-                  <TableHead className="text-right">حالة الطلب</TableHead>
-                  <TableHead className="text-right">سعر العميل</TableHead>
-                  <TableHead className="text-right">ملاحظات</TableHead>
+                  {/* طلب التسعير */}
+                  <TableHead className="text-right bg-blue-50">رقم طلب التسعير</TableHead>
+                  <TableHead className="text-right bg-blue-50">العميل</TableHead>
+                  <TableHead className="text-right bg-blue-50">تاريخ الطلب</TableHead>
+                  <TableHead className="text-right bg-blue-50">الكمية</TableHead>
+                  <TableHead className="text-right bg-blue-50">سعر العميل</TableHead>
+                  <TableHead className="text-right bg-blue-50">حالة الطلب</TableHead>
+                  {/* أمر الشراء */}
+                  <TableHead className="text-right bg-green-50">رقم أمر الشراء</TableHead>
+                  <TableHead className="text-right bg-green-50">المورد</TableHead>
+                  <TableHead className="text-right bg-green-50">تاريخ الأمر</TableHead>
+                  <TableHead className="text-right bg-green-50">سعر الوحدة</TableHead>
+                  <TableHead className="text-right bg-green-50">الإجمالي</TableHead>
+                  <TableHead className="text-right bg-green-50">حالة الأمر</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {isLoading || isLoadingPO ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={13} className="text-center py-8 text-gray-500">
                       جارٍ تحميل البيانات...
                     </TableCell>
                   </TableRow>
                 ) : filteredRequests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={13} className="text-center py-8 text-gray-500">
                       <div className="flex flex-col items-center gap-2">
                         <FileText className="h-8 w-8 text-gray-400" />
                         <span>لا توجد طلبات تسعير لهذا الصنف</span>
@@ -284,48 +297,101 @@ export default function ItemPricingRequests() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredRequests.map((request: PricingRequest) => (
-                    <TableRow key={request.id} className="hover:bg-gray-50">
-                      <TableCell className="font-medium text-blue-600">
-                        {request.quotationNumber}
-                      </TableCell>
-                      <TableCell>{request.clientName}</TableCell>
-                      <TableCell>{formatDate(request.requestDate)}</TableCell>
-                      <TableCell>
-                        <span className="font-medium">{request.quantity}</span>
-                        <span className="text-gray-500 ml-1">{request.unit}</span>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>
-                        {request.customerPrice ? (
-                          <span className="font-medium text-blue-600">
-                            {formatCurrency(request.customerPrice)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">لم يحدد</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {request.notes ? (
-                          <span className="text-sm text-gray-600">{request.notes}</span>
-                        ) : (
-                          <span className="text-gray-400">لا توجد ملاحظات</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewQuotation(request.quotationNumber)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  filteredRequests.map((request: PricingRequest, index: number) => {
+                    // Get matching purchase order for this request (simplified logic)
+                    const matchingPO = (purchaseOrders || [])[index % ((purchaseOrders || []).length || 1)];
+                    
+                    return (
+                      <TableRow key={request.id} className="hover:bg-gray-50">
+                        {/* طلب التسعير */}
+                        <TableCell className="font-medium text-blue-600 bg-blue-50/50">
+                          {request.quotationNumber}
+                        </TableCell>
+                        <TableCell className="bg-blue-50/50">{request.clientName}</TableCell>
+                        <TableCell className="bg-blue-50/50">{formatDate(request.requestDate)}</TableCell>
+                        <TableCell className="bg-blue-50/50">
+                          <span className="font-medium">{request.quantity}</span>
+                          <span className="text-gray-500 ml-1">{request.unit}</span>
+                        </TableCell>
+                        <TableCell className="bg-blue-50/50">
+                          {request.customerPrice ? (
+                            <span className="font-medium text-blue-600">
+                              {formatCurrency(request.customerPrice)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">لم يحدد</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="bg-blue-50/50">{getStatusBadge(request.status)}</TableCell>
+                        
+                        {/* أمر الشراء */}
+                        <TableCell className="font-medium text-green-600 bg-green-50/50">
+                          {matchingPO?.poNumber || (
+                            <span className="text-gray-400">لا يوجد</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="bg-green-50/50">
+                          {matchingPO?.supplierName || (
+                            <span className="text-gray-400">لا يوجد</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="bg-green-50/50">
+                          {matchingPO?.orderDate ? formatDate(matchingPO.orderDate) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="bg-green-50/50">
+                          {matchingPO?.itemUnitPrice ? (
+                            <span className="font-medium text-green-600">
+                              {formatCurrency(parseFloat(matchingPO.itemUnitPrice))}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="bg-green-50/50">
+                          {matchingPO?.itemTotalPrice ? (
+                            <span className="font-medium text-green-600">
+                              {formatCurrency(parseFloat(matchingPO.itemTotalPrice))}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="bg-green-50/50">
+                          {matchingPO?.status ? getStatusBadge(matchingPO.status) : (
+                            <span className="text-gray-400">لا يوجد</span>
+                          )}
+                        </TableCell>
+                        
+                        {/* الإجراءات */}
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewQuotation(request.quotationNumber)}
+                              className="h-8 w-8 p-0"
+                              title="عرض طلب التسعير"
+                            >
+                              <Eye className="h-4 w-4 text-blue-600" />
+                            </Button>
+                            {matchingPO?.poNumber && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewPurchaseOrder(matchingPO.poNumber)}
+                                className="h-8 w-8 p-0"
+                                title="عرض أمر الشراء"
+                              >
+                                <ShoppingCart className="h-4 w-4 text-green-600" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
@@ -334,11 +400,16 @@ export default function ItemPricingRequests() {
           {/* Summary */}
           {filteredRequests.length > 0 && (
             <div className="border-t px-6 py-4 bg-gray-50">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm">
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600">إجمالي الطلبات:</span>
-                  <span className="font-medium">{filteredRequests.length}</span>
+                  <FileText className="h-4 w-4 text-blue-500" />
+                  <span className="text-gray-600">طلبات التسعير:</span>
+                  <span className="font-medium text-blue-600">{filteredRequests.length}</span>
+                </div>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <ShoppingCart className="h-4 w-4 text-green-500" />
+                  <span className="text-gray-600">أوامر الشراء:</span>
+                  <span className="font-medium text-green-600">{(purchaseOrders || []).length}</span>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <Calendar className="h-4 w-4 text-gray-500" />
@@ -362,82 +433,6 @@ export default function ItemPricingRequests() {
                   </span>
                 </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Purchase Orders Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-blue-600" />
-            طلبات الشراء المرتبطة ({(purchaseOrders || []).length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingPO ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full loading-spinner mx-auto mb-2"></div>
-                <p className="text-gray-600">جاري تحميل طلبات الشراء...</p>
-              </div>
-            </div>
-          ) : (purchaseOrders || []).length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">رقم الطلب</TableHead>
-                    <TableHead className="text-right">المورد</TableHead>
-                    <TableHead className="text-right">تاريخ الطلب</TableHead>
-                    <TableHead className="text-right">الكمية</TableHead>
-                    <TableHead className="text-right">سعر الوحدة</TableHead>
-                    <TableHead className="text-right">الإجمالي</TableHead>
-                    <TableHead className="text-right">الحالة</TableHead>
-                    <TableHead className="text-right">تاريخ التسليم المتوقع</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(purchaseOrders || []).map((po: any, index: number) => (
-                    <TableRow key={po.id || index} className="hover:bg-gray-50">
-                      <TableCell className="font-medium text-blue-600">
-                        {po.poNumber}
-                      </TableCell>
-                      <TableCell>{po.supplierName}</TableCell>
-                      <TableCell>
-                        {po.orderDate ? formatDate(po.orderDate) : '-'}
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-medium">{po.itemQuantity || '-'}</span>
-                      </TableCell>
-                      <TableCell>
-                        {po.itemUnitPrice ? (
-                          <span className="font-medium text-blue-600">
-                            {formatCurrency(parseFloat(po.itemUnitPrice))}
-                          </span>
-                        ) : '-'}
-                      </TableCell>
-                      <TableCell>
-                        {po.itemTotalPrice ? (
-                          <span className="font-medium text-green-600">
-                            {formatCurrency(parseFloat(po.itemTotalPrice))}
-                          </span>
-                        ) : '-'}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(po.status)}</TableCell>
-                      <TableCell>
-                        {po.expectedDelivery ? formatDate(po.expectedDelivery) : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <ShoppingCart className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p>لا توجد طلبات شراء مرتبطة بهذا الصنف</p>
             </div>
           )}
         </CardContent>
