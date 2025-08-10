@@ -1316,74 +1316,81 @@ export class DatabaseStorage implements IStorage {
       const partNumber = baseItem.partNumber;
       const cleanPartNumber = partNumber?.replace(/\s+/g, '') || '';
       
-      console.log(`🎯 Excel-style filter for part: ${partNumber}`);
+      console.log(`🎯 Getting ALL historical data for part: ${partNumber}`);
 
-      // Direct Excel filter: All records for part number LC1D32M7
-      const result = await db.execute(sql`
-        SELECT 
-          'RFQ' as record_type,
-          COALESCE(c.name, 'EDC') as client_name,
-          i.item_number as item_id,
-          i.description,
-          COALESCE(i.line_item, '') as line_item,
-          COALESCE(i.part_number, '') as part_no,
-          COALESCE(qr.custom_request_number, qr.request_number) as rfq_number,
-          qr.request_date as rfq_date,
-          qi.quantity as rfq_qty,
-          COALESCE(qr.expiry_date::text, '') as res_date,
-          COALESCE(qi.unit_price::text, '') as customer_price,
-          '' as po_number,
-          '' as po_date,
-          '' as po_quantity,
-          '' as po_price,
-          '' as po_total,
-          COALESCE(i.category, 'ELEC') as category,
-          COALESCE(i.unit, 'Each') as uom
-        FROM items i
-        JOIN quotation_items qi ON i.id = qi.item_id
-        JOIN quotation_requests qr ON qi.quotation_id = qr.id
-        LEFT JOIN clients c ON qr.client_id = c.id
-        WHERE REPLACE(LOWER(COALESCE(i.part_number, '')), ' ', '') = LOWER(${cleanPartNumber})
-        
-        UNION ALL
-        
-        SELECT 
-          'PO' as record_type,
-          'EDC' as client_name,
-          i.item_number as item_id,
-          i.description,
-          COALESCE(i.line_item, '') as line_item,
-          COALESCE(i.part_number, '') as part_no,
-          '' as rfq_number,
-          NULL as rfq_date,
-          NULL as rfq_qty,
-          '' as res_date,
-          '' as customer_price,
-          COALESCE(po.po_number, '') as po_number,
-          po.po_date::text as po_date,
-          poi.quantity::text as po_quantity,
-          poi.unit_price::text as po_price,
-          (poi.quantity * poi.unit_price)::text as po_total,
-          COALESCE(i.category, 'ELEC') as category,
-          COALESCE(i.unit, 'Each') as uom
-        FROM items i
-        JOIN purchase_order_items poi ON i.id = poi.item_id
-        JOIN purchase_orders po ON poi.po_id = po.id
-        WHERE REPLACE(LOWER(COALESCE(i.part_number, '')), ' ', '') = LOWER(${cleanPartNumber})
-        
-        ORDER BY 
-          rfq_date DESC NULLS LAST,
-          po_date DESC NULLS LAST
-      `);
+      // Get RFQ data using Drizzle ORM
+      const rfqData = await db
+        .select({
+          record_type: sql<string>`'RFQ'`,
+          client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
+          item_id: items.itemNumber,
+          description: items.description,
+          line_item: sql<string>`COALESCE(${items.lineItem}, '')`,
+          part_no: sql<string>`COALESCE(${items.partNumber}, '')`,
+          rfq_number: sql<string>`COALESCE(${quotationRequests.customRequestNumber}, ${quotationRequests.requestNumber})`,
+          rfq_date: quotationRequests.requestDate,
+          rfq_qty: quotationItems.quantity,
+          res_date: sql<string>`COALESCE(${quotationRequests.expiryDate}::text, '')`,
+          customer_price: sql<string>`COALESCE(${quotationItems.unitPrice}::text, '')`,
+          po_number: sql<string>`''`,
+          po_date: sql<string>`''`,
+          po_quantity: sql<string>`''`,
+          po_price: sql<string>`''`,
+          po_total: sql<string>`''`,
+          category: sql<string>`COALESCE(${items.category}, 'ELEC')`,
+          uom: sql<string>`COALESCE(${items.unit}, 'Each')`
+        })
+        .from(items)
+        .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
+        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+        .where(sql`REPLACE(LOWER(COALESCE(${items.partNumber}, '')), ' ', '') = LOWER(${cleanPartNumber})`);
 
-      console.log(`📊 Excel filter result: ${result.length} records for part ${partNumber}`);
+      // Get PO data using Drizzle ORM
+      const poData = await db
+        .select({
+          record_type: sql<string>`'PO'`,
+          client_name: sql<string>`'EDC'`,
+          item_id: items.itemNumber,
+          description: items.description,
+          line_item: sql<string>`COALESCE(${items.lineItem}, '')`,
+          part_no: sql<string>`COALESCE(${items.partNumber}, '')`,
+          rfq_number: sql<string>`''`,
+          rfq_date: sql<Date>`NULL`,
+          rfq_qty: sql<number>`NULL`,
+          res_date: sql<string>`''`,
+          customer_price: sql<string>`''`,
+          po_number: sql<string>`COALESCE(${purchaseOrders.poNumber}, '')`,
+          po_date: sql<string>`COALESCE(${purchaseOrders.poDate}::text, '')`,
+          po_quantity: sql<string>`COALESCE(${purchaseOrderItems.quantity}::text, '')`,
+          po_price: sql<string>`COALESCE(${purchaseOrderItems.unitPrice}::text, '')`,
+          po_total: sql<string>`COALESCE((${purchaseOrderItems.quantity} * ${purchaseOrderItems.unitPrice})::text, '')`,
+          category: sql<string>`COALESCE(${items.category}, 'ELEC')`,
+          uom: sql<string>`COALESCE(${items.unit}, 'Each')`
+        })
+        .from(items)
+        .innerJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
+        .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+        .where(sql`REPLACE(LOWER(COALESCE(${items.partNumber}, '')), ' ', '') = LOWER(${cleanPartNumber})`);
+
+      // Combine and sort results
+      const allResults = [...rfqData, ...poData];
       
-      return result;
+      // Sort by date (RFQ date first, then PO date)
+      allResults.sort((a, b) => {
+        const aDate = a.rfq_date ? new Date(a.rfq_date) : (a.po_date ? new Date(a.po_date) : new Date('1900-01-01'));
+        const bDate = b.rfq_date ? new Date(b.rfq_date) : (b.po_date ? new Date(b.po_date) : new Date('1900-01-01'));
+        return bDate.getTime() - aDate.getTime(); // Most recent first
+      });
+
+      console.log(`📊 Found ${rfqData.length} RFQ records, ${poData.length} PO records`);
+      console.log(`✅ Total records: ${allResults.length} for part ${partNumber}`);
+      
+      return allResults;
       
     } catch (error) {
       console.error('Error in getItemComprehensiveDataUnified:', error);
-      // Fallback to basic item data
-      return this.getBasicItemData(itemId);
+      return [];
     }
   }
 
