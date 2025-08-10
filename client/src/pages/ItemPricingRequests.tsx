@@ -50,9 +50,9 @@ export default function ItemPricingRequests() {
     enabled: !!itemId,
   });
 
-  // Fetch item details to get the actual item number
+  // Fetch comprehensive item details
   const { data: itemDetails } = useQuery({
-    queryKey: [`/api/items/${itemId}`],
+    queryKey: [`/api/items/${itemId}/comprehensive-data`],
     enabled: !!itemId,
   });
 
@@ -342,14 +342,14 @@ export default function ItemPricingRequests() {
                         </TableCell>
                         <TableCell className="text-left border px-2">
                           <div className="text-xs leading-tight">
-                            {itemDescription || 'وصف الصنف غير متوفر'}
+                            {itemDetails?.item?.description || itemDescription || 'وصف الصنف غير متوفر'}
                           </div>
                         </TableCell>
                         <TableCell className="text-center border font-mono">
-                          {itemDescription?.split(',')[0]?.trim() || '-'}
+                          {itemDetails?.item?.partNumber || itemDescription?.split(',')[0]?.trim() || '-'}
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {itemDetails?.itemNumber || itemNumber || '-'}
+                          {itemDetails?.item?.itemNumber || itemNumber || '-'}
                         </TableCell>
                         <TableCell className="text-center border font-bold">
                           EACH
