@@ -18,9 +18,6 @@ interface PricingRequest {
   quantity: number;
   unit: string;
   customerPrice?: number;
-  supplierPrice?: number;
-  purchaseOrderNumber?: string;
-  purchaseOrderStatus?: string;
   notes?: string;
 }
 
@@ -239,17 +236,15 @@ export default function ItemPricingRequests() {
                   <TableHead className="text-right">تاريخ الطلب</TableHead>
                   <TableHead className="text-right">الكمية</TableHead>
                   <TableHead className="text-right">حالة الطلب</TableHead>
-                  <TableHead className="text-right">سعر المورد</TableHead>
                   <TableHead className="text-right">سعر العميل</TableHead>
-                  <TableHead className="text-right">أمر الشراء</TableHead>
-                  <TableHead className="text-right">حالة أمر الشراء</TableHead>
+                  <TableHead className="text-right">ملاحظات</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredRequests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                       لا توجد طلبات تسعير لهذا الصنف
                     </TableCell>
                   </TableRow>
@@ -267,15 +262,6 @@ export default function ItemPricingRequests() {
                       </TableCell>
                       <TableCell>{getStatusBadge(request.status)}</TableCell>
                       <TableCell>
-                        {request.supplierPrice ? (
-                          <span className="font-medium text-green-600">
-                            {formatCurrency(request.supplierPrice)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">لم يحدد</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
                         {request.customerPrice ? (
                           <span className="font-medium text-blue-600">
                             {formatCurrency(request.customerPrice)}
@@ -285,38 +271,22 @@ export default function ItemPricingRequests() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {request.purchaseOrderNumber ? (
-                          <span className="font-medium text-purple-600">
-                            {request.purchaseOrderNumber}
-                          </span>
+                        {request.notes ? (
+                          <span className="text-sm text-gray-600">{request.notes}</span>
                         ) : (
-                          <span className="text-gray-400">لا يوجد</span>
+                          <span className="text-gray-400">لا توجد ملاحظات</span>
                         )}
                       </TableCell>
                       <TableCell>
-                        {getPOStatusBadge(request.purchaseOrderStatus)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2 space-x-reverse">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            title="عرض طلب الشراء"
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleViewQuotation(request.quotationNumber)}
+                            className="h-8 w-8 p-0"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          {request.purchaseOrderNumber && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              title="عرض أمر الشراء"
-                              onClick={() => handleViewPurchaseOrder(request.purchaseOrderNumber!)}
-                              className="text-purple-600 hover:text-purple-800"
-                            >
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                          )}
                         </div>
                       </TableCell>
                     </TableRow>

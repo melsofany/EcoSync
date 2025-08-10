@@ -41,6 +41,7 @@ import {
   type InsertActivityLog,
 } from "@shared/schema";
 import { db } from "./db.js";
+import { pool } from "./db.js";
 import { eq, desc, like, and, isNull, isNotNull, sql, or, inArray } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
@@ -1759,46 +1760,38 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log('Getting pricing requests for item ID:', itemId);
       
-      const results = await db
-        .select({
-          id: quotationItems.id,
-          quotationNumber: quotationRequests.requestNumber,
-          customQuotationNumber: quotationRequests.customRequestNumber,
-          clientName: clients.name,
-          requestDate: quotationRequests.requestDate,
-          status: quotationRequests.status,
-          quantity: quotationItems.quantity,
-          unit: items.unit,
-          customerPrice: quotationItems.unitPrice,
-          supplierPrice: quotationItems.supplierPrice,
-          notes: quotationRequests.notes,
-          // Purchase order info if exists
-          purchaseOrderNumber: purchaseOrders.poNumber,
-          purchaseOrderStatus: purchaseOrders.status,
-          purchaseOrderDate: purchaseOrders.poDate,
-        })
-        .from(quotationItems)
-        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
-        .innerJoin(items, eq(quotationItems.itemId, items.id))
-        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
-        .leftJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
-        .leftJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
-        .where(eq(quotationItems.itemId, itemId))
-        .orderBy(desc(quotationRequests.requestDate));
+      const client = await pool.connect();
+      const result = await client.query(`
+        SELECT 
+          qi.id,
+          COALESCE(qr.custom_request_number, qr.request_number) as quotation_number,
+          COALESCE(c.name, 'عميل غير محدد') as client_name,
+          qr.request_date,
+          qr.status,
+          qi.quantity,
+          i.unit,
+          qi.unit_price as customer_price,
+          qr.notes
+        FROM quotation_items qi
+        INNER JOIN quotation_requests qr ON qi.quotation_id = qr.id
+        INNER JOIN items i ON qi.item_id = i.id
+        LEFT JOIN clients c ON qr.client_id = c.id
+        WHERE qi.item_id = $1
+        ORDER BY qr.request_date DESC
+      `, [itemId]);
+      
+      client.release();
 
       // Format the results
-      const formattedResults = results.map(row => ({
+      const formattedResults = result.rows.map((row: any) => ({
         id: row.id,
-        quotationNumber: row.customQuotationNumber || row.quotationNumber,
-        clientName: row.clientName || 'عميل غير محدد',
-        requestDate: row.requestDate?.toISOString() || new Date().toISOString(),
+        quotationNumber: row.quotation_number,
+        clientName: row.client_name,
+        requestDate: row.request_date ? new Date(row.request_date).toISOString() : new Date().toISOString(),
         status: row.status || 'pending',
         quantity: parseInt(row.quantity) || 0,
         unit: row.unit || 'Piece',
-        customerPrice: row.customerPrice ? parseFloat(row.customerPrice) : undefined,
-        supplierPrice: row.supplierPrice ? parseFloat(row.supplierPrice) : undefined,
-        purchaseOrderNumber: row.purchaseOrderNumber || undefined,
-        purchaseOrderStatus: row.purchaseOrderStatus || undefined,
+        customerPrice: row.customer_price ? parseFloat(row.customer_price) : undefined,
         notes: row.notes || undefined,
       }));
 
