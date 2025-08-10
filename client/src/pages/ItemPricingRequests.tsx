@@ -349,7 +349,7 @@ export default function ItemPricingRequests() {
                           {itemDescription?.split(',')[0]?.trim() || '-'}
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {itemDetails?.itemNumber || itemNumber || `P-001952`}
+                          {itemDetails?.itemNumber || itemNumber || '-'}
                         </TableCell>
                         <TableCell className="text-center border font-bold">
                           EACH
