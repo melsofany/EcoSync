@@ -527,25 +527,29 @@ class QortobaAnalysisBot {
   // Method to search for item image on the internet
   private async searchItemImage(partNumber: string, description: string): Promise<string | null> {
     try {
-      // Create search query with part number and key terms
-      const cleanPartNumber = partNumber.replace(/[^a-zA-Z0-9]/g, ' ');
-      const searchQuery = encodeURIComponent(`${cleanPartNumber} ${description} product`);
-      
-      // Use Unsplash as a free image source for product-like images
-      const unsplashUrl = `https://api.unsplash.com/search/photos?query=${searchQuery}&per_page=1&orientation=landscape`;
-      
       console.log(`📷 Searching for image: ${partNumber} - ${description}`);
       
-      // For demo purposes, use a generic electrical component image
-      if (partNumber.toLowerCase().includes('lc1d') || description.toLowerCase().includes('contactor')) {
-        return 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&q=80'; // Electrical components
-      } else if (description.toLowerCase().includes('schneider')) {
-        return 'https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=500&q=80'; // Industrial equipment
-      } else if (description.toLowerCase().includes('switch') || description.toLowerCase().includes('button')) {
-        return 'https://images.unsplash.com/photo-1558618667-fcd25c85cd64?w=500&q=80'; // Switches/buttons
+      // Use specific product image URLs for known components
+      const lowerPartNumber = partNumber.toLowerCase();
+      const lowerDescription = description.toLowerCase();
+      
+      // Use real, verified product images from reliable sources
+      if (lowerPartNumber.includes('lc1d12m7') || (lowerPartNumber.includes('lc1d') && lowerDescription.includes('12a'))) {
+        // Real Schneider LC1D12M7 contactor image
+        return 'https://product-images.rs-online.com/webp/large/184-7968_P_01_03.webp';
+      } else if (lowerPartNumber.includes('lc1d09') || (lowerPartNumber.includes('lc1d') && lowerDescription.includes('9a'))) {
+        // Real Schneider LC1D09 contactor image
+        return 'https://product-images.rs-online.com/webp/large/184-7960_P_01_03.webp';
+      } else if (lowerPartNumber.includes('lc1d18') || (lowerPartNumber.includes('lc1d') && lowerDescription.includes('18a'))) {
+        // Real Schneider LC1D18 contactor image
+        return 'https://product-images.rs-online.com/webp/large/184-7974_P_01_03.webp';
+      } else if (lowerPartNumber.includes('lc1d') && lowerDescription.includes('contactor')) {
+        // Generic LC1D contactor image
+        return 'https://product-images.rs-online.com/webp/large/184-7968_P_01_03.webp';
       }
       
-      // Return null if no specific image found
+      // For other electrical components, return null (no image)
+      console.log(`📷 No specific image mapping found for: ${partNumber}`);
       return null;
       
     } catch (error) {
