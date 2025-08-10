@@ -109,7 +109,7 @@ export default function ItemPricingRequests() {
     return (
       (!filters.clientName || request.clientName.toLowerCase().includes(filters.clientName.toLowerCase())) &&
       (!filters.quotationNumber || request.quotationNumber.includes(filters.quotationNumber)) &&
-      (!filters.status || request.status === filters.status) &&
+      (!filters.status || filters.status === 'all' || request.status === filters.status) &&
       (!filters.startDate || new Date(request.requestDate) >= new Date(filters.startDate)) &&
       (!filters.endDate || new Date(request.requestDate) <= new Date(filters.endDate))
     );
@@ -199,12 +199,12 @@ export default function ItemPricingRequests() {
                   <SelectValue placeholder="جميع الحالات" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">جميع الحالات</SelectItem>
+                  <SelectItem value="all">جميع الحالات</SelectItem>
                   <SelectItem value="pending">في الانتظار</SelectItem>
-                  <SelectItem value="sent_for_pricing">مرسل للتسعير</SelectItem>
+                  <SelectItem value="sent_for_pricing">تم إرسال للتسعير</SelectItem>
                   <SelectItem value="pricing_received">تم استلام التسعير</SelectItem>
                   <SelectItem value="customer_pricing">تسعير العميل</SelectItem>
-                  <SelectItem value="quoted">مُرسل العرض</SelectItem>
+                  <SelectItem value="quoted">تم عمل العرض</SelectItem>
                   <SelectItem value="completed">مكتمل</SelectItem>
                 </SelectContent>
               </Select>
@@ -372,7 +372,7 @@ export default function ItemPricingRequests() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-blue-600" />
-            طلبات الشراء المرتبطة ({purchaseOrders?.length || 0})
+            طلبات الشراء المرتبطة ({(purchaseOrders || []).length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -383,7 +383,7 @@ export default function ItemPricingRequests() {
                 <p className="text-gray-600">جاري تحميل طلبات الشراء...</p>
               </div>
             </div>
-          ) : purchaseOrders && purchaseOrders.length > 0 ? (
+          ) : (purchaseOrders || []).length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -399,7 +399,7 @@ export default function ItemPricingRequests() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {purchaseOrders.map((po: any, index: number) => (
+                  {(purchaseOrders || []).map((po: any, index: number) => (
                     <TableRow key={po.id || index} className="hover:bg-gray-50">
                       <TableCell className="font-medium text-blue-600">
                         {po.poNumber}

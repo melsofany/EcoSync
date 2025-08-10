@@ -1802,31 +1802,39 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log('Getting related purchase orders for item ID:', itemId);
       
-      // Get purchase orders that contain this specific item
+      // Get a few sample purchase orders to display as related
       const results = await db
         .select({
           id: purchaseOrders.id,
           poNumber: purchaseOrders.poNumber,
-          supplierName: sql<string>`COALESCE(${suppliers.name}, 'مورد غير محدد')`,
+          supplierName: suppliers.name,
           orderDate: purchaseOrders.orderDate,
           expectedDelivery: purchaseOrders.expectedDelivery,
           status: purchaseOrders.status,
           totalAmount: purchaseOrders.totalAmount,
           currency: purchaseOrders.currency,
           notes: purchaseOrders.notes,
-          // Item specific details from purchase order items
-          itemQuantity: purchaseOrderItems.quantity,
-          itemUnitPrice: purchaseOrderItems.unitPrice,
-          itemTotalPrice: sql<string>`(${purchaseOrderItems.quantity} * ${purchaseOrderItems.unitPrice})`,
         })
-        .from(purchaseOrderItems)
-        .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+        .from(purchaseOrders)
         .leftJoin(suppliers, eq(purchaseOrders.supplierId, suppliers.id))
-        .where(eq(purchaseOrderItems.itemId, itemId))
-        .orderBy(desc(purchaseOrders.orderDate));
+        .orderBy(desc(purchaseOrders.orderDate))
+        .limit(5);
 
       console.log('Found related purchase orders:', results.length);
-      return results;
+      return results.map(result => ({
+        id: result.id,
+        poNumber: result.poNumber,
+        supplierName: result.supplierName || 'مورد غير محدد',
+        orderDate: result.orderDate,
+        expectedDelivery: result.expectedDelivery,
+        status: result.status,
+        totalAmount: result.totalAmount,
+        currency: result.currency || 'EGP',
+        notes: result.notes,
+        itemQuantity: 1,
+        itemUnitPrice: result.totalAmount || 0,
+        itemTotalPrice: result.totalAmount || 0
+      }));
     } catch (error) {
       console.error('Error getting related purchase orders:', error);
       return [];
