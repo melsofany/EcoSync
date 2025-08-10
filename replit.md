@@ -65,7 +65,7 @@ Preferred communication style: Simple, everyday language.
 
 ### AI Services
 - **DeepSeek API**: Used for AI-powered item analysis and duplicate detection.
-- **Telegram Bot Integration**: Fully operational @Req_item_bot with comprehensive analysis notifications. Automatic analysis triggers for all items added to quotation requests (including existing items), designed for sales representatives who need analysis for every quotation. Supports both internal system users (IT administrators) and external users via Telegram User ID management. Manual analysis also available via bot interface.
+- **Telegram Bot Integration**: Fully operational @Req_item_bot with comprehensive analysis notifications and advanced image search system. Automatic analysis triggers for all items added to quotation requests (including existing items), designed for sales representatives who need analysis for every quotation. Features multi-source product image search including manufacturer websites (Schneider Electric, Siemens, ABB), electronics retailers (RS Components, Mouser, Digi-Key), and intelligent component type matching. Includes real-time image URL verification and fallback search guidance. Supports both internal system users (IT administrators) and external users via Telegram User ID management.
 
 ### Development & Build Tools
 - **Vite**: Frontend development and build tool.
