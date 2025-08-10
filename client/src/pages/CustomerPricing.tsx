@@ -142,7 +142,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
           </h4>
           <p className="text-sm text-gray-600 mb-4">
-            عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing.length} سجل فريد بعد إزالة التكرار)
+            عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing?.filter((r: any) => r.rfq_number !== '25R00001' && !r.rfq_number?.includes('25R00001')).length || 0} سجل تاريخي)
           </p>
           <p className="text-xs text-blue-600 mb-3">
             📊 فلتر Excel لرقم القطعة {item.partNumber} - عرض كامل التاريخ من قاعدة البيانات
@@ -171,7 +171,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
               </thead>
               <tbody>
                 {detailedPricing
-                  .filter((record: any) => record.rfq_number !== '25R00001') // Filter out current RFQ from historical display
+                  .filter((record: any) => {
+                    // Filter out ALL instances of current RFQ (25R00001) from historical display
+                    const rfqNum = record.rfq_number;
+                    return rfqNum !== '25R00001' && !rfqNum?.includes('25R00001');
+                  })
                   .map((record: any, index: number) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 p-2 text-right">{record.po_total || '-'}</td>
