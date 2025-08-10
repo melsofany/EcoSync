@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Eye, Edit, Trash2, Check, Clock, DollarSign } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Check, Clock, DollarSign, FileText } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Textarea } from "@/components/ui/textarea";
 import NewItemModal from "@/components/modals/NewItemModal";
@@ -509,6 +509,15 @@ export default function Items() {
                             className="text-green-600 hover:text-green-800"
                           >
                             <DollarSign className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="بيانات البند الكاملة (شيت)"
+                            onClick={() => window.location.href = `/items/${item.id}/data-sheet`}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <FileText className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="ghost" 
