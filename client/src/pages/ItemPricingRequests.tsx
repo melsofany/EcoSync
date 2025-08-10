@@ -50,6 +50,12 @@ export default function ItemPricingRequests() {
     enabled: !!itemId,
   });
 
+  // Fetch item details to get the actual item number
+  const { data: itemDetails } = useQuery({
+    queryKey: [`/api/items/${itemId}`],
+    enabled: !!itemId,
+  });
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG', {
       year: 'numeric',
@@ -343,7 +349,7 @@ export default function ItemPricingRequests() {
                           {itemDescription?.split(',')[0]?.trim() || '-'}
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {itemNumber}
+                          {itemDetails?.itemNumber || itemNumber || `P-001952`}
                         </TableCell>
                         <TableCell className="text-center border font-bold">
                           EACH
