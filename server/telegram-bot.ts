@@ -357,8 +357,12 @@ class QortobaAnalysisBot {
           await this.bot.sendMessage(userId, message);
           console.log(`📱 [TELEGRAM BOT] Sent analysis to user ${userId} for item: ${item.partNumber}`);
           
-          // Try to find and send item image
-          await this.sendItemImage(userId, item);
+          // Try to find and send item image only for specific known products
+          try {
+            await this.sendItemImage(userId, item);
+          } catch (imageError) {
+            console.log(`📷 [TELEGRAM BOT] Could not send image for ${item.partNumber}: ${(imageError as Error).message}`);
+          }
           
         } catch (error) {
           console.error(`Failed to send to user ${userId}:`, error);
@@ -533,20 +537,10 @@ class QortobaAnalysisBot {
       const lowerPartNumber = partNumber.toLowerCase();
       const lowerDescription = description.toLowerCase();
       
-      // Use real, verified product images from reliable sources
-      if (lowerPartNumber.includes('lc1d12m7') || (lowerPartNumber.includes('lc1d') && lowerDescription.includes('12a'))) {
-        // Real Schneider LC1D12M7 contactor image
-        return 'https://product-images.rs-online.com/webp/large/184-7968_P_01_03.webp';
-      } else if (lowerPartNumber.includes('lc1d09') || (lowerPartNumber.includes('lc1d') && lowerDescription.includes('9a'))) {
-        // Real Schneider LC1D09 contactor image
-        return 'https://product-images.rs-online.com/webp/large/184-7960_P_01_03.webp';
-      } else if (lowerPartNumber.includes('lc1d18') || (lowerPartNumber.includes('lc1d') && lowerDescription.includes('18a'))) {
-        // Real Schneider LC1D18 contactor image
-        return 'https://product-images.rs-online.com/webp/large/184-7974_P_01_03.webp';
-      } else if (lowerPartNumber.includes('lc1d') && lowerDescription.includes('contactor')) {
-        // Generic LC1D contactor image
-        return 'https://product-images.rs-online.com/webp/large/184-7968_P_01_03.webp';
-      }
+      // Temporarily disable image search until we have verified working URLs
+      // Will add back when we have confirmed working image sources
+      console.log(`📷 Image search disabled temporarily for: ${partNumber}`);
+      return null;
       
       // For other electrical components, return null (no image)
       console.log(`📷 No specific image mapping found for: ${partNumber}`);
