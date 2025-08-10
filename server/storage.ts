@@ -1375,14 +1375,18 @@ export class DatabaseStorage implements IStorage {
 
       // CRITICAL FIX: Filter out current item's RFQ (25R00001) from historical data
       // Only show OTHER historical records, not the current pricing request
-      const currentItemRfqNumber = baseItem.itemNumber; // Current item being priced
-      console.log(`🎯 Excluding current item RFQ from history: ${currentItemRfqNumber}`);
+      console.log(`🎯 Total RFQ records before filtering: ${rfqData.length}`);
       
-      // Filter RFQ data to exclude current pricing request
+      // Filter RFQ data to exclude current pricing request (25R00001)
       const historicalRfqData = rfqData.filter(record => {
-        const isCurrentRequest = record.rfq_number === '25R00001'; // The current pricing request
+        const isCurrentRequest = record.rfq_number === '25R00001';
+        if (isCurrentRequest) {
+          console.log(`🚫 Excluding current request: ${record.rfq_number} (${record.rfq_date})`);
+        }
         return !isCurrentRequest; // Exclude current request
       });
+      
+      console.log(`✅ Historical RFQ records after filtering: ${historicalRfqData.length}`);
       
       // Remove exact duplicates that might cause confusion
       const uniqueRfqData = this.removeDuplicatesByKey(historicalRfqData, ['rfq_number', 'rfq_date']);
