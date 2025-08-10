@@ -61,10 +61,9 @@ export default function TelegramBot() {
     refetchInterval: 10000 // Refresh every 10 seconds
   });
 
-  // Get IT admin users
+  // Get all users
   const { data: users, isLoading: usersLoading } = useQuery<User[]>({
-    queryKey: ["/api/users"],
-    select: (data: any[]) => data.filter(user => user.role === 'it_admin')
+    queryKey: ["/api/users"]
   });
 
   // Test analysis mutation
@@ -340,7 +339,7 @@ export default function TelegramBot() {
             إدارة المستخدمين المخولين
           </CardTitle>
           <CardDescription>
-            مديرو تقنية المعلومات المخولين لاستخدام البوت
+            جميع المستخدمين المخولين لاستخدام البوت
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -355,6 +354,7 @@ export default function TelegramBot() {
                 <TableRow>
                   <TableHead>الاسم الكامل</TableHead>
                   <TableHead>اسم المستخدم</TableHead>
+                  <TableHead>الدور</TableHead>
                   <TableHead>معرف تليجرام</TableHead>
                   <TableHead>الحالة</TableHead>
                   <TableHead>الإجراءات</TableHead>
@@ -365,6 +365,15 @@ export default function TelegramBot() {
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.fullName}</TableCell>
                     <TableCell>{user.username}</TableCell>
+                    <TableCell>
+                      <Badge variant={user.role === 'it_admin' ? 'default' : 'secondary'}>
+                        {user.role === 'it_admin' ? 'مدير تقني' : 
+                         user.role === 'manager' ? 'مدير' :
+                         user.role === 'data_entry' ? 'إدخال بيانات' :
+                         user.role === 'purchasing' ? 'مشتريات' :
+                         user.role === 'accounting' ? 'محاسبة' : user.role}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       {user.telegramUserId ? (
                         <Badge variant="outline">{user.telegramUserId}</Badge>
