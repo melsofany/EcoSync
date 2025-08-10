@@ -229,7 +229,13 @@ export default function Items() {
     );
   };
 
-  const filteredItems = items && Array.isArray(items) ? items.filter((item: any) => {
+  // Remove any potential duplicates based on item ID first
+  const uniqueItems = items && Array.isArray(items) ? 
+    items.filter((item: any, index: number, self: any[]) => 
+      index === self.findIndex((i: any) => i.id === item.id)
+    ) : [];
+
+  const filteredItems = uniqueItems.filter((item: any) => {
     return (
       (!filters.itemNumber || item.itemNumber?.includes(filters.itemNumber)) &&
       (!filters.partNumber || item.partNumber?.includes(filters.partNumber)) &&
@@ -237,7 +243,7 @@ export default function Items() {
       (!filters.description || item.description.includes(filters.description)) &&
       (!filters.category || filters.category === "all" || item.category === filters.category)
     );
-  }) : [];
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG');

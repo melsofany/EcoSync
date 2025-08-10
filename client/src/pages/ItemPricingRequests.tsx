@@ -259,8 +259,21 @@ export default function ItemPricingRequests() {
                         </span>
                         <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
                           <p className="font-medium mb-1">ملاحظة:</p>
-                          <p>لرؤية طلبات التسعير، جرب صنف آخر يحتوي على بيانات مثل:</p>
-                          <p className="font-mono text-xs mt-1">P-000842 (ATTACH,BATTERY)</p>
+                          <p>لرؤية طلبات التسعير، جرب الأصناف التالية التي تحتوي على بيانات:</p>
+                          <div className="grid grid-cols-1 gap-1 mt-2 font-mono text-xs">
+                            <a href="/item-pricing-requests/b6c7722c-524f-4870-b120-8ca6f3db3d66?itemNumber=P-000842" 
+                               className="text-blue-600 hover:text-blue-800 underline">
+                              P-000842: ATTACH,BATTERY (1562 طلب)
+                            </a>
+                            <a href="/item-pricing-requests/f945d3e0-9e5f-46eb-a94b-8b69c26a1345?itemNumber=P-000365" 
+                               className="text-blue-600 hover:text-blue-800 underline">
+                              P-000365: HEATER ITALY (45 طلب)
+                            </a>
+                            <a href="/item-pricing-requests/672a44ad-5ebc-4987-a785-b868e1b723f3?itemNumber=P-000009" 
+                               className="text-blue-600 hover:text-blue-800 underline">
+                              P-000009: BRENNENSTUHL CORD (37 طلب)
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </TableCell>

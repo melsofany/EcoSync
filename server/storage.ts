@@ -839,7 +839,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllItems(): Promise<Item[]> {
-    return await db.select().from(items).orderBy(desc(items.createdAt));
+    // Use DISTINCT to ensure no duplicates and order by creation date
+    const results = await db
+      .selectDistinct()
+      .from(items)
+      .orderBy(desc(items.createdAt));
+    
+    console.log(`📋 Retrieved ${results.length} unique items`);
+    return results;
   }
 
   async getAllClients(): Promise<Client[]> {
