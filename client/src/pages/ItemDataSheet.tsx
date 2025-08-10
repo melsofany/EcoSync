@@ -64,7 +64,7 @@ export default function ItemDataSheet() {
 
   const exportToCSV = () => {
     // تحضير بيانات طلبات التسعير للتصدير
-    const pricingData = itemData.pricingRequests.map(req => [
+    const pricingData = itemData.pricingRequests?.map(req => [
       'طلب تسعير',
       req.requestNumber,
       req.clientName || 'غير محدد',
@@ -76,7 +76,7 @@ export default function ItemDataSheet() {
     ]);
 
     // تحضير بيانات أوامر الشراء للتصدير
-    const poData = itemData.purchaseOrders.map(po => [
+    const poData = itemData.purchaseOrders?.map(po => [
       'أمر شراء',
       po.poNumber,
       'مورد',
@@ -90,8 +90,8 @@ export default function ItemDataSheet() {
     // دمج البيانات
     const allData = [
       ['نوع العملية', 'رقم المرجع', 'العميل/المورد', 'الكمية', 'سعر الوحدة', 'الإجمالي', 'العملة', 'التاريخ'],
-      ...pricingData,
-      ...poData
+      ...(pricingData || []),
+      ...(poData || [])
     ];
 
     // تحويل لـ CSV
@@ -136,7 +136,7 @@ export default function ItemDataSheet() {
               <FileText className="h-5 w-5 text-blue-500" />
               <div>
                 <p className="text-sm text-gray-600">طلبات التسعير</p>
-                <p className="text-2xl font-bold">{itemData.pricingRequests.length}</p>
+                <p className="text-2xl font-bold">{itemData.pricingRequests?.length || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -147,7 +147,7 @@ export default function ItemDataSheet() {
               <ShoppingCart className="h-5 w-5 text-green-500" />
               <div>
                 <p className="text-sm text-gray-600">أوامر الشراء</p>
-                <p className="text-2xl font-bold">{itemData.purchaseOrders.length}</p>
+                <p className="text-2xl font-bold">{itemData.purchaseOrders?.length || 0}</p>
               </div>
             </div>
           </CardContent>
@@ -157,7 +157,7 @@ export default function ItemDataSheet() {
             <div>
               <p className="text-sm text-gray-600">إجمالي الكمية المطلوبة</p>
               <p className="text-2xl font-bold">
-                {itemData.pricingRequests.reduce((sum, req) => sum + req.quantity, 0)}
+                {itemData.pricingRequests?.reduce((sum, req) => sum + req.quantity, 0) || 0}
               </p>
             </div>
           </CardContent>
@@ -167,7 +167,7 @@ export default function ItemDataSheet() {
             <div>
               <p className="text-sm text-gray-600">إجمالي الكمية المشتراة</p>
               <p className="text-2xl font-bold">
-                {itemData.purchaseOrders.reduce((sum, po) => sum + po.quantity, 0)}
+                {itemData.purchaseOrders?.reduce((sum, po) => sum + po.quantity, 0) || 0}
               </p>
             </div>
           </CardContent>
@@ -179,7 +179,7 @@ export default function ItemDataSheet() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            طلبات التسعير ({itemData.pricingRequests.length} سجل)
+            طلبات التسعير ({itemData.pricingRequests?.length || 0} سجل)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -197,7 +197,7 @@ export default function ItemDataSheet() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {itemData.pricingRequests.map((req, index) => (
+                {itemData.pricingRequests?.map((req, index) => (
                   <TableRow key={index} className="hover:bg-gray-50">
                     <TableCell className="font-mono text-blue-600">
                       {req.requestNumber}
@@ -229,7 +229,7 @@ export default function ItemDataSheet() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
-            أوامر الشراء ({itemData.purchaseOrders.length} سجل)
+            أوامر الشراء ({itemData.purchaseOrders?.length || 0} سجل)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -247,7 +247,7 @@ export default function ItemDataSheet() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {itemData.purchaseOrders.map((po, index) => (
+                {itemData.purchaseOrders?.map((po, index) => (
                   <TableRow key={index} className="hover:bg-gray-50">
                     <TableCell className="font-mono text-green-600">
                       {po.poNumber}
