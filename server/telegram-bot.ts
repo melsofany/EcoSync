@@ -514,42 +514,63 @@ class QortobaAnalysisBot {
     try {
       console.log(`📷 [TELEGRAM BOT] Starting enhanced image search for: ${item.partNumber}`);
       
-      // Search for image using enhanced product image search
-      const imageResult = await this.searchProductImage(item.partNumber, item.description);
-      
-      // Estimate product price
+      // Estimate product price first
       const estimatedPrice = await this.estimateProductPrice(item.partNumber, item.description);
       
-      if (imageResult && imageResult.url) {
-        // Verify image URL is accessible before sending
-        const isImageAccessible = await this.verifyImageUrl(imageResult.url);
-        
-        if (isImageAccessible) {
-          // Create detailed caption with price info
-          let caption = `📸 ${item.partNumber}\n${item.description.substring(0, 80)}...\n\n`;
-          
-          if (estimatedPrice) {
-            caption += `💰 السعر المتوقع: ${estimatedPrice.min}-${estimatedPrice.max} ${estimatedPrice.currency}\n`;
-            caption += `📊 المصدر: ${estimatedPrice.source}\n\n`;
-          }
-          
-          caption += `🔍 مصدر الصورة: ${imageResult.source}`;
-          
-          await this.bot.sendPhoto(userId, imageResult.url, {
-            caption: caption
-          });
-          console.log(`📷 [TELEGRAM BOT] Successfully sent verified image with price for: ${item.partNumber} from ${imageResult.source}`);
-        } else {
-          console.log(`📷 [TELEGRAM BOT] Image URL not accessible for: ${item.partNumber}`);
-          await this.sendPriceEstimateOnly(userId, item, estimatedPrice);
-        }
-      } else {
-        console.log(`📷 [TELEGRAM BOT] No image found, sending price estimate for: ${item.partNumber}`);
-        await this.sendPriceEstimateOnly(userId, item, estimatedPrice);
-      }
+      // Create Google Images search URL for direct access
+      const googleSearchUrl = this.createGoogleImagesSearchUrl(item.partNumber, item.description);
+      
+      // Try to find a direct image, but always provide Google search as primary option
+      const imageResult = await this.searchProductImage(item.partNumber, item.description);
+      
+      // Always send Google Images search link with price estimate
+      await this.sendGoogleImagesSearchResult(userId, item, estimatedPrice, googleSearchUrl, imageResult);
+      
     } catch (error) {
       console.error(`Error in enhanced image sending for ${item.partNumber}:`, error);
       await this.sendPriceEstimateOnly(userId, item, null);
+    }
+  }
+
+  // New method to send Google Images search results with better formatting
+  private async sendGoogleImagesSearchResult(userId: string, item: any, priceEstimate: any, googleSearchUrl: string, imageResult: any) {
+    try {
+      const manufacturerInfo = this.getManufacturerInfo(item.description);
+      
+      let message = `📷 بحث صور المنتج\n\n` +
+        `🔧 رقم القطعة: ${item.partNumber}\n` +
+        `${manufacturerInfo.emoji} الشركة المصنعة: ${manufacturerInfo.name}\n` +
+        `📝 الوصف: ${item.description.substring(0, 60)}...\n\n`;
+      
+      if (priceEstimate) {
+        message += `💰 السعر المتوقع: ${priceEstimate.min}-${priceEstimate.max} ${priceEstimate.currency}\n` +
+          `📊 المصدر: ${priceEstimate.source}\n\n`;
+      }
+      
+      // Add Google Images search instruction
+      message += `🔍 البحث في Google Images:\n${googleSearchUrl}\n\n`;
+      
+      // Add search tips
+      message += `💡 نصائح البحث:\n` +
+        `• ابحث عن: "${manufacturerInfo.name} ${item.partNumber}"\n` +
+        `• جرب أيضاً: "${item.partNumber} datasheet"\n` +
+        `• أو: "${item.partNumber} product image"\n\n`;
+      
+      if (imageResult && imageResult.source) {
+        message += `🏪 تم العثور على مصدر محتمل: ${imageResult.source}\n`;
+        message += `⚠️ قد تحتاج للبحث المباشر للوصول للصور\n`;
+      }
+      
+      // Add manufacturer website if available
+      if (manufacturerInfo.website && manufacturerInfo.website !== 'غير متوفر') {
+        message += `🌐 الموقع الرسمي: ${manufacturerInfo.website}`;
+      }
+      
+      await this.bot.sendMessage(userId, message);
+      console.log(`📷 [TELEGRAM BOT] Sent Google Images search with guidance for: ${item.partNumber}`);
+      
+    } catch (error) {
+      console.error(`Error sending Google Images search result for ${item.partNumber}:`, error);
     }
   }
 
@@ -560,16 +581,20 @@ class QortobaAnalysisBot {
       
       // Make HEAD request to check if image exists without downloading it
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 5000);  // Reduced timeout
       
       const response = await fetch(url, { 
         method: 'HEAD',
         signal: controller.signal,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-          'Accept': 'image/*,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Cache-Control': 'no-cache'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
+          'Cache-Control': 'no-cache',
+          'Referer': 'https://www.google.com/',
+          'Sec-Fetch-Dest': 'image',
+          'Sec-Fetch-Mode': 'no-cors',
+          'Sec-Fetch-Site': 'cross-site'
         }
       });
       
@@ -579,16 +604,19 @@ class QortobaAnalysisBot {
       const contentType = response.headers.get('content-type');
       console.log(`📊 [IMAGE VERIFY] Content-Type: ${contentType}`);
       
-      const isValidStatus = response.status >= 200 && response.status < 400;
-      const isValidContent = contentType && (
-        contentType.startsWith('image/') || 
+      // Be more lenient with status codes - many working images return 403 due to hotlinking protection
+      const isValidStatus = response.status >= 200 && response.status < 500;  // Allow more status codes
+      const isValidContent = !contentType || contentType.startsWith('image/') || 
         contentType.includes('gif') || 
         contentType.includes('jpeg') || 
         contentType.includes('jpg') || 
-        contentType.includes('png')
-      );
+        contentType.includes('png') ||
+        contentType.includes('webp');
       
-      const isValid = isValidStatus && !!isValidContent;
+      // Be less strict - if it's an image URL structure, try it anyway
+      const hasImageExtension = /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(url);
+      const isValid = (isValidStatus && isValidContent) || hasImageExtension;
+      
       console.log(`${isValid ? '✅' : '❌'} [IMAGE VERIFY] URL ${isValid ? 'VALID' : 'INVALID'}: ${url}`);
       
       if (!isValid) {
@@ -599,7 +627,44 @@ class QortobaAnalysisBot {
     } catch (error) {
       console.log(`❌ [IMAGE VERIFY] URL FAILED: ${url}`);
       console.log(`❌ [IMAGE VERIFY] Error details: ${(error as Error).message}`);
-      return false;
+      // If it's a network error but the URL looks like an image, try it anyway
+      const hasImageExtension = /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(url);
+      return hasImageExtension; // Give image URLs a chance even if verification fails
+    }
+  }
+
+  // Create Google Images search URL
+  private createGoogleImagesSearchUrl(partNumber: string, description: string): string {
+    const manufacturerInfo = this.getManufacturerInfo(description);
+    const searchQuery = `${manufacturerInfo.name} ${partNumber}`.trim();
+    const encodedQuery = encodeURIComponent(searchQuery);
+    return `https://www.google.com/search?tbm=isch&q=${encodedQuery}`;
+  }
+
+  // Send alternative with Google Images search link when direct images fail
+  private async sendImageSearchAlternative(userId: string, item: any, priceEstimate: any, googleSearchUrl: string, source: string) {
+    try {
+      const manufacturerInfo = this.getManufacturerInfo(item.description);
+      
+      let message = `📷 صور ${item.partNumber}\n\n` +
+        `${manufacturerInfo.emoji} الشركة: ${manufacturerInfo.name}\n` +
+        `📋 الوصف: ${item.description.substring(0, 60)}...\n\n`;
+      
+      if (priceEstimate) {
+        message += `💰 السعر المتوقع: ${priceEstimate.min}-${priceEstimate.max} ${priceEstimate.currency}\n` +
+          `📊 المصدر: ${priceEstimate.source}\n\n`;
+      }
+      
+      message += `🔍 تم العثور على مصدر صور من: ${source}\n` +
+        `⚠️ الرابط المباشر غير متاح حالياً\n\n` +
+        `🌐 ابحث في Google Images:\n${googleSearchUrl}\n\n` +
+        `💡 نصيحة: ابحث عن "${manufacturerInfo.name} ${item.partNumber}" في Google Images للحصول على أفضل النتائج`;
+      
+      await this.bot.sendMessage(userId, message);
+      console.log(`📷 [TELEGRAM BOT] Sent Google Images search alternative for: ${item.partNumber}`);
+      
+    } catch (error) {
+      console.error(`Error sending image search alternative for ${item.partNumber}:`, error);
     }
   }
 
@@ -633,19 +698,45 @@ class QortobaAnalysisBot {
 
   // Get manufacturer information based on description
   private getManufacturerInfo(description: string): { name: string, website: string, emoji: string } {
-    const lowerDesc = description.toLowerCase();
+    const manufacturer = this.identifyManufacturer(description);
     
-    if (lowerDesc.includes('schneider')) {
-      return { name: 'Schneider Electric', website: 'se.com', emoji: '🔌' };
-    } else if (lowerDesc.includes('siemens')) {
-      return { name: 'Siemens', website: 'siemens.com', emoji: '⚡' };
-    } else if (lowerDesc.includes('abb')) {
-      return { name: 'ABB', website: 'abb.com', emoji: '🔧' };
-    } else if (lowerDesc.includes('eaton')) {
-      return { name: 'Eaton', website: 'eaton.com', emoji: '🛠️' };
-    } else {
-      return { name: 'غير محدد', website: 'google.com', emoji: '🔍' };
-    }
+    const manufacturerData: { [key: string]: { website: string, emoji: string } } = {
+      'Schneider Electric': { website: 'https://www.se.com', emoji: '⚡' },
+      'Siemens': { website: 'https://www.siemens.com', emoji: '🏭' },
+      'ABB': { website: 'https://www.abb.com', emoji: '🔌' },
+      'Eaton': { website: 'https://www.eaton.com', emoji: '⚡' },
+      'Honeywell': { website: 'https://www.honeywell.com', emoji: '🏭' },
+      'Rockwell Automation': { website: 'https://www.rockwellautomation.com', emoji: '🤖' },
+      'Omron': { website: 'https://www.omron.com', emoji: '🔧' },
+      'Mitsubishi Electric': { website: 'https://www.mitsubishielectric.com', emoji: '⚡' },
+      'Bosch': { website: 'https://www.bosch.com', emoji: '🚗' },
+      'Continental': { website: 'https://www.continental.com', emoji: '🚗' },
+      'Denso': { website: 'https://www.denso.com', emoji: '🚗' },
+      'Delphi': { website: 'https://www.delphi.com', emoji: '🚗' },
+      'Valeo': { website: 'https://www.valeo.com', emoji: '🚗' },
+      'Caterpillar': { website: 'https://www.caterpillar.com', emoji: '🚜' },
+      'Samsung': { website: 'https://www.samsung.com', emoji: '📱' },
+      'LG': { website: 'https://www.lg.com', emoji: '📺' },
+      'Sony': { website: 'https://www.sony.com', emoji: '🎮' },
+      'Panasonic': { website: 'https://www.panasonic.com', emoji: '🔋' },
+      'Toshiba': { website: 'https://www.toshiba.com', emoji: '💻' },
+      'Intel': { website: 'https://www.intel.com', emoji: '🖥️' },
+      'NVIDIA': { website: 'https://www.nvidia.com', emoji: '🎮' },
+      'Philips': { website: 'https://www.philips.com', emoji: '💡' },
+      'Philips Healthcare': { website: 'https://www.philips.com/healthcare', emoji: '🏥' },
+      'GE Healthcare': { website: 'https://www.gehealthcare.com', emoji: '🏥' },
+      'Medtronic': { website: 'https://www.medtronic.com', emoji: '❤️' },
+      'Abbott': { website: 'https://www.abbott.com', emoji: '🩺' },
+      'Johnson & Johnson': { website: 'https://www.jnj.com', emoji: '🏥' },
+      'غير محدد': { website: 'غير متوفر', emoji: '🔧' }
+    };
+    
+    const info = manufacturerData[manufacturer] || manufacturerData['غير محدد'];
+    return {
+      name: manufacturer,
+      website: info.website,
+      emoji: info.emoji
+    };
   }
 
   // Enhanced product image search with real sources
