@@ -255,10 +255,10 @@ export default function ItemPricingRequests() {
                   <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
                   <TableHead className="text-center bg-green-100 font-bold border">PO</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">Category</TableHead>
-                  <TableHead className="text-center bg-blue-100 font-bold border">REQ_DATE</TableHead>
-                  <TableHead className="text-center bg-green-100 font-bold border">PO_PRICE</TableHead>
-                  <TableHead className="text-center bg-green-100 font-bold border">PO_QTY</TableHead>
                   <TableHead className="text-center bg-green-100 font-bold border">PO_DATE</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">PRICE/RFQ</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">QTY</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">RFQ</TableHead>
                   <TableHead className="text-center bg-gray-100 font-bold border">DESCRIPTION</TableHead>
                   <TableHead className="text-center bg-gray-100 font-bold border">PART NO</TableHead>
@@ -334,18 +334,18 @@ export default function ItemPricingRequests() {
                           }
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {matchingPO && matchingPO.unitPrice ? 
-                            `${parseFloat(matchingPO.unitPrice).toLocaleString('ar-EG')} ج.م.` : 
-                            '-'
+                          {matchingPO ? 
+                            (matchingPO.unitPrice ? `${parseFloat(matchingPO.unitPrice).toLocaleString('ar-EG')} ج.م.` : formatCurrency(request.customerPrice)) :
+                            (request.customerPrice ? formatCurrency(request.customerPrice) : '-')
                           }
                         </TableCell>
                         <TableCell className="text-center border font-bold">
-                          {matchingPO ? (matchingPO.quantity || '-') : '-'}
+                          {matchingPO ? (matchingPO.quantity || request.quantity) : request.quantity}
                         </TableCell>
                         <TableCell className="text-center border">
-                          {matchingPO && matchingPO.poDate ? 
-                            format(new Date(matchingPO.poDate), 'dd MMM yyyy', { locale: ar }) : 
-                            '-'
+                          {matchingPO ? 
+                            (matchingPO.poDate ? format(new Date(matchingPO.poDate), 'dd MMM yyyy', { locale: ar }) : formatDate(request.requestDate)) :
+                            formatDate(request.requestDate)
                           }
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
