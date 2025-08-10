@@ -251,14 +251,12 @@ export default function ItemPricingRequests() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-center bg-blue-100 font-bold border">PRICE/RFQ</TableHead>
-                  <TableHead className="text-center bg-blue-100 font-bold border">Quantity/RFQ</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">QTY/RFQ</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
                   <TableHead className="text-center bg-green-100 font-bold border">PO</TableHead>
-                  <TableHead className="text-center bg-blue-100 font-bold border">Category</TableHead>
-                  <TableHead className="text-center bg-green-100 font-bold border">DATE/RFQ</TableHead>
-                  <TableHead className="text-center bg-blue-100 font-bold border">PRICE/RFQ</TableHead>
-                  <TableHead className="text-center bg-blue-100 font-bold border">QTY</TableHead>
-                  <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
+                  <TableHead className="text-center bg-green-100 font-bold border">PRICE/PO</TableHead>
+                  <TableHead className="text-center bg-green-100 font-bold border">QTY/PO</TableHead>
+                  <TableHead className="text-center bg-green-100 font-bold border">DATE/PO</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">RFQ</TableHead>
                   <TableHead className="text-center bg-gray-100 font-bold border">DESCRIPTION</TableHead>
                   <TableHead className="text-center bg-gray-100 font-bold border">PART NO</TableHead>
@@ -269,13 +267,13 @@ export default function ItemPricingRequests() {
               <TableBody>
                 {isLoading || isLoadingPO ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={12} className="text-center py-8 text-gray-500">
                       جارٍ تحميل البيانات...
                     </TableCell>
                   </TableRow>
                 ) : filteredRequests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={13} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={12} className="text-center py-8 text-gray-500">
                       <div className="flex flex-col items-center gap-2">
                         <FileText className="h-8 w-8 text-gray-400" />
                         <span>لا توجد طلبات تسعير لهذا الصنف</span>
@@ -312,6 +310,7 @@ export default function ItemPricingRequests() {
                     
                     return (
                       <TableRow key={request.id} className={`text-xs hover:bg-gray-50 ${matchingPO ? 'bg-blue-50' : ''}`}>
+                        {/* RFQ Columns */}
                         <TableCell className="text-center border font-bold text-blue-600">
                           {request.customerPrice ? formatCurrency(request.customerPrice) : '-'}
                         </TableCell>
@@ -321,36 +320,29 @@ export default function ItemPricingRequests() {
                         <TableCell className="text-center border">
                           {formatDate(request.requestDate)}
                         </TableCell>
+                        
+                        {/* PO Number */}
                         <TableCell className="text-center border font-bold text-green-600">
                           {matchingPO?.poNumber || '-'}
                         </TableCell>
-                        <TableCell className="text-center border font-bold">
-                          ELEC
+                        
+                        {/* PO Columns */}
+                        <TableCell className="text-center border font-bold text-green-600">
+                          {matchingPO?.unitPrice ? `${parseFloat(matchingPO.unitPrice).toLocaleString('ar-EG')} ج.م.` : '-'}
                         </TableCell>
-                        <TableCell className="text-center border">
-                          {matchingPO && matchingPO.poDate ? 
-                            format(new Date(matchingPO.poDate), 'dd MMM yyyy', { locale: ar }) : 
-                            '-'
-                          }
+                        <TableCell className="text-center border font-bold text-green-600">
+                          {matchingPO?.quantity || '-'}
                         </TableCell>
-                        <TableCell className="text-center border font-bold text-blue-600">
-                          {matchingPO ? 
-                            (matchingPO.unitPrice ? `${parseFloat(matchingPO.unitPrice).toLocaleString('ar-EG')} ج.م.` : formatCurrency(request.customerPrice)) :
-                            (request.customerPrice ? formatCurrency(request.customerPrice) : '-')
-                          }
+                        <TableCell className="text-center border font-bold text-green-600">
+                          {matchingPO?.poDate ? format(new Date(matchingPO.poDate), 'dd MMM yyyy', { locale: ar }) : '-'}
                         </TableCell>
-                        <TableCell className="text-center border font-bold">
-                          {matchingPO ? (matchingPO.quantity || request.quantity) : request.quantity}
-                        </TableCell>
-                        <TableCell className="text-center border">
-                          {matchingPO ? 
-                            (matchingPO.poDate ? format(new Date(matchingPO.poDate), 'dd MMM yyyy', { locale: ar }) : formatDate(request.requestDate)) :
-                            formatDate(request.requestDate)
-                          }
-                        </TableCell>
+                        
+                        {/* RFQ Number */}
                         <TableCell className="text-center border font-bold text-blue-600">
                           {request.quotationNumber}
                         </TableCell>
+                        
+                        {/* Item Details */}
                         <TableCell className="text-left border px-2">
                           <div className="text-xs leading-tight">
                             {itemDetails?.[0]?.description || itemDescription || 'ALASKA REFRIGERATOR 4.5 FT ,220 VOLT , 50 HZ'}
