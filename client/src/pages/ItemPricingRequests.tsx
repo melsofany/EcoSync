@@ -170,7 +170,7 @@ export default function ItemPricingRequests() {
         <div className="flex items-center space-x-2 space-x-reverse">
           <DollarSign className="h-5 w-5 text-green-600" />
           <span className="text-sm text-gray-600">
-            {itemDetails ? itemDetails.filter((r: any) => r.record_type === 'RFQ').length : 0} طلب تسعير • {itemDetails ? itemDetails.filter((r: any) => r.record_type === 'PO').length : 0} أمر شراء
+            {filteredRequests.length} طلب تسعير • {(purchaseOrders || []).length} أمر شراء
           </span>
         </div>
       </div>
@@ -273,7 +273,7 @@ export default function ItemPricingRequests() {
                       جارٍ تحميل البيانات...
                     </TableCell>
                   </TableRow>
-                ) : (!itemDetails || itemDetails.length === 0) ? (
+                ) : filteredRequests.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={13} className="text-center py-8 text-gray-500">
                       <div className="flex flex-col items-center gap-2">
@@ -304,69 +304,66 @@ export default function ItemPricingRequests() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  itemDetails.map((record: any, index: number) => {
-                    const isPO = record.record_type === 'PO';
+                  filteredRequests.map((request: PricingRequest, index: number) => {
+                    // Get matching purchase order for this specific quotation number
+                    const matchingPO = (purchaseOrders || []).find((po: any) => 
+                      po.quotationNumber === request.quotationNumber
+                    );
                     
                     return (
-                      <TableRow key={`${record.record_type}-${index}`} className={`text-xs hover:bg-gray-50 ${isPO ? 'bg-green-50' : 'bg-blue-50'}`}>
+                      <TableRow key={request.id} className={`text-xs hover:bg-gray-50 ${matchingPO ? 'bg-blue-50' : ''}`}>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {isPO ? 
-                            (record.po_price ? `${parseFloat(record.po_price).toLocaleString('ar-EG')} ج.م.` : '-') :
-                            (record.customer_price ? `${parseFloat(record.customer_price).toLocaleString('ar-EG')} ج.م.` : '-')
-                          }
+                          {request.customerPrice ? formatCurrency(request.customerPrice) : '-'}
                         </TableCell>
                         <TableCell className="text-center border font-bold">
-                          {isPO ? (record.po_quantity || 0) : (record.rfq_qty || 0)}
+                          {request.quantity}
                         </TableCell>
                         <TableCell className="text-center border">
-                          {isPO ? 
-                            (record.po_date ? format(new Date(record.po_date), 'dd MMM yyyy', { locale: ar }) : '-') :
-                            (record.rfq_date ? format(new Date(record.rfq_date), 'dd MMM yyyy', { locale: ar }) : '-')
-                          }
+                          {formatDate(request.requestDate)}
                         </TableCell>
                         <TableCell className="text-center border font-bold text-green-600">
-                          {record.po_number || '-'}
+                          {matchingPO?.poNumber || '-'}
                         </TableCell>
                         <TableCell className="text-center border font-bold">
-                          {record.category || 'ELEC'}
+                          ELEC
                         </TableCell>
                         <TableCell className="text-center border">
-                          {isPO ? 
-                            (record.po_date ? format(new Date(record.po_date), 'dd MMM yyyy', { locale: ar }) : '-') :
-                            (record.rfq_date ? format(new Date(record.rfq_date), 'dd MMM yyyy', { locale: ar }) : '-')
+                          {matchingPO ? 
+                            (matchingPO.poDate ? format(new Date(matchingPO.poDate), 'dd MMM yyyy', { locale: ar }) : formatDate(request.requestDate)) :
+                            formatDate(request.requestDate)
                           }
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {isPO ? 
-                            (record.po_price ? `${parseFloat(record.po_price).toLocaleString('ar-EG')} ج.م.` : '-') :
-                            (record.customer_price ? `${parseFloat(record.customer_price).toLocaleString('ar-EG')} ج.م.` : '-')
+                          {matchingPO ? 
+                            (matchingPO.unitPrice ? `${parseFloat(matchingPO.unitPrice).toLocaleString('ar-EG')} ج.م.` : formatCurrency(request.customerPrice)) :
+                            (request.customerPrice ? formatCurrency(request.customerPrice) : '-')
                           }
                         </TableCell>
                         <TableCell className="text-center border font-bold">
-                          {isPO ? (record.po_quantity || 0) : (record.rfq_qty || 0)}
+                          {matchingPO ? (matchingPO.quantity || request.quantity) : request.quantity}
                         </TableCell>
                         <TableCell className="text-center border">
-                          {isPO ? 
-                            (record.po_date ? format(new Date(record.po_date), 'dd MMM yyyy', { locale: ar }) : '-') :
-                            (record.rfq_date ? format(new Date(record.rfq_date), 'dd MMM yyyy', { locale: ar }) : '-')
+                          {matchingPO ? 
+                            (matchingPO.poDate ? format(new Date(matchingPO.poDate), 'dd MMM yyyy', { locale: ar }) : formatDate(request.requestDate)) :
+                            formatDate(request.requestDate)
                           }
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {record.rfq_number || '-'}
+                          {request.quotationNumber}
                         </TableCell>
                         <TableCell className="text-left border px-2">
                           <div className="text-xs leading-tight">
-                            {record.description || 'ALASKA REFRIGERATOR 4.5 FT ,220 VOLT , 50 HZ'}
+                            {itemDetails?.[0]?.description || itemDescription || 'ALASKA REFRIGERATOR 4.5 FT ,220 VOLT , 50 HZ'}
                           </div>
                         </TableCell>
                         <TableCell className="text-center border font-mono">
-                          {record.part_no || 'ALASKA'}
+                          {itemDetails?.[0]?.part_no || itemDescription?.split(',')[0]?.trim() || 'ALASKA'}
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {record.line_item || '0666.001.GENRAL.0027'}
+                          {itemDetails?.[0]?.line_item || '0666.001.GENRAL.0027'}
                         </TableCell>
                         <TableCell className="text-center border font-bold">
-                          {record.uom || 'EACH'}
+                          EACH
                         </TableCell>
                       </TableRow>
                     );
@@ -377,36 +374,38 @@ export default function ItemPricingRequests() {
           </div>
 
           {/* Summary */}
-          {itemDetails && itemDetails.length > 0 && (
+          {filteredRequests.length > 0 && (
             <div className="border-t px-6 py-4 bg-gray-50">
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm">
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <FileText className="h-4 w-4 text-blue-500" />
                   <span className="text-gray-600">طلبات التسعير:</span>
-                  <span className="font-medium text-blue-600">{itemDetails.filter((r: any) => r.record_type === 'RFQ').length}</span>
+                  <span className="font-medium text-blue-600">{filteredRequests.length}</span>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <ShoppingCart className="h-4 w-4 text-green-500" />
-                  <span className="text-gray-600">أوامر الشراء:</span>
-                  <span className="font-medium text-green-600">{itemDetails.filter((r: any) => r.record_type === 'PO').length}</span>
+                  <span className="text-gray-600">أوامر الشراء المرتبطة:</span>
+                  <span className="font-medium text-green-600">{(purchaseOrders || []).length}</span>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-gray-600">إجمالي السجلات:</span>
-                  <span className="font-medium text-green-600">{itemDetails.length}</span>
+                  <span className="text-gray-600">الطلبات المكتملة:</span>
+                  <span className="font-medium text-green-600">
+                    {filteredRequests.filter((r: PricingRequest) => r.status === 'completed').length}
+                  </span>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <Building2 className="h-4 w-4 text-gray-500" />
                   <span className="text-gray-600">العملاء الفريدين:</span>
                   <span className="font-medium">
-                    {new Set(itemDetails.map((r: any) => r.client_name)).size}
+                    {new Set(filteredRequests.map((r: PricingRequest) => r.clientName)).size}
                   </span>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <DollarSign className="h-4 w-4 text-gray-500" />
                   <span className="text-gray-600">إجمالي الكمية:</span>
                   <span className="font-medium">
-                    {itemDetails.reduce((sum: number, r: any) => sum + (r.record_type === 'PO' ? (r.po_quantity || 0) : (r.rfq_qty || 0)), 0)}
+                    {filteredRequests.reduce((sum: number, r: PricingRequest) => sum + r.quantity, 0)}
                   </span>
                 </div>
               </div>
