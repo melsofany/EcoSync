@@ -21,6 +21,7 @@ import SupplierPricing from "@/pages/SupplierPricing";
 import CustomerPricing from "@/pages/CustomerPricingNew";
 import CreatePurchaseOrder from "@/pages/CreatePurchaseOrder";
 import ItemPricingRequests from "@/pages/ItemPricingRequests";
+import TestPOData from "@/pages/TestPOData";
 import NotFound from "@/pages/not-found";
 import TelegramBot from "@/pages/TelegramBot";
 
@@ -66,6 +67,7 @@ function Router() {
         <Route path="/reports" component={Reports} />
         <Route path="/admin" component={Admin} />
         <Route path="/telegram-bot" component={TelegramBot} />
+        <Route path="/test-po-data" component={TestPOData} />
         <Route path="/change-password" component={ChangePassword} />
         <Route component={NotFound} />
       </Switch>

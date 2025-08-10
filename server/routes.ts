@@ -74,6 +74,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
+  // Test endpoint for P-000364 purchase orders (no auth required for debugging)
+  app.get("/api/test-po-data/:itemId", async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      const purchaseOrders = await storage.getRelatedPurchaseOrders(itemId);
+      res.json({
+        itemId,
+        totalRecords: purchaseOrders.length,
+        data: purchaseOrders
+      });
+    } catch (error) {
+      console.error("Test PO data error:", error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+  });
+
   // Role-based access control
   const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
