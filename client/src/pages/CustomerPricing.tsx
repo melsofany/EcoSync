@@ -134,19 +134,21 @@ function ItemDetailedPricing({ item }: { item: any }) {
         </div>
       </div>
 
-      {/* Comprehensive Data Table */}
+      {/* جدول البيانات التفصيلية للبند */}
       {detailedPricing && detailedPricing.length > 0 && (
         <div className="bg-white border rounded-lg p-4">
           <h4 className="font-semibold mb-3 flex items-center gap-2">
             <Package className="h-4 w-4" />
-            جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
+            السجلات التفصيلية للبند {item.partNumber}
           </h4>
           <p className="text-sm text-gray-600 mb-4">
-            عرض جميع البيانات لـ PART NO: {item.partNumber} ({detailedPricing?.filter((r: any) => r.rfq_number !== '25R00001' && !r.rfq_number?.includes('25R00001')).length || 0} سجل تاريخي)
+            عرض تاريخ البند: {item.partNumber} - إجمالي ({detailedPricing?.length || 0} سجل من طلبات التسعير وأوامر الشراء
           </p>
-          <p className="text-xs text-blue-600 mb-3">
-            📊 فلتر Excel لرقم القطعة {item.partNumber} - عرض كامل التاريخ من قاعدة البيانات
-          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
+            <p className="text-sm text-blue-800">
+              <strong>ملاحظة:</strong> هذا الجدول يعرض جميع السجلات التاريخية للبند بما في ذلك تواريخ الطلبات وأوامر الشراء كما كانت في الشيت الأصلي
+            </p>
+          </div>
           
           <div className="overflow-auto max-h-96 border border-gray-300" style={{scrollbarWidth: 'thin'}}>
             <table className="w-full min-w-max text-xs border-collapse border border-gray-300">
@@ -171,11 +173,6 @@ function ItemDetailedPricing({ item }: { item: any }) {
               </thead>
               <tbody>
                 {detailedPricing
-                  .filter((record: any) => {
-                    // Filter out ALL instances of current RFQ (25R00001) from historical display
-                    const rfqNum = record.rfq_number;
-                    return rfqNum !== '25R00001' && !rfqNum?.includes('25R00001');
-                  })
                   .map((record: any, index: number) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="border border-gray-300 p-2 text-right">{record.po_total || '-'}</td>
@@ -185,8 +182,8 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     <td className="border border-gray-300 p-2 text-right">{record.po_number || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.category}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.res_date ? new Date(record.res_date).toLocaleDateString('ar-EG') : '-'}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.customer_price ? formatCurrency(parseFloat(record.customer_price)) : (record.record_type === 'PO' ? formatCurrency(parseFloat(record.customer_price || 0)) : '٠٫٠٠ EGP')}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.record_type === 'PO' ? '' : (record.rfq_qty || '-')}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.rfq_price ? formatCurrency(parseFloat(record.rfq_price)) : '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.rfq_quantity || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.rfq_date ? new Date(record.rfq_date).toLocaleDateString('ar-EG') : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.rfq_number || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right break-words" style={{wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: '1.4'}}>
@@ -195,8 +192,8 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       </div>
                     </td>
                     <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium break-words">
-                      <div className="max-w-[120px]" title={record.part_no}>
-                        {record.part_no}
+                      <div className="max-w-[120px]" title={record.part_number}>
+                        {record.part_number}
                       </div>
                     </td>
                     <td className="border border-gray-300 p-2 text-right font-mono text-blue-600">{record.line_item}</td>
