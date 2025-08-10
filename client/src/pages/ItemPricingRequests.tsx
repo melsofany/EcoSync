@@ -255,7 +255,7 @@ export default function ItemPricingRequests() {
                   <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
                   <TableHead className="text-center bg-green-100 font-bold border">PO</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">Category</TableHead>
-                  <TableHead className="text-center bg-green-100 font-bold border">PO_DATE</TableHead>
+                  <TableHead className="text-center bg-green-100 font-bold border">DATE/RFQ</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">PRICE/RFQ</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">QTY</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
