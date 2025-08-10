@@ -42,7 +42,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db.js";
 import { pool } from "./db.js";
-import { eq, desc, like, and, isNull, isNotNull, sql, or, inArray } from "drizzle-orm";
+import { eq, desc, like, and, isNull, isNotNull, sql, or, inArray, not, gt, asc, count, exists, ilike } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export interface IStorage {
@@ -1428,7 +1428,11 @@ export class DatabaseStorage implements IStorage {
         .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
         .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
         .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
-        .where(eq(items.id, itemId));
+        .where(and(
+          eq(items.id, itemId),
+          not(like(quotationItems.id, 'qi-hist-%')), // Exclude historical records
+          gt(quotationItems.unitPrice, 0) // Exclude zero prices
+        ));
 
       // Get PO data for THIS SPECIFIC ITEM ONLY
       const poData = await db
@@ -1460,14 +1464,12 @@ export class DatabaseStorage implements IStorage {
       console.log(`🎯 Total RFQ records: ${rfqData.length}`);
       console.log(`🎯 Total PO records: ${poData.length}`);
       
-      // Filter out zero-price RFQ records (but keep zero quantities)
-      const filteredRfqData = rfqData.filter(row => 
-        row.record_type !== 'RFQ' || parseFloat(row.customer_price || '0') > 0
-      );
+      // No additional filtering needed - already filtered in SQL query
+      const filteredRfqData = rfqData;
       
       const allResults = [...filteredRfqData, ...poData];
       
-      console.log(`✅ Filtered records (excluding zero prices): RFQ=${filteredRfqData.length}, PO=${poData.length}, Total=${allResults.length}`);
+      console.log(`✅ Real records only: RFQ=${filteredRfqData.length}, PO=${poData.length}, Total=${allResults.length}`);
       
       // Sort by date (RFQ date first, then PO date)
       allResults.sort((a, b) => {

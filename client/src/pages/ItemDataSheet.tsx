@@ -243,7 +243,7 @@ export default function ItemDataSheet() {
             📊 البيانات الحقيقية: {itemData.pricingRequests?.length || 0} سجل بند في طلبات التسعير + {itemData.purchaseOrders?.length || 0} سجل أمر شراء
           </p>
           <div className="text-xs text-gray-500 mt-1">
-            ملاحظة: يُعرض البنود ذات الأسعار المحددة فقط (تم استبعاد السجلات ذات السعر صفر)
+            ملاحظة: يُعرض البنود الحقيقية فقط (تم استبعاد السجلات التاريخية والأسعار الصفر)
           </div>
         </CardHeader>
         <CardContent>
