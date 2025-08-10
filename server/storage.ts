@@ -1373,8 +1373,12 @@ export class DatabaseStorage implements IStorage {
         .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
         .where(sql`REPLACE(LOWER(COALESCE(${items.partNumber}, '')), ' ', '') = LOWER(${cleanPartNumber})`);
 
+      // Remove exact duplicates that might cause confusion
+      const uniqueRfqData = this.removeDuplicatesByKey(rfqData, ['rfq_number', 'rfq_date', 'rfq_qty']);
+      const uniquePoData = this.removeDuplicatesByKey(poData, ['po_number', 'po_date', 'po_quantity']);
+      
       // Combine and sort results
-      const allResults = [...rfqData, ...poData];
+      const allResults = [...uniqueRfqData, ...uniquePoData];
       
       // Sort by date (RFQ date first, then PO date)
       allResults.sort((a, b) => {
@@ -1383,8 +1387,8 @@ export class DatabaseStorage implements IStorage {
         return bDate.getTime() - aDate.getTime(); // Most recent first
       });
 
-      console.log(`📊 Found ${rfqData.length} RFQ records, ${poData.length} PO records`);
-      console.log(`✅ Total records: ${allResults.length} for part ${partNumber}`);
+      console.log(`📊 After dedup: ${uniqueRfqData.length} unique RFQ, ${uniquePoData.length} unique PO`);
+      console.log(`✅ Final result: ${allResults.length} records for part ${partNumber}`);
       
       return allResults;
       
@@ -1392,6 +1396,19 @@ export class DatabaseStorage implements IStorage {
       console.error('Error in getItemComprehensiveDataUnified:', error);
       return [];
     }
+  }
+
+  // Helper method to remove duplicates by specific keys
+  private removeDuplicatesByKey(records: any[], keys: string[]): any[] {
+    const seen = new Set<string>();
+    return records.filter(record => {
+      const keyValue = keys.map(key => record[key] || '').join('|');
+      if (seen.has(keyValue)) {
+        return false;
+      }
+      seen.add(keyValue);
+      return true;
+    });
   }
 
   private async getBasicItemData(itemId: string): Promise<any[]> {
