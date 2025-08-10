@@ -125,12 +125,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: Bot,
       section: "admin",
     },
-    {
-      title: "توحيد البنود AI",
-      href: "/item-unification",
-      icon: Merge,
-      section: "admin",
-    },
+
   ];
 
   const getRoleLabel = (role: string) => {

@@ -461,6 +461,27 @@ export class DatabaseStorage implements IStorage {
 
   // Item operations
   async createItem(itemData: InsertItem): Promise<Item> {
+    // تجربة البحث عن تطابق ذكي أولاً
+    try {
+      const { findSmartItemMatch } = await import('./smart-item-matcher.js');
+      const match = await findSmartItemMatch({
+        description: itemData.description,
+        partNumber: itemData.partNumber,
+        brand: itemData.brand,
+        specifications: itemData.specifications
+      });
+      
+      if (match) {
+        console.log(`🔄 استخدام بند موجود: ${match.itemNumber} بدلاً من إنشاء بند جديد`);
+        // إرجاع البند الموجود
+        const existingItem = await this.getItem(match.id);
+        if (existingItem) return existingItem;
+      }
+    } catch (error) {
+      console.log('⚠️ تعذر التحقق من التطابق الذكي، سيتم إنشاء بند جديد:', error.message);
+    }
+    
+    // إنشاء بند جديد إذا لم يوجد تطابق
     const itemNumber = await this.getNextItemNumber();
     const [item] = await db
       .insert(items)

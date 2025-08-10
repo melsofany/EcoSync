@@ -77,5 +77,15 @@ app.use((req, res, next) => {
       hour12: true,
     })} [express] serving on port ${port}`);
     console.log(`Health endpoint available at: http://0.0.0.0:${port}/api/health`);
+    
+    // تشغيل التوحيد التلقائي للبنود المكررة
+    setTimeout(async () => {
+      try {
+        const { initializeAutoUnification } = await import('./auto-unification.js');
+        await initializeAutoUnification();
+      } catch (error) {
+        console.log('⚠️ التوحيد التلقائي غير متاح:', error.message);
+      }
+    }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
   });
 })();
