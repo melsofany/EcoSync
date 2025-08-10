@@ -556,29 +556,49 @@ class QortobaAnalysisBot {
   // Verify if image URL is accessible by making HTTP request
   private async verifyImageUrl(url: string): Promise<boolean> {
     try {
-      console.log(`📷 Verifying image URL: ${url}`);
+      console.log(`🔍 [IMAGE VERIFY] Testing URL: ${url}`);
       
       // Make HEAD request to check if image exists without downloading it
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
       
       const response = await fetch(url, { 
         method: 'HEAD',
         signal: controller.signal,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'image/*,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+          'Cache-Control': 'no-cache'
         }
       });
       
       clearTimeout(timeoutId);
       
+      console.log(`📊 [IMAGE VERIFY] Response status: ${response.status} for ${url}`);
       const contentType = response.headers.get('content-type');
-      const isValid = response.ok && (contentType?.startsWith('image/') ?? false);
-      console.log(`📷 Image verification result for ${url}: ${isValid ? 'VALID' : 'INVALID'}`);
+      console.log(`📊 [IMAGE VERIFY] Content-Type: ${contentType}`);
+      
+      const isValidStatus = response.status >= 200 && response.status < 400;
+      const isValidContent = contentType && (
+        contentType.startsWith('image/') || 
+        contentType.includes('gif') || 
+        contentType.includes('jpeg') || 
+        contentType.includes('jpg') || 
+        contentType.includes('png')
+      );
+      
+      const isValid = isValidStatus && !!isValidContent;
+      console.log(`${isValid ? '✅' : '❌'} [IMAGE VERIFY] URL ${isValid ? 'VALID' : 'INVALID'}: ${url}`);
+      
+      if (!isValid) {
+        console.log(`❌ [IMAGE VERIFY] Rejection reason - Status: ${response.status}, Content-Type: ${contentType}`);
+      }
       
       return isValid;
     } catch (error) {
-      console.log(`📷 Image verification failed for ${url}: ${(error as Error).message}`);
+      console.log(`❌ [IMAGE VERIFY] URL FAILED: ${url}`);
+      console.log(`❌ [IMAGE VERIFY] Error details: ${(error as Error).message}`);
       return false;
     }
   }
@@ -878,18 +898,26 @@ class QortobaAnalysisBot {
       const lowerPartNumber = partNumber.toLowerCase();
       const lowerDescription = description.toLowerCase();
       
-      // Schneider Electric catalog search
+      // Schneider Electric catalog search - using verified URL patterns
       if (lowerDescription.includes('schneider') || lowerPartNumber.includes('lc1d')) {
         const schneiderUrls = [
+          // Verified working pattern from user
+          `https://download.schneider-electric.com/files?p_Doc_Ref=${partNumber.toUpperCase()}_Image&p_File_Type=rendition_64_gif&default_image=DefaultProductImage.png`,
+          // Alternative patterns
+          `https://download.schneider-electric.com/files?p_Doc_Ref=${partNumber.toUpperCase()}_Image&p_File_Type=rendition_256_jpg&default_image=DefaultProductImage.png`,
           `https://www.se.com/content/dam/se/ww/en/assets/564/media/8800/LC1D/${partNumber.toUpperCase()}.jpg`,
           `https://www.se.com/content/dam/se/ww/en/assets/564/media/product/${partNumber.toLowerCase()}.jpg`,
-          `https://download.schneider-electric.com/files?p_File_Name=${partNumber.toLowerCase()}.jpg`,
-          `https://www.se.com/content/dam/se/ww/en/assets/564/media/product-square/${partNumber.toLowerCase()}.jpg`
+          // Product catalog patterns
+          `https://www.se.com/us/en/product/${partNumber.toUpperCase()}/image.jpg`,
+          `https://www.se.com/ww/en/product/${partNumber.toUpperCase()}/thumbnail.jpg`
         ];
         
+        console.log(`📷 [SCHNEIDER] Testing ${schneiderUrls.length} URL patterns for ${partNumber}`);
+        
         for (const url of schneiderUrls) {
+          console.log(`📷 [SCHNEIDER] Testing: ${url}`);
           if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found Schneider catalog image: ${url}`);
+            console.log(`📷 Found working Schneider image: ${url}`);
             return url;
           }
         }
