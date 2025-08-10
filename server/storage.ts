@@ -1410,9 +1410,9 @@ export class DatabaseStorage implements IStorage {
       
       console.log(`🎯 Getting historical data for specific item: ${baseItem.itemNumber}`);
 
-      // Get RFQ data for THIS SPECIFIC ITEM ONLY
+      // Get RFQ data for THIS SPECIFIC ITEM ONLY - REMOVE DISTINCT to show separate rows
       const rfqData = await db
-        .selectDistinct({
+        .select({
           record_type: sql<string>`'RFQ'`,
           client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
           item_id: items.itemNumber,
