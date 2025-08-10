@@ -262,31 +262,27 @@ class QortobaAnalysisBot {
   }
 
   private async sendAnalysisResult(chatId: number, item: any, analysis: string) {
-    // Split analysis into chunks if too long for Telegram
-    const maxLength = 4000;
-    
-    let header = `🔧 تحليل شامل للبند\n\n`;
-    header += `📋 رقم القطعة: ${item.partNumber}\n`;
-    header += `📝 الوصف: ${item.description}\n`;
-    header += `🏷️ الفئة: ${item.category}\n`;
-    header += `📏 الوحدة: ${item.unit}\n\n`;
-    header += `🤖 تحليل الذكاء الاصطناعي:\n`;
-    header += `${'='.repeat(30)}\n\n`;
-
-    const fullMessage = header + analysis;
-    
-    if (fullMessage.length <= maxLength) {
-      this.bot.sendMessage(chatId, fullMessage);
-    } else {
-      // Send header first
-      this.bot.sendMessage(chatId, header);
+    try {
+      // Use shorter format for analysis
+      let message = `🔧 ${item.partNumber}\n`;
+      message += `📝 ${item.description.substring(0, 60)}...\n\n`;
       
-      // Split analysis into chunks
-      const chunks = this.splitMessage(analysis, maxLength - 100);
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkHeader = chunks.length > 1 ? `📄 الجزء ${i + 1}/${chunks.length}\n\n` : '';
-        this.bot.sendMessage(chatId, chunkHeader + chunks[i]);
+      // Truncate analysis to safe length for Telegram
+      const maxAnalysisLength = 3500;
+      const truncatedAnalysis = analysis.substring(0, maxAnalysisLength);
+      
+      message += truncatedAnalysis;
+      
+      if (analysis.length > maxAnalysisLength) {
+        message += '\n\n... (مقطوع للطول)';
       }
+      
+      await this.bot.sendMessage(chatId, message);
+      
+    } catch (error) {
+      console.error('Error sending analysis result:', error);
+      // Fallback to minimal message
+      await this.bot.sendMessage(chatId, `🔧 ${item.partNumber}\n📝 ${item.description}\n\n❌ خطأ في التحليل`);
     }
   }
 
@@ -467,53 +463,37 @@ class QortobaAnalysisBot {
     client: any, 
     analysis: string | null
   ): Promise<string> {
-    let message = `🔔 بند جديد تم إضافته للنظام!\n\n`;
+    // Shortened format to avoid Telegram length limits
+    let message = `🔔 بند جديد!\n\n`;
     
-    // Quotation Request Details
+    // Essential quotation info only
     if (quotationRequest) {
-      message += `📋 بيانات طلب التسعير:\n`;
-      message += `• رقم الطلب: ${quotationRequest.requestNumber}\n`;
-      message += `• العميل: ${client?.name || quotationRequest.clientName || 'غير محدد'}\n`;
-      message += `• تاريخ الطلب: ${quotationRequest.requestDate}\n`;
-      message += `• تاريخ الانتهاء: ${quotationRequest.expiryDate || 'غير محدد'}\n`;
-      message += `• الموظف المسؤول: ${quotationRequest.responsibleEmployee || 'غير محدد'}\n`;
-      
-      if (quotationRequest.customRequestNumber) {
-        message += `• رقم طلب العميل: ${quotationRequest.customRequestNumber}\n`;
-      }
-      
-      if (quotationRequest.notes) {
-        message += `• ملاحظات: ${quotationRequest.notes}\n`;
-      }
-      message += `\n`;
+      message += `📋 ${quotationRequest.requestNumber}\n`;
+      message += `👤 ${client?.name || 'غير محدد'}\n\n`;
     }
     
-    // Item Details
-    message += `🔧 تفاصيل البند:\n`;
-    message += `• رقم القطعة: ${item.partNumber}\n`;
-    message += `• رقم البند: ${item.itemNumber}\n`;
-    message += `• الوصف: ${item.description}\n`;
-    message += `• الوحدة: ${item.unit}\n`;
-    
-    if (item.lineItem) {
-      message += `• LINE ITEM: ${item.lineItem}\n`;
-    }
+    // Item details (shortened)
+    message += `🔧 ${item.partNumber}\n`;
+    message += `📝 ${item.description.substring(0, 80)}...\n`;
     
     if (quotationItem?.quantity) {
-      message += `• الكمية المطلوبة: ${quotationItem.quantity}\n`;
+      message += `📦 الكمية: ${quotationItem.quantity}\n`;
     }
     
-    if (item.category) {
-      message += `• الفئة: ${item.category}\n`;
-    }
-    
-    message += `\n${'='.repeat(30)}\n\n`;
+    message += `\n`;
     
     if (analysis) {
-      message += `🤖 التحليل الذكي:\n\n${analysis}`;
+      // Truncate analysis for message length limits
+      const maxAnalysisLength = 2500;
+      const truncatedAnalysis = analysis.substring(0, maxAnalysisLength);
+      message += `🤖 التحليل:\n${truncatedAnalysis}`;
+      
+      if (analysis.length > maxAnalysisLength) {
+        message += '\n... (مقطوع)';
+      }
     } else {
-      message += `📝 ملاحظة: تعذر تحليل البند بالذكاء الاصطناعي حاليًا\n`;
-      message += `💡 يمكنك طلب التحليل لاحقاً باستخدام الأمر: /analyze ${item.partNumber}`;
+      message += `❌ تعذر التحليل\n`;
+      message += `💡 /analyze ${item.partNumber}`;
     }
     
     return message;
