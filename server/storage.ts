@@ -1712,7 +1712,7 @@ export class DatabaseStorage implements IStorage {
           description: quotationItems.description,
           lineItem: quotationItems.lineItem,
           partNumber: quotationItems.partNumber,
-          rfqNumber: quotationRequests.requestNumber,
+          rfqNumber: sql<string>`COALESCE(${quotationRequests.customRequestNumber}, ${quotationRequests.requestNumber})`,
           rfqDate: quotationRequests.requestDate,
           rfqQuantity: quotationItems.quantity,
           responseDate: quotationRequests.requestDate,
@@ -1730,15 +1730,15 @@ export class DatabaseStorage implements IStorage {
         .where(eq(quotationItems.lineItem, lineItem))
         .orderBy(desc(quotationRequests.requestDate));
 
-      // Get purchase order data using db
+      // Get purchase order data with linked quotation numbers
       const purchaseOrderData = await db
         .select({
-          clientName: sql<string>`'Internal Order'`,
+          clientName: sql<string>`'أمر شراء داخلي'`,
           kItemId: purchaseOrderItems.itemId,
           description: purchaseOrderItems.description,
           lineItem: purchaseOrderItems.lineItem,
           partNumber: purchaseOrderItems.partNumber,
-          rfqNumber: sql<string>`NULL`,
+          rfqNumber: purchaseOrders.quotationNumber,
           rfqDate: sql<string>`NULL`,
           rfqQuantity: sql<string>`NULL`,
           responseDate: sql<string>`NULL`,
@@ -1756,7 +1756,7 @@ export class DatabaseStorage implements IStorage {
         .where(eq(purchaseOrderItems.lineItem, lineItem))
         .orderBy(desc(purchaseOrders.poDate));
 
-      // Combine and sort all data
+      // Combine and sort all data - group by quotation number where possible
       const allData = [...quotationData, ...purchaseOrderData].sort((a, b) => {
         const dateA = new Date(a.rfqDate || a.poDate || 0);
         const dateB = new Date(b.rfqDate || b.poDate || 0);
@@ -1811,11 +1811,21 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log('Getting related purchase orders for item ID:', itemId);
       
-      // Get a few sample purchase orders to display as related
+      // First get pricing requests for this item to find quotation numbers
+      const pricingRequests = await this.getItemPricingRequests(itemId);
+      const quotationNumbers = pricingRequests.map(pr => pr.quotationNumber);
+      
+      if (quotationNumbers.length === 0) {
+        console.log('No pricing requests found for item, returning empty purchase orders');
+        return [];
+      }
+      
+      // Get purchase orders linked to these quotation numbers
       const results = await db
         .select({
           id: purchaseOrders.id,
           poNumber: purchaseOrders.poNumber,
+          quotationNumber: purchaseOrders.quotationNumber,
           supplierName: suppliers.name,
           orderDate: purchaseOrders.orderDate,
           expectedDelivery: purchaseOrders.expectedDelivery,
@@ -1826,13 +1836,16 @@ export class DatabaseStorage implements IStorage {
         })
         .from(purchaseOrders)
         .leftJoin(suppliers, eq(purchaseOrders.supplierId, suppliers.id))
-        .orderBy(desc(purchaseOrders.orderDate))
-        .limit(5);
+        .where(quotationNumbers.length > 0 ? 
+          sql`${purchaseOrders.quotationNumber} = ANY(${quotationNumbers})` : 
+          sql`1=0`)
+        .orderBy(desc(purchaseOrders.orderDate));
 
       console.log('Found related purchase orders:', results.length);
       return results.map(result => ({
         id: result.id,
         poNumber: result.poNumber,
+        quotationNumber: result.quotationNumber,
         supplierName: result.supplierName || 'مورد غير محدد',
         orderDate: result.orderDate,
         expectedDelivery: result.expectedDelivery,

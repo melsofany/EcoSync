@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, decimal, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, decimal, boolean, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -115,9 +115,16 @@ export const purchaseOrders = pgTable("purchase_orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   poNumber: text("po_number").notNull().unique(),
   quotationId: varchar("quotation_id").references(() => quotationRequests.id).notNull(),
+  quotationNumber: varchar("quotation_number"), // رقم طلب التسعير للربط
+  supplierId: varchar("supplier_id").references(() => suppliers.id),
   poDate: timestamp("po_date").defaultNow(),
+  orderDate: date("order_date"),
+  expectedDelivery: date("expected_delivery"),
   status: text("status").default("pending"), // "pending", "confirmed", "delivered", "invoiced"
   totalValue: decimal("total_value"),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }),
+  currency: varchar("currency").default("EGP"),
+  notes: text("notes"),
   deliveryStatus: boolean("delivery_status").default(false),
   invoiceIssued: boolean("invoice_issued").default(false),
   createdAt: timestamp("created_at").defaultNow(),

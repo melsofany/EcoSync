@@ -298,14 +298,23 @@ export default function ItemPricingRequests() {
                   </TableRow>
                 ) : (
                   filteredRequests.map((request: PricingRequest, index: number) => {
-                    // Get matching purchase order for this request (simplified logic)
-                    const matchingPO = (purchaseOrders || [])[index % ((purchaseOrders || []).length || 1)];
+                    // Get matching purchase order for this specific quotation number
+                    const matchingPO = (purchaseOrders || []).find(po => 
+                      po.quotationNumber === request.quotationNumber
+                    );
                     
                     return (
-                      <TableRow key={request.id} className="hover:bg-gray-50">
+                      <TableRow key={request.id} className={`hover:bg-gray-50 ${matchingPO ? 'border-l-4 border-green-400 bg-green-50/10' : 'border-l-4 border-gray-200'}`}>
                         {/* طلب التسعير */}
                         <TableCell className="font-medium text-blue-600 bg-blue-50/50">
-                          {request.quotationNumber}
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono">{request.quotationNumber}</span>
+                            {matchingPO && (
+                              <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-300">
+                                🔗 مربوط
+                              </span>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="bg-blue-50/50">{request.clientName}</TableCell>
                         <TableCell className="bg-blue-50/50">{formatDate(request.requestDate)}</TableCell>
@@ -326,8 +335,16 @@ export default function ItemPricingRequests() {
                         
                         {/* أمر الشراء */}
                         <TableCell className="font-medium text-green-600 bg-green-50/50">
-                          {matchingPO?.poNumber || (
-                            <span className="text-gray-400">لا يوجد</span>
+                          {matchingPO?.poNumber ? (
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono">{matchingPO.poNumber}</span>
+                              <span className="text-xs text-green-600">← {request.quotationNumber}</span>
+                            </div>
+                          ) : (
+                            <div className="text-gray-400 text-center">
+                              <span>لا يوجد أمر شراء</span>
+                              <div className="text-xs">لـ {request.quotationNumber}</div>
+                            </div>
                           )}
                         </TableCell>
                         <TableCell className="bg-green-50/50">
