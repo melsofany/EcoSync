@@ -473,6 +473,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quotation = await storage.createQuotationRequest(validatedData);
       await logActivity(req, "create_quotation", "quotation", quotation.id, `Created quotation: ${quotation.requestNumber}`);
 
+      // Send Telegram notification for new quotation items
+      try {
+        const { telegramBot } = await import("./telegram-bot");
+        
+        // Get items from the created quotation to analyze
+        if (quotation.items && quotation.items.length > 0) {
+          for (const item of quotation.items) {
+            await telegramBot.sendNewItemAnalysis(item.itemId);
+          }
+        }
+      } catch (error) {
+        console.error('Error sending Telegram notification:', error);
+        // Don't fail the request if Telegram fails
+      }
+
       res.status(201).json(quotation);
     } catch (error) {
       console.error("Create quotation error:", error);

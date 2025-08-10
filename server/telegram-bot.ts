@@ -1,0 +1,357 @@
+import TelegramBot from 'node-telegram-bot-api';
+import { db } from './db';
+import { items, quotationRequests, quotationItems, clients } from '../shared/schema';
+import { eq } from 'drizzle-orm';
+
+// Configuration
+const TELEGRAM_BOT_TOKEN = '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
+const AUTHORIZED_USERS = [
+  // Add authorized Telegram user IDs here
+  // Example: 123456789, 987654321
+];
+
+// DeepSeek API configuration
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY; // Will be added to env
+
+class QortobaAnalysisBot {
+  private bot: TelegramBot;
+
+  constructor() {
+    this.bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+    this.setupHandlers();
+  }
+
+  private setupHandlers() {
+    // Start command
+    this.bot.onText(/\/start/, (msg) => {
+      const chatId = msg.chat.id;
+      const userId = msg.from?.id;
+      
+      if (!this.isAuthorizedUser(userId)) {
+        this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
+        return;
+      }
+      
+      this.bot.sendMessage(chatId, `
+🏢 مرحباً بك في بوت تحليل البنود - قرطبة للتوريدات
+
+📋 الأوامر المتاحة:
+/latest - آخر 5 طلبات تسعير
+/analyze [PART_NO] - تحليل بند معين
+/pending - البنود المعلقة
+
+💡 سيتم إرسال تحليل تلقائي لكل بند جديد
+      `);
+    });
+
+    // Latest quotations command
+    this.bot.onText(/\/latest/, async (msg) => {
+      const chatId = msg.chat.id;
+      const userId = msg.from?.id;
+      
+      if (!this.isAuthorizedUser(userId)) {
+        this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
+        return;
+      }
+      
+      await this.sendLatestQuotations(chatId);
+    });
+
+    // Analyze specific part
+    this.bot.onText(/\/analyze (.+)/, async (msg, match) => {
+      const chatId = msg.chat.id;
+      const userId = msg.from?.id;
+      
+      if (!this.isAuthorizedUser(userId)) {
+        this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
+        return;
+      }
+      
+      const partNumber = match?.[1];
+      if (partNumber) {
+        await this.analyzePartNumber(chatId, partNumber);
+      }
+    });
+
+    // Pending items command
+    this.bot.onText(/\/pending/, async (msg) => {
+      const chatId = msg.chat.id;
+      const userId = msg.from?.id;
+      
+      if (!this.isAuthorizedUser(userId)) {
+        this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
+        return;
+      }
+      
+      await this.sendPendingItems(chatId);
+    });
+  }
+
+  private isAuthorizedUser(userId?: number): boolean {
+    if (!userId) return false;
+    // For now, allow all users - you can restrict by adding IDs to AUTHORIZED_USERS
+    return true; // Change to: AUTHORIZED_USERS.includes(userId);
+  }
+
+  async sendLatestQuotations(chatId: number) {
+    try {
+      const latestQuotations = await db
+        .select({
+          rfqNumber: quotationRequests.customRequestNumber,
+          requestDate: quotationRequests.requestDate,
+          clientName: clients.name,
+          itemCount: quotationRequests.itemCount
+        })
+        .from(quotationRequests)
+        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+        .orderBy(quotationRequests.requestDate)
+        .limit(5);
+
+      let message = '📋 آخر 5 طلبات تسعير:\n\n';
+      
+      for (const req of latestQuotations) {
+        message += `🔹 رقم الطلب: ${req.rfqNumber}\n`;
+        message += `📅 التاريخ: ${new Date(req.requestDate).toLocaleDateString('ar-EG')}\n`;
+        message += `👤 العميل: ${req.clientName || 'غير محدد'}\n`;
+        message += `📦 عدد البنود: ${req.itemCount || 0}\n\n`;
+      }
+      
+      this.bot.sendMessage(chatId, message);
+    } catch (error) {
+      console.error('Error sending latest quotations:', error);
+      this.bot.sendMessage(chatId, '❌ خطأ في جلب البيانات');
+    }
+  }
+
+  async sendPendingItems(chatId: number) {
+    try {
+      const pendingItems = await db
+        .select({
+          partNumber: items.partNumber,
+          description: items.description,
+          rfqNumber: quotationRequests.customRequestNumber,
+          requestDate: quotationRequests.requestDate
+        })
+        .from(items)
+        .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
+        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+        .where(eq(quotationRequests.status, 'pending'))
+        .limit(10);
+
+      let message = '⏳ البنود المعلقة (بحاجة لتسعير):\n\n';
+      
+      for (const item of pendingItems) {
+        message += `🔧 رقم القطعة: ${item.partNumber}\n`;
+        message += `📝 الوصف: ${item.description}\n`;
+        message += `📋 RFQ: ${item.rfqNumber}\n`;
+        message += `📅 ${new Date(item.requestDate).toLocaleDateString('ar-EG')}\n\n`;
+      }
+      
+      this.bot.sendMessage(chatId, message || '✅ لا توجد بنود معلقة');
+    } catch (error) {
+      console.error('Error sending pending items:', error);
+      this.bot.sendMessage(chatId, '❌ خطأ في جلب البنود المعلقة');
+    }
+  }
+
+  async analyzePartNumber(chatId: number, partNumber: string) {
+    try {
+      this.bot.sendMessage(chatId, '🔍 جاري تحليل البند...');
+      
+      // Get item from database
+      const itemData = await db
+        .select()
+        .from(items)
+        .where(eq(items.partNumber, partNumber))
+        .limit(1);
+
+      if (!itemData.length) {
+        this.bot.sendMessage(chatId, `❌ لم يتم العثور على البند: ${partNumber}`);
+        return;
+      }
+
+      const item = itemData[0];
+      
+      // Analyze with DeepSeek AI
+      const analysis = await this.analyzeWithDeepSeek(item);
+      
+      // Send analysis result
+      await this.sendAnalysisResult(chatId, item, analysis);
+      
+    } catch (error) {
+      console.error('Error analyzing part number:', error);
+      this.bot.sendMessage(chatId, '❌ خطأ في تحليل البند');
+    }
+  }
+
+  private async analyzeWithDeepSeek(item: any): Promise<string> {
+    try {
+      const prompt = `
+تحليل شامل للبند التالي بالعربية:
+
+رقم القطعة: ${item.partNumber}
+الوصف: ${item.description}
+الفئة: ${item.category}
+الوحدة: ${item.unit}
+
+المطلوب تحليل شامل يشمل:
+1. الاسم السوقي والتجاري للمنتج
+2. الوصف التقني التفصيلي
+3. الاستخدامات والتطبيقات
+4. الموردين الرئيسيين في مصر
+5. متوسط الأسعار في السوق المصري
+6. المواصفات الفنية
+7. البدائل المتاحة
+8. نصائح للشراء
+
+يرجى الإجابة بالعربية بشكل مفصل ومفيد.
+      `;
+
+      const response = await fetch(DEEPSEEK_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`DeepSeek API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+      
+    } catch (error) {
+      console.error('DeepSeek analysis error:', error);
+      return 'خطأ في التحليل - تعذر الاتصال بخدمة الذكاء الاصطناعي';
+    }
+  }
+
+  private async sendAnalysisResult(chatId: number, item: any, analysis: string) {
+    // Split analysis into chunks if too long for Telegram
+    const maxLength = 4000;
+    
+    let header = `🔧 تحليل شامل للبند\n\n`;
+    header += `📋 رقم القطعة: ${item.partNumber}\n`;
+    header += `📝 الوصف: ${item.description}\n`;
+    header += `🏷️ الفئة: ${item.category}\n`;
+    header += `📏 الوحدة: ${item.unit}\n\n`;
+    header += `🤖 تحليل الذكاء الاصطناعي:\n`;
+    header += `${'='.repeat(30)}\n\n`;
+
+    const fullMessage = header + analysis;
+    
+    if (fullMessage.length <= maxLength) {
+      this.bot.sendMessage(chatId, fullMessage);
+    } else {
+      // Send header first
+      this.bot.sendMessage(chatId, header);
+      
+      // Split analysis into chunks
+      const chunks = this.splitMessage(analysis, maxLength - 100);
+      for (let i = 0; i < chunks.length; i++) {
+        const chunkHeader = chunks.length > 1 ? `📄 الجزء ${i + 1}/${chunks.length}\n\n` : '';
+        this.bot.sendMessage(chatId, chunkHeader + chunks[i]);
+      }
+    }
+  }
+
+  private splitMessage(text: string, maxLength: number): string[] {
+    const chunks: string[] = [];
+    let currentChunk = '';
+    
+    const lines = text.split('\n');
+    
+    for (const line of lines) {
+      if (currentChunk.length + line.length + 1 <= maxLength) {
+        currentChunk += (currentChunk ? '\n' : '') + line;
+      } else {
+        if (currentChunk) chunks.push(currentChunk);
+        currentChunk = line;
+      }
+    }
+    
+    if (currentChunk) chunks.push(currentChunk);
+    
+    return chunks;
+  }
+
+  // Method to send automatic analysis for new items
+  async sendNewItemAnalysis(itemId: string) {
+    try {
+      const itemData = await db
+        .select()
+        .from(items)
+        .where(eq(items.id, itemId))
+        .limit(1);
+
+      if (!itemData.length) return;
+
+      const item = itemData[0];
+      
+      // Skip if no part number
+      if (!item.partNumber) {
+        console.log('Skipping item analysis - no part number:', item.id);
+        return;
+      }
+
+      const analysis = await this.analyzeWithDeepSeek(item);
+
+      // Send to all authorized users - for now using console
+      const message = `🔔 بند جديد تم إضافته للنظام!\n\n${await this.formatNewItemMessage(item, analysis)}`;
+      
+      // Log the analysis - you can add specific user IDs to AUTHORIZED_USERS later
+      console.log('📱 [TELEGRAM BOT] New item analysis ready for:', item.partNumber);
+      console.log(message.substring(0, 200) + '...');
+      
+    } catch (error) {
+      console.error('Error sending new item analysis:', error);
+    }
+  }
+
+  // Add method to get bot status
+  async getBotStatus() {
+    try {
+      const botInfo = await this.bot.getMe();
+      return {
+        status: 'active',
+        botName: botInfo.first_name,
+        username: botInfo.username,
+        authorized_users: AUTHORIZED_USERS.length,
+        deepseek_configured: !!DEEPSEEK_API_KEY
+      };
+    } catch (error) {
+      return {
+        status: 'error',
+        error: error.message,
+        deepseek_configured: !!DEEPSEEK_API_KEY
+      };
+    }
+  }
+
+  private async formatNewItemMessage(item: any, analysis: string): Promise<string> {
+    let message = `📋 رقم القطعة: ${item.partNumber}\n`;
+    message += `📝 الوصف: ${item.description}\n`;
+    message += `🏷️ الفئة: ${item.category}\n\n`;
+    message += `🤖 تحليل تلقائي:\n${analysis}`;
+    
+    return message;
+  }
+}
+
+// Export singleton instance
+export const telegramBot = new QortobaAnalysisBot();
+export default telegramBot;
