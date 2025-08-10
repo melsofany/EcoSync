@@ -1379,19 +1379,17 @@ export class DatabaseStorage implements IStorage {
     return purchaseOrderData;
   }
 
-  // Excel-style filter for part number - FINAL SOLUTION
+  // Get comprehensive data for SPECIFIC item ID only - FIXED VERSION
   async getItemComprehensiveDataUnified(itemId: string): Promise<any[]> {
     try {
       const item = await db.select().from(items).where(eq(items.id, itemId)).limit(1);
       if (!item.length) return [];
       
       const baseItem = item[0];
-      const partNumber = baseItem.partNumber;
-      const cleanPartNumber = partNumber?.replace(/\s+/g, '') || '';
       
-      console.log(`🎯 Getting DISTINCT historical data for part: ${partNumber}`);
+      console.log(`🎯 Getting historical data for specific item: ${baseItem.itemNumber}`);
 
-      // Get DISTINCT RFQ data - one record per unique RFQ number
+      // Get RFQ data for THIS SPECIFIC ITEM ONLY
       const rfqData = await db
         .selectDistinct({
           record_type: sql<string>`'RFQ'`,
@@ -1417,9 +1415,9 @@ export class DatabaseStorage implements IStorage {
         .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
         .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
         .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
-        .where(sql`REPLACE(LOWER(COALESCE(${items.partNumber}, '')), ' ', '') = LOWER(${cleanPartNumber})`);
+        .where(eq(items.id, itemId));
 
-      // Get PO data using Drizzle ORM
+      // Get PO data for THIS SPECIFIC ITEM ONLY
       const poData = await db
         .select({
           record_type: sql<string>`'PO'`,
@@ -1444,7 +1442,7 @@ export class DatabaseStorage implements IStorage {
         .from(items)
         .innerJoin(purchaseOrderItems, eq(items.id, purchaseOrderItems.itemId))
         .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
-        .where(sql`REPLACE(LOWER(COALESCE(${items.partNumber}, '')), ' ', '') = LOWER(${cleanPartNumber})`);
+        .where(eq(items.id, itemId));
 
       // CRITICAL FIX: Filter out current item's RFQ (25R00001) from historical data
       // Only show OTHER historical records, not the current pricing request
