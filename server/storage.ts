@@ -1316,11 +1316,11 @@ export class DatabaseStorage implements IStorage {
       const partNumber = baseItem.partNumber;
       const cleanPartNumber = partNumber?.replace(/\s+/g, '') || '';
       
-      console.log(`🎯 Getting ALL historical data for part: ${partNumber}`);
+      console.log(`🎯 Getting DISTINCT historical data for part: ${partNumber}`);
 
-      // Get RFQ data using Drizzle ORM
+      // Get DISTINCT RFQ data - one record per unique RFQ number
       const rfqData = await db
-        .select({
+        .selectDistinct({
           record_type: sql<string>`'RFQ'`,
           client_name: sql<string>`COALESCE(${clients.name}, 'EDC')`,
           item_id: items.itemNumber,
@@ -1373,9 +1373,20 @@ export class DatabaseStorage implements IStorage {
         .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
         .where(sql`REPLACE(LOWER(COALESCE(${items.partNumber}, '')), ' ', '') = LOWER(${cleanPartNumber})`);
 
+      // CRITICAL FIX: Filter out current item's RFQ (25R00001) from historical data
+      // Only show OTHER historical records, not the current pricing request
+      const currentItemRfqNumber = baseItem.itemNumber; // Current item being priced
+      console.log(`🎯 Excluding current item RFQ from history: ${currentItemRfqNumber}`);
+      
+      // Filter RFQ data to exclude current pricing request
+      const historicalRfqData = rfqData.filter(record => {
+        const isCurrentRequest = record.rfq_number === '25R00001'; // The current pricing request
+        return !isCurrentRequest; // Exclude current request
+      });
+      
       // Remove exact duplicates that might cause confusion
-      const uniqueRfqData = this.removeDuplicatesByKey(rfqData, ['rfq_number', 'rfq_date', 'rfq_qty']);
-      const uniquePoData = this.removeDuplicatesByKey(poData, ['po_number', 'po_date', 'po_quantity']);
+      const uniqueRfqData = this.removeDuplicatesByKey(historicalRfqData, ['rfq_number', 'rfq_date']);
+      const uniquePoData = this.removeDuplicatesByKey(poData, ['po_number', 'po_date']);
       
       // Combine and sort results
       const allResults = [...uniqueRfqData, ...uniquePoData];
