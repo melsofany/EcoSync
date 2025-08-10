@@ -257,6 +257,7 @@ export default function Items() {
   const handleViewPricingRequests = (item: any) => {
     // Navigate to pricing requests page for this item
     const url = `/item-pricing-requests/${item.id}?itemNumber=${encodeURIComponent(item.itemNumber || '')}&description=${encodeURIComponent(item.description || '')}`;
+    console.log('Navigating to pricing requests for item:', item.id, item.itemNumber);
     window.location.href = url;
   };
 

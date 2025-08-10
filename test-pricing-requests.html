@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Item Pricing Requests</title>
+    <style>
+        body { font-family: Arial; margin: 20px; direction: rtl; }
+        .test-link { 
+            display: block; 
+            margin: 10px 0; 
+            padding: 10px; 
+            background: #f0f0f0; 
+            border-radius: 5px; 
+            text-decoration: none; 
+            color: #333;
+        }
+        .test-link:hover { background: #e0e0e0; }
+    </style>
+</head>
+<body>
+    <h1>اختبار ميزة طلبات التسعير</h1>
+    
+    <h2>أصناف تحتوي على طلبات تسعير:</h2>
+    
+    <a href="http://localhost:5000/item-pricing-requests/b6c7722c-524f-4870-b120-8ca6f3db3d66?itemNumber=P-000842&description=ATTACH,BATTERY (ST=2EA) #544" 
+       class="test-link" target="_blank">
+        <strong>P-000842:</strong> ATTACH,BATTERY (ST=2EA) #544<br>
+        <small>يحتوي على 1562 طلب تسعير</small>
+    </a>
+    
+    <a href="http://localhost:5000/item-pricing-requests/f945d3e0-9e5f-46eb-a94b-8b69c26a1345?itemNumber=P-000365&description=HEATER ITALY 1950 KW" 
+       class="test-link" target="_blank">
+        <strong>P-000365:</strong> HEATER ITALY 1950 KW<br>
+        <small>يحتوي على 45 طلب تسعير</small>
+    </a>
+    
+    <a href="http://localhost:5000/item-pricing-requests/672a44ad-5ebc-4987-a785-b868e1b723f3?itemNumber=P-000009&description=BRENNENSTUHL CORD REEL" 
+       class="test-link" target="_blank">
+        <strong>P-000009:</strong> BRENNENSTUHL CORD REEL<br>
+        <small>يحتوي على 37 طلب تسعير</small>
+    </a>
+    
+    <h2>صنف بدون طلبات تسعير (للمقارنة):</h2>
+    
+    <a href="http://localhost:5000/item-pricing-requests/00719a99-b647-460f-975f-c42cdd4a972d?itemNumber=P-001984&description=COFRIMELL JUICE DISPENSER" 
+       class="test-link" target="_blank">
+        <strong>P-001984:</strong> COFRIMELL JUICE DISPENSER<br>
+        <small>لا يحتوي على طلبات تسعير (سيظهر الرسالة الافتراضية)</small>
+    </a>
+    
+    <hr>
+    <p><strong>تعليمات الاختبار:</strong></p>
+    <ol>
+        <li>اضغط على أي رابط أعلاه</li>
+        <li>سجل دخولك إذا لم تكن مسجلاً</li>
+        <li>تحقق من عرض البيانات بشكل صحيح</li>
+        <li>جرب البحث والفلترة</li>
+    </ol>
+</body>
+</html>

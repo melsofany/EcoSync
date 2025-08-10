@@ -242,10 +242,27 @@ export default function ItemPricingRequests() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRequests.length === 0 ? (
+                {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                      لا توجد طلبات تسعير لهذا الصنف
+                      جارٍ تحميل البيانات...
+                    </TableCell>
+                  </TableRow>
+                ) : filteredRequests.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                      <div className="flex flex-col items-center gap-2">
+                        <FileText className="h-8 w-8 text-gray-400" />
+                        <span>لا توجد طلبات تسعير لهذا الصنف</span>
+                        <span className="text-sm text-gray-400">
+                          رقم الصنف: {itemNumber}
+                        </span>
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
+                          <p className="font-medium mb-1">ملاحظة:</p>
+                          <p>لرؤية طلبات التسعير، جرب صنف آخر يحتوي على بيانات مثل:</p>
+                          <p className="font-mono text-xs mt-1">P-000842 (ATTACH,BATTERY)</p>
+                        </div>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
