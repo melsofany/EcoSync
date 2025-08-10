@@ -242,21 +242,20 @@ export default function ItemPricingRequests() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {/* طلب التسعير */}
-                  <TableHead className="text-right bg-blue-50">رقم طلب التسعير</TableHead>
-                  <TableHead className="text-right bg-blue-50">العميل</TableHead>
-                  <TableHead className="text-right bg-blue-50">تاريخ الطلب</TableHead>
-                  <TableHead className="text-right bg-blue-50">الكمية</TableHead>
-                  <TableHead className="text-right bg-blue-50">سعر العميل</TableHead>
-                  <TableHead className="text-right bg-blue-50">حالة الطلب</TableHead>
-                  {/* أمر الشراء من العميل */}
-                  <TableHead className="text-right bg-green-50">رقم أمر الشراء</TableHead>
-                  <TableHead className="text-right bg-green-50">العميل</TableHead>
-                  <TableHead className="text-right bg-green-50">تاريخ الأمر</TableHead>
-                  <TableHead className="text-right bg-green-50">قيمة الطلب</TableHead>
-                  <TableHead className="text-right bg-green-50">إجمالي الطلب</TableHead>
-                  <TableHead className="text-right bg-green-50">حالة الطلب</TableHead>
-                  <TableHead className="text-right">الإجراءات</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">PRICE/RFQ</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">Quantity/RFQ</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
+                  <TableHead className="text-center bg-green-100 font-bold border">PO</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">Category</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">REQ_DATE</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">PRICE/RFQ</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">QTY</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">RFQ</TableHead>
+                  <TableHead className="text-center bg-gray-100 font-bold border">DESCRIPTION</TableHead>
+                  <TableHead className="text-center bg-gray-100 font-bold border">PART NO</TableHead>
+                  <TableHead className="text-center bg-gray-100 font-bold border">LINE ITEM</TableHead>
+                  <TableHead className="text-center bg-gray-100 font-bold border">UOM</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -299,114 +298,55 @@ export default function ItemPricingRequests() {
                 ) : (
                   filteredRequests.map((request: PricingRequest, index: number) => {
                     // Get matching purchase order for this specific quotation number
-                    const matchingPO = (purchaseOrders || []).find(po => 
+                    const matchingPO = (purchaseOrders || []).find((po: any) => 
                       po.quotationNumber === request.quotationNumber
                     );
                     
                     return (
-                      <TableRow key={request.id} className={`hover:bg-gray-50 ${matchingPO ? 'border-l-4 border-green-400 bg-green-50/10' : 'border-l-4 border-gray-200'}`}>
-                        {/* طلب التسعير */}
-                        <TableCell className="font-medium text-blue-600 bg-blue-50/50">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono">{request.quotationNumber}</span>
-                            {matchingPO && (
-                              <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full border border-green-300">
-                                🔗 مربوط
-                              </span>
-                            )}
+                      <TableRow key={request.id} className={`text-xs hover:bg-gray-50 ${matchingPO ? 'bg-blue-50' : ''}`}>
+                        <TableCell className="text-center border font-bold text-blue-600">
+                          {request.customerPrice ? formatCurrency(request.customerPrice) : '-'}
+                        </TableCell>
+                        <TableCell className="text-center border font-bold">
+                          {request.quantity}
+                        </TableCell>
+                        <TableCell className="text-center border">
+                          {formatDate(request.requestDate)}
+                        </TableCell>
+                        <TableCell className="text-center border font-bold text-green-600">
+                          {matchingPO?.poNumber || '-'}
+                        </TableCell>
+                        <TableCell className="text-center border font-bold">
+                          ELEC
+                        </TableCell>
+                        <TableCell className="text-center border">
+                          {formatDate(request.requestDate)}
+                        </TableCell>
+                        <TableCell className="text-center border font-bold text-blue-600">
+                          {request.customerPrice ? formatCurrency(request.customerPrice) : '-'}
+                        </TableCell>
+                        <TableCell className="text-center border font-bold">
+                          {request.quantity}
+                        </TableCell>
+                        <TableCell className="text-center border">
+                          {formatDate(request.requestDate)}
+                        </TableCell>
+                        <TableCell className="text-center border font-bold text-blue-600">
+                          {request.quotationNumber}
+                        </TableCell>
+                        <TableCell className="text-left border px-2">
+                          <div className="text-xs leading-tight">
+                            {itemDescription || 'وصف الصنف غير متوفر'}
                           </div>
                         </TableCell>
-                        <TableCell className="bg-blue-50/50">{request.clientName}</TableCell>
-                        <TableCell className="bg-blue-50/50">{formatDate(request.requestDate)}</TableCell>
-                        <TableCell className="bg-blue-50/50">
-                          <span className="font-medium">{request.quantity}</span>
-                          <span className="text-gray-500 ml-1">{request.unit}</span>
+                        <TableCell className="text-center border font-mono">
+                          {itemDescription?.split(',')[0]?.trim() || '-'}
                         </TableCell>
-                        <TableCell className="bg-blue-50/50">
-                          {request.customerPrice ? (
-                            <span className="font-medium text-blue-600">
-                              {formatCurrency(request.customerPrice)}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">لم يحدد</span>
-                          )}
+                        <TableCell className="text-center border font-bold text-blue-600">
+                          {itemNumber}
                         </TableCell>
-                        <TableCell className="bg-blue-50/50">{getStatusBadge(request.status)}</TableCell>
-                        
-                        {/* أمر الشراء من العميل */}
-                        <TableCell className="font-medium text-green-600 bg-green-50/50">
-                          {matchingPO?.poNumber ? (
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono bg-green-100 px-2 py-1 rounded">{matchingPO.poNumber}</span>
-                              <span className="text-xs text-green-600">← طلب {request.quotationNumber}</span>
-                            </div>
-                          ) : (
-                            <div className="text-gray-400 text-center">
-                              <span>لا يوجد أمر شراء</span>
-                              <div className="text-xs">لطلب التسعير {request.quotationNumber}</div>
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="bg-green-50/50">
-                          {matchingPO?.poNumber ? (
-                            <span className="text-green-600 font-medium">{request.clientName}</span>
-                          ) : (
-                            <span className="text-gray-400">لا يوجد عميل</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="bg-green-50/50">
-                          {matchingPO?.orderDate ? formatDate(matchingPO.orderDate) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="bg-green-50/50">
-                          {matchingPO?.itemUnitPrice ? (
-                            <span className="font-medium text-green-600">
-                              {formatCurrency(parseFloat(matchingPO.itemUnitPrice))}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="bg-green-50/50">
-                          {matchingPO?.itemTotalPrice ? (
-                            <span className="font-medium text-green-600">
-                              {formatCurrency(parseFloat(matchingPO.itemTotalPrice))}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="bg-green-50/50">
-                          {matchingPO?.status ? getStatusBadge(matchingPO.status) : (
-                            <span className="text-gray-400">لا يوجد</span>
-                          )}
-                        </TableCell>
-                        
-                        {/* الإجراءات */}
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewQuotation(request.quotationNumber)}
-                              className="h-8 w-8 p-0"
-                              title="عرض طلب التسعير"
-                            >
-                              <Eye className="h-4 w-4 text-blue-600" />
-                            </Button>
-                            {matchingPO?.poNumber && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewPurchaseOrder(matchingPO.poNumber)}
-                                className="h-8 w-8 p-0"
-                                title="عرض أمر الشراء"
-                              >
-                                <ShoppingCart className="h-4 w-4 text-green-600" />
-                              </Button>
-                            )}
-                          </div>
+                        <TableCell className="text-center border font-bold">
+                          EACH
                         </TableCell>
                       </TableRow>
                     );
