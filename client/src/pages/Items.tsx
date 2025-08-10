@@ -229,18 +229,23 @@ export default function Items() {
     );
   };
 
-  // Remove any potential duplicates based on item ID first
+  // Remove any potential duplicates based on item ID first and ensure no null IDs
   const uniqueItems = items && Array.isArray(items) ? 
-    items.filter((item: any, index: number, self: any[]) => 
-      index === self.findIndex((i: any) => i.id === item.id)
-    ) : [];
+    items.filter((item: any, index: number, self: any[]) => {
+      // Skip items without valid ID
+      if (!item.id) return false;
+      // Find first occurrence with this ID
+      return index === self.findIndex((i: any) => i.id === item.id);
+    }) : [];
+
+  console.log(`🔍 Items processing: ${items?.length || 0} total items, ${uniqueItems.length} unique items`);
 
   const filteredItems = uniqueItems.filter((item: any) => {
     return (
       (!filters.itemNumber || item.itemNumber?.includes(filters.itemNumber)) &&
       (!filters.partNumber || item.partNumber?.includes(filters.partNumber)) &&
       (!filters.lineItem || item.lineItem?.includes(filters.lineItem)) &&
-      (!filters.description || item.description.includes(filters.description)) &&
+      (!filters.description || item.description?.toLowerCase().includes(filters.description.toLowerCase())) &&
       (!filters.category || filters.category === "all" || item.category === filters.category)
     );
   });

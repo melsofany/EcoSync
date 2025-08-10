@@ -845,8 +845,17 @@ export class DatabaseStorage implements IStorage {
       .from(items)
       .orderBy(desc(items.createdAt));
     
-    console.log(`📋 Retrieved ${results.length} unique items`);
-    return results;
+    // Double-check for any remaining duplicates based on ID
+    const uniqueResults = results.filter((item, index, self) => 
+      index === self.findIndex(i => i.id === item.id)
+    );
+    
+    if (results.length !== uniqueResults.length) {
+      console.warn(`⚠️ Found ${results.length - uniqueResults.length} duplicate items, filtered to ${uniqueResults.length} unique`);
+    }
+    
+    console.log(`📋 Retrieved ${uniqueResults.length} unique items`);
+    return uniqueResults;
   }
 
   async getAllClients(): Promise<Client[]> {
