@@ -1444,23 +1444,12 @@ export class DatabaseStorage implements IStorage {
         .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
         .where(eq(items.id, itemId));
 
-      // CRITICAL FIX: Filter out current item's RFQ (25R00001) from historical data
-      // Only show OTHER historical records, not the current pricing request
-      console.log(`🎯 Total RFQ records before filtering: ${rfqData.length}`);
+      console.log(`🎯 Total RFQ records: ${rfqData.length}`);
       
-      // Filter RFQ data to exclude ALL instances of 25R00001 (current pricing request)
-      const historicalRfqData = rfqData.filter(record => {
-        const rfqNumber = record.rfq_number;
-        const isCurrentRequest = rfqNumber === '25R00001' || 
-                                rfqNumber?.includes('25R00001') ||
-                                rfqNumber?.startsWith('25R00001');
-        if (isCurrentRequest) {
-          console.log(`🚫 Excluding current request: ${record.rfq_number} (${record.rfq_date}) - qty: ${record.rfq_qty}`);
-        }
-        return !isCurrentRequest; // Exclude ALL variations of current request
-      });
+      // Show ALL records for this item (no filtering)
+      const historicalRfqData = rfqData;
       
-      console.log(`✅ Historical RFQ records after filtering: ${historicalRfqData.length}`);
+      console.log(`✅ All RFQ records for item: ${historicalRfqData.length}`);
       
       // Remove exact duplicates that might cause confusion
       const uniqueRfqData = this.removeDuplicatesByKey(historicalRfqData, ['rfq_number', 'rfq_date']);
@@ -1477,7 +1466,7 @@ export class DatabaseStorage implements IStorage {
       });
 
       console.log(`📊 After dedup: ${uniqueRfqData.length} unique RFQ, ${uniquePoData.length} unique PO`);
-      console.log(`✅ Final result: ${allResults.length} records for part ${partNumber}`);
+      console.log(`✅ Final result: ${allResults.length} records for item ${baseItem.itemNumber}`);
       
       return allResults;
       
