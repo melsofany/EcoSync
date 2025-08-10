@@ -18,8 +18,7 @@ import {
   Upload,
   Activity,
   KeyRound,
-  Bot,
-  TestTube
+  Bot
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -123,12 +122,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       title: "بوت تليجرام",
       href: "/telegram-bot",
       icon: Bot,
-      section: "admin",
-    },
-    {
-      title: "اختبار أوامر الشراء",
-      href: "/test-po-data",
-      icon: TestTube,
       section: "admin",
     },
   ];

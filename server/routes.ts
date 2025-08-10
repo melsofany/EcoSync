@@ -74,21 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
-  // Test endpoint for P-000364 purchase orders (no auth required for debugging)
-  app.get("/api/test-po-data/:itemId", async (req: Request, res: Response) => {
-    try {
-      const { itemId } = req.params;
-      const purchaseOrders = await storage.getRelatedPurchaseOrders(itemId);
-      res.json({
-        itemId,
-        totalRecords: purchaseOrders.length,
-        data: purchaseOrders
-      });
-    } catch (error) {
-      console.error("Test PO data error:", error);
-      res.status(500).json({ message: "Internal server error", error: error.message });
-    }
-  });
+
 
   // Role-based access control
   const requireRole = (roles: string[]) => {
@@ -2459,7 +2445,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get purchase orders for a specific item with full history
   app.get("/api/items/:itemId/purchase-orders", requireAuth, async (req: Request, res: Response) => {
     try {
-      const purchaseOrders = await storage.getPurchaseOrdersForItem(req.params.itemId);
+      const purchaseOrders = await storage.getRelatedPurchaseOrders(req.params.itemId);
       res.json(purchaseOrders);
     } catch (error) {
       console.error("Error fetching item purchase orders:", error);
