@@ -236,14 +236,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
-  async updateUser(id: string, data: any): Promise<User | undefined> {
-    const updateData = { ...data };
-    if (updateData.updatedAt === undefined) {
-      updateData.updatedAt = new Date();
-    }
-    const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
-    return user || undefined;
-  }
+
 
   // Password reset token operations
   async createPasswordResetToken(data: { userId: string; token: string; email: string; expiresAt: Date }): Promise<void> {
@@ -444,6 +437,22 @@ export class DatabaseStorage implements IStorage {
         itemNumber,
       })
       .returning();
+    
+    // Send Telegram notification for new item (async, don't wait)
+    try {
+      // Import dynamically to avoid circular dependency
+      setTimeout(async () => {
+        try {
+          const { telegramBot } = await import('./telegram-bot');
+          await telegramBot.sendNewItemAnalysis(item.id);
+        } catch (error) {
+          console.error('Error sending Telegram notification for new item:', error);
+        }
+      }, 1000); // Delay to ensure database transaction is committed
+    } catch (error) {
+      console.error('Error initiating Telegram notification:', error);
+    }
+    
     return item;
   }
 
@@ -736,8 +745,8 @@ export class DatabaseStorage implements IStorage {
       .values({
         ...itemData,
         quotationItemId: itemData.quotationItemId,
-        originalQuantity: itemData.originalQuantity?.toString(),
-        remainingQuantity: itemData.remainingQuantity?.toString()
+        originalQuantity: itemData.originalQuantity ? itemData.originalQuantity.toString() : undefined,
+        remainingQuantity: itemData.remainingQuantity ? itemData.remainingQuantity.toString() : undefined
       })
       .returning();
     return item;

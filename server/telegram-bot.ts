@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { db } from './db';
-import { items, quotationRequests, quotationItems, clients } from '../shared/schema';
+import { items, quotationRequests, quotationItems, clients, users } from '../shared/schema';
 import { eq } from 'drizzle-orm';
 
 // Configuration
@@ -314,15 +314,29 @@ class QortobaAnalysisBot {
   // Method to send automatic analysis for new items
   async sendNewItemAnalysis(itemId: string) {
     try {
+      // Load authorized users if empty
+      if (AUTHORIZED_USERS.length === 0) {
+        await this.loadAuthorizedUsers();
+      }
+
+      // Get item with quotation request details
       const itemData = await db
-        .select()
+        .select({
+          item: items,
+          quotationRequest: quotationRequests,
+          quotationItem: quotationItems,
+          client: clients
+        })
         .from(items)
+        .leftJoin(quotationItems, eq(items.id, quotationItems.itemId))
+        .leftJoin(quotationRequests, eq(quotationItems.quotationRequestId, quotationRequests.id))
+        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
         .where(eq(items.id, itemId))
         .limit(1);
 
       if (!itemData.length) return;
 
-      const item = itemData[0];
+      const { item, quotationRequest, quotationItem, client } = itemData[0];
       
       // Skip if no part number
       if (!item.partNumber) {
@@ -332,12 +346,18 @@ class QortobaAnalysisBot {
 
       const analysis = await this.analyzeWithDeepSeek(item);
 
-      // Send to all authorized users - for now using console
-      const message = `🔔 بند جديد تم إضافته للنظام!\n\n${await this.formatNewItemMessage(item, analysis)}`;
+      // Format message with quotation request details
+      const message = await this.formatNewItemMessage(item, quotationRequest, quotationItem, client, analysis);
       
-      // Log the analysis - you can add specific user IDs to AUTHORIZED_USERS later
-      console.log('📱 [TELEGRAM BOT] New item analysis ready for:', item.partNumber);
-      console.log(message.substring(0, 200) + '...');
+      // Send to all authorized users
+      for (const userId of AUTHORIZED_USERS) {
+        try {
+          await this.bot.sendMessage(userId, message);
+          console.log(`📱 [TELEGRAM BOT] Sent analysis to user ${userId} for item: ${item.partNumber}`);
+        } catch (error) {
+          console.error(`Failed to send to user ${userId}:`, error);
+        }
+      }
       
     } catch (error) {
       console.error('Error sending new item analysis:', error);
@@ -370,11 +390,55 @@ class QortobaAnalysisBot {
     await this.loadAuthorizedUsers();
   }
 
-  private async formatNewItemMessage(item: any, analysis: string): Promise<string> {
-    let message = `📋 رقم القطعة: ${item.partNumber}\n`;
-    message += `📝 الوصف: ${item.description}\n`;
-    message += `🏷️ الفئة: ${item.category}\n\n`;
-    message += `🤖 تحليل تلقائي:\n${analysis}`;
+  private async formatNewItemMessage(
+    item: any, 
+    quotationRequest: any, 
+    quotationItem: any, 
+    client: any, 
+    analysis: string
+  ): Promise<string> {
+    let message = `🔔 بند جديد تم إضافته للنظام!\n\n`;
+    
+    // Quotation Request Details
+    if (quotationRequest) {
+      message += `📋 بيانات طلب التسعير:\n`;
+      message += `• رقم الطلب: ${quotationRequest.requestNumber}\n`;
+      message += `• العميل: ${client?.name || quotationRequest.clientName || 'غير محدد'}\n`;
+      message += `• تاريخ الطلب: ${quotationRequest.requestDate}\n`;
+      message += `• تاريخ الانتهاء: ${quotationRequest.expiryDate || 'غير محدد'}\n`;
+      message += `• الموظف المسؤول: ${quotationRequest.responsibleEmployee || 'غير محدد'}\n`;
+      
+      if (quotationRequest.customRequestNumber) {
+        message += `• رقم طلب العميل: ${quotationRequest.customRequestNumber}\n`;
+      }
+      
+      if (quotationRequest.notes) {
+        message += `• ملاحظات: ${quotationRequest.notes}\n`;
+      }
+      message += `\n`;
+    }
+    
+    // Item Details
+    message += `🔧 تفاصيل البند:\n`;
+    message += `• رقم القطعة: ${item.partNumber}\n`;
+    message += `• رقم البند: ${item.itemNumber}\n`;
+    message += `• الوصف: ${item.description}\n`;
+    message += `• الوحدة: ${item.unit}\n`;
+    
+    if (item.lineItem) {
+      message += `• LINE ITEM: ${item.lineItem}\n`;
+    }
+    
+    if (quotationItem?.quantity) {
+      message += `• الكمية المطلوبة: ${quotationItem.quantity}\n`;
+    }
+    
+    if (item.category) {
+      message += `• الفئة: ${item.category}\n`;
+    }
+    
+    message += `\n${'='.repeat(30)}\n\n`;
+    message += `🤖 التحليل الذكي:\n\n${analysis}`;
     
     return message;
   }
