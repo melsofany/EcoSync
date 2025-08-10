@@ -33,13 +33,69 @@ interface ItemData {
   }>;
 }
 
+interface ComprehensiveDataRow {
+  record_type: string;
+  client_name: string;
+  item_id: string;
+  description: string;
+  line_item: string;
+  part_no: string;
+  rfq_number: string;
+  rfq_date: string;
+  rfq_qty: number;
+  res_date: string;
+  customer_price: string;
+  po_number: string;
+  po_date: string;
+  po_quantity: string;
+  po_price: string;
+  po_total: string;
+  category: string;
+  uom: string;
+}
+
 export default function ItemDataSheet() {
   const { itemId } = useParams();
 
-  const { data: itemData, isLoading } = useQuery<ItemData>({
+  const { data: rawData, isLoading } = useQuery<ComprehensiveDataRow[]>({
     queryKey: ['/api/items', itemId, 'comprehensive-data'],
     enabled: !!itemId,
   });
+
+  // Transform raw data to expected format
+  const itemData: ItemData | null = rawData ? (() => {
+    if (rawData.length === 0) return null;
+    
+    const firstRow = rawData[0];
+    const rfqRows = rawData.filter(row => row.record_type === 'RFQ');
+    const poRows = rawData.filter(row => row.record_type === 'PO');
+    
+    return {
+      id: itemId || '',
+      itemNumber: firstRow.item_id,
+      description: firstRow.description,
+      partNumber: firstRow.part_no,
+      pricingRequests: rfqRows.map(row => ({
+        quotationId: row.rfq_number,
+        requestNumber: row.rfq_number,
+        clientName: row.client_name,
+        quantity: row.rfq_qty || 0,
+        unitPrice: parseFloat(row.customer_price) || 0,
+        supplierQuoteDate: row.rfq_date,
+        currency: 'EGP'
+      })),
+      purchaseOrders: poRows.map(row => ({
+        poId: row.po_number,
+        poNumber: row.po_number,
+        quantity: parseInt(row.po_quantity) || 0,
+        unitPrice: parseFloat(row.po_price) || 0,
+        totalPrice: parseFloat(row.po_total) || 0,
+        status: 'delivered',
+        orderDate: row.po_date,
+        currency: 'EGP'
+      }))
+    };
+  })() : null;
 
   if (isLoading) {
     return (
