@@ -21,6 +21,7 @@ import SupplierPricing from "@/pages/SupplierPricing";
 import CustomerPricing from "@/pages/CustomerPricingNew";
 import CreatePurchaseOrder from "@/pages/CreatePurchaseOrder";
 import NotFound from "@/pages/not-found";
+import TelegramBot from "@/pages/TelegramBot";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -62,6 +63,7 @@ function Router() {
         <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
         <Route path="/reports" component={Reports} />
         <Route path="/admin" component={Admin} />
+        <Route path="/telegram-bot" component={TelegramBot} />
         <Route path="/change-password" component={ChangePassword} />
         <Route component={NotFound} />
       </Switch>

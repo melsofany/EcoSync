@@ -2524,6 +2524,36 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Telegram Bot API endpoints
+  app.post("/api/telegram/analyze-item", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.body;
+      
+      if (!itemId) {
+        return res.status(400).json({ message: "معرف البند مطلوب" });
+      }
+
+      const { telegramBot } = await import("./telegram-bot");
+      await telegramBot.sendNewItemAnalysis(itemId);
+      
+      res.json({ message: "تم إرسال التحليل عبر تليجرام بنجاح" });
+    } catch (error) {
+      console.error("Telegram analysis error:", error);
+      res.status(500).json({ message: "خطأ في إرسال التحليل" });
+    }
+  });
+
+  app.get("/api/telegram/status", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { telegramBot } = await import("./telegram-bot");
+      const status = await telegramBot.getBotStatus();
+      res.json(status);
+    } catch (error) {
+      console.error("Telegram status error:", error);
+      res.status(500).json({ message: "خطأ في حالة البوت" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

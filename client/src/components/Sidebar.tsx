@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Upload,
   Activity,
-  KeyRound
+  KeyRound,
+  Bot
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -116,6 +117,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: "/activity-log",
       icon: Activity,
       section: "activity",
+    },
+    {
+      title: "بوت تليجرام",
+      href: "/telegram-bot",
+      icon: Bot,
+      section: "telegram_bot",
     },
   ];
 
