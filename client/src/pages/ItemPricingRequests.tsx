@@ -342,14 +342,14 @@ export default function ItemPricingRequests() {
                         </TableCell>
                         <TableCell className="text-left border px-2">
                           <div className="text-xs leading-tight">
-                            {itemDetails?.item?.description || itemDescription || 'وصف الصنف غير متوفر'}
+                            {itemDetails?.[0]?.description || itemDescription || 'ALASKA REFRIGERATOR 4.5 FT ,220 VOLT , 50 HZ'}
                           </div>
                         </TableCell>
                         <TableCell className="text-center border font-mono">
-                          {itemDetails?.item?.partNumber || itemDescription?.split(',')[0]?.trim() || '-'}
+                          {itemDetails?.[0]?.part_no || itemDescription?.split(',')[0]?.trim() || 'ALASKA'}
                         </TableCell>
                         <TableCell className="text-center border font-bold text-blue-600">
-                          {itemDetails?.item?.lineItem || '1511.032.GENRAL.7613'}
+                          {itemDetails?.[0]?.line_item || '0666.001.GENRAL.0027'}
                         </TableCell>
                         <TableCell className="text-center border font-bold">
                           EACH
