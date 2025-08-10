@@ -2732,31 +2732,124 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Item unification with AI
+  // Item unification with AI and monitoring
   app.post('/api/unify-items', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
     try {
-      const { limit = 50 } = req.body;
-      const { unifyItemsWithAI } = await import('./item-unification.js');
-      const result = await unifyItemsWithAI(limit);
-      await logActivity(req, "unify_items", "system", "", `AI Unification: ${result.itemsUnified} items unified from ${result.totalItemsAnalyzed} analyzed (${result.confidence}% confidence)`);
-      res.json(result);
+      const { limit = 50, progressive = false } = req.body;
+      
+      if (progressive) {
+        // توحيد تدريجي
+        const { runProgressiveUnification } = await import('./unification-monitor.js');
+        await runProgressiveUnification(limit);
+        res.json({ 
+          success: true, 
+          message: `بدء التوحيد التدريجي لـ ${limit} بند`,
+          progressive: true 
+        });
+      } else {
+        // توحيد مع مراقبة
+        const { runUnificationWithMonitoring } = await import('./unification-monitor.js');
+        const result = await runUnificationWithMonitoring(limit);
+        
+        await logActivity(req, "unify_items", "system", "", 
+          `AI Unification: ${result.itemsUnified} items unified from ${result.totalItemsAnalyzed} analyzed (${result.confidence}% confidence) in ${result.timing.duration}`);
+        
+        res.json(result);
+      }
     } catch (error) {
       console.error('Error in item unification:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      res.status(500).json({ 
+        message: 'خطأ في توحيد البنود',
+        error: error.message,
+        detailedReport: error.detailedReport || []
+      });
     }
   });
 
-  // Analyze items for duplication
+  // Analyze items for duplication with simple monitoring
   app.post('/api/analyze-duplicates', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
     try {
-      const criteria = req.body;
-      const { analyzeItemsDuplication } = await import('./item-unification.js');
-      const result = await analyzeItemsDuplication(criteria);
-      await logActivity(req, "analyze_duplicates", "system", "", `Duplicate analysis: ${result.totalDuplicatesFound} duplicates found`);
+      console.log('🔍 بدء تحليل البنود المكررة...');
+      
+      // تحليل بسيط للبنود المكررة
+      const allItems = await storage.getAllItems();
+      console.log(`📦 تحليل ${allItems.length} بند في النظام`);
+      
+      const duplicatesByPartNumber = new Map();
+      const duplicatesByDescription = new Map();
+      
+      // تجميع البنود المتشابهة
+      allItems.forEach(item => {
+        // تجميع حسب part number
+        if (item.partNumber && item.partNumber.trim()) {
+          const key = item.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          if (!duplicatesByPartNumber.has(key)) {
+            duplicatesByPartNumber.set(key, []);
+          }
+          duplicatesByPartNumber.get(key).push(item);
+        }
+        
+        // تجميع حسب كلمات التوصيف الأساسية
+        if (item.description && item.description.length > 10) {
+          const words = item.description.toUpperCase()
+            .replace(/[^A-Z0-9\s]/g, '')
+            .split(' ')
+            .filter(word => word.length > 3)
+            .slice(0, 3)
+            .join(' ');
+          
+          if (words.length > 5) {
+            if (!duplicatesByDescription.has(words)) {
+              duplicatesByDescription.set(words, []);
+            }
+            duplicatesByDescription.get(words).push(item);
+          }
+        }
+      });
+      
+      // حساب المكررات
+      const partNumberDuplicates = Array.from(duplicatesByPartNumber.values())
+        .filter(group => group.length > 1)
+        .reduce((sum, group) => sum + (group.length - 1), 0);
+      
+      const descriptionDuplicates = Array.from(duplicatesByDescription.values())
+        .filter(group => group.length > 1)
+        .reduce((sum, group) => sum + (group.length - 1), 0);
+      
+      const duplicateGroups = Array.from(duplicatesByPartNumber.entries())
+        .filter(([_, items]) => items.length > 1)
+        .map(([partNum, items]) => ({
+          key: partNum,
+          type: 'part_number',
+          count: items.length,
+          items: items.map(item => ({
+            id: item.id,
+            itemNumber: item.itemNumber,
+            description: item.description?.substring(0, 80)
+          }))
+        }));
+      
+      console.log(`📊 نتائج التحليل: ${partNumberDuplicates} مكرر (رقم قطعة), ${descriptionDuplicates} مكرر (توصيف)`);
+      
+      const result = {
+        totalItemsAnalyzed: allItems.length,
+        totalDuplicatesFound: partNumberDuplicates + descriptionDuplicates,
+        partNumberDuplicates,
+        descriptionDuplicates,
+        duplicateGroups,
+        recommendations: [
+          `تم العثور على ${duplicateGroups.length} مجموعة بنود مكررة`,
+          `يمكن توحيد ${partNumberDuplicates} بند بناءً على رقم القطعة`,
+          `توجد ${descriptionDuplicates} بند مكرر بناءً على التوصيف`
+        ]
+      };
+      
+      await logActivity(req, "analyze_duplicates", "system", "", `تحليل التكرارات: ${result.totalDuplicatesFound} بند مكرر من ${result.totalItemsAnalyzed}`);
       res.json(result);
+      
     } catch (error) {
-      console.error('Error in duplicate analysis:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      console.error('خطأ في تحليل التكرارات:', error);
+      res.status(500).json({ message: 'خطأ في تحليل البنود المكررة' });
     }
   });
 
