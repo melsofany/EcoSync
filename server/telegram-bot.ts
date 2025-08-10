@@ -785,82 +785,164 @@ class QortobaAnalysisBot {
 
 
 
-  // Estimate product price based on part number and description
+  // Universal price estimation for any product category
   private async estimateProductPrice(partNumber: string, description: string): Promise<any> {
     try {
-      console.log(`💰 [TELEGRAM BOT] Estimating price for: ${partNumber}`);
+      console.log(`💰 [PRICE ESTIMATE] Universal pricing for: ${partNumber}`);
       
-      const lowerPartNumber = partNumber.toLowerCase();
-      const lowerDescription = description.toLowerCase();
+      const manufacturer = this.identifyManufacturer(description);
+      const category = this.identifyProductCategory(description);
       
-      // Price estimation logic based on product type and manufacturer
-      let priceRange: any = null;
+      console.log(`💰 [PRICE ESTIMATE] Category: ${category}, Manufacturer: ${manufacturer}`);
       
-      // Schneider Electric contactors
-      if (lowerPartNumber.includes('lc1d') && lowerDescription.includes('schneider')) {
-        const amperageMatch = lowerPartNumber.match(/lc1d(\d+)/);
-        if (amperageMatch) {
-          const amperage = parseInt(amperageMatch[1]);
-          if (amperage <= 12) {
-            priceRange = { min: 750, max: 1350, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          } else if (amperage <= 25) {
-            priceRange = { min: 1050, max: 1950, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          } else if (amperage <= 50) {
-            priceRange = { min: 1650, max: 2850, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          } else {
-            priceRange = { min: 2550, max: 4500, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          }
-        }
+      let priceRange = null;
+      
+      // Category-based pricing
+      if (category === 'electrical') {
+        priceRange = this.getElectricalPricing(partNumber, description, manufacturer);
+      } else if (category === 'automotive') {
+        priceRange = this.getAutomotivePricing(partNumber, description, manufacturer);
+      } else if (category === 'electronics') {
+        priceRange = this.getElectronicsPricing(partNumber, description, manufacturer);
+      } else if (category === 'medical') {
+        priceRange = this.getMedicalPricing(partNumber, description, manufacturer);
+      } else if (category === 'mechanical') {
+        priceRange = this.getMechanicalPricing(partNumber, description, manufacturer);
+      } else {
+        priceRange = this.getGeneralPricing(partNumber, description, manufacturer);
       }
       
-      // Siemens contactors (3RT series)
-      else if (lowerPartNumber.includes('3rt') && lowerDescription.includes('siemens')) {
-        const amperageMatch = description.match(/(\d+)\s*a/i);
-        if (amperageMatch) {
-          const amperage = parseInt(amperageMatch[1]);
-          if (amperage <= 25) {
-            priceRange = { min: 900, max: 1650, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          } else if (amperage <= 50) {
-            priceRange = { min: 1500, max: 2550, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          } else {
-            priceRange = { min: 2250, max: 3600, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          }
-        }
-      }
-      
-      // ABB contactors (AF series)
-      else if (lowerPartNumber.includes('af') && lowerDescription.includes('abb')) {
-        const amperageMatch = description.match(/(\d+)\s*a/i);
-        if (amperageMatch) {
-          const amperage = parseInt(amperageMatch[1]);
-          if (amperage <= 30) {
-            priceRange = { min: 840, max: 1500, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          } else if (amperage <= 60) {
-            priceRange = { min: 1440, max: 2400, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          } else {
-            priceRange = { min: 2100, max: 3300, currency: 'EGP', source: 'تقدير السوق المصري للمقاولات' };
-          }
-        }
-      }
-      
-      // Generic electrical component pricing
-      else if (lowerDescription.includes('contactor')) {
-        priceRange = { min: 600, max: 2400, currency: 'EGP', source: 'تقدير عام للكونتاكتورات' };
-      } else if (lowerDescription.includes('relay')) {
-        priceRange = { min: 150, max: 750, currency: 'EGP', source: 'تقدير عام للريليهات' };
-      } else if (lowerDescription.includes('switch')) {
-        priceRange = { min: 240, max: 1050, currency: 'EGP', source: 'تقدير عام للمفاتيح' };
-      } else if (lowerDescription.includes('breaker')) {
-        priceRange = { min: 450, max: 1800, currency: 'EGP', source: 'تقدير عام للقواطع' };
-      }
-      
-      console.log(`💰 [TELEGRAM BOT] Price estimate for ${partNumber}:`, priceRange);
+      console.log(`💰 [PRICE ESTIMATE] Result for ${partNumber}:`, priceRange);
       return priceRange;
       
     } catch (error) {
-      console.error('Error estimating price:', error);
+      console.error('Error in universal price estimation:', error);
       return null;
     }
+  }
+
+  // Electrical component pricing
+  private getElectricalPricing(partNumber: string, description: string, manufacturer: string): any {
+    const lowerDesc = description.toLowerCase();
+    const lowerPart = partNumber.toLowerCase();
+    
+    // Schneider Electric specific pricing
+    if (manufacturer === 'Schneider Electric' && lowerPart.includes('lc1d')) {
+      const amperageMatch = partNumber.match(/lc1d(\d+)/i);
+      if (amperageMatch) {
+        const amperage = parseInt(amperageMatch[1]);
+        if (amperage <= 12) return { min: 750, max: 1350, currency: 'EGP', source: 'تقدير السوق المصري - شنايدر' };
+        if (amperage <= 25) return { min: 1200, max: 2100, currency: 'EGP', source: 'تقدير السوق المصري - شنايدر' };
+        if (amperage <= 40) return { min: 1650, max: 2850, currency: 'EGP', source: 'تقدير السوق المصري - شنايدر' };
+        return { min: 2250, max: 3600, currency: 'EGP', source: 'تقدير السوق المصري - شنايدر' };
+      }
+    }
+    
+    // Generic electrical pricing
+    if (lowerDesc.includes('contactor')) return { min: 600, max: 2400, currency: 'EGP', source: 'تقدير عام للكونتاكتورات' };
+    if (lowerDesc.includes('relay')) return { min: 150, max: 750, currency: 'EGP', source: 'تقدير عام للريليهات' };
+    if (lowerDesc.includes('switch')) return { min: 240, max: 1050, currency: 'EGP', source: 'تقدير عام للمفاتيح' };
+    if (lowerDesc.includes('breaker')) return { min: 450, max: 1800, currency: 'EGP', source: 'تقدير عام للقواطع' };
+    
+    return { min: 300, max: 1500, currency: 'EGP', source: 'تقدير عام للمكونات الكهربائية' };
+  }
+
+  // Automotive component pricing
+  private getAutomotivePricing(partNumber: string, description: string, manufacturer: string): any {
+    const lowerDesc = description.toLowerCase();
+    
+    if (lowerDesc.includes('filter')) {
+      if (lowerDesc.includes('oil')) return { min: 150, max: 400, currency: 'EGP', source: 'تقدير قطع غيار السيارات' };
+      if (lowerDesc.includes('air')) return { min: 100, max: 250, currency: 'EGP', source: 'تقدير قطع غيار السيارات' };
+      return { min: 120, max: 350, currency: 'EGP', source: 'تقدير فلاتر السيارات' };
+    }
+    
+    if (lowerDesc.includes('brake')) {
+      if (lowerDesc.includes('pad')) return { min: 300, max: 800, currency: 'EGP', source: 'تقدير قطع فرامل' };
+      if (lowerDesc.includes('disc')) return { min: 500, max: 1200, currency: 'EGP', source: 'تقدير قطع فرامل' };
+      return { min: 400, max: 1000, currency: 'EGP', source: 'تقدير نظام الفرامل' };
+    }
+    
+    if (lowerDesc.includes('bearing')) return { min: 200, max: 600, currency: 'EGP', source: 'تقدير بلية السيارات' };
+    
+    return { min: 100, max: 500, currency: 'EGP', source: 'تقدير عام لقطع غيار السيارات' };
+  }
+
+  // Electronics component pricing
+  private getElectronicsPricing(partNumber: string, description: string, manufacturer: string): any {
+    const lowerDesc = description.toLowerCase();
+    
+    if (lowerDesc.includes('processor') || lowerDesc.includes('cpu')) {
+      return { min: 2000, max: 8000, currency: 'EGP', source: 'تقدير المعالجات الإلكترونية' };
+    }
+    
+    if (lowerDesc.includes('memory') || lowerDesc.includes('ram')) {
+      return { min: 800, max: 2500, currency: 'EGP', source: 'تقدير ذاكرة الكمبيوتر' };
+    }
+    
+    if (lowerDesc.includes('sensor')) {
+      return { min: 300, max: 1200, currency: 'EGP', source: 'تقدير أجهزة الاستشعار' };
+    }
+    
+    return { min: 200, max: 1000, currency: 'EGP', source: 'تقدير عام للمكونات الإلكترونية' };
+  }
+
+  // Medical equipment pricing
+  private getMedicalPricing(partNumber: string, description: string, manufacturer: string): any {
+    const lowerDesc = description.toLowerCase();
+    
+    if (lowerDesc.includes('surgical')) {
+      return { min: 1000, max: 5000, currency: 'EGP', source: 'تقدير أدوات جراحية' };
+    }
+    
+    if (lowerDesc.includes('diagnostic')) {
+      return { min: 2000, max: 10000, currency: 'EGP', source: 'تقدير أجهزة تشخيص' };
+    }
+    
+    return { min: 500, max: 3000, currency: 'EGP', source: 'تقدير عام للمعدات الطبية' };
+  }
+
+  // Mechanical component pricing
+  private getMechanicalPricing(partNumber: string, description: string, manufacturer: string): any {
+    const lowerDesc = description.toLowerCase();
+    
+    if (lowerDesc.includes('bearing')) return { min: 150, max: 800, currency: 'EGP', source: 'تقدير البلية الميكانيكية' };
+    if (lowerDesc.includes('gear')) return { min: 200, max: 1000, currency: 'EGP', source: 'تقدير التروس الميكانيكية' };
+    if (lowerDesc.includes('pump')) return { min: 800, max: 3000, currency: 'EGP', source: 'تقدير المضخات' };
+    if (lowerDesc.includes('valve')) return { min: 300, max: 1500, currency: 'EGP', source: 'تقدير الصمامات' };
+    
+    return { min: 200, max: 1200, currency: 'EGP', source: 'تقدير عام للمكونات الميكانيكية' };
+  }
+
+  // General pricing for unknown categories
+  private getGeneralPricing(partNumber: string, description: string, manufacturer: string): any {
+    // Base pricing on manufacturer premium
+    const manufacturerMultiplier = this.getManufacturerPriceMultiplier(manufacturer);
+    const basePrice = 300;
+    
+    return {
+      min: Math.round(basePrice * manufacturerMultiplier * 0.8),
+      max: Math.round(basePrice * manufacturerMultiplier * 2.5),
+      currency: 'EGP',
+      source: `تقدير عام - ${manufacturer === 'Unknown' ? 'غير محدد' : manufacturer}`
+    };
+  }
+
+  // Get price multiplier based on manufacturer premium
+  private getManufacturerPriceMultiplier(manufacturer: string): number {
+    const multipliers: { [key: string]: number } = {
+      'Schneider Electric': 1.8,
+      'Siemens': 1.9,
+      'ABB': 1.7,
+      'Bosch': 1.6,
+      'Samsung': 1.4,
+      'Sony': 1.5,
+      'Philips': 1.4,
+      'GE Healthcare': 2.0,
+      'Unknown': 1.0
+    };
+    
+    return multipliers[manufacturer] || 1.2;
   }
 
   // Advanced product image search with manufacturer catalogs and web search
@@ -892,160 +974,588 @@ class QortobaAnalysisBot {
     }
   }
 
-  // Search manufacturer catalogs for specific part numbers
+  // Universal manufacturer catalog search for any product category
   private async searchManufacturerCatalog(partNumber: string, description: string): Promise<string | null> {
     try {
       const lowerPartNumber = partNumber.toLowerCase();
       const lowerDescription = description.toLowerCase();
       
-      // Schneider Electric catalog search - using verified URL patterns
-      if (lowerDescription.includes('schneider') || lowerPartNumber.includes('lc1d')) {
-        const schneiderUrls = [
-          // Verified working pattern from user
-          `https://download.schneider-electric.com/files?p_Doc_Ref=${partNumber.toUpperCase()}_Image&p_File_Type=rendition_64_gif&default_image=DefaultProductImage.png`,
-          // Alternative patterns
-          `https://download.schneider-electric.com/files?p_Doc_Ref=${partNumber.toUpperCase()}_Image&p_File_Type=rendition_256_jpg&default_image=DefaultProductImage.png`,
-          `https://www.se.com/content/dam/se/ww/en/assets/564/media/8800/LC1D/${partNumber.toUpperCase()}.jpg`,
-          `https://www.se.com/content/dam/se/ww/en/assets/564/media/product/${partNumber.toLowerCase()}.jpg`,
-          // Product catalog patterns
-          `https://www.se.com/us/en/product/${partNumber.toUpperCase()}/image.jpg`,
-          `https://www.se.com/ww/en/product/${partNumber.toUpperCase()}/thumbnail.jpg`
-        ];
-        
-        console.log(`📷 [SCHNEIDER] Testing ${schneiderUrls.length} URL patterns for ${partNumber}`);
-        
-        for (const url of schneiderUrls) {
-          console.log(`📷 [SCHNEIDER] Testing: ${url}`);
-          if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found working Schneider image: ${url}`);
-            return url;
-          }
-        }
+      // Extract manufacturer information
+      const manufacturer = this.identifyManufacturer(description);
+      console.log(`🏭 [CATALOG] Identified manufacturer: ${manufacturer} for ${partNumber}`);
+      
+      // Electrical/Industrial manufacturers
+      if (manufacturer === 'Schneider Electric') {
+        return await this.searchSchneiderCatalog(partNumber);
+      } else if (manufacturer === 'Siemens') {
+        return await this.searchSiemensCatalog(partNumber);
+      } else if (manufacturer === 'ABB') {
+        return await this.searchABBCatalog(partNumber);
+      } else if (manufacturer === 'Eaton') {
+        return await this.searchEatonCatalog(partNumber);
       }
       
-      // Siemens catalog search
-      if (lowerDescription.includes('siemens') || lowerPartNumber.includes('3rt')) {
-        const siemensUrls = [
-          `https://assets.new.siemens.com/siemens/assets/api/uuid:${partNumber.toLowerCase()}/width:400/quality:high/image.jpg`,
-          `https://mall.industry.siemens.com/images/product/${partNumber.toUpperCase()}.jpg`,
-          `https://assets.new.siemens.com/siemens/assets/public/${partNumber.toLowerCase()}.jpg`
-        ];
-        
-        for (const url of siemensUrls) {
-          if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found Siemens catalog image: ${url}`);
-            return url;
-          }
-        }
+      // Automotive manufacturers
+      else if (manufacturer === 'Bosch') {
+        return await this.searchBoschCatalog(partNumber);
+      } else if (manufacturer === 'Continental') {
+        return await this.searchContinentalCatalog(partNumber);
+      } else if (manufacturer === 'Valeo') {
+        return await this.searchValeoCatalog(partNumber);
       }
       
-      // ABB catalog search
-      if (lowerDescription.includes('abb') || lowerPartNumber.includes('af')) {
-        const abbUrls = [
-          `https://library.abb.com/en/${partNumber.toLowerCase()}/${partNumber.toLowerCase()}.jpg`,
-          `https://search.abb.com/products/${partNumber.toUpperCase()}/image.jpg`,
-          `https://new.abb.com/products/${partNumber.toLowerCase()}/images/main.jpg`
-        ];
-        
-        for (const url of abbUrls) {
-          if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found ABB catalog image: ${url}`);
-            return url;
-          }
-        }
+      // Electronics manufacturers  
+      else if (manufacturer === 'Samsung') {
+        return await this.searchSamsungCatalog(partNumber);
+      } else if (manufacturer === 'LG') {
+        return await this.searchLGCatalog(partNumber);
+      } else if (manufacturer === 'Sony') {
+        return await this.searchSonyCatalog(partNumber);
       }
+      
+      // Medical/Scientific manufacturers
+      else if (manufacturer === 'Philips') {
+        return await this.searchPhilipsCatalog(partNumber);
+      } else if (manufacturer === 'GE Healthcare') {
+        return await this.searchGECatalog(partNumber);
+      }
+      
+      // Try generic manufacturer pattern search
+      return await this.searchGenericManufacturerCatalog(partNumber, manufacturer);
       
     } catch (error) {
-      console.error('Error in manufacturer catalog search:', error);
+      console.error('Error in universal manufacturer catalog search:', error);
     }
     
     return null;
   }
 
-  // Search web images using Google Images-style search
+  // Enhanced manufacturer identification for all product categories
+  private identifyManufacturer(description: string): string {
+    const lowerDesc = description.toLowerCase();
+    
+    // Electrical/Industrial
+    if (lowerDesc.includes('schneider')) return 'Schneider Electric';
+    if (lowerDesc.includes('siemens')) return 'Siemens';
+    if (lowerDesc.includes('abb')) return 'ABB';
+    if (lowerDesc.includes('eaton')) return 'Eaton';
+    if (lowerDesc.includes('omron')) return 'Omron';
+    if (lowerDesc.includes('phoenix')) return 'Phoenix Contact';
+    if (lowerDesc.includes('weidmuller')) return 'Weidmuller';
+    if (lowerDesc.includes('allen bradley') || lowerDesc.includes('rockwell')) return 'Allen Bradley';
+    
+    // Automotive
+    if (lowerDesc.includes('bosch')) return 'Bosch';
+    if (lowerDesc.includes('continental')) return 'Continental';
+    if (lowerDesc.includes('valeo')) return 'Valeo';
+    if (lowerDesc.includes('denso')) return 'Denso';
+    if (lowerDesc.includes('mahle')) return 'Mahle';
+    if (lowerDesc.includes('fram')) return 'Fram';
+    if (lowerDesc.includes('mann')) return 'Mann Filter';
+    
+    // Electronics/Consumer
+    if (lowerDesc.includes('samsung')) return 'Samsung';
+    if (lowerDesc.includes('lg')) return 'LG';
+    if (lowerDesc.includes('sony')) return 'Sony';
+    if (lowerDesc.includes('panasonic')) return 'Panasonic';
+    if (lowerDesc.includes('philips')) return 'Philips';
+    if (lowerDesc.includes('apple')) return 'Apple';
+    if (lowerDesc.includes('dell')) return 'Dell';
+    if (lowerDesc.includes('hp')) return 'HP';
+    
+    // Medical/Scientific
+    if (lowerDesc.includes('ge healthcare') || lowerDesc.includes('ge medical')) return 'GE Healthcare';
+    if (lowerDesc.includes('medtronic')) return 'Medtronic';
+    if (lowerDesc.includes('abbott')) return 'Abbott';
+    
+    // Mechanical/Industrial tools
+    if (lowerDesc.includes('caterpillar') || lowerDesc.includes('cat ')) return 'Caterpillar';
+    if (lowerDesc.includes('john deere')) return 'John Deere';
+    if (lowerDesc.includes('makita')) return 'Makita';
+    if (lowerDesc.includes('dewalt')) return 'DeWalt';
+    
+    return 'Unknown';
+  }
+
+  // Schneider Electric specific catalog search
+  private async searchSchneiderCatalog(partNumber: string): Promise<string | null> {
+    const schneiderUrls = [
+      // Verified working pattern from user
+      `https://download.schneider-electric.com/files?p_Doc_Ref=${partNumber.toUpperCase()}_Image&p_File_Type=rendition_64_gif&default_image=DefaultProductImage.png`,
+      // Alternative patterns
+      `https://download.schneider-electric.com/files?p_Doc_Ref=${partNumber.toUpperCase()}_Image&p_File_Type=rendition_256_jpg&default_image=DefaultProductImage.png`,
+      `https://www.se.com/content/dam/se/ww/en/assets/564/media/8800/LC1D/${partNumber.toUpperCase()}.jpg`,
+      `https://www.se.com/content/dam/se/ww/en/assets/564/media/product/${partNumber.toLowerCase()}.jpg`,
+      // Product catalog patterns
+      `https://www.se.com/us/en/product/${partNumber.toUpperCase()}/image.jpg`,
+      `https://www.se.com/ww/en/product/${partNumber.toUpperCase()}/thumbnail.jpg`
+    ];
+    
+    console.log(`📷 [SCHNEIDER] Testing ${schneiderUrls.length} URL patterns for ${partNumber}`);
+    
+    for (const url of schneiderUrls) {
+      console.log(`📷 [SCHNEIDER] Testing: ${url}`);
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found working Schneider image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  // Generic manufacturer catalog search patterns
+  private async searchGenericManufacturerCatalog(partNumber: string, manufacturer: string): Promise<string | null> {
+    const manufacturerDomain = this.getManufacturerDomain(manufacturer);
+    if (!manufacturerDomain) return null;
+    
+    const genericUrls = [
+      `https://${manufacturerDomain}/images/products/${partNumber.toLowerCase()}.jpg`,
+      `https://${manufacturerDomain}/media/catalog/product/${partNumber.toLowerCase()}.jpg`,
+      `https://${manufacturerDomain}/assets/images/${partNumber.toUpperCase()}.jpg`,
+      `https://${manufacturerDomain}/product-images/${partNumber.toLowerCase()}.png`,
+      `https://catalog.${manufacturerDomain}/images/${partNumber.toUpperCase()}.jpg`
+    ];
+    
+    console.log(`📷 [GENERIC] Testing ${genericUrls.length} patterns for ${manufacturer}`);
+    
+    for (const url of genericUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found generic manufacturer image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  // Get manufacturer domain for generic search
+  private getManufacturerDomain(manufacturer: string): string | null {
+    const domainMap: { [key: string]: string } = {
+      'Siemens': 'siemens.com',
+      'ABB': 'abb.com', 
+      'Eaton': 'eaton.com',
+      'Bosch': 'bosch.com',
+      'Continental': 'continental.com',
+      'Valeo': 'valeo.com',
+      'Samsung': 'samsung.com',
+      'LG': 'lg.com',
+      'Sony': 'sony.com',
+      'Philips': 'philips.com',
+      'Panasonic': 'panasonic.com',
+      'Caterpillar': 'cat.com',
+      'John Deere': 'deere.com',
+      'Makita': 'makita.com',
+      'DeWalt': 'dewalt.com'
+    };
+    
+    return domainMap[manufacturer] || null;
+  }
+
+  // Add missing manufacturer-specific catalog search methods
+  private async searchSiemensCatalog(partNumber: string): Promise<string | null> {
+    const siemensUrls = [
+      `https://assets.new.siemens.com/siemens/assets/api/uuid:${partNumber.toLowerCase()}/width:400/quality:high/image.jpg`,
+      `https://mall.industry.siemens.com/images/product/${partNumber.toUpperCase()}.jpg`,
+      `https://assets.new.siemens.com/siemens/assets/public/${partNumber.toLowerCase()}.jpg`
+    ];
+    
+    for (const url of siemensUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found Siemens catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchABBCatalog(partNumber: string): Promise<string | null> {
+    const abbUrls = [
+      `https://library.abb.com/en/${partNumber.toLowerCase()}/${partNumber.toLowerCase()}.jpg`,
+      `https://search.abb.com/products/${partNumber.toUpperCase()}/image.jpg`,
+      `https://new.abb.com/products/${partNumber.toLowerCase()}/images/main.jpg`
+    ];
+    
+    for (const url of abbUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found ABB catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchEatonCatalog(partNumber: string): Promise<string | null> {
+    const eatonUrls = [
+      `https://www.eaton.com/content/dam/eaton/products/${partNumber.toLowerCase()}/image.jpg`,
+      `https://catalog.eaton.com/images/${partNumber.toUpperCase()}.jpg`
+    ];
+    
+    for (const url of eatonUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found Eaton catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchBoschCatalog(partNumber: string): Promise<string | null> {
+    const boschUrls = [
+      `https://www.bosch.com/media/products/${partNumber.toLowerCase()}.jpg`,
+      `https://catalog.bosch.com/images/${partNumber.toUpperCase()}.jpg`
+    ];
+    
+    for (const url of boschUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found Bosch catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchContinentalCatalog(partNumber: string): Promise<string | null> {
+    const continentalUrls = [
+      `https://www.continental.com/media/products/${partNumber.toLowerCase()}.jpg`,
+      `https://catalog.continental.com/images/${partNumber.toUpperCase()}.jpg`
+    ];
+    
+    for (const url of continentalUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found Continental catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchValeoCatalog(partNumber: string): Promise<string | null> {
+    const valeoUrls = [
+      `https://www.valeo.com/media/products/${partNumber.toLowerCase()}.jpg`,
+      `https://catalog.valeo.com/images/${partNumber.toUpperCase()}.jpg`
+    ];
+    
+    for (const url of valeoUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found Valeo catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchSamsungCatalog(partNumber: string): Promise<string | null> {
+    const samsungUrls = [
+      `https://www.samsung.com/media/products/${partNumber.toLowerCase()}.jpg`,
+      `https://images.samsung.com/is/image/samsung/${partNumber.toUpperCase()}`
+    ];
+    
+    for (const url of samsungUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found Samsung catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchLGCatalog(partNumber: string): Promise<string | null> {
+    const lgUrls = [
+      `https://www.lg.com/media/products/${partNumber.toLowerCase()}.jpg`,
+      `https://gscs.lge.com/downloadFile?fileId=${partNumber.toUpperCase()}`
+    ];
+    
+    for (const url of lgUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found LG catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchSonyCatalog(partNumber: string): Promise<string | null> {
+    const sonyUrls = [
+      `https://www.sony.com/media/products/${partNumber.toLowerCase()}.jpg`,
+      `https://images.sony.com/is/image/sonyglobalsolutions/${partNumber.toUpperCase()}`
+    ];
+    
+    for (const url of sonyUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found Sony catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchPhilipsCatalog(partNumber: string): Promise<string | null> {
+    const philipsUrls = [
+      `https://www.philips.com/media/products/${partNumber.toLowerCase()}.jpg`,
+      `https://images.philips.com/is/image/philipsconsumer/${partNumber.toUpperCase()}`
+    ];
+    
+    for (const url of philipsUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found Philips catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  private async searchGECatalog(partNumber: string): Promise<string | null> {
+    const geUrls = [
+      `https://www.gehealthcare.com/media/products/${partNumber.toLowerCase()}.jpg`,
+      `https://images.gehealthcare.com/products/${partNumber.toUpperCase()}.jpg`
+    ];
+    
+    for (const url of geUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found GE Healthcare catalog image: ${url}`);
+        return url;
+      }
+    }
+    return null;
+  }
+
+  // Universal web image search for any product category
   private async searchWebImages(partNumber: string, description: string): Promise<string | null> {
     try {
-      console.log(`🔍 [TELEGRAM BOT] Web image search for: ${partNumber}`);
+      console.log(`🔍 [WEB SEARCH] Universal image search for: ${partNumber}`);
       
-      // Create search queries
-      const searchQueries = [
-        `${partNumber} product image`,
-        `${partNumber} datasheet`,
-        `${partNumber} catalog`,
-        `${partNumber} ${this.extractManufacturer(description)}`,
-        `${partNumber} contactor electrical component`
+      const manufacturer = this.identifyManufacturer(description);
+      const category = this.identifyProductCategory(description);
+      
+      console.log(`🔍 [WEB SEARCH] Product category: ${category}, Manufacturer: ${manufacturer}`);
+      
+      // Try category-specific retailers
+      const retailers = this.getCategoryRetailers(category);
+      
+      for (const retailer of retailers) {
+        const imageUrl = await this.searchRetailerImages(retailer, partNumber);
+        if (imageUrl) return imageUrl;
+      }
+      
+      // Try universal product search sites
+      const universalSites = [
+        'https://www.alibaba.com',
+        'https://www.globalspec.com',
+        'https://www.findchips.com',
+        'https://www.ebay.com',
+        'https://www.amazon.com'
       ];
       
-      // Try common electrical component image hosting sites
-      const imageHosts = [
-        'https://www.rs-online.com',
-        'https://www.mouser.com', 
-        'https://www.digikey.com',
-        'https://www.automation24.com',
-        'https://www.westernmountainstechnologies.com'
-      ];
-      
-      // Try constructing URLs based on common patterns
-      for (const host of imageHosts) {
+      for (const site of universalSites) {
         const possibleUrls = [
-          `${host}/images/products/${partNumber.toLowerCase()}.jpg`,
-          `${host}/media/catalog/product/${partNumber.toLowerCase()}.jpg`,
-          `${host}/images/${partNumber.toUpperCase()}.jpg`
+          `${site}/images/products/${partNumber.toLowerCase()}.jpg`,
+          `${site}/media/catalog/product/${partNumber.toLowerCase()}.jpg`,
+          `${site}/images/${partNumber.toUpperCase()}.jpg`,
+          `${site}/product-images/${partNumber.toLowerCase()}.png`
         ];
         
         for (const url of possibleUrls) {
           if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found web image: ${url}`);
+            console.log(`📷 Found universal retailer image: ${url}`);
             return url;
           }
         }
       }
       
     } catch (error) {
-      console.error('Error in web image search:', error);
+      console.error('Error in universal web image search:', error);
     }
     
     return null;
   }
 
-  // Search for generic component images
+  // Identify product category from description
+  private identifyProductCategory(description: string): string {
+    const lowerDesc = description.toLowerCase();
+    
+    // Electrical/Industrial
+    if (lowerDesc.includes('contactor') || lowerDesc.includes('relay') || 
+        lowerDesc.includes('switch') || lowerDesc.includes('breaker') ||
+        lowerDesc.includes('motor') || lowerDesc.includes('transformer')) {
+      return 'electrical';
+    }
+    
+    // Automotive
+    if (lowerDesc.includes('filter') || lowerDesc.includes('brake') || 
+        lowerDesc.includes('engine') || lowerDesc.includes('transmission') ||
+        lowerDesc.includes('suspension') || lowerDesc.includes('bearing')) {
+      return 'automotive';
+    }
+    
+    // Electronics
+    if (lowerDesc.includes('processor') || lowerDesc.includes('memory') || 
+        lowerDesc.includes('display') || lowerDesc.includes('sensor') ||
+        lowerDesc.includes('circuit') || lowerDesc.includes('chip')) {
+      return 'electronics';
+    }
+    
+    // Medical
+    if (lowerDesc.includes('medical') || lowerDesc.includes('surgical') || 
+        lowerDesc.includes('diagnostic') || lowerDesc.includes('catheter')) {
+      return 'medical';
+    }
+    
+    // Mechanical/Tools
+    if (lowerDesc.includes('bearing') || lowerDesc.includes('gear') || 
+        lowerDesc.includes('pump') || lowerDesc.includes('valve') ||
+        lowerDesc.includes('tool') || lowerDesc.includes('drill')) {
+      return 'mechanical';
+    }
+    
+    return 'general';
+  }
+
+  // Get category-specific retailers
+  private getCategoryRetailers(category: string): string[] {
+    const retailerMap: { [key: string]: string[] } = {
+      'electrical': [
+        'https://www.rs-online.com',
+        'https://www.mouser.com', 
+        'https://www.digikey.com',
+        'https://www.automation24.com',
+        'https://www.westfloridacomponents.com'
+      ],
+      'automotive': [
+        'https://www.rockauto.com',
+        'https://www.autozone.com',
+        'https://www.oreillyauto.com',
+        'https://www.advanceautoparts.com',
+        'https://www.napa.com'
+      ],
+      'electronics': [
+        'https://www.mouser.com',
+        'https://www.digikey.com',
+        'https://www.arrow.com',
+        'https://www.avnet.com',
+        'https://www.futureelectronics.com'
+      ],
+      'medical': [
+        'https://www.medline.com',
+        'https://www.henryschein.com',
+        'https://www.cardinalhealth.com',
+        'https://www.mckesson.com'
+      ],
+      'mechanical': [
+        'https://www.mcmaster.com',
+        'https://www.grainger.com',
+        'https://www.mscdirect.com',
+        'https://www.fastenal.com'
+      ]
+    };
+    
+    return retailerMap[category] || retailerMap['general'] || [];
+  }
+
+  // Search specific retailer for product images
+  private async searchRetailerImages(retailer: string, partNumber: string): Promise<string | null> {
+    const possibleUrls = [
+      `${retailer}/images/products/${partNumber.toLowerCase()}.jpg`,
+      `${retailer}/media/catalog/product/${partNumber.toLowerCase()}.jpg`,
+      `${retailer}/images/${partNumber.toUpperCase()}.jpg`,
+      `${retailer}/product-images/${partNumber.toLowerCase()}.png`,
+      `${retailer}/assets/products/${partNumber.toLowerCase()}.jpg`
+    ];
+    
+    for (const url of possibleUrls) {
+      if (await this.verifyImageUrl(url)) {
+        console.log(`📷 Found retailer image at ${retailer}: ${url}`);
+        return url;
+      }
+    }
+    
+    return null;
+  }
+
+  // Universal generic component images for any product category
   private async searchGenericComponent(description: string): Promise<string | null> {
     try {
       const lowerDescription = description.toLowerCase();
+      const category = this.identifyProductCategory(description);
       
-      // Reliable electrical component images from trusted sources
-      if (lowerDescription.includes('contactor')) {
-        const contactorImages = [
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Electromagnetic_contactor.jpg/320px-Electromagnetic_contactor.jpg',
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Electrical_contactor.jpg/320px-Electrical_contactor.jpg'
-        ];
-        
-        for (const url of contactorImages) {
-          if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found generic contactor image: ${url}`);
-            return url;
-          }
-        }
-      }
+      console.log(`📷 [GENERIC] Searching for ${category} category images`);
       
-      if (lowerDescription.includes('relay')) {
-        const relayImages = [
-          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Relay.jpg/320px-Relay.jpg'
-        ];
-        
-        for (const url of relayImages) {
-          if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found generic relay image: ${url}`);
-            return url;
-          }
+      // Category-specific generic images from trusted sources
+      const categoryImages = this.getCategoryGenericImages(category, lowerDescription);
+      
+      for (const url of categoryImages) {
+        if (await this.verifyImageUrl(url)) {
+          console.log(`📷 Found generic ${category} image: ${url}`);
+          return url;
         }
       }
       
     } catch (error) {
-      console.error('Error in generic component search:', error);
+      console.error('Error in universal generic component search:', error);
     }
     
     return null;
+  }
+
+  // Get generic images based on product category
+  private getCategoryGenericImages(category: string, description: string): string[] {
+    const images: string[] = [];
+    
+    if (category === 'electrical') {
+      if (description.includes('contactor')) {
+        images.push(
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Electromagnetic_contactor.jpg/320px-Electromagnetic_contactor.jpg',
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Electrical_contactor.jpg/320px-Electrical_contactor.jpg'
+        );
+      } else if (description.includes('relay')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Relay.jpg/320px-Relay.jpg');
+      } else if (description.includes('switch')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Electric_switch.jpg/320px-Electric_switch.jpg');
+      } else if (description.includes('breaker')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Circuit_breaker.jpg/320px-Circuit_breaker.jpg');
+      }
+    }
+    
+    else if (category === 'automotive') {
+      if (description.includes('filter')) {
+        images.push(
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Oil_filter.jpg/320px-Oil_filter.jpg',
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Air_filter.jpg/320px-Air_filter.jpg'
+        );
+      } else if (description.includes('brake')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Brake_pad.jpg/320px-Brake_pad.jpg');
+      } else if (description.includes('bearing')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Ball_bearing.jpg/320px-Ball_bearing.jpg');
+      }
+    }
+    
+    else if (category === 'electronics') {
+      if (description.includes('processor') || description.includes('cpu')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Microprocessor.jpg/320px-Microprocessor.jpg');
+      } else if (description.includes('memory') || description.includes('ram')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/RAM_memory.jpg/320px-RAM_memory.jpg');
+      } else if (description.includes('sensor')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Electronic_sensor.jpg/320px-Electronic_sensor.jpg');
+      }
+    }
+    
+    else if (category === 'mechanical') {
+      if (description.includes('gear')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Mechanical_gear.jpg/320px-Mechanical_gear.jpg');
+      } else if (description.includes('pump')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/p/p1/Water_pump.jpg/320px-Water_pump.jpg');
+      } else if (description.includes('valve')) {
+        images.push('https://upload.wikimedia.org/wikipedia/commons/thumb/v/v5/Ball_valve.jpg/320px-Ball_valve.jpg');
+      }
+    }
+    
+    // If no specific images found, use general product image
+    if (images.length === 0) {
+      images.push(
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/320px-No_image_available.svg.png',
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Generic_product.jpg/320px-Generic_product.jpg'
+      );
+    }
+    
+    return images;
   }
 
   // Extract manufacturer name from description
