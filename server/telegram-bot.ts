@@ -763,47 +763,7 @@ class QortobaAnalysisBot {
     return null;
   }
 
-  // Web search for product images using search engines
-  private async searchWebImages(partNumber: string, description: string): Promise<string | null> {
-    try {
-      console.log(`🌐 Web searching for images: ${partNumber}`);
-      
-      // Extract manufacturer and component type from description
-      const cleanDescription = description.toLowerCase();
-      const searchTerms = [];
-      
-      // Add part number
-      searchTerms.push(partNumber);
-      
-      // Add manufacturer if found
-      if (cleanDescription.includes('schneider')) searchTerms.push('schneider electric');
-      else if (cleanDescription.includes('siemens')) searchTerms.push('siemens');
-      else if (cleanDescription.includes('abb')) searchTerms.push('abb');
-      else if (cleanDescription.includes('eaton')) searchTerms.push('eaton');
-      
-      // Add component type
-      if (cleanDescription.includes('contactor')) searchTerms.push('contactor');
-      else if (cleanDescription.includes('relay')) searchTerms.push('relay');
-      else if (cleanDescription.includes('switch')) searchTerms.push('switch');
-      else if (cleanDescription.includes('breaker')) searchTerms.push('circuit breaker');
-      
-      searchTerms.push('product image');
-      
-      const searchQuery = searchTerms.join(' ');
-      console.log(`🔍 Web search query: "${searchQuery}"`);
-      
-      // For LC1D series, try Schneider's CDN pattern
-      if (partNumber.toLowerCase().includes('lc1d')) {
-        const schneiderPattern = `https://www.se.com/content/dam/se/ww/en/assets/564/media/8800/LC1D/${partNumber.toUpperCase()}.jpg`;
-        return schneiderPattern;
-      }
-      
-    } catch (error) {
-      console.error('Error in web image search:', error);
-    }
-    
-    return null;
-  }
+
 
   // Estimate product price based on part number and description
   private async estimateProductPrice(partNumber: string, description: string): Promise<any> {
@@ -883,97 +843,195 @@ class QortobaAnalysisBot {
     }
   }
 
-  // Enhanced image search with reliable working URLs
+  // Advanced product image search with manufacturer catalogs and web search
   private async searchProductImage(partNumber: string, description: string): Promise<string | null> {
     try {
-      console.log(`📷 [TELEGRAM BOT] Enhanced product image search for: ${partNumber}`);
+      console.log(`📷 [TELEGRAM BOT] Advanced product image search for: ${partNumber}`);
       
       const lowerPartNumber = partNumber.toLowerCase();
       const lowerDescription = description.toLowerCase();
       
-      // Working Schneider Electric URLs - with verified patterns
+      // 1. Try manufacturer catalog URLs first
+      let imageUrl = await this.searchManufacturerCatalog(partNumber, description);
+      if (imageUrl) return imageUrl;
+      
+      // 2. Try web image search with part number and description
+      imageUrl = await this.searchWebImages(partNumber, description);
+      if (imageUrl) return imageUrl;
+      
+      // 3. Try generic component search
+      imageUrl = await this.searchGenericComponent(description);
+      if (imageUrl) return imageUrl;
+      
+      console.log(`📷 No valid image found for: ${partNumber}`);
+      return null;
+      
+    } catch (error) {
+      console.error('Error in advanced product image search:', error);
+      return null;
+    }
+  }
+
+  // Search manufacturer catalogs for specific part numbers
+  private async searchManufacturerCatalog(partNumber: string, description: string): Promise<string | null> {
+    try {
+      const lowerPartNumber = partNumber.toLowerCase();
+      const lowerDescription = description.toLowerCase();
+      
+      // Schneider Electric catalog search
       if (lowerDescription.includes('schneider') || lowerPartNumber.includes('lc1d')) {
-        // Use reliable product image URLs that work
-        const imageUrls = [
-          // Direct product catalog images
-          `https://www.se.com/us/en/product/LC1D09M7/tesys-d-contactor-3p3-no-ac-3-440-v-9-a-220-v-ac-coil/?selected-node-id=LC1D09M7`,
-          // Schneider catalog images
-          `https://product-selection.schneider-electric.com/media/catalog/product/l/c/lc1d09m7_1.jpg`,
-          // Generic Schneider contactor - working URL
-          `https://images.unsplash.com/photo-1621905251918-48416bd8575a?ixlib=rb-4.0.3&w=320&q=80`,
-          // Industrial catalog image
-          `https://images.unsplash.com/photo-1581094271901-8022df4466f9?ixlib=rb-4.0.3&w=320&q=80`
+        const schneiderUrls = [
+          `https://www.se.com/content/dam/se/ww/en/assets/564/media/8800/LC1D/${partNumber.toUpperCase()}.jpg`,
+          `https://www.se.com/content/dam/se/ww/en/assets/564/media/product/${partNumber.toLowerCase()}.jpg`,
+          `https://download.schneider-electric.com/files?p_File_Name=${partNumber.toLowerCase()}.jpg`,
+          `https://www.se.com/content/dam/se/ww/en/assets/564/media/product-square/${partNumber.toLowerCase()}.jpg`
         ];
         
-        for (const url of imageUrls) {
+        for (const url of schneiderUrls) {
           if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found valid Schneider image: ${url}`);
+            console.log(`📷 Found Schneider catalog image: ${url}`);
             return url;
           }
         }
       }
       
-      // Working Siemens URLs
+      // Siemens catalog search
       if (lowerDescription.includes('siemens') || lowerPartNumber.includes('3rt')) {
-        const imageUrls = [
-          // Professional industrial images
-          `https://images.unsplash.com/photo-1581094289861-7d5b4d6f49d4?ixlib=rb-4.0.3&w=320&q=80`,
-          `https://images.unsplash.com/photo-1587293852726-70cdb56c2866?ixlib=rb-4.0.3&w=320&q=80`,
-          // Electronics component images
-          `https://images.unsplash.com/photo-1518709268805-4e9042af2176?ixlib=rb-4.0.3&w=320&q=80`
+        const siemensUrls = [
+          `https://assets.new.siemens.com/siemens/assets/api/uuid:${partNumber.toLowerCase()}/width:400/quality:high/image.jpg`,
+          `https://mall.industry.siemens.com/images/product/${partNumber.toUpperCase()}.jpg`,
+          `https://assets.new.siemens.com/siemens/assets/public/${partNumber.toLowerCase()}.jpg`
         ];
         
-        for (const url of imageUrls) {
+        for (const url of siemensUrls) {
           if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found valid Siemens image: ${url}`);
+            console.log(`📷 Found Siemens catalog image: ${url}`);
             return url;
           }
         }
       }
       
-      // Working ABB URLs
+      // ABB catalog search
       if (lowerDescription.includes('abb') || lowerPartNumber.includes('af')) {
-        const imageUrls = [
-          `https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?ixlib=rb-4.0.3&w=320&q=80`,
-          `https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&w=320&q=80`
+        const abbUrls = [
+          `https://library.abb.com/en/${partNumber.toLowerCase()}/${partNumber.toLowerCase()}.jpg`,
+          `https://search.abb.com/products/${partNumber.toUpperCase()}/image.jpg`,
+          `https://new.abb.com/products/${partNumber.toLowerCase()}/images/main.jpg`
         ];
         
-        for (const url of imageUrls) {
+        for (const url of abbUrls) {
           if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found valid ABB image: ${url}`);
+            console.log(`📷 Found ABB catalog image: ${url}`);
             return url;
           }
         }
-      }
-      
-      // Generic electrical component - guaranteed working URLs
-      if (lowerDescription.includes('contactor')) {
-        const genericUrls = [
-          `https://images.unsplash.com/photo-1621905251918-48416bd8575a?ixlib=rb-4.0.3&w=320&q=80`,
-          `https://images.unsplash.com/photo-1581094271901-8022df4466f9?ixlib=rb-4.0.3&w=320&q=80`,
-          `https://images.unsplash.com/photo-1559827260-dc66d52bef19?ixlib=rb-4.0.3&w=320&q=80`
-        ];
-        
-        for (const url of genericUrls) {
-          if (await this.verifyImageUrl(url)) {
-            console.log(`📷 Found valid generic contactor image: ${url}`);
-            return url;
-          }
-        }
-      }
-      
-      // Last resort - very reliable electrical component image
-      const fallbackImage = `https://images.unsplash.com/photo-1581094289861-7d5b4d6f49d4?ixlib=rb-4.0.3&w=320&q=80`;
-      if (await this.verifyImageUrl(fallbackImage)) {
-        console.log(`📷 Using fallback electrical image: ${fallbackImage}`);
-        return fallbackImage;
       }
       
     } catch (error) {
-      console.error('Error in enhanced product image search:', error);
+      console.error('Error in manufacturer catalog search:', error);
     }
     
     return null;
+  }
+
+  // Search web images using Google Images-style search
+  private async searchWebImages(partNumber: string, description: string): Promise<string | null> {
+    try {
+      console.log(`🔍 [TELEGRAM BOT] Web image search for: ${partNumber}`);
+      
+      // Create search queries
+      const searchQueries = [
+        `${partNumber} product image`,
+        `${partNumber} datasheet`,
+        `${partNumber} catalog`,
+        `${partNumber} ${this.extractManufacturer(description)}`,
+        `${partNumber} contactor electrical component`
+      ];
+      
+      // Try common electrical component image hosting sites
+      const imageHosts = [
+        'https://www.rs-online.com',
+        'https://www.mouser.com', 
+        'https://www.digikey.com',
+        'https://www.automation24.com',
+        'https://www.westernmountainstechnologies.com'
+      ];
+      
+      // Try constructing URLs based on common patterns
+      for (const host of imageHosts) {
+        const possibleUrls = [
+          `${host}/images/products/${partNumber.toLowerCase()}.jpg`,
+          `${host}/media/catalog/product/${partNumber.toLowerCase()}.jpg`,
+          `${host}/images/${partNumber.toUpperCase()}.jpg`
+        ];
+        
+        for (const url of possibleUrls) {
+          if (await this.verifyImageUrl(url)) {
+            console.log(`📷 Found web image: ${url}`);
+            return url;
+          }
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error in web image search:', error);
+    }
+    
+    return null;
+  }
+
+  // Search for generic component images
+  private async searchGenericComponent(description: string): Promise<string | null> {
+    try {
+      const lowerDescription = description.toLowerCase();
+      
+      // Reliable electrical component images from trusted sources
+      if (lowerDescription.includes('contactor')) {
+        const contactorImages = [
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Electromagnetic_contactor.jpg/320px-Electromagnetic_contactor.jpg',
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Electrical_contactor.jpg/320px-Electrical_contactor.jpg'
+        ];
+        
+        for (const url of contactorImages) {
+          if (await this.verifyImageUrl(url)) {
+            console.log(`📷 Found generic contactor image: ${url}`);
+            return url;
+          }
+        }
+      }
+      
+      if (lowerDescription.includes('relay')) {
+        const relayImages = [
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Relay.jpg/320px-Relay.jpg'
+        ];
+        
+        for (const url of relayImages) {
+          if (await this.verifyImageUrl(url)) {
+            console.log(`📷 Found generic relay image: ${url}`);
+            return url;
+          }
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error in generic component search:', error);
+    }
+    
+    return null;
+  }
+
+  // Extract manufacturer name from description
+  private extractManufacturer(description: string): string {
+    const lowerDesc = description.toLowerCase();
+    
+    if (lowerDesc.includes('schneider')) return 'Schneider Electric';
+    if (lowerDesc.includes('siemens')) return 'Siemens';
+    if (lowerDesc.includes('abb')) return 'ABB';
+    if (lowerDesc.includes('eaton')) return 'Eaton';
+    if (lowerDesc.includes('omron')) return 'Omron';
+    if (lowerDesc.includes('phoenix')) return 'Phoenix Contact';
+    
+    return '';
   }
 }
 
