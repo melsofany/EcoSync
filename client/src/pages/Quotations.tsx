@@ -73,7 +73,7 @@ export default function Quotations() {
   // Send quotation for pricing mutation
   const sendForPricingMutation = useMutation({
     mutationFn: async (quotationId: string) => {
-      await apiRequest("PATCH", `/api/quotations/${quotationId}/status`, {
+      await apiRequest("PATCH", `/api/quotations/${quotationId}`, {
         status: "sent_for_pricing"
       });
     },

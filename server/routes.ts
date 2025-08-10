@@ -1965,7 +1965,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Delete entire quotation
-  app.delete("/api/quotations/:quotationId", requireAuth, requireRole(["manager"]), async (req: Request, res: Response) => {
+  app.delete("/api/quotations/:quotationId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
       const { quotationId } = req.params;
       
