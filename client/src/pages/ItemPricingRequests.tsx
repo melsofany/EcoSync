@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, DollarSign, Eye, FileText, Calendar, User, Building2 } from "lucide-react";
+import { ArrowLeft, DollarSign, Eye, FileText, Calendar, User, Building2, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -42,6 +42,11 @@ export default function ItemPricingRequests() {
   // Fetch pricing requests for this specific item
   const { data: pricingRequests, isLoading } = useQuery({
     queryKey: [`/api/items/${itemId}/pricing-requests`],
+    enabled: !!itemId,
+  });
+
+  const { data: purchaseOrders, isLoading: isLoadingPO } = useQuery({
+    queryKey: [`/api/items/${itemId}/purchase-orders`],
     enabled: !!itemId,
   });
 
@@ -357,6 +362,82 @@ export default function ItemPricingRequests() {
                   </span>
                 </div>
               </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Purchase Orders Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5 text-blue-600" />
+            طلبات الشراء المرتبطة ({purchaseOrders?.length || 0})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoadingPO ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center">
+                <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full loading-spinner mx-auto mb-2"></div>
+                <p className="text-gray-600">جاري تحميل طلبات الشراء...</p>
+              </div>
+            </div>
+          ) : purchaseOrders && purchaseOrders.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-right">رقم الطلب</TableHead>
+                    <TableHead className="text-right">المورد</TableHead>
+                    <TableHead className="text-right">تاريخ الطلب</TableHead>
+                    <TableHead className="text-right">الكمية</TableHead>
+                    <TableHead className="text-right">سعر الوحدة</TableHead>
+                    <TableHead className="text-right">الإجمالي</TableHead>
+                    <TableHead className="text-right">الحالة</TableHead>
+                    <TableHead className="text-right">تاريخ التسليم المتوقع</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {purchaseOrders.map((po: any, index: number) => (
+                    <TableRow key={po.id || index} className="hover:bg-gray-50">
+                      <TableCell className="font-medium text-blue-600">
+                        {po.poNumber}
+                      </TableCell>
+                      <TableCell>{po.supplierName}</TableCell>
+                      <TableCell>
+                        {po.orderDate ? formatDate(po.orderDate) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-medium">{po.itemQuantity || '-'}</span>
+                      </TableCell>
+                      <TableCell>
+                        {po.itemUnitPrice ? (
+                          <span className="font-medium text-blue-600">
+                            {formatCurrency(parseFloat(po.itemUnitPrice))}
+                          </span>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {po.itemTotalPrice ? (
+                          <span className="font-medium text-green-600">
+                            {formatCurrency(parseFloat(po.itemTotalPrice))}
+                          </span>
+                        ) : '-'}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(po.status)}</TableCell>
+                      <TableCell>
+                        {po.expectedDelivery ? formatDate(po.expectedDelivery) : '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <ShoppingCart className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p>لا توجد طلبات شراء مرتبطة بهذا الصنف</p>
             </div>
           )}
         </CardContent>

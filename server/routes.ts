@@ -588,6 +588,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get related purchase orders for an item
+  app.get("/api/items/:itemId/purchase-orders", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      console.log('Getting related purchase orders for item:', itemId);
+      
+      const purchaseOrders = await storage.getRelatedPurchaseOrders(itemId);
+      console.log('Found related purchase orders:', purchaseOrders.length);
+      
+      res.json(purchaseOrders);
+    } catch (error) {
+      console.error("Get related purchase orders error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.post("/api/items", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
     try {
       const userId = req.session?.user?.id;

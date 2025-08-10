@@ -1767,45 +1767,68 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log('Getting pricing requests for item ID:', itemId);
       
-      const client = await pool.connect();
-      const result = await client.query(`
-        SELECT 
-          qi.id,
-          COALESCE(qr.custom_request_number, qr.request_number) as quotation_number,
-          COALESCE(c.name, 'عميل غير محدد') as client_name,
-          qr.request_date,
-          qr.status,
-          qi.quantity,
-          i.unit,
-          qi.unit_price as customer_price,
-          qr.notes
-        FROM quotation_items qi
-        INNER JOIN quotation_requests qr ON qi.quotation_id = qr.id
-        INNER JOIN items i ON qi.item_id = i.id
-        LEFT JOIN clients c ON qr.client_id = c.id
-        WHERE qi.item_id = $1
-        ORDER BY qr.request_date DESC
-      `, [itemId]);
-      
-      client.release();
+      const results = await db
+        .select({
+          id: quotationItems.id,
+          quotationId: quotationItems.quotationId,
+          quotationNumber: sql<string>`COALESCE(${quotationRequests.customRequestNumber}, ${quotationRequests.requestNumber})`,
+          clientName: sql<string>`COALESCE(${clients.name}, 'عميل غير محدد')`,
+          requestDate: quotationRequests.requestDate,
+          status: quotationRequests.status,
+          quantity: quotationItems.quantity,
+          unit: items.unit,
+          customerPrice: quotationItems.unitPrice,
+          totalPrice: quotationItems.totalPrice,
+          currency: quotationItems.currency,
+          notes: quotationRequests.notes,
+          responsibleEmployee: quotationRequests.responsibleEmployee,
+        })
+        .from(quotationItems)
+        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
+        .innerJoin(items, eq(quotationItems.itemId, items.id))
+        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+        .where(eq(quotationItems.itemId, itemId))
+        .orderBy(desc(quotationRequests.requestDate));
 
-      // Format the results
-      const formattedResults = result.rows.map((row: any) => ({
-        id: row.id,
-        quotationNumber: row.quotation_number,
-        clientName: row.client_name,
-        requestDate: row.request_date ? new Date(row.request_date).toISOString() : new Date().toISOString(),
-        status: row.status || 'pending',
-        quantity: parseInt(row.quantity) || 0,
-        unit: row.unit || 'Piece',
-        customerPrice: row.customer_price ? parseFloat(row.customer_price) : undefined,
-        notes: row.notes || undefined,
-      }));
-
-      console.log('Found pricing requests:', formattedResults.length);
-      return formattedResults;
+      console.log('Found pricing requests:', results.length);
+      return results;
     } catch (error) {
       console.error('Error getting item pricing requests:', error);
+      return [];
+    }
+  }
+
+  async getRelatedPurchaseOrders(itemId: string): Promise<any[]> {
+    try {
+      console.log('Getting related purchase orders for item ID:', itemId);
+      
+      // Get purchase orders that contain this specific item
+      const results = await db
+        .select({
+          id: purchaseOrders.id,
+          poNumber: purchaseOrders.poNumber,
+          supplierName: sql<string>`COALESCE(${suppliers.name}, 'مورد غير محدد')`,
+          orderDate: purchaseOrders.orderDate,
+          expectedDelivery: purchaseOrders.expectedDelivery,
+          status: purchaseOrders.status,
+          totalAmount: purchaseOrders.totalAmount,
+          currency: purchaseOrders.currency,
+          notes: purchaseOrders.notes,
+          // Item specific details from purchase order items
+          itemQuantity: purchaseOrderItems.quantity,
+          itemUnitPrice: purchaseOrderItems.unitPrice,
+          itemTotalPrice: sql<string>`(${purchaseOrderItems.quantity} * ${purchaseOrderItems.unitPrice})`,
+        })
+        .from(purchaseOrderItems)
+        .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
+        .leftJoin(suppliers, eq(purchaseOrders.supplierId, suppliers.id))
+        .where(eq(purchaseOrderItems.itemId, itemId))
+        .orderBy(desc(purchaseOrders.orderDate));
+
+      console.log('Found related purchase orders:', results.length);
+      return results;
+    } catch (error) {
+      console.error('Error getting related purchase orders:', error);
       return [];
     }
   }
