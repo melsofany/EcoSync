@@ -240,10 +240,10 @@ export default function ItemDataSheet() {
             بيانات البند الكاملة مع الربط - {itemData.itemNumber}
           </CardTitle>
           <p className="text-sm text-gray-600 mt-2">
-            📊 البيانات الحقيقية: {itemData.pricingRequests?.length || 0} سجل طلب تسعير + {itemData.purchaseOrders?.length || 0} سجل أمر شراء
+            📊 البيانات الحقيقية: {itemData.pricingRequests?.length || 0} سجل بند في طلبات التسعير + {itemData.purchaseOrders?.length || 0} سجل أمر شراء
           </p>
           <div className="text-xs text-gray-500 mt-1">
-            ملاحظة: كل طلب تسعير قد يحتوي على عدة كميات مختلفة، لذلك يظهر كسجلات منفصلة
+            ملاحظة: يُعرض كل بند منفصل بكميته وسعره (قد يكون للطلب الواحد عدة بنود بكميات مختلفة)
           </div>
         </CardHeader>
         <CardContent>
