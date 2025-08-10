@@ -1957,6 +1957,22 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const item = await storage.addQuotationItem(validatedData);
       await logActivity(req, "add_quotation_item", "quotation_item", item.id, `Added item to quotation: ${quotationId}`);
 
+      // Send Telegram analysis for all items added to quotations (even existing items)
+      try {
+        setTimeout(async () => {
+          try {
+            console.log(`📱 [ROUTES] Triggering Telegram analysis for quotation item: ${item.itemId}`);
+            const { telegramBot } = await import("./telegram-bot");
+            await telegramBot.sendNewItemAnalysis(item.itemId);
+            console.log(`✅ [ROUTES] Telegram analysis sent for quotation item: ${item.itemId}`);
+          } catch (error) {
+            console.error('❌ [ROUTES] Error sending Telegram notification for quotation item:', error);
+          }
+        }, 500); // Short delay to ensure database consistency
+      } catch (error) {
+        console.error('❌ [ROUTES] Error initiating Telegram notification:', error);
+      }
+
       res.status(201).json(item);
     } catch (error) {
       console.error("Add quotation item error:", error);

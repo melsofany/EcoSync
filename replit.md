@@ -65,7 +65,7 @@ Preferred communication style: Simple, everyday language.
 
 ### AI Services
 - **DeepSeek API**: Used for AI-powered item analysis and duplicate detection.
-- **Telegram Bot Integration**: Fully operational @Req_item_bot with automatic item analysis notifications. Automatic analysis triggers only for newly created items (not existing duplicates). Supports both internal system users (IT administrators) and external users via Telegram User ID management. Manual analysis available via bot interface for existing items.
+- **Telegram Bot Integration**: Fully operational @Req_item_bot with comprehensive analysis notifications. Automatic analysis triggers for all items added to quotation requests (including existing items), designed for sales representatives who need analysis for every quotation. Supports both internal system users (IT administrators) and external users via Telegram User ID management. Manual analysis also available via bot interface.
 
 ### Development & Build Tools
 - **Vite**: Frontend development and build tool.
