@@ -860,23 +860,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllItems(): Promise<Item[]> {
-    // Use DISTINCT to ensure no duplicates and order by creation date
+    // Remove DISTINCT to show all items with their separate records
     const results = await db
-      .selectDistinct()
+      .select()
       .from(items)
       .orderBy(desc(items.createdAt));
     
-    // Double-check for any remaining duplicates based on ID
-    const uniqueResults = results.filter((item, index, self) => 
-      index === self.findIndex(i => i.id === item.id)
-    );
-    
-    if (results.length !== uniqueResults.length) {
-      console.warn(`⚠️ Found ${results.length - uniqueResults.length} duplicate items, filtered to ${uniqueResults.length} unique`);
-    }
-    
-    console.log(`📋 Retrieved ${uniqueResults.length} unique items`);
-    return uniqueResults;
+    console.log(`📋 Retrieved ${results.length} items (showing all records)`);
+    return results;
   }
 
   async getAllClients(): Promise<Client[]> {
@@ -1079,7 +1070,7 @@ export class DatabaseStorage implements IStorage {
 
       console.log(`Searching for LINE ITEM: ${lineItem}`);
 
-      // Use Drizzle ORM query instead of raw SQL
+      // Use Drizzle ORM query without grouping - show all individual records
       const historicalData = await db
         .select({
           kItemId: items.kItemId,
@@ -1096,13 +1087,14 @@ export class DatabaseStorage implements IStorage {
           requestDate: quotationRequests.requestDate,
           clientName: clients.name,
           sourceType: sql<string>`'quotation'`.as('sourceType'),
+          quotationItemId: quotationItems.id, // Add unique identifier for each record
         })
         .from(items)
         .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
         .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
         .innerJoin(clients, eq(quotationRequests.clientId, clients.id))
         .where(eq(items.lineItem, lineItem))
-        .orderBy(desc(quotationRequests.requestDate));
+        .orderBy(desc(quotationRequests.requestDate), quotationItems.id);
 
       console.log(`Found ${historicalData.length} historical records for LINE ITEM: ${lineItem}`);
       return historicalData;
@@ -1712,7 +1704,7 @@ export class DatabaseStorage implements IStorage {
     console.log('Getting comprehensive historical data for LINE ITEM:', lineItem);
 
     try {
-      // Get quotation data with client information using db
+      // Get quotation data without grouping - show all separate quantity records
       const quotationData = await db
         .select({
           clientName: quotationRequests.clientName,
@@ -1732,13 +1724,14 @@ export class DatabaseStorage implements IStorage {
           sourceType: sql<string>`'quotation'`,
           unitPrice: quotationItems.unitPrice,
           currency: quotationItems.currency,
+          quotationItemId: quotationItems.id, // Add unique identifier for separate records
         })
         .from(quotationItems)
         .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
         .where(eq(quotationItems.lineItem, lineItem))
-        .orderBy(desc(quotationRequests.requestDate));
+        .orderBy(desc(quotationRequests.requestDate), quotationItems.id);
 
-      // Get purchase order data with linked quotation numbers
+      // Get purchase order data without grouping - show all separate quantity records
       const purchaseOrderData = await db
         .select({
           clientName: sql<string>`'أمر شراء داخلي'`,
@@ -1758,11 +1751,12 @@ export class DatabaseStorage implements IStorage {
           sourceType: sql<string>`'purchase_order'`,
           unitPrice: purchaseOrderItems.unitPrice,
           currency: purchaseOrderItems.currency,
+          purchaseOrderItemId: purchaseOrderItems.id, // Add unique identifier for separate records
         })
         .from(purchaseOrderItems)
         .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
         .where(eq(purchaseOrderItems.lineItem, lineItem))
-        .orderBy(desc(purchaseOrders.poDate));
+        .orderBy(desc(purchaseOrders.poDate), purchaseOrderItems.id);
 
       // Combine and sort all data - group by quotation number where possible
       const allData = [...quotationData, ...purchaseOrderData].sort((a, b) => {
