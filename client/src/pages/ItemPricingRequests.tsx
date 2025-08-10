@@ -250,13 +250,13 @@ export default function ItemPricingRequests() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-center bg-blue-100 font-bold border">PRICE/RFQ</TableHead>
-                  <TableHead className="text-center bg-blue-100 font-bold border">QTY/RFQ</TableHead>
-                  <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
-                  <TableHead className="text-center bg-green-100 font-bold border">PO</TableHead>
                   <TableHead className="text-center bg-green-100 font-bold border">PRICE/PO</TableHead>
                   <TableHead className="text-center bg-green-100 font-bold border">QTY/PO</TableHead>
                   <TableHead className="text-center bg-green-100 font-bold border">DATE/PO</TableHead>
+                  <TableHead className="text-center bg-green-100 font-bold border">PO</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">PRICE/RFQ</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">QTY/RFQ</TableHead>
+                  <TableHead className="text-center bg-blue-100 font-bold border">DATE/RFQ</TableHead>
                   <TableHead className="text-center bg-blue-100 font-bold border">RFQ</TableHead>
                   <TableHead className="text-center bg-gray-100 font-bold border">DESCRIPTION</TableHead>
                   <TableHead className="text-center bg-gray-100 font-bold border">PART NO</TableHead>
@@ -310,22 +310,6 @@ export default function ItemPricingRequests() {
                     
                     return (
                       <TableRow key={request.id} className={`text-xs hover:bg-gray-50 ${matchingPO ? 'bg-blue-50' : ''}`}>
-                        {/* RFQ Columns */}
-                        <TableCell className="text-center border font-bold text-blue-600">
-                          {request.customerPrice ? formatCurrency(request.customerPrice) : '-'}
-                        </TableCell>
-                        <TableCell className="text-center border font-bold">
-                          {request.quantity}
-                        </TableCell>
-                        <TableCell className="text-center border">
-                          {formatDate(request.requestDate)}
-                        </TableCell>
-                        
-                        {/* PO Number */}
-                        <TableCell className="text-center border font-bold text-green-600">
-                          {matchingPO?.poNumber || '-'}
-                        </TableCell>
-                        
                         {/* PO Columns */}
                         <TableCell className="text-center border font-bold text-green-600">
                           {matchingPO?.unitPrice ? `${parseFloat(matchingPO.unitPrice).toLocaleString('ar-EG')} ج.م.` : '-'}
@@ -335,6 +319,22 @@ export default function ItemPricingRequests() {
                         </TableCell>
                         <TableCell className="text-center border font-bold text-green-600">
                           {matchingPO?.poDate ? format(new Date(matchingPO.poDate), 'dd MMM yyyy', { locale: ar }) : '-'}
+                        </TableCell>
+                        
+                        {/* PO Number */}
+                        <TableCell className="text-center border font-bold text-green-600">
+                          {matchingPO?.poNumber || '-'}
+                        </TableCell>
+                        
+                        {/* RFQ Columns */}
+                        <TableCell className="text-center border font-bold text-blue-600">
+                          {request.customerPrice ? formatCurrency(request.customerPrice) : '-'}
+                        </TableCell>
+                        <TableCell className="text-center border font-bold">
+                          {request.quantity}
+                        </TableCell>
+                        <TableCell className="text-center border">
+                          {formatDate(request.requestDate)}
                         </TableCell>
                         
                         {/* RFQ Number */}
