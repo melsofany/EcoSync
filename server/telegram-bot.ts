@@ -5,7 +5,7 @@ import { eq, sql } from 'drizzle-orm';
 
 // Configuration
 const TELEGRAM_BOT_TOKEN = '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
-let AUTHORIZED_USERS: number[] = [
+let AUTHORIZED_USERS: string[] = [
   // Will be loaded from database
 ];
 
@@ -95,7 +95,7 @@ class QortobaAnalysisBot {
       await this.loadAuthorizedUsers();
     }
     
-    return AUTHORIZED_USERS.includes(userId);
+    return AUTHORIZED_USERS.includes(userId.toString());
   }
 
   private async loadAuthorizedUsers() {
@@ -108,7 +108,7 @@ class QortobaAnalysisBot {
       
       AUTHORIZED_USERS = authorizedUsers
         .filter(user => user.telegramUserId)
-        .map(user => parseInt(user.telegramUserId!));
+        .map(user => user.telegramUserId!);
       
       console.log('📱 [TELEGRAM BOT] Loaded authorized users:', AUTHORIZED_USERS.length);
     } catch (error) {
@@ -122,8 +122,7 @@ class QortobaAnalysisBot {
         .select({
           rfqNumber: quotationRequests.customRequestNumber,
           requestDate: quotationRequests.requestDate,
-          clientName: clients.name,
-          itemCount: quotationRequests.itemCount
+          clientName: clients.name
         })
         .from(quotationRequests)
         .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
@@ -136,7 +135,7 @@ class QortobaAnalysisBot {
         message += `🔹 رقم الطلب: ${req.rfqNumber}\n`;
         message += `📅 التاريخ: ${new Date(req.requestDate).toLocaleDateString('ar-EG')}\n`;
         message += `👤 العميل: ${req.clientName || 'غير محدد'}\n`;
-        message += `📦 عدد البنود: ${req.itemCount || 0}\n\n`;
+        message += `\n`;
       }
       
       this.bot.sendMessage(chatId, message);
@@ -329,7 +328,7 @@ class QortobaAnalysisBot {
         })
         .from(items)
         .leftJoin(quotationItems, eq(items.id, quotationItems.itemId))
-        .leftJoin(quotationRequests, eq(quotationItems.quotationRequestId, quotationRequests.id))
+        .leftJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
         .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
         .where(eq(items.id, itemId))
         .limit(1);
@@ -378,7 +377,7 @@ class QortobaAnalysisBot {
     } catch (error) {
       return {
         status: 'error',
-        error: error.message,
+        error: (error as Error).message,
         deepseek_configured: !!DEEPSEEK_API_KEY
       };
     }
