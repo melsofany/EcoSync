@@ -343,7 +343,13 @@ class QortobaAnalysisBot {
         return;
       }
 
-      const analysis = await this.analyzeWithDeepSeek(item);
+      let analysis = null;
+      try {
+        analysis = await this.analyzeWithDeepSeek(item);
+      } catch (error) {
+        console.error('DeepSeek analysis failed, sending basic notification:', error);
+        analysis = null; // Will use fallback message
+      }
 
       // Format message with quotation request details
       const message = await this.formatNewItemMessage(item, quotationRequest, quotationItem, client, analysis);
@@ -459,7 +465,7 @@ class QortobaAnalysisBot {
     quotationRequest: any, 
     quotationItem: any, 
     client: any, 
-    analysis: string
+    analysis: string | null
   ): Promise<string> {
     let message = `🔔 بند جديد تم إضافته للنظام!\n\n`;
     
@@ -502,7 +508,13 @@ class QortobaAnalysisBot {
     }
     
     message += `\n${'='.repeat(30)}\n\n`;
-    message += `🤖 التحليل الذكي:\n\n${analysis}`;
+    
+    if (analysis) {
+      message += `🤖 التحليل الذكي:\n\n${analysis}`;
+    } else {
+      message += `📝 ملاحظة: تعذر تحليل البند بالذكاء الاصطناعي حاليًا\n`;
+      message += `💡 يمكنك طلب التحليل لاحقاً باستخدام الأمر: /analyze ${item.partNumber}`;
+    }
     
     return message;
   }
