@@ -469,6 +469,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: userId,
         status: "sent_for_pricing", // Automatically set to sent_for_pricing
       });
+
+      // Check for duplicate custom request number if provided
+      if (validatedData.customRequestNumber) {
+        console.log('🔍 Checking for duplicate custom request number:', validatedData.customRequestNumber);
+        
+        const existingQuotation = await storage.getQuotationByCustomNumber(validatedData.customRequestNumber);
+        if (existingQuotation) {
+          console.log('⚠️ Duplicate quotation found:', existingQuotation.id);
+          await logActivity(req, "duplicate_quotation_rejected", "quotation", existingQuotation.id, 
+            `رقم طلب التسعير ${validatedData.customRequestNumber} موجود مسبقاً`);
+          
+          return res.status(409).json({
+            message: "رقم طلب التسعير موجود مسبقاً",
+            error: "DUPLICATE_REQUEST_NUMBER",
+            existingQuotation: {
+              id: existingQuotation.id,
+              requestNumber: existingQuotation.requestNumber,
+              customRequestNumber: existingQuotation.customRequestNumber,
+              clientName: existingQuotation.clientName
+            },
+            redirectTo: `/quotations/${existingQuotation.id}`
+          });
+        }
+      }
       
       const quotation = await storage.createQuotationRequest(validatedData);
       await logActivity(req, "create_quotation", "quotation", quotation.id, `Created quotation: ${quotation.requestNumber}`);
@@ -477,10 +501,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const { telegramBot } = await import("./telegram-bot");
         
-        // Get items from the created quotation to analyze
-        if (quotation.items && quotation.items.length > 0) {
-          for (const item of quotation.items) {
-            await telegramBot.sendNewItemAnalysis(item.itemId);
+        // Get quotation items to analyze (after creation)
+        const quotationItems = await storage.getQuotationItems(quotation.id);
+        if (quotationItems && quotationItems.length > 0) {
+          for (const quotationItem of quotationItems) {
+            await telegramBot.sendNewItemAnalysis(quotationItem.itemId);
           }
         }
       } catch (error) {
@@ -804,6 +829,30 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
   app.post("/api/purchase-orders", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
     try {
+      // Check for duplicate PO number if provided
+      if (req.body.poNumber) {
+        console.log('🔍 Checking for duplicate PO number:', req.body.poNumber);
+        
+        const existingPO = await storage.getPurchaseOrderByNumber(req.body.poNumber);
+        if (existingPO) {
+          console.log('⚠️ Duplicate PO found:', existingPO.id);
+          await logActivity(req, "duplicate_po_rejected", "purchase_order", existingPO.id, 
+            `رقم أمر الشراء ${req.body.poNumber} موجود مسبقاً`);
+          
+          return res.status(409).json({
+            message: "رقم أمر الشراء موجود مسبقاً",
+            error: "DUPLICATE_PO_NUMBER",
+            existingPurchaseOrder: {
+              id: existingPO.id,
+              poNumber: existingPO.poNumber,
+              totalValue: existingPO.totalValue,
+              status: existingPO.status
+            },
+            redirectTo: `/purchase-orders/${existingPO.id}`
+          });
+        }
+      }
+
       // Transform the data to match schema requirements
       const poData = {
         poNumber: req.body.poNumber,

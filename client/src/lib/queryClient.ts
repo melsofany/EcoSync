@@ -9,6 +9,7 @@ async function throwIfResNotOk(res: Response) {
       const error = new Error(errorData.message || res.statusText);
       (error as any).status = res.status;
       (error as any).details = errorData.details;
+      (error as any).data = errorData; // Include full error data for duplicate handling
       (error as any).serverError = errorData;
       console.log("Created error object:", error);
       throw error;

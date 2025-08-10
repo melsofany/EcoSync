@@ -170,80 +170,110 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
         customRequestNumber: data.customRequestNumber,
       };
 
-      const quotationResponse = await apiRequest("POST", "/api/quotations", quotationData);
-      const quotation = await quotationResponse.json();
-
+      try {
+        const quotationResponse = await apiRequest("POST", "/api/quotations", quotationData);
+        const quotation = await quotationResponse.json();
+        return quotation;
+      } catch (error: any) {
+        // Handle duplicate request number error
+        if (error.status === 409 && error.data?.error === 'DUPLICATE_REQUEST_NUMBER') {
+          const duplicateData = error.data;
+          throw new Error(`رقم طلب التسعير "${data.customRequestNumber}" موجود مسبقاً للعميل "${duplicateData.existingQuotation.clientName}". سيتم إعادة توجيهك لتعديل الطلب الموجود.`);
+        }
+        throw error;
+      }
+    },
+    onSuccess: async (quotation, data) => {
       // Then create items and add them to the quotation
-      for (const itemData of data.items) {
-        // Try to create the item (will return existing item if duplicate)
-        let item;
-        try {
-          const itemResponse = await apiRequest("POST", "/api/items", {
-            description: itemData.description,
-            partNumber: itemData.partNumber || null,
-            lineItem: itemData.lineItem || null,
-            unit: itemData.unit,
-            category: itemData.category || null,
+      try {
+        for (const itemData of data.items) {
+          // Try to create the item (will return existing item if duplicate)
+          let item;
+          try {
+            const itemResponse = await apiRequest("POST", "/api/items", {
+              description: itemData.description,
+              partNumber: itemData.partNumber || null,
+              lineItem: itemData.lineItem || null,
+              unit: itemData.unit,
+              category: itemData.category || null,
+            });
+            item = await itemResponse.json();
+          } catch (error: any) {
+            // If it's a duplicate error, use the existing item
+            if (error.status === 409 && error.existingItem) {
+              // Find the existing item by part number
+              const itemsResponse = await apiRequest("GET", "/api/items");
+              const allItems = await itemsResponse.json();
+              item = allItems.find((i: any) => i.partNumber === itemData.partNumber);
+            } else {
+              throw error; // Re-throw if it's not a duplicate error
+            }
+          }
+
+          // Add item to quotation
+          await apiRequest("POST", `/api/quotations/${quotation.id}/items`, {
+            itemId: item.id,
+            quantity: itemData.quantity.toString(),
+            unitPrice: "0", // Will be filled by purchasing department
+            totalPrice: "0",
+            currency: "EGP",
           });
-          item = await itemResponse.json();
-        } catch (error: any) {
-          // If it's a duplicate error, use the existing item
-          if (error.status === 409 && error.existingItem) {
-            // Find the existing item by part number
-            const itemsResponse = await apiRequest("GET", "/api/items");
-            const allItems = await itemsResponse.json();
-            item = allItems.find((i: any) => i.partNumber === itemData.partNumber);
-          } else {
-            throw error; // Re-throw if it's not a duplicate error
+
+          // Trigger AI analysis for each item automatically
+          try {
+            await apiRequest("POST", "/api/items/ai-compare", {
+              description: itemData.description,
+              partNumber: itemData.partNumber || undefined,
+            });
+          } catch (aiError) {
+            console.log("AI analysis failed for item:", itemData.description);
+            // Continue with quotation creation even if AI fails
           }
         }
 
-        // Add item to quotation
-        await apiRequest("POST", `/api/quotations/${quotation.id}/items`, {
-          itemId: item.id,
-          quantity: itemData.quantity.toString(),
-          unitPrice: "0", // Will be filled by purchasing department
-          totalPrice: "0",
-          currency: "EGP",
+        // After creating quotation and items, send it for pricing automatically
+        await apiRequest("PATCH", `/api/quotations/${quotation.id}/status`, {
+          status: "sent_for_pricing"
         });
 
-        // Trigger AI analysis for each item automatically
+        queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+        toast({
+          title: "تم إرسال طلب التسعير",
+          description: `تم إنشاء وإرسال طلب التسعير ${quotation.requestNumber} للتسعير بنجاح مع ${data.items.length} بند`,
+        });
+        form.reset();
+        setAiAnalysisResults({});
+        setIsAnalyzing({});
+        onClose();
+      } catch (error: any) {
+        // If items creation fails, clean up the quotation
         try {
-          await apiRequest("POST", "/api/items/ai-compare", {
-            description: itemData.description,
-            partNumber: itemData.partNumber || undefined,
-          });
-        } catch (aiError) {
-          console.log("AI analysis failed for item:", itemData.description);
-          // Continue with quotation creation even if AI fails
+          await apiRequest("DELETE", `/api/quotations/${quotation.id}`);
+        } catch (cleanupError) {
+          console.error("Failed to cleanup quotation after item creation error:", cleanupError);
         }
+        throw error;
       }
-
-      // After creating quotation and items, send it for pricing automatically
-      await apiRequest("PATCH", `/api/quotations/${quotation.id}/status`, {
-        status: "sent_for_pricing"
-      });
-
-      return quotation;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/quotations"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
-      toast({
-        title: "تم إرسال طلب التسعير",
-        description: `تم إنشاء وإرسال طلب التسعير ${data.requestNumber} للتسعير بنجاح مع ${form.getValues("items").length} بند`,
-      });
-      form.reset();
-      setAiAnalysisResults({});
-      setIsAnalyzing({});
-      onClose();
     },
     onError: (error: any) => {
-      toast({
-        title: "خطأ في إنشاء طلب التسعير",
-        description: error.message || "حدث خطأ أثناء إنشاء طلب التسعير",
-        variant: "destructive",
-      });
+      console.error("Quotation creation error:", error);
+      
+      // Check if it's a duplicate error with redirect info
+      if (error.message.includes("سيتم إعادة توجيهك")) {
+        toast({
+          title: "رقم طلب التسعير مكرر",
+          description: error.message,
+          variant: "destructive",
+          duration: 8000,
+        });
+      } else {
+        toast({
+          title: "خطأ في إنشاء طلب التسعير",
+          description: error.message || "حدث خطأ أثناء إنشاء طلب التسعير",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -305,7 +335,7 @@ export default function EnhancedQuotationModal({ isOpen, onClose }: EnhancedQuot
                   <SelectContent>
                     {clients && Array.isArray(clients) && clients.map((client: any) => (
                       <SelectItem key={client.id} value={client.id}>
-                        {client.name}
+                        {String(client.name)}
                       </SelectItem>
                     ))}
                   </SelectContent>

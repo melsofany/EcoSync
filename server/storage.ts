@@ -74,6 +74,7 @@ export interface IStorage {
   getAllQuotationRequests(): Promise<QuotationRequest[]>;
   getQuotationRequest(id: string): Promise<QuotationRequest | undefined>;
   getQuotationById(id: string): Promise<QuotationRequest | undefined>;
+  getQuotationByCustomNumber(customNumber: string): Promise<QuotationRequest | undefined>;
   updateQuotationRequest(id: string, updates: Partial<QuotationRequest>): Promise<QuotationRequest | undefined>;
   deleteQuotation(id: string): Promise<void>;
   getNextRequestNumber(): Promise<string>;
@@ -108,6 +109,7 @@ export interface IStorage {
   createPurchaseOrder(po: InsertPurchaseOrder): Promise<PurchaseOrder>;
   getAllPurchaseOrders(): Promise<PurchaseOrder[]>;
   getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined>;
+  getPurchaseOrderByNumber(orderNumber: string): Promise<PurchaseOrder | undefined>;
   updatePurchaseOrder(id: string, updates: Partial<PurchaseOrder>): Promise<PurchaseOrder | undefined>;
   getNextPONumber(): Promise<string>;
 
@@ -403,6 +405,34 @@ export class DatabaseStorage implements IStorage {
       .from(quotationRequests)
       .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
       .where(eq(quotationRequests.id, id));
+    
+    return results[0] || undefined;
+  }
+
+  async getQuotationByCustomNumber(customNumber: string): Promise<any | undefined> {
+    const results = await db
+      .select({
+        id: quotationRequests.id,
+        requestNumber: quotationRequests.requestNumber,
+        clientId: quotationRequests.clientId,
+        requestDate: quotationRequests.requestDate,
+        expiryDate: quotationRequests.expiryDate,
+        status: quotationRequests.status,
+        responsibleEmployee: quotationRequests.responsibleEmployee,
+        customRequestNumber: quotationRequests.customRequestNumber,
+        notes: quotationRequests.notes,
+        createdAt: quotationRequests.createdAt,
+        createdBy: quotationRequests.createdBy,
+        updatedAt: quotationRequests.updatedAt,
+        // Client details
+        clientName: clients.name,
+        clientPhone: clients.phone,
+        clientEmail: clients.email,
+        clientAddress: clients.address,
+      })
+      .from(quotationRequests)
+      .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
+      .where(eq(quotationRequests.customRequestNumber, customNumber));
     
     return results[0] || undefined;
   }
@@ -720,6 +750,11 @@ export class DatabaseStorage implements IStorage {
 
   async getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined> {
     const [po] = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, id));
+    return po || undefined;
+  }
+
+  async getPurchaseOrderByNumber(orderNumber: string): Promise<PurchaseOrder | undefined> {
+    const [po] = await db.select().from(purchaseOrders).where(eq(purchaseOrders.poNumber, orderNumber));
     return po || undefined;
   }
 
