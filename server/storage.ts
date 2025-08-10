@@ -1460,10 +1460,14 @@ export class DatabaseStorage implements IStorage {
       console.log(`🎯 Total RFQ records: ${rfqData.length}`);
       console.log(`🎯 Total PO records: ${poData.length}`);
       
-      // Show ALL records INCLUDING ZERO QUANTITIES - NO FILTERING
-      const allResults = [...rfqData, ...poData];
+      // Filter out zero-price RFQ records (but keep zero quantities)
+      const filteredRfqData = rfqData.filter(row => 
+        row.record_type !== 'RFQ' || parseFloat(row.customer_price || '0') > 0
+      );
       
-      console.log(`✅ All records (including zero quantities): ${allResults.length}`);
+      const allResults = [...filteredRfqData, ...poData];
+      
+      console.log(`✅ Filtered records (excluding zero prices): RFQ=${filteredRfqData.length}, PO=${poData.length}, Total=${allResults.length}`);
       
       // Sort by date (RFQ date first, then PO date)
       allResults.sort((a, b) => {
