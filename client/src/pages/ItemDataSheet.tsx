@@ -230,15 +230,15 @@ export default function ItemDataSheet() {
         </Card>
       </div>
 
-      {/* جدول البيانات الموحد - شبيه بالإكسل */}
+      {/* جدول البيانات المترابطة - طلبات التسعير مع أوامر الشراء */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            بيانات البند الكاملة - {itemData.itemNumber}
+            بيانات البند الكاملة مع الربط - {itemData.itemNumber}
           </CardTitle>
           <p className="text-sm text-gray-600 mt-2">
-            📊 البيانات الحقيقية: {itemData.pricingRequests?.length || 0} طلب تسعير + {itemData.purchaseOrders?.length || 0} أمر شراء
+            📊 البيانات الحقيقية: {itemData.pricingRequests?.length || 0} طلب تسعير + {itemData.purchaseOrders?.length || 0} أمر شراء مرتبط
           </p>
         </CardHeader>
         <CardContent>
@@ -246,73 +246,112 @@ export default function ItemDataSheet() {
             <Table className="border">
               <TableHeader>
                 <TableRow className="bg-gray-100">
-                  <TableHead className="text-right border font-bold">النوع</TableHead>
-                  <TableHead className="text-right border font-bold">رقم المرجع</TableHead>
-                  <TableHead className="text-right border font-bold">العميل/المورد</TableHead>
-                  <TableHead className="text-right border font-bold">الكمية</TableHead>
-                  <TableHead className="text-right border font-bold">سعر الوحدة (جنيه)</TableHead>
-                  <TableHead className="text-right border font-bold">الإجمالي (جنيه)</TableHead>
-                  <TableHead className="text-right border font-bold">الحالة</TableHead>
-                  <TableHead className="text-right border font-bold">التاريخ</TableHead>
+                  <TableHead className="text-right border font-bold">طلب التسعير</TableHead>
+                  <TableHead className="text-right border font-bold">العميل</TableHead>
+                  <TableHead className="text-right border font-bold">الكمية المطلوبة</TableHead>
+                  <TableHead className="text-right border font-bold">سعر التسعير</TableHead>
+                  <TableHead className="text-right border font-bold">أمر الشراء المرتبط</TableHead>
+                  <TableHead className="text-right border font-bold">الكمية المشتراة</TableHead>
+                  <TableHead className="text-right border font-bold">سعر الشراء</TableHead>
+                  <TableHead className="text-right border font-bold">إجمالي الشراء</TableHead>
+                  <TableHead className="text-right border font-bold">حالة التنفيذ</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {/* طلبات التسعير */}
-                {itemData.pricingRequests?.map((req, index) => (
-                  <TableRow key={`rfq-${index}`} className="hover:bg-blue-50 border-b">
-                    <TableCell className="border bg-blue-50">
-                      <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                        📋 طلب تسعير
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="border font-mono text-blue-600 font-semibold">
-                      {req.requestNumber}
-                    </TableCell>
-                    <TableCell className="border">{req.clientName || 'عميل غير محدد'}</TableCell>
-                    <TableCell className="border text-center font-semibold">{req.quantity}</TableCell>
-                    <TableCell className="border text-left font-mono">
-                      {req.unitPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
-                    </TableCell>
-                    <TableCell className="border text-left font-mono font-bold text-blue-700">
-                      {(req.unitPrice * req.quantity).toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
-                    </TableCell>
-                    <TableCell className="border">
-                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                        في الانتظار
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="border text-sm">
-                      {req.supplierQuoteDate ? new Date(req.supplierQuoteDate).toLocaleDateString('ar-EG') : '2025-08-10'}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {/* عرض طلبات التسعير مع أوامر الشراء المرتبطة */}
+                {itemData.pricingRequests?.map((req, reqIndex) => {
+                  // البحث عن أوامر الشراء المرتبطة بنفس الكمية أو السعر تقريباً
+                  const relatedPOs = itemData.purchaseOrders?.filter(po => 
+                    Math.abs(po.unitPrice - req.unitPrice) < 500 || // نفس السعر تقريباً
+                    po.quantity === req.quantity // أو نفس الكمية
+                  ) || [];
+                  
+                  if (relatedPOs.length === 0) {
+                    // طلب تسعير بدون أمر شراء مرتبط
+                    return (
+                      <TableRow key={`rfq-${reqIndex}`} className="hover:bg-blue-50 border-b">
+                        <TableCell className="border font-mono text-blue-600 font-semibold bg-blue-50">
+                          {req.requestNumber}
+                        </TableCell>
+                        <TableCell className="border bg-blue-50">{req.clientName || 'عميل غير محدد'}</TableCell>
+                        <TableCell className="border text-center font-semibold bg-blue-50">{req.quantity}</TableCell>
+                        <TableCell className="border text-left font-mono bg-blue-50">
+                          {req.unitPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="border text-center text-gray-500 bg-gray-50" colSpan={4}>
+                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                            لم يصدر أمر شراء بعد
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  
+                  // طلب تسعير مع أوامر شراء مرتبطة
+                  return relatedPOs.map((po, poIndex) => (
+                    <TableRow key={`rfq-${reqIndex}-po-${poIndex}`} className="hover:bg-green-50 border-b">
+                      {poIndex === 0 && (
+                        <>
+                          <TableCell className="border font-mono text-blue-600 font-semibold bg-blue-50" rowSpan={relatedPOs.length}>
+                            {req.requestNumber}
+                          </TableCell>
+                          <TableCell className="border bg-blue-50" rowSpan={relatedPOs.length}>
+                            {req.clientName || 'عميل غير محدد'}
+                          </TableCell>
+                          <TableCell className="border text-center font-semibold bg-blue-50" rowSpan={relatedPOs.length}>
+                            {req.quantity}
+                          </TableCell>
+                          <TableCell className="border text-left font-mono bg-blue-50" rowSpan={relatedPOs.length}>
+                            {req.unitPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                          </TableCell>
+                        </>
+                      )}
+                      <TableCell className="border font-mono text-green-600 font-semibold bg-green-50">
+                        {po.poNumber}
+                      </TableCell>
+                      <TableCell className="border text-center font-semibold bg-green-50">{po.quantity}</TableCell>
+                      <TableCell className="border text-left font-mono bg-green-50">
+                        {po.unitPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="border text-left font-mono font-bold text-green-700 bg-green-50">
+                        {po.totalPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
+                      </TableCell>
+                      <TableCell className="border bg-green-50">
+                        <Badge variant="default" className="bg-green-600 text-white">
+                          {po.status === 'delivered' ? '✅ تم التسليم' : po.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ));
+                })}
                 
-                {/* أوامر الشراء */}
-                {itemData.purchaseOrders?.map((po, index) => (
-                  <TableRow key={`po-${index}`} className="hover:bg-green-50 border-b">
-                    <TableCell className="border bg-green-50">
-                      <Badge variant="outline" className="bg-green-100 text-green-800">
-                        🛒 أمر شراء
+                {/* أوامر الشراء غير المرتبطة بطلبات تسعير */}
+                {itemData.purchaseOrders?.filter(po => {
+                  const isLinked = itemData.pricingRequests?.some(req => 
+                    Math.abs(po.unitPrice - req.unitPrice) < 500 || po.quantity === req.quantity
+                  );
+                  return !isLinked;
+                }).map((po, index) => (
+                  <TableRow key={`unlinked-po-${index}`} className="hover:bg-gray-50 border-b">
+                    <TableCell className="border text-center text-gray-500 bg-gray-50" colSpan={4}>
+                      <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                        أمر شراء مباشر (بدون طلب تسعير)
                       </Badge>
                     </TableCell>
-                    <TableCell className="border font-mono text-green-600 font-semibold">
+                    <TableCell className="border font-mono text-green-600 font-semibold bg-green-50">
                       {po.poNumber}
                     </TableCell>
-                    <TableCell className="border">مورد معتمد</TableCell>
-                    <TableCell className="border text-center font-semibold">{po.quantity}</TableCell>
-                    <TableCell className="border text-left font-mono">
+                    <TableCell className="border text-center font-semibold bg-green-50">{po.quantity}</TableCell>
+                    <TableCell className="border text-left font-mono bg-green-50">
                       {po.unitPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
                     </TableCell>
-                    <TableCell className="border text-left font-mono font-bold text-green-700">
+                    <TableCell className="border text-left font-mono font-bold text-green-700 bg-green-50">
                       {po.totalPrice.toLocaleString('ar-EG', { minimumFractionDigits: 2 })}
                     </TableCell>
-                    <TableCell className="border">
+                    <TableCell className="border bg-green-50">
                       <Badge variant="default" className="bg-green-600 text-white">
                         {po.status === 'delivered' ? '✅ تم التسليم' : po.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="border text-sm">
-                      {po.orderDate ? new Date(po.orderDate).toLocaleDateString('ar-EG') : '2025-08-03'}
                     </TableCell>
                   </TableRow>
                 ))}
