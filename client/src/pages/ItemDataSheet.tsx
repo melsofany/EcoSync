@@ -62,7 +62,7 @@ export default function ItemDataSheet() {
     enabled: !!itemId,
   });
 
-  // Transform raw data to expected format
+  // Transform raw data to expected format - SHOW ALL RECORDS INCLUDING ZEROS
   const itemData: ItemData | null = rawData ? (() => {
     if (rawData.length === 0) return null;
     
@@ -70,22 +70,24 @@ export default function ItemDataSheet() {
     const rfqRows = rawData.filter(row => row.record_type === 'RFQ');
     const poRows = rawData.filter(row => row.record_type === 'PO');
     
+    console.log(`🔍 Data transformation: ${rfqRows.length} RFQ rows, ${poRows.length} PO rows from ${rawData.length} total`);
+    
     return {
       id: itemId || '',
       itemNumber: firstRow.item_id,
       description: firstRow.description,
       partNumber: firstRow.part_no,
-      pricingRequests: rfqRows.map(row => ({
-        quotationId: row.rfq_number,
+      pricingRequests: rfqRows.map((row, index) => ({
+        quotationId: row.rfq_number + '_' + index, // Make unique
         requestNumber: row.rfq_number,
         clientName: row.client_name,
-        quantity: row.rfq_qty || 0,
+        quantity: Number(row.rfq_qty) || 0, // Ensure number type
         unitPrice: parseFloat(row.customer_price) || 0,
         supplierQuoteDate: row.rfq_date,
         currency: 'EGP'
       })),
-      purchaseOrders: poRows.map(row => ({
-        poId: row.po_number,
+      purchaseOrders: poRows.map((row, index) => ({
+        poId: row.po_number + '_' + index, // Make unique
         poNumber: row.po_number,
         quantity: parseInt(row.po_quantity) || 0,
         unitPrice: parseFloat(row.po_price) || 0,
@@ -238,8 +240,11 @@ export default function ItemDataSheet() {
             بيانات البند الكاملة مع الربط - {itemData.itemNumber}
           </CardTitle>
           <p className="text-sm text-gray-600 mt-2">
-            📊 البيانات الحقيقية: {itemData.pricingRequests?.length || 0} طلب تسعير + {itemData.purchaseOrders?.length || 0} أمر شراء مرتبط
+            📊 البيانات الحقيقية: {itemData.pricingRequests?.length || 0} سجل طلب تسعير + {itemData.purchaseOrders?.length || 0} سجل أمر شراء
           </p>
+          <div className="text-xs text-gray-500 mt-1">
+            ملاحظة: كل طلب تسعير قد يحتوي على عدة كميات مختلفة، لذلك يظهر كسجلات منفصلة
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
