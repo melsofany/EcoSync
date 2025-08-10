@@ -1830,7 +1830,8 @@ export class DatabaseStorage implements IStorage {
       // Method 2: Get purchase orders that directly contain this item through purchaseOrderItems
       const directPOs = await db
         .select({
-          id: purchaseOrders.id,
+          id: sql<string>`CONCAT(${purchaseOrders.id}, '-', ${purchaseOrderItems.id})`,
+          poId: purchaseOrders.id,
           poNumber: purchaseOrders.poNumber,
           quotationNumber: purchaseOrders.quotationNumber,
           supplierName: suppliers.name,
@@ -1849,28 +1850,19 @@ export class DatabaseStorage implements IStorage {
         .innerJoin(purchaseOrders, eq(purchaseOrderItems.poId, purchaseOrders.id))
         .leftJoin(suppliers, eq(purchaseOrders.supplierId, suppliers.id))
         .where(eq(purchaseOrderItems.itemId, itemId))
-        .orderBy(desc(purchaseOrders.orderDate));
+        .orderBy(desc(purchaseOrders.orderDate), purchaseOrders.poNumber);
 
-      // Combine and deduplicate results
-      const allPOs = [...quotationBasedPOs, ...directPOs];
-      const uniquePOs = allPOs.reduce((acc, current) => {
-        const existing = acc.find(po => po.id === current.id);
-        if (!existing) {
-          acc.push(current);
-        } else if (current.source === 'direct' && existing.source === 'quotation') {
-          // Prefer direct PO data as it has actual quantities and prices
-          const index = acc.findIndex(po => po.id === current.id);
-          acc[index] = current;
-        }
-        return acc;
-      }, [] as any[]);
+      // For direct POs, each line item should be shown as a separate record
+      // No deduplication needed as each record represents a separate line item
+      const allPORecords = directPOs; // Use only direct POs for now to show all line items
 
       console.log('Found quotation-based purchase orders:', quotationBasedPOs.length);
-      console.log('Found direct purchase orders:', directPOs.length);
-      console.log('Total unique purchase orders:', uniquePOs.length);
+      console.log('Found direct purchase orders (line items):', directPOs.length);
+      console.log('Total PO records to display:', allPORecords.length);
       
-      return uniquePOs.map(result => ({
+      return allPORecords.map(result => ({
         id: result.id,
+        poId: result.poId,
         poNumber: result.poNumber,
         quotationNumber: result.quotationNumber,
         supplierName: result.supplierName || 'مورد غير محدد',
