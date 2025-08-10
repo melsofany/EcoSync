@@ -2543,7 +2543,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  app.get("/api/telegram/status", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+  app.get("/api/telegram/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       const { telegramBot } = await import("./telegram-bot");
       const status = await telegramBot.getBotStatus();
@@ -2551,6 +2551,29 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     } catch (error) {
       console.error("Telegram status error:", error);
       res.status(500).json({ message: "خطأ في حالة البوت" });
+    }
+  });
+
+  // Update user telegram ID (IT admin only)
+  app.patch("/api/users/:userId", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { telegramUserId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: "معرف المستخدم مطلوب" });
+      }
+
+      await storage.updateUser(userId, { telegramUserId });
+      
+      // Reload authorized users in bot
+      const { telegramBot } = await import("./telegram-bot");
+      await telegramBot.reloadAuthorizedUsers();
+      
+      res.json({ message: "تم تحديث معرف تليجرام بنجاح" });
+    } catch (error) {
+      console.error("Update telegram user ID error:", error);
+      res.status(500).json({ message: "خطأ في تحديث معرف تليجرام" });
     }
   });
 

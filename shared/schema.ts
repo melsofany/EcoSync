@@ -19,6 +19,7 @@ export const users = pgTable("users", {
   lastLoginAt: timestamp("last_login_at"),
   lastActivityAt: timestamp("last_activity_at"),
   ipAddress: text("ip_address"),
+  telegramUserId: text("telegram_user_id"), // Telegram user ID for bot access
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

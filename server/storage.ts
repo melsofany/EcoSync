@@ -236,6 +236,15 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId));
   }
 
+  async updateUser(id: string, data: any): Promise<User | undefined> {
+    const updateData = { ...data };
+    if (updateData.updatedAt === undefined) {
+      updateData.updatedAt = new Date();
+    }
+    const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning();
+    return user || undefined;
+  }
+
   // Password reset token operations
   async createPasswordResetToken(data: { userId: string; token: string; email: string; expiresAt: Date }): Promise<void> {
     await db.insert(passwordResetTokens).values(data);

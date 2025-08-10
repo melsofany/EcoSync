@@ -122,7 +122,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       title: "بوت تليجرام",
       href: "/telegram-bot",
       icon: Bot,
-      section: "telegram_bot",
+      section: "admin",
     },
   ];
 

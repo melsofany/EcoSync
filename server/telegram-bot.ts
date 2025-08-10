@@ -5,9 +5,8 @@ import { eq } from 'drizzle-orm';
 
 // Configuration
 const TELEGRAM_BOT_TOKEN = '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
-const AUTHORIZED_USERS = [
-  // Add authorized Telegram user IDs here
-  // Example: 123456789, 987654321
+let AUTHORIZED_USERS: number[] = [
+  // Will be loaded from database
 ];
 
 // DeepSeek API configuration
@@ -24,12 +23,12 @@ class QortobaAnalysisBot {
 
   private setupHandlers() {
     // Start command
-    this.bot.onText(/\/start/, (msg) => {
+    this.bot.onText(/\/start/, async (msg) => {
       const chatId = msg.chat.id;
       const userId = msg.from?.id;
       
-      if (!this.isAuthorizedUser(userId)) {
-        this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
+      if (!(await this.isAuthorizedUser(userId))) {
+        this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت\nيجب أن تكون مدير تقنية معلومات مخول');
         return;
       }
       
@@ -50,7 +49,7 @@ class QortobaAnalysisBot {
       const chatId = msg.chat.id;
       const userId = msg.from?.id;
       
-      if (!this.isAuthorizedUser(userId)) {
+      if (!(await this.isAuthorizedUser(userId))) {
         this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
         return;
       }
@@ -63,7 +62,7 @@ class QortobaAnalysisBot {
       const chatId = msg.chat.id;
       const userId = msg.from?.id;
       
-      if (!this.isAuthorizedUser(userId)) {
+      if (!(await this.isAuthorizedUser(userId))) {
         this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
         return;
       }
@@ -79,7 +78,7 @@ class QortobaAnalysisBot {
       const chatId = msg.chat.id;
       const userId = msg.from?.id;
       
-      if (!this.isAuthorizedUser(userId)) {
+      if (!(await this.isAuthorizedUser(userId))) {
         this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
         return;
       }
@@ -88,10 +87,33 @@ class QortobaAnalysisBot {
     });
   }
 
-  private isAuthorizedUser(userId?: number): boolean {
+  private async isAuthorizedUser(userId?: number): Promise<boolean> {
     if (!userId) return false;
-    // For now, allow all users - you can restrict by adding IDs to AUTHORIZED_USERS
-    return true; // Change to: AUTHORIZED_USERS.includes(userId);
+    
+    // Load authorized users from database if empty
+    if (AUTHORIZED_USERS.length === 0) {
+      await this.loadAuthorizedUsers();
+    }
+    
+    return AUTHORIZED_USERS.includes(userId);
+  }
+
+  private async loadAuthorizedUsers() {
+    try {
+      const { users } = await import('../shared/schema');
+      const authorizedUsers = await db
+        .select({ telegramUserId: users.telegramUserId })
+        .from(users)
+        .where(eq(users.role, 'it_admin'));
+      
+      AUTHORIZED_USERS = authorizedUsers
+        .filter(user => user.telegramUserId)
+        .map(user => parseInt(user.telegramUserId!));
+      
+      console.log('📱 [TELEGRAM BOT] Loaded authorized users:', AUTHORIZED_USERS.length);
+    } catch (error) {
+      console.error('Error loading authorized users:', error);
+    }
   }
 
   async sendLatestQuotations(chatId: number) {
@@ -340,6 +362,12 @@ class QortobaAnalysisBot {
         deepseek_configured: !!DEEPSEEK_API_KEY
       };
     }
+  }
+
+  // Add method to reload authorized users
+  async reloadAuthorizedUsers() {
+    AUTHORIZED_USERS = []; // Clear current list
+    await this.loadAuthorizedUsers();
   }
 
   private async formatNewItemMessage(item: any, analysis: string): Promise<string> {

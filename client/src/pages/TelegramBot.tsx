@@ -6,8 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Send, CheckCircle, XCircle, Users, MessageSquare, Settings } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Bot, Send, CheckCircle, XCircle, Users, MessageSquare, Settings, UserPlus, Edit, Trash2 } from "lucide-react";
 
 interface BotStatus {
   status: string;
@@ -18,16 +21,50 @@ interface BotStatus {
   error?: string;
 }
 
+interface User {
+  id: string;
+  fullName: string;
+  username: string;
+  role: string;
+  telegramUserId?: string;
+}
+
 export default function TelegramBot() {
   const [testItemId, setTestItemId] = useState("");
   const [testPartNumber, setTestPartNumber] = useState("");
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [telegramUserId, setTelegramUserId] = useState("");
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
+
+  // Check if current user is IT admin
+  if (currentUser?.role !== 'it_admin') {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">وصول مقيد</h2>
+              <p className="text-gray-600">هذه الصفحة متاحة لمديري تقنية المعلومات فقط</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Get bot status
   const { data: botStatus, isLoading: statusLoading } = useQuery<BotStatus>({
     queryKey: ["/api/telegram/status"],
     refetchInterval: 10000 // Refresh every 10 seconds
+  });
+
+  // Get IT admin users
+  const { data: users, isLoading: usersLoading } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+    select: (data: any[]) => data.filter(user => user.role === 'it_admin')
   });
 
   // Test analysis mutation
@@ -57,6 +94,47 @@ export default function TelegramBot() {
       });
     },
   });
+
+  // Update user telegram ID mutation
+  const updateTelegramUserMutation = useMutation({
+    mutationFn: async ({ userId, telegramUserId }: { userId: string; telegramUserId: string }) => {
+      const response = await fetch(`/api/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telegramUserId }),
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "✅ تم التحديث",
+        description: "تم تحديث معرف تليجرام بنجاح",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/telegram/status"] });
+      setEditingUser(null);
+      setTelegramUserId("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ خطأ",
+        description: error.message || "فشل في تحديث معرف تليجرام",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveTelegramId = () => {
+    if (editingUser && telegramUserId.trim()) {
+      updateTelegramUserMutation.mutate({
+        userId: editingUser.id,
+        telegramUserId: telegramUserId.trim()
+      });
+    }
+  };
 
   const getStatusBadge = (status?: string) => {
     if (!status) return <Badge variant="secondary">غير محدد</Badge>;
@@ -253,6 +331,136 @@ export default function TelegramBot() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Authorized Users Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            إدارة المستخدمين المخولين
+          </CardTitle>
+          <CardDescription>
+            مديرو تقنية المعلومات المخولين لاستخدام البوت
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {usersLoading ? (
+            <div className="space-y-2">
+              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>الاسم الكامل</TableHead>
+                  <TableHead>اسم المستخدم</TableHead>
+                  <TableHead>معرف تليجرام</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead>الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users?.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.fullName}</TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>
+                      {user.telegramUserId ? (
+                        <Badge variant="outline">{user.telegramUserId}</Badge>
+                      ) : (
+                        <Badge variant="secondary">غير محدد</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {user.telegramUserId ? (
+                        <Badge className="bg-green-100 text-green-800">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          مفعل
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive">
+                          <XCircle className="h-3 w-3 mr-1" />
+                          غير مفعل
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingUser(user);
+                              setTelegramUserId(user.telegramUserId || "");
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            تعديل
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>تحديث معرف تليجرام</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4 mt-4">
+                            <div>
+                              <Label htmlFor="userInfo">المستخدم</Label>
+                              <div className="mt-1 p-2 bg-gray-50 rounded border">
+                                <strong>{editingUser?.fullName}</strong> ({editingUser?.username})
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="telegramId">معرف تليجرام (User ID)</Label>
+                              <Input
+                                id="telegramId"
+                                value={telegramUserId}
+                                onChange={(e) => setTelegramUserId(e.target.value)}
+                                placeholder="123456789"
+                                type="number"
+                              />
+                              <p className="text-xs text-gray-500 mt-1">
+                                يمكن الحصول على المعرف عبر البوت @userinfobot في تليجرام
+                              </p>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={handleSaveTelegramId}
+                                disabled={!telegramUserId.trim() || updateTelegramUserMutation.isPending}
+                              >
+                                {updateTelegramUserMutation.isPending ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    جاري الحفظ...
+                                  </>
+                                ) : (
+                                  "حفظ"
+                                )}
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => {
+                                  setEditingUser(null);
+                                  setTelegramUserId("");
+                                }}
+                              >
+                                إلغاء
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Instructions Card */}
       <Card>
