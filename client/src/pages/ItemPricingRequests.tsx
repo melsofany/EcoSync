@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ArrowLeft, DollarSign, Eye, FileText, Calendar, User, Building2, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from 'date-fns';
+import { ar } from 'date-fns/locale';
 
 interface PricingRequest {
   id: string;
