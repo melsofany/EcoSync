@@ -241,10 +241,10 @@ export async function runAutomaticUnification(): Promise<{
       errors: []
     };
   } catch (error) {
-    console.error('❌ خطأ في التوحيد التلقائي:', error);
+    console.error('❌ خطأ في التوحيد التلقائي:', error as Error);
     return {
       itemsUnified: 0,
-      errors: [error.message]
+      errors: [(error as Error).message]
     };
   }
 }
