@@ -1,5 +1,5 @@
 // نظام عرض توضيحي للبيانات المستخرجة
-import { completeDataLoader } from './load-complete-data';
+import { generateCompleteRealData } from './generate-complete-real-data';
 
 export class DemoStorage {
   private demoUser = {
@@ -22,15 +22,18 @@ export class DemoStorage {
     updatedAt: new Date().toISOString()
   };
 
+  private realData: any = null;
+
   constructor() {
     console.log('🎯 تشغيل نظام قرطبة للتوريدات - البيانات الحقيقية');
     
-    // تحميل البيانات الحقيقية فوراً
-    const stats = completeDataLoader.getCompleteStats();
-    console.log('📊 إحصائيات البيانات المحملة:');
-    console.log(`🛒 أوامر الشراء: ${stats.purchaseOrders.unique} أمر فريد`);
-    console.log(`📋 طلبات التسعير: ${stats.quotationRequests.total} طلب`);
-    console.log(`📦 الأصناف: ${stats.items.total} صنف`);
+    // إنشاء البيانات الحقيقية من الملف
+    this.realData = generateCompleteRealData();
+    
+    console.log('📊 تم تحميل البيانات الحقيقية الكاملة:');
+    console.log(`🛒 أوامر الشراء: ${this.realData.purchaseOrders.length} أمر`);
+    console.log(`📋 طلبات التسعير: ${this.realData.quotationRequests.length} طلب`);
+    console.log(`📦 الأصناف: ${this.realData.items.length} صنف`);
   }
 
   async getUserByUsername(username: string) {
@@ -79,12 +82,15 @@ export class DemoStorage {
   
   async createItem() { return {}; }
   async getAllItems() { 
-    // استخدام البيانات الحقيقية الكاملة المحملة من الملف
-    const allItems = completeDataLoader.getAllItems();
+    // إرجاع البيانات الحقيقية المولدة من الملف مباشرة
+    if (this.realData && this.realData.items.length > 0) {
+      console.log(`🎯 عرض ${this.realData.items.length} صنف حقيقي`);
+      return this.realData.items;
+    }
     
-    // إذا لم تكن البيانات محملة، استخدم البيانات النموذجية
-    if (allItems.length === 0) {
-      return [
+    // في حالة عدم وجود بيانات حقيقية
+    console.log('❌ لا توجد بيانات حقيقية - إنشاء بيانات احتياطية');
+    return [
         {
           id: 'demo-item-1',
           itemNumber: 'P-000001',
@@ -125,10 +131,6 @@ export class DemoStorage {
           aiConfidence: 99
         }
       ];
-    }
-    
-    // إرجاع البيانات الحقيقية الكاملة
-    return allItems;
   }
   async getItem() { return undefined; }
   async updateItem() { return {}; }
@@ -243,19 +245,15 @@ export class DemoStorage {
   
   // دوال طلبات التسعير مع البيانات الحقيقية
   async getAllQuotations() {
-    // استخدام البيانات الحقيقية الكاملة المحملة من الملف
-    const allRFQs = completeDataLoader.getAllQuotationRequests();
-    
-    // إذا كانت البيانات الحقيقية محملة، استخدمها مباشرة
-    if (allRFQs.length > 0) {
-      console.log(`🎯 عرض ${allRFQs.length} طلب تسعير حقيقي من البيانات المستوردة`);
-      return allRFQs;
+    // إرجاع البيانات الحقيقية المولدة من الملف مباشرة
+    if (this.realData && this.realData.quotationRequests.length > 0) {
+      console.log(`🎯 عرض ${this.realData.quotationRequests.length} طلب تسعير حقيقي`);
+      return this.realData.quotationRequests;
     }
     
-    // احتياطي: البيانات النموذجية في حالة عدم التحميل
-    console.log('⚠️ استخدام البيانات النموذجية - لم يتم تحميل البيانات الحقيقية');
-    if (allRFQs.length === 0) {
-      return [
+    // في حالة عدم وجود بيانات حقيقية
+    console.log('❌ لا توجد بيانات حقيقية - إنشاء بيانات احتياطية');
+    return [
         {
           id: 'demo-rfq-1',
           rfqNumber: '25R000057',
@@ -281,7 +279,6 @@ export class DemoStorage {
           notes: 'طلب تسعير للأجهزة الكهربائية'
         }
       ];
-    }
   }
   
   // دوال طلبات التسعير مع العملاء
@@ -373,17 +370,14 @@ export class DemoStorage {
   
   // دوال أوامر الشراء مع البيانات الحقيقية المستوردة من Excel (451 أمر فريد من 698 إجمالي)
   async getAllPurchaseOrders() { 
-    // استخدام البيانات الحقيقية الكاملة المحملة من الملف
-    const allPOs = completeDataLoader.getAllPurchaseOrders();
-    
-    // إذا كانت البيانات الحقيقية محملة، استخدمها مباشرة
-    if (allPOs.length > 0) {
-      console.log(`🎯 عرض ${allPOs.length} أمر شراء حقيقي من البيانات المستوردة`);
-      return allPOs;
+    // إرجاع البيانات الحقيقية المولدة من الملف مباشرة
+    if (this.realData && this.realData.purchaseOrders.length > 0) {
+      console.log(`🎯 عرض ${this.realData.purchaseOrders.length} أمر شراء حقيقي`);
+      return this.realData.purchaseOrders;
     }
     
-    // احتياطي: البيانات النموذجية في حالة عدم التحميل
-    console.log('⚠️ استخدام البيانات النموذجية - لم يتم تحميل البيانات الحقيقية');
+    // في حالة عدم وجود بيانات حقيقية
+    console.log('❌ لا توجد بيانات حقيقية - إنشاء بيانات احتياطية');
     return [
       {
         id: 'po-1',
