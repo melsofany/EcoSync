@@ -3,8 +3,8 @@ export class DemoStorage {
   private demoUser = {
     id: 'demo-admin-1',
     username: 'admin',
-    password: '$2b$10$8K1p/a0dL2LT1Z7xaOEWteEhqvqGdqC8.3ZMj0CQCdGGWyLQ1W9zK', // admin123
-    full_name: 'مدير النظام - نسخة تجريبية',
+    password: '$2b$10$uvaNpzImqUgJ0sVnTT.uRORgXa2lpiC4E2gJBvnO/54G1kmiox0i2', // admin123
+    fullName: 'مدير النظام - نسخة تجريبية',
     email: 'admin@demo.com',
     role: 'manager',
     permissions: {
@@ -15,9 +15,9 @@ export class DemoStorage {
       manage_users: { view: true, create: true, edit: true, delete: true },
       manage_data_import: { view: true, create: true, edit: true, delete: true }
     },
-    is_active: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
   constructor() {
