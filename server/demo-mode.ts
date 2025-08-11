@@ -1,5 +1,6 @@
 // نظام عرض توضيحي للبيانات المستخرجة
 import { generateCompleteRealData } from './generate-complete-real-data';
+import { googleSheetsStorage } from './google-sheets-storage';
 
 export class DemoStorage {
   private demoUser = {
@@ -25,7 +26,7 @@ export class DemoStorage {
   private realData: any = null;
 
   constructor() {
-    console.log('🎯 تشغيل نظام قرطبة للتوريدات - البيانات الحقيقية');
+    console.log('🎯 تشغيل نظام قرطبة للتوريدات - البيانات الحقيقية مع Google Sheets');
     
     // إنشاء البيانات الحقيقية من الملف
     this.realData = generateCompleteRealData();
@@ -34,6 +35,30 @@ export class DemoStorage {
     console.log(`🛒 أوامر الشراء: ${this.realData.purchaseOrders.length} أمر`);
     console.log(`📋 طلبات التسعير: ${this.realData.quotationRequests.length} طلب`);
     console.log(`📦 الأصناف: ${this.realData.items.length} صنف`);
+    
+    // حفظ البيانات في Google Sheets
+    this.syncToGoogleSheets();
+  }
+
+  // مزامنة البيانات مع Google Sheets
+  private async syncToGoogleSheets() {
+    try {
+      console.log('🔄 مزامنة البيانات مع Google Sheets...');
+      
+      // تهيئة Google Sheets
+      await googleSheetsStorage.initializeSheets();
+      
+      // حفظ جميع البيانات
+      await Promise.all([
+        googleSheetsStorage.savePurchaseOrders(this.realData.purchaseOrders),
+        googleSheetsStorage.saveQuotationRequests(this.realData.quotationRequests),
+        googleSheetsStorage.saveItems(this.realData.items)
+      ]);
+      
+      console.log('✅ تم مزامنة البيانات مع Google Sheets بنجاح');
+    } catch (error) {
+      console.log('⚠️ مزامنة Google Sheets معطلة - يتطلب إعداد المفاتيح');
+    }
   }
 
   async getUserByUsername(username: string) {
