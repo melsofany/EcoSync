@@ -367,6 +367,68 @@ export class DemoStorage {
   async getAdvancedItemSearch() { return []; }
   async getAdvancedQuotationSearch() { return []; }
   async getAdvancedPurchaseOrderSearch() { return []; }
+  
+  // دوال أوامر الشراء المفقودة
+  async getPurchaseOrderItems(poId: string) {
+    if (poId === 'po-1') {
+      return [
+        {
+          id: 'po-item-1',
+          itemId: 'demo-item-1',
+          itemNumber: 'P-000001',
+          lineItem: '1854.014.CARIER.7506',
+          partNumber: 'CARRIER-7506',
+          description: 'LEFT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
+          quantity: 2,
+          unitPrice: 225,
+          totalPrice: 450,
+          uom: 'EACH'
+        }
+      ];
+    }
+    if (poId === 'po-2') {
+      return [
+        {
+          id: 'po-item-2',
+          itemId: 'demo-item-2',
+          itemNumber: 'P-000002',
+          lineItem: '1854.014.CARIER.7507',
+          partNumber: 'CARRIER-7507',
+          description: 'RIGHT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
+          quantity: 5,
+          unitPrice: 350,
+          totalPrice: 1750,
+          uom: 'EACH'
+        }
+      ];
+    }
+    return [];
+  }
+  
+  async getPurchaseOrder(id: string) {
+    const orders = await this.getAllPurchaseOrders();
+    return orders.find(po => po.id === id);
+  }
+  
+  async createPurchaseOrder(data: any) {
+    return {
+      id: 'po-' + Date.now(),
+      ...data,
+      createdAt: new Date().toISOString()
+    };
+  }
+  
+  async updatePurchaseOrder(id: string, data: any) {
+    return {
+      id,
+      ...data,
+      updatedAt: new Date().toISOString()
+    };
+  }
+  
+  async deletePurchaseOrder(id: string) {
+    return;
+  }
   async getTopSuppliers() { return []; }
   async getMonthlyStats() { return []; }
   async backupDatabase() { return ''; }
