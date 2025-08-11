@@ -91,17 +91,17 @@ async function processImportData() {
   try {
     console.log('🚀 بدء الاستيراد مع عمود الوحدات...');
     
-    // قراءة البيانات النهائية مع التوصيفات الحقيقية
-    const finalDataPath = './attached_assets/final_import_data_5449.json';
-    if (!fs.existsSync(finalDataPath)) {
-      console.log('⚠️ ملف البيانات النهائي غير موجود، استخدام البيانات النظيفة...');
-      const cleanDataPath = './attached_assets/clean_import_data_5449.json';
-      if (!fs.existsSync(cleanDataPath)) {
+    // قراءة البيانات النهائية مع أرقام RFQ الحقيقية
+    const finalRFQDataPath = './attached_assets/final_import_with_rfq_5449.json';
+    if (!fs.existsSync(finalRFQDataPath)) {
+      console.log('⚠️ ملف البيانات مع RFQ غير موجود، استخدام البيانات الأساسية...');
+      const finalDataPath = './attached_assets/final_import_data_5449.json';
+      if (!fs.existsSync(finalDataPath)) {
         throw new Error('ملف البيانات غير موجود');
       }
-      var excelData = JSON.parse(fs.readFileSync(cleanDataPath, 'utf8'));
-    } else {
       var excelData = JSON.parse(fs.readFileSync(finalDataPath, 'utf8'));
+    } else {
+      var excelData = JSON.parse(fs.readFileSync(finalRFQDataPath, 'utf8'));
     }
     console.log(`📊 تم تحميل ${excelData.length} صف من البيانات`);
     
