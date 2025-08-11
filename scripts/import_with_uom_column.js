@@ -91,18 +91,13 @@ async function processImportData() {
   try {
     console.log('🚀 بدء الاستيراد مع عمود الوحدات...');
     
-    // قراءة البيانات النهائية مع أرقام RFQ الحقيقية
-    const finalRFQDataPath = './attached_assets/final_import_with_rfq_5449.json';
-    if (!fs.existsSync(finalRFQDataPath)) {
-      console.log('⚠️ ملف البيانات مع RFQ غير موجود، استخدام البيانات الأساسية...');
-      const finalDataPath = './attached_assets/final_import_data_5449.json';
-      if (!fs.existsSync(finalDataPath)) {
-        throw new Error('ملف البيانات غير موجود');
-      }
-      var excelData = JSON.parse(fs.readFileSync(finalDataPath, 'utf8'));
-    } else {
-      var excelData = JSON.parse(fs.readFileSync(finalRFQDataPath, 'utf8'));
+    // قراءة البيانات الأصلية مع الأرقام الحقيقية
+    const authenticDataPath = './attached_assets/authentic_import_data_5449.json';
+    if (!fs.existsSync(authenticDataPath)) {
+      throw new Error('ملف البيانات الأصلية غير موجود. يرجى تشغيل extract_real_rfq_numbers.js أولاً');
     }
+    
+    const excelData = JSON.parse(fs.readFileSync(authenticDataPath, 'utf8'));
     console.log(`📊 تم تحميل ${excelData.length} صف من البيانات`);
     
     // إحصائيات الاستيراد
@@ -130,10 +125,10 @@ async function processImportData() {
         const quantity = parseFloat(row['C']) || 0; // الكمية
         const unitPrice = parseFloat(row['D']) || 0; // سعر الوحدة
         
-        // التواريخ من الأعمدة المحددة
-        const rfqDate = parseExcelDate(row['G']); // عمود G - تاريخ RFQ
-        const poDate = parseExcelDate(row['M']);  // عمود M - تاريخ PO
-        const responseDate = parseExcelDate(row['J']); // عمود J - تاريخ الاستجابة
+        // التواريخ المحدثة من البيانات الكاملة
+        const rfqDate = row['G']; // تاريخ RFQ
+        const poDate = row['M'];  // تاريخ PO
+        const responseDate = row['J']; // تاريخ الاستجابة
         
         // تخطي الصفوف الفارغة
         if (!description && !rfqNumber && !poNumber) {
@@ -145,15 +140,14 @@ async function processImportData() {
         let itemId;
         const itemNumber = await generateNextItemNumber();
         
-        // إدراج البند مع الوحدة و LINE ITEM و PART NO
+        // إدراج البند مع الوحدة و LINE ITEM و PART NO (بدون عمود notes)
         const itemResult = await sql`
           INSERT INTO items (
-            id, item_number, description, part_number, unit, category, created_by, notes
+            id, item_number, description, part_number, unit, category, created_by
           ) VALUES (
             ${nanoid()}, ${itemNumber}, ${description || 'بند غير محدد'}, 
             ${partNumber || lineItem || null}, ${unitOfMeasure || 'Piece'}, 'مستورد', 
-            (SELECT id FROM users WHERE username = 'admin' LIMIT 1),
-            ${lineItem ? `LINE ITEM: ${lineItem}` : null}
+            (SELECT id FROM users WHERE username = 'admin' LIMIT 1)
           ) RETURNING id
         `;
         
@@ -199,10 +193,10 @@ async function processImportData() {
             
             await sql`
               INSERT INTO purchase_orders (
-                id, po_number, quotation_number, order_date, status,
+                id, po_number, quotation_number, quotation_id, order_date, status,
                 total_amount, currency, created_by, notes
               ) VALUES (
-                ${poId}, ${poNumber}, ${rfqNumber}, ${poDate || new Date().toISOString()},
+                ${poId}, ${poNumber}, ${rfqNumber}, ${quotationId}, ${poDate || new Date().toISOString()},
                 'pending', ${quantity * unitPrice}, 'EGP',
                 (SELECT id FROM users WHERE username = 'admin' LIMIT 1),
                 ${`مرتبط بطلب التسعير ${rfqNumber} - الصف ${i + 1} - PART NO: ${partNumber || 'غير محدد'} - LINE ITEM: ${lineItem || 'غير محدد'} - الوحدة: ${unitOfMeasure || 'Piece'}`}
