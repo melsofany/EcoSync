@@ -28,10 +28,16 @@ const SMART_MAPPING_DICTIONARY = {
     'uom', 'UOM', 'Unit', 'UNIT', 'unit', 'وحدة القياس', 'الوحدة'
   ],
   requestDate: [
-    'Request Date', 'REQUEST DATE', 'request date', 'RFQ Date', 'rfq date', 'تاريخ الطلب'
+    'Request Date', 'REQUEST DATE', 'request date', 'RFQ Date', 'rfq date', 'تاريخ الطلب',
+    'DATE/RFQ', 'Date/RFQ', 'date/rfq', 'Unnamed: 6'
   ],
   expiryDate: [
-    'Response Date', 'RESPONSE DATE', 'response date', 'Expiry Date', 'expiry date', 'تاريخ انتهاء العرض'
+    'Response Date', 'RESPONSE DATE', 'response date', 'Expiry Date', 'expiry date', 'تاريخ انتهاء العرض',
+    'RES. DATE', 'Res. Date', 'res. date', 'Unnamed: 9'
+  ],
+  poDate: [
+    'PO Date', 'PO DATE', 'po date', 'Purchase Order Date', 'تاريخ أمر الشراء',
+    'DATE /PO', 'Date /PO', 'date /po', 'Unnamed: 12'
   ],
   clientName: [
     'العميل ', 'العميل', 'Client', 'CLIENT', 'client', 'Customer', 'CUSTOMER', 'customer', 'اسم العميل'
@@ -130,6 +136,7 @@ export function formatMappingResults(result: AutoMappingResult): string {
       unit: 'وحدة القياس',
       requestDate: 'تاريخ الطلب',
       expiryDate: 'تاريخ انتهاء العرض',
+      poDate: 'تاريخ أمر الشراء',
       clientName: 'اسم العميل',
       rfqNumber: 'رقم الطلب',
       unitPrice: 'سعر الوحدة'
