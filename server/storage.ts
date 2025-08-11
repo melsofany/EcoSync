@@ -1430,8 +1430,7 @@ export class DatabaseStorage implements IStorage {
         .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
         .where(and(
           eq(items.id, itemId),
-          not(like(quotationItems.id, 'qi-hist-%')), // Exclude historical records
-          gt(quotationItems.unitPrice, 0) // Exclude zero prices
+          not(like(quotationItems.id, 'qi-hist-%')) // Exclude only historical records, keep all real records including zero prices
         ));
 
       // Get PO data for THIS SPECIFIC ITEM ONLY
