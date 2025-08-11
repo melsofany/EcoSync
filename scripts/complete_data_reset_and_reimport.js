@@ -8,6 +8,95 @@ import { nanoid } from 'nanoid';
 
 const sql = neon(process.env.DATABASE_URL);
 
+// دالة لتحويل التواريخ من Excel إلى تنسيق قاعدة البيانات
+function parseExcelDate(dateStr) {
+  if (!dateStr || dateStr === 'null' || typeof dateStr !== 'string') {
+    return null;
+  }
+  
+  try {
+    // إزالة الوقت إذا كان موجوداً والمسافات الإضافية
+    const cleanDateStr = dateStr.split(' ')[0].trim();
+    
+    // تحقق من التنسيق وتحويله
+    if (cleanDateStr.includes('-')) {
+      // تنسيق YYYY-MM-DD أو DD-MM-YYYY
+      const dateParts = cleanDateStr.split('-').map(part => part.trim());
+      if (dateParts.length === 3) {
+        const [part1, part2, part3] = dateParts;
+        
+        if (part1.length === 4) {
+          // YYYY-MM-DD - تحقق من صحة الشهر واليوم
+          const year = parseInt(part1);
+          const month = parseInt(part2);
+          const day = parseInt(part3);
+          
+          if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+          }
+        } else {
+          // DD-MM-YYYY أو MM-DD-YYYY
+          const num1 = parseInt(part1);
+          const num2 = parseInt(part2);
+          const year = parseInt(part3);
+          
+          // إذا كان الرقم الأول أكبر من 12، فهو اليوم
+          if (num1 > 12) {
+            // DD-MM-YYYY
+            if (num2 >= 1 && num2 <= 12 && num1 >= 1 && num1 <= 31) {
+              return `${year}-${num2.toString().padStart(2, '0')}-${num1.toString().padStart(2, '0')}`;
+            }
+          } else if (num2 > 12) {
+            // MM-DD-YYYY
+            if (num1 >= 1 && num1 <= 12 && num2 >= 1 && num2 <= 31) {
+              return `${year}-${num1.toString().padStart(2, '0')}-${num2.toString().padStart(2, '0')}`;
+            }
+          } else {
+            // غامض - افتراض DD-MM-YYYY
+            if (num2 >= 1 && num2 <= 12 && num1 >= 1 && num1 <= 31) {
+              return `${year}-${num2.toString().padStart(2, '0')}-${num1.toString().padStart(2, '0')}`;
+            }
+          }
+        }
+      }
+    } else if (cleanDateStr.includes('/')) {
+      // تنسيق MM/DD/YYYY أو DD/MM/YYYY
+      const dateParts = cleanDateStr.split('/').map(part => part.trim());
+      if (dateParts.length === 3) {
+        const [part1, part2, part3] = dateParts;
+        const num1 = parseInt(part1);
+        const num2 = parseInt(part2);
+        const year = parseInt(part3);
+        
+        // إذا كان الرقم الأول أكبر من 12، فهو اليوم
+        if (num1 > 12) {
+          // DD/MM/YYYY
+          if (num2 >= 1 && num2 <= 12 && num1 >= 1 && num1 <= 31) {
+            return `${year}-${num2.toString().padStart(2, '0')}-${num1.toString().padStart(2, '0')}`;
+          }
+        } else {
+          // MM/DD/YYYY (الافتراض الأمريكي)
+          if (num1 >= 1 && num1 <= 12 && num2 >= 1 && num2 <= 31) {
+            return `${year}-${num1.toString().padStart(2, '0')}-${num2.toString().padStart(2, '0')}`;
+          }
+        }
+      }
+    }
+    
+    // محاولة أخيرة مع تنسيق ISO
+    const isoDate = new Date(dateStr);
+    if (!isNaN(isoDate.getTime())) {
+      return isoDate.toISOString().split('T')[0];
+    }
+  } catch (error) {
+    console.warn(`⚠️ فشل في تحويل التاريخ: ${dateStr}`);
+  }
+  
+  // إرجاع تاريخ افتراضي إذا فشل التحويل
+  console.warn(`⚠️ استخدام تاريخ افتراضي للقيمة: ${dateStr}`);
+  return '2025-01-01';
+}
+
 async function completeDataResetAndReimport() {
   console.log('🔄 بدء عملية إعادة تعيين البيانات والاستيراد الشامل...');
   
@@ -46,16 +135,26 @@ async function completeDataResetAndReimport() {
       if (!row || typeof row !== 'object') continue;
       
       // استخراج البيانات من الأعمدة المحددة
-      const rfqNumber = row['Unnamed: 5'] || row.F;  // العمود F
-      const poNumber = row['Unnamed: 11'] || row.L;   // العمود L
-      const itemCode = row['Unnamed: 2'] || row.C;    // العمود C
-      const description = row['Unnamed: 3'] || row.D; // العمود D
-      const quantity = parseFloat(row['Unnamed: 6'] || row.G) || 0; // العمود G
-      const unitPrice = parseFloat(row['Unnamed: 7'] || row.H) || null; // العمود H
-      const lineItem = row['Unnamed: 1'] || row.B;    // العمود B
-      const unit = row['Unnamed: 8'] || row.I || 'قطعة'; // العمود I
-      const clientName = row['Unnamed: 9'] || row.J;   // العمود J
-      const supplierName = row['Unnamed: 10'] || row.K; // العمود K
+      const rfqNumber = row['Unnamed: 5'] || row.F;    // العمود F - رقم طلب التسعير
+      const poNumber = row['Unnamed: 11'] || row.L;    // العمود L - رقم أمر الشراء
+      const itemCode = row['Unnamed: 2'] || row.C;     // العمود C - كود البند
+      const description = row['Unnamed: 4'] || row.D;  // العمود E - الوصف
+      const quantity = parseFloat(row['Unnamed: 7'] || row.H) || 0; // العمود H - الكمية
+      const unitPrice = parseFloat(row['Unnamed: 8'] || row.I) || null; // العمود I - سعر الوحدة
+      const lineItem = row['Unnamed: 1'] || row.B;     // العمود B - وحدة القياس
+      const unit = row['Unnamed: 1'] || 'قطعة';        // العمود B - وحدة القياس
+      const clientName = row['Unnamed: 10'] || row.K;  // العمود K - اسم العميل (تصحيح)
+      const supplierName = row['Unnamed: 10'] || row.K; // العمود K - اسم المورد
+      
+      // استخراج التواريخ الصحيحة
+      const rfqDateStr = row['Unnamed: 6'];  // العمود G - تاريخ طلب التسعير
+      const poDateStr = row['Unnamed: 12'];  // العمود M - تاريخ أمر الشراء
+      const responseDateStr = row['Unnamed: 9']; // العمود J - تاريخ الرد
+      
+      // تحويل التواريخ إلى تنسيق صحيح
+      const rfqDate = parseExcelDate(rfqDateStr);
+      const poDate = parseExcelDate(poDateStr);
+      const responseDate = parseExcelDate(responseDateStr);
       
       // تخطي الصفوف الفارغة
       if (!rfqNumber && !poNumber && !itemCode) continue;
@@ -100,7 +199,10 @@ async function completeDataResetAndReimport() {
         unit,
         clientName,
         supplierName,
-        itemKey
+        itemKey,
+        rfqDate,
+        poDate,
+        responseDate
       });
     }
     
@@ -199,20 +301,22 @@ async function completeDataResetAndReimport() {
       const quotationId = 'quotation-' + nanoid(10);
       quotationIds.set(rfqNumber, quotationId);
       
-      // العثور على أول عميل مرتبط بهذا الطلب
+      // العثور على أول عميل مرتبط بهذا الطلب والحصول على التاريخ
       const firstRecord = processedData.find(r => r.rfqNumber === rfqNumber);
       const clientId = firstRecord?.clientName ? clientIds.get(firstRecord.clientName) : null;
+      const requestDate = firstRecord?.rfqDate || null;
       
       await sql(`
         INSERT INTO quotation_requests (
           id, request_number, custom_request_number, client_id, 
           request_date, status, created_at, created_by
-        ) VALUES ($1, $2, $3, $4, NOW(), $5, NOW(), $6)
+        ) VALUES ($1, $2, $3, $4, COALESCE($5::date, '2025-01-01'::date), $6, NOW(), $7)
       `, [
         quotationId,
         rfqNumber,
         rfqNumber,
         clientId,
+        requestDate,
         'completed',
         userId
       ]);
@@ -228,17 +332,19 @@ async function completeDataResetAndReimport() {
       // العثور على طلب التسعير المرتبط (في نفس الصف)
       const linkedRecord = processedData.find(r => r.poNumber === poNumber && r.rfqNumber);
       const linkedQuotationId = linkedRecord ? quotationIds.get(linkedRecord.rfqNumber) : null;
+      const orderDate = linkedRecord?.poDate || null;
       
       await sql(`
         INSERT INTO purchase_orders (
           id, po_number, quotation_id, supplier_id,
           order_date, status, total_amount, created_at, created_by
-        ) VALUES ($1, $2, $3, $4, NOW(), $5, $6, NOW(), $7)
+        ) VALUES ($1, $2, $3, $4, COALESCE($5::date, '2025-01-01'::date), $6, $7, NOW(), $8)
       `, [
         purchaseOrderId,
         poNumber,
         linkedQuotationId, // ربط مع طلب التسعير في نفس الصف
         null,
+        orderDate,
         'completed',
         0,
         userId
