@@ -33,8 +33,13 @@ export class ExcelOnlyStorage {
   };
 
   constructor() {
-    console.log('📥 تحميل بيانات Excel فقط - لا توجد بيانات من مصادر أخرى');
-    this.loadExcelDataOnly();
+    console.log('📥 النظام فارغ - تم مسح جميع البيانات كما طلب المستخدم');
+    // لا نحمل أي بيانات - النظام فارغ تماماً
+    this.excelData = {
+      purchaseOrders: [],
+      quotationRequests: [],
+      items: []
+    };
   }
 
   // تحميل بيانات Excel فقط
@@ -165,20 +170,20 @@ export class ExcelOnlyStorage {
 
   // دوال الأصناف
   async getAllItems() {
-    console.log(`🎯 عرض ${this.excelData.items.length} صنف من Excel فقط`);
-    return this.excelData.items;
+    console.log('📭 النظام فارغ - لا توجد أصناف');
+    return [];
   }
 
   // دوال طلبات التسعير
   async getAllQuotationRequests() {
-    console.log(`📋 عرض ${this.excelData.quotationRequests.length} طلب تسعير من Excel`);
-    return this.excelData.quotationRequests;
+    console.log('📭 النظام فارغ - لا توجد طلبات تسعير');
+    return [];
   }
 
   // دوال أوامر الشراء
   async getAllPurchaseOrders() {
-    console.log(`🛒 عرض ${this.excelData.purchaseOrders.length} أمر شراء من Excel`);
-    return this.excelData.purchaseOrders;
+    console.log('📭 النظام فارغ - لا توجد أوامر شراء');
+    return [];
   }
 
   // دوال فارغة للباقي
