@@ -45,14 +45,14 @@ let recoveryState: {
     { name: 'C', arabicName: 'رقم القطعة (PART_NO)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
     { name: 'D', arabicName: 'الوصف (DESCRIPTION)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
     { name: 'E', arabicName: 'رقم طلب التسعير (RFQ_NUMBER)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'F', arabicName: 'تاريخ الطلب (REQUEST_DATE)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'G', arabicName: 'الكمية (QUANTITY)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'H', arabicName: 'السعر (PRICE)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
+    { name: 'F', arabicName: 'تاريخ طلب التسعير (DATE/RFQ)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
+    { name: 'G', arabicName: 'كمية طلب التسعير (QTY_OF_RFQ)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
+    { name: 'H', arabicName: 'سعر طلب التسعير (PRICE_OF_RFQ)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
     { name: 'I', arabicName: 'تاريخ الاستجابة (RESPONSE_DATE)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'J', arabicName: 'رقم أمر الشراء (PO_NUMBER)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'K', arabicName: 'تاريخ أمر الشراء (PO_DATE)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'L', arabicName: 'كمية أمر الشراء (PO_QUANTITY)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'M', arabicName: 'سعر أمر الشراء (PO_PRICE)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] }
+    { name: 'J', arabicName: 'رقم طلب الشراء (PO_NUMBER)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
+    { name: 'K', arabicName: 'تاريخ طلب الشراء (DATE_OF_PO)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
+    { name: 'L', arabicName: 'كمية طلب الشراء (QUANTITY_OF_PO)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
+    { name: 'M', arabicName: 'سعر طلب الشراء (PRICE_OF_PO)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] }
   ],
   previewData: []
 };
@@ -117,9 +117,9 @@ router.get('/progress', (req, res) => {
 // Load and display the real extracted data
 async function runDataExtraction() {
   try {
-    // Load the corrected real data
-    const correctedDataPath = path.join(process.cwd(), 'attached_assets', 'corrected_data_5449.json');
-    const realData = JSON.parse(await fs.readFile(correctedDataPath, 'utf8'));
+    // Load the structured data with RFQ-PO linking
+    const structuredDataPath = path.join(process.cwd(), 'attached_assets', 'structured_data_with_linking_5449.json');
+    const realData = JSON.parse(await fs.readFile(structuredDataPath, 'utf8'));
     
     console.log('✅ تم تحميل البيانات الحقيقية المصححة:', realData.length, 'سجل');
     
@@ -131,33 +131,39 @@ async function runDataExtraction() {
       recoveryState.progress.currentColumn = column.name;
       column.status = 'processing';
       
-      // Get the mapping for column names
+      // Get sample data from structured records
       const columnMapping: { [key: string]: string } = {
-        'A': 'UOM',
-        'B': 'LINE_ITEM', 
-        'C': 'PART_NO',
-        'D': 'DESCRIPTION',
-        'E': 'RFQ_NUMBER',
-        'F': 'REQUEST_DATE',
-        'G': 'QUANTITY',
-        'H': 'PRICE',
-        'I': 'RESPONSE_DATE',
-        'J': 'PO_NUMBER',
-        'K': 'PO_DATE',
-        'L': 'PO_QUANTITY',
-        'M': 'PO_PRICE'
+        'A': 'uom',
+        'B': 'lineItem', 
+        'C': 'partNo',
+        'D': 'description',
+        'E': 'rfq.number',
+        'F': 'rfq.date',
+        'G': 'rfq.quantity',
+        'H': 'rfq.price',
+        'I': 'rfq.responseDate',
+        'J': 'po.number',
+        'K': 'po.date',
+        'L': 'po.quantity',
+        'M': 'po.price'
       };
       
-      const realColumnName = columnMapping[column.name];
+      const fieldPath = columnMapping[column.name];
       
       // Simulate processing time for realism
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      // Collect sample data from real data
+      // Extract sample data using field path
       column.sampleData = realData
-        .filter(row => row[realColumnName] !== null && row[realColumnName] !== undefined)
-        .slice(0, 10)
-        .map(row => row[realColumnName]);
+        .map(row => {
+          if (fieldPath.includes('.')) {
+            const [obj, field] = fieldPath.split('.');
+            return row[obj]?.[field];
+          }
+          return row[fieldPath];
+        })
+        .filter(value => value !== null && value !== undefined)
+        .slice(0, 10);
       
       // Update row counts  
       column.processedRows = realData.length;
