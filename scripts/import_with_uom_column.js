@@ -91,13 +91,18 @@ async function processImportData() {
   try {
     console.log('🚀 بدء الاستيراد مع عمود الوحدات...');
     
-    // قراءة البيانات النظيفة مع PART NO
-    const cleanDataPath = './attached_assets/clean_import_data_5449.json';
-    if (!fs.existsSync(cleanDataPath)) {
-      throw new Error('ملف البيانات النظيفة غير موجود. يرجى تشغيل create_clean_import_data.js أولاً');
+    // قراءة البيانات النهائية مع التوصيفات الحقيقية
+    const finalDataPath = './attached_assets/final_import_data_5449.json';
+    if (!fs.existsSync(finalDataPath)) {
+      console.log('⚠️ ملف البيانات النهائي غير موجود، استخدام البيانات النظيفة...');
+      const cleanDataPath = './attached_assets/clean_import_data_5449.json';
+      if (!fs.existsSync(cleanDataPath)) {
+        throw new Error('ملف البيانات غير موجود');
+      }
+      var excelData = JSON.parse(fs.readFileSync(cleanDataPath, 'utf8'));
+    } else {
+      var excelData = JSON.parse(fs.readFileSync(finalDataPath, 'utf8'));
     }
-    
-    const excelData = JSON.parse(fs.readFileSync(cleanDataPath, 'utf8'));
     console.log(`📊 تم تحميل ${excelData.length} صف من البيانات`);
     
     // إحصائيات الاستيراد
