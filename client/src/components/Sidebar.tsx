@@ -19,7 +19,8 @@ import {
   Activity,
   KeyRound,
   Bot,
-  Merge
+  Merge,
+  Download
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -123,6 +124,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       title: "بوت تليجرام",
       href: "/telegram-bot",
       icon: Bot,
+      section: "admin",
+    },
+    {
+      title: "استرداد البيانات",
+      href: "/data-recovery",
+      icon: Download,
       section: "admin",
     },
 

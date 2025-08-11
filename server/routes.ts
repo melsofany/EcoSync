@@ -2853,6 +2853,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Import and register data recovery routes
+  const dataRecoveryRoutes = await import('./routes/data-recovery');
+  app.use('/api/data-recovery', dataRecoveryRoutes.default);
+
   const httpServer = createServer(app);
   return httpServer;
 }
