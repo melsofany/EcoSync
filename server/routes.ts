@@ -24,27 +24,50 @@ declare module "express-session" {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize database with default data (temporarily disabled due to endpoint issues)
+  // Initialize database with default data  
   try {
     await initializeDatabase();
+    console.log('✅ Database initialized successfully');
   } catch (error) {
-    console.log('⚠️ Database initialization failed, continuing without database:', error.message);
+    console.log('⚠️ Database initialization failed, continuing with minimal setup:', error.message);
   }
   
   // Create PostgreSQL session store
   const PgSession = connectPgSimple(session);
   
-  // Session configuration with memory store (temporary fallback)
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours (extended for better UX)
-    },
-  }));
+  // Session configuration with PostgreSQL store or memory fallback
+  try {
+    const store = new PgSession({
+      pool: pool,
+      tableName: 'session',
+      createTableIfMissing: true
+    });
+    
+    app.use(session({
+      store: store,
+      secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: false, // Set to true in production with HTTPS
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours (extended for better UX)
+      },
+    }));
+    console.log('✅ Session store configured with PostgreSQL');
+  } catch (error) {
+    console.log('⚠️ Using memory session store as fallback');
+    app.use(session({
+      secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        secure: false,
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+      },
+    }));
+  }
 
   // Middleware to log activity and track IP
   const logActivity = async (req: Request, action: string, entityType?: string, entityId?: string, details?: string) => {
@@ -2855,6 +2878,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Data recovery routes (standalone version without database dependency)
   const dataRecoveryStandaloneRoutes = await import('./routes/data-recovery-standalone');
   app.use('/api/data-recovery', dataRecoveryStandaloneRoutes.default);
+
+  // Temporary authentication routes (while database is being fixed)
+  const tempAuthRoutes = await import('./routes/temp-auth');
+  app.use('/api/auth', tempAuthRoutes.default);
 
   const httpServer = createServer(app);
   return httpServer;
