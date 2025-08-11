@@ -5,35 +5,6 @@ import { spawn } from 'child_process';
 
 const router = Router();
 
-// Mock data for testing when database is unavailable
-const mockRecoveryState = {
-  progress: {
-    currentColumn: 'A',
-    totalColumns: 13,
-    completedColumns: 0,
-    totalRows: 5449,
-    processedRows: 0,
-    estimatedTimeRemaining: 'جاري الحساب...',
-    status: 'initializing' as const
-  },
-  columns: [
-    { name: 'A', arabicName: 'وحدة القياس (UOM)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'B', arabicName: 'رقم البند (LINE_ITEM)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'C', arabicName: 'رقم القطعة (PART_NO)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'D', arabicName: 'الوصف (DESCRIPTION)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'E', arabicName: 'رقم طلب التسعير (RFQ_NUMBER)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'F', arabicName: 'تاريخ الطلب (REQUEST_DATE)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'G', arabicName: 'الكمية (QUANTITY)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'H', arabicName: 'السعر (PRICE)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'I', arabicName: 'تاريخ الاستجابة (RESPONSE_DATE)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'J', arabicName: 'رقم أمر الشراء (PO_NUMBER)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'K', arabicName: 'تاريخ أمر الشراء (PO_DATE)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'L', arabicName: 'كمية أمر الشراء (PO_QUANTITY)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] },
-    { name: 'M', arabicName: 'سعر أمر الشراء (PO_PRICE)', processedRows: 0, totalRows: 5449, status: 'pending' as const, sampleData: [] }
-  ],
-  previewData: [] as any[]
-};
-
 interface RecoveryProgress {
   currentColumn: string;
   totalColumns: number;

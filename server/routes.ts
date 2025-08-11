@@ -74,10 +74,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
-  // Data Recovery routes (simplified version for offline use)
-  const dataRecoveryRoutes = await import("./routes/data-recovery-simple");
-  app.use("/api/data-recovery", dataRecoveryRoutes.default);
-
 
 
   // Role-based access control
@@ -2857,7 +2853,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Data recovery routes already imported above
+  // Import and register data recovery routes
+  const dataRecoveryRoutes = await import('./routes/data-recovery');
+  app.use('/api/data-recovery', dataRecoveryRoutes.default);
 
   const httpServer = createServer(app);
   return httpServer;
