@@ -123,10 +123,11 @@ async function runDataExtraction() {
     
     console.log('✅ تم تحميل البيانات من آخر ملف Excel:', realData.length, 'سجل');
     
-    // تحديث إجمالي الصفوف
-    recoveryState.progress.totalRows = realData.length;
+    // تحديث إجمالي الصفوف (طرح 1 لأن الصف الأول عناوين)
+    const actualDataRows = realData.length - 1;
+    recoveryState.progress.totalRows = actualDataRows;
     recoveryState.columns.forEach(col => {
-      col.totalRows = realData.length;
+      col.totalRows = actualDataRows;
     });
     
     // Process each column to show realistic progress
@@ -171,9 +172,10 @@ async function runDataExtraction() {
         .filter(value => value !== null && value !== undefined)
         .slice(0, 10);
       
-      // Update row counts  
-      column.processedRows = realData.length;
-      recoveryState.progress.processedRows = (colIndex + 1) * realData.length;
+      // Update row counts (excluding header row)
+      const actualDataRows = realData.length - 1;
+      column.processedRows = actualDataRows;
+      recoveryState.progress.processedRows = (colIndex + 1) * actualDataRows;
       
       // Mark column as completed
       column.status = 'completed';
