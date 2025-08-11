@@ -24,6 +24,13 @@ export class DemoStorage {
 
   constructor() {
     console.log('🎯 تشغيل نظام قرطبة للتوريدات - البيانات الحقيقية');
+    
+    // تحميل البيانات الحقيقية فوراً
+    const stats = completeDataLoader.getCompleteStats();
+    console.log('📊 إحصائيات البيانات المحملة:');
+    console.log(`🛒 أوامر الشراء: ${stats.purchaseOrders.unique} أمر فريد`);
+    console.log(`📋 طلبات التسعير: ${stats.quotationRequests.total} طلب`);
+    console.log(`📦 الأصناف: ${stats.items.total} صنف`);
   }
 
   async getUserByUsername(username: string) {

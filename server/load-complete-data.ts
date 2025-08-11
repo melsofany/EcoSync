@@ -31,43 +31,84 @@ export class CompleteDataLoader {
     const itemsMap = new Map<string, any>();
 
     this.completeData.forEach((record, index) => {
-      // معالجة طلبات التسعير - التحقق من عمود E وF
-      const rfqNumber = record.E || record.F;
-      if (rfqNumber && rfqNumber.toString().startsWith('25R')) {
+      // معالجة طلبات التسعير - البحث في جميع الأعمدة الممكنة
+      let rfqNumber = null;
+      let rfqPrice = 0;
+      let rfqDate = null;
+      
+      // البحث عن رقم RFQ في الأعمدة المختلفة
+      if (record.RFQ_NUMBER) rfqNumber = record.RFQ_NUMBER;
+      else if (record['رقم طلب التسعير']) rfqNumber = record['رقم طلب التسعير'];
+      else if (record.E) rfqNumber = record.E;
+      else if (record.F) rfqNumber = record.F;
+      
+      // البحث عن السعر
+      if (record.PRICE) rfqPrice = Number(record.PRICE) || 0;
+      else if (record['السعر']) rfqPrice = Number(record['السعر']) || 0;
+      else if (record.H) rfqPrice = Number(record.H) || 0;
+      else if (record.M) rfqPrice = Number(record.M) || 0;
+      
+      // البحث عن التاريخ
+      if (record.REQUEST_DATE) rfqDate = record.REQUEST_DATE;
+      else if (record['تاريخ الطلب']) rfqDate = record['تاريخ الطلب'];
+      else if (record.F) rfqDate = record.F;
+      else if (record.G) rfqDate = record.G;
+
+      if (rfqNumber && rfqNumber.toString().includes('RFQ')) {
         const rfqId = rfqNumber.toString();
         if (!rfqMap.has(rfqId)) {
           rfqMap.set(rfqId, {
             id: `rfq-real-${index}`,
             rfqNumber: rfqId,
             customRequestNumber: rfqId,
-            requestDate: record.F || record.G || new Date().toISOString().split('T')[0],
-            status: (record.J || record.L) ? 'completed' : 'pending',
+            requestDate: rfqDate || new Date().toISOString().split('T')[0],
+            status: poNumber ? 'completed' : 'pending',
             clientName: 'عميل قرطبة للتوريدات',
             totalItems: 0,
             totalValue: 0,
-            createdAt: record.F || record.G || new Date().toISOString(),
+            createdAt: rfqDate || new Date().toISOString(),
             notes: 'طلب تسعير مستورد من البيانات الحقيقية'
           });
         }
         
         const rfq = rfqMap.get(rfqId);
         rfq.totalItems++;
-        const price = Number(record.H) || Number(record.M) || 0;
-        if (price > 0) {
-          rfq.totalValue += price;
+        if (rfqPrice > 0) {
+          rfq.totalValue += rfqPrice;
         }
       }
 
-      // معالجة أوامر الشراء - التحقق من عمود J وL
-      const poNumber = record.J || record.L;
-      if (poNumber && (poNumber.toString().startsWith('P25E') || poNumber.toString().includes('25E'))) {
+      // معالجة أوامر الشراء - البحث في جميع الأعمدة الممكنة
+      let poNumber = null;
+      let poPrice = 0;
+      let poDate = null;
+      
+      // البحث عن رقم PO في الأعمدة المختلفة
+      if (record.PO_NUMBER) poNumber = record.PO_NUMBER;
+      else if (record['رقم أمر الشراء']) poNumber = record['رقم أمر الشراء']; 
+      else if (record.J) poNumber = record.J;
+      else if (record.L) poNumber = record.L;
+      
+      // البحث عن سعر PO
+      if (record.PO_PRICE) poPrice = Number(record.PO_PRICE) || 0;
+      else if (record['سعر أمر الشراء']) poPrice = Number(record['سعر أمر الشراء']) || 0;
+      else if (record.M) poPrice = Number(record.M) || 0;
+      else if (record.H) poPrice = Number(record.H) || 0;
+      
+      // البحث عن تاريخ PO
+      if (record.PO_DATE) poDate = record.PO_DATE;
+      else if (record['تاريخ أمر الشراء']) poDate = record['تاريخ أمر الشراء'];
+      else if (record.K) poDate = record.K;
+      else if (record.M) poDate = record.M;
+
+      if (poNumber && poNumber.toString().includes('PO')) {
         const poId = poNumber.toString();
         if (!poMap.has(poId)) {
           poMap.set(poId, {
             id: `po-real-${index}`,
             poNumber: poId,
-            quotationNumber: record.E || record.F || '',
-            orderDate: record.K || record.M || new Date().toISOString().split('T')[0],
+            quotationNumber: record.RFQ_NUMBER || record.E || record.F || '',
+            orderDate: poDate || new Date().toISOString().split('T')[0],
             totalAmount: 0,
             status: this.getRandomStatus(),
             supplierName: this.getRandomSupplier(),
@@ -79,10 +120,8 @@ export class CompleteDataLoader {
         
         const po = poMap.get(poId);
         po.itemsCount++;
-        // استخدام سعر PO من العمود M أو H
-        const price = Number(record.M) || Number(record.H) || 0;
-        if (price > 0) {
-          po.totalAmount += price;
+        if (poPrice > 0) {
+          po.totalAmount += poPrice;
         }
       }
 
