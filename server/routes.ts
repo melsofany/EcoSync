@@ -7,8 +7,9 @@ import { sendEmail, generatePasswordResetEmail } from "./emailService";
 import { ObjectStorageService } from "./objectStorage";
 import bcrypt from "bcrypt";
 import session from "express-session";
-import MemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
 import { randomBytes } from "crypto";
+import { pool } from "./db";
 
 // Extend the Express Request type to include session data
 declare module "express-session" {
@@ -26,13 +27,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database with default data
   await initializeDatabase();
   
-  // استخدام Memory Store للجلسات مؤقتاً
-  const MemStore = MemoryStore(session);
+  // Create PostgreSQL session store
+  const PgSession = connectPgSimple(session);
   
-  // إعداد الجلسات مع Memory Store
+  // Session configuration with PostgreSQL store
   app.use(session({
-    store: new MemStore({
-      checkPeriod: 86400000 // تنظيف كل 24 ساعة
+    store: new PgSession({
+      pool: pool,
+      tableName: 'session',
+      createTableIfMissing: true
     }),
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
