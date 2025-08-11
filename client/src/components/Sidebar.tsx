@@ -20,7 +20,8 @@ import {
   KeyRound,
   Bot,
   Merge,
-  Download
+  Download,
+  Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -130,6 +131,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       title: "استرداد البيانات",
       href: "/data-recovery",
       icon: Download,
+      section: "admin",
+    },
+    {
+      title: "حفظ قاعدة البيانات",
+      href: "/database-storage",
+      icon: Database,
       section: "admin",
     },
 

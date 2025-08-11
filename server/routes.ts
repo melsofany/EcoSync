@@ -2856,6 +2856,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   
   const linkingAnalysisRoutes = await import('./routes/linking-analysis.js');
   app.use('/api/linking', linkingAnalysisRoutes.default);
+  
+  const saveToDbRoutes = await import('./routes/save-to-database.js');
+  app.use('/api/database', saveToDbRoutes.default);
 
   const httpServer = createServer(app);
   return httpServer;

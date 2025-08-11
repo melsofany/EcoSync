@@ -26,6 +26,7 @@ import ItemDataSheet from "@/pages/ItemDataSheet";
 import NotFound from "@/pages/not-found";
 import TelegramBot from "@/pages/TelegramBot";
 import DataRecoveryPage from "@/pages/DataRecoveryPage";
+import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -71,6 +72,7 @@ function Router() {
         <Route path="/admin" component={Admin} />
         <Route path="/telegram-bot" component={TelegramBot} />
         <Route path="/data-recovery" component={DataRecoveryPage} />
+        <Route path="/database-storage" component={DatabaseStoragePage} />
 
         <Route path="/change-password" component={ChangePassword} />
         <Route component={NotFound} />

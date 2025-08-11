@@ -344,6 +344,8 @@ export type PricingHistory = typeof pricingHistory.$inferSelect;
 export type InsertPricingHistory = z.infer<typeof insertPricingHistorySchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
+export type RecoveredData = typeof recoveredData.$inferSelect;
+export type InsertRecoveredData = z.infer<typeof insertRecoveredDataSchema>;
 
 // Extended types for joined queries
 export type QuotationItemWithDetails = QuotationItem & {
@@ -357,6 +359,43 @@ export type QuotationItemWithDetails = QuotationItem & {
   brand?: string;
   supplierName?: string;
 };
+
+// جدول البيانات المستردة من Excel
+export const recoveredData = pgTable("recovered_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  rowNumber: integer("row_number").notNull(),
+  uom: text("uom"), // A - وحدة القياس
+  lineItem: text("line_item"), // B - رقم البند
+  partNo: text("part_no"), // C - رقم القطعة
+  description: text("description"), // D - الوصف
+  
+  // معلومات طلب التسعير (RFQ)
+  rfqNumber: text("rfq_number"), // E - رقم طلب التسعير
+  rfqDate: text("rfq_date"), // F - تاريخ طلب التسعير
+  rfqQuantity: text("rfq_quantity"), // G - كمية طلب التسعير
+  rfqPrice: text("rfq_price"), // H - سعر طلب التسعير
+  rfqResponseDate: text("rfq_response_date"), // I - تاريخ الاستجابة
+  
+  // معلومات طلب الشراء (PO)
+  poNumber: text("po_number"), // J - رقم طلب الشراء
+  poDate: text("po_date"), // K - تاريخ طلب الشراء
+  poQuantity: text("po_quantity"), // L - كمية طلب الشراء
+  poPrice: text("po_price"), // M - سعر طلب الشراء
+  
+  // معلومات الربط
+  isLinked: boolean("is_linked").default(false), // هل مربوط RFQ → PO؟
+  hasCompleteFlow: boolean("has_complete_flow").default(false), // دورة كاملة؟
+  
+  // معلومات إضافية
+  sourceFile: text("source_file"), // اسم الملف المصدر
+  importedAt: timestamp("imported_at").defaultNow(),
+  importedBy: varchar("imported_by").references(() => users.id),
+});
+
+export const insertRecoveredDataSchema = createInsertSchema(recoveredData).omit({
+  id: true,
+  importedAt: true,
+});
 
 // Add the self-reference relation for items after the table is defined
 // This avoids the circular reference issue during table definition
