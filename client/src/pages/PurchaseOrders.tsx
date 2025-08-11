@@ -40,6 +40,7 @@ export default function PurchaseOrders() {
     const statusConfig = {
       pending: { label: "في الانتظار", variant: "secondary" as const },
       completed: { label: "مكتمل", variant: "default" as const },
+      confirmed: { label: "مؤكد", variant: "default" as const },
       delivered: { label: "تم التسليم", variant: "default" as const },
       invoiced: { label: "تم إصدار الفاتورة", variant: "default" as const },
     };
@@ -50,6 +51,7 @@ export default function PurchaseOrders() {
         variant={config.variant} 
         className={
           status === "completed" || status === "delivered" || status === "invoiced" ? "bg-green-100 text-green-800 hover:bg-green-100" :
+          status === "confirmed" ? "bg-blue-100 text-blue-800 hover:bg-blue-100" :
           status === "pending" ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" : ""
         }
       >
@@ -325,9 +327,15 @@ export default function PurchaseOrders() {
                       <TableCell>{getStatusBadge(po.status)}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
-                          <div className={`w-2 h-2 rounded-full ${po.deliveryStatus === 'delivered' ? 'bg-green-400' : 'bg-gray-300'}`}></div>
+                          <div className={`w-2 h-2 rounded-full ${
+                            po.deliveryStatus === 'delivered' ? 'bg-green-400' : 
+                            po.deliveryStatus === 'shipped' ? 'bg-blue-400' :
+                            po.deliveryStatus === 'processing' ? 'bg-orange-400' : 'bg-gray-300'
+                          }`}></div>
                           <span className="text-sm">
-                            {po.deliveryStatus === 'delivered' ? 'تم التسليم' : 'قيد الانتظار'}
+                            {po.deliveryStatus === 'delivered' ? 'تم التسليم' : 
+                             po.deliveryStatus === 'shipped' ? 'تم الشحن' :
+                             po.deliveryStatus === 'processing' ? 'قيد المعالجة' : 'قيد الانتظار'}
                           </span>
                         </div>
                       </TableCell>

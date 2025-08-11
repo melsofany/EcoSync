@@ -310,7 +310,7 @@ export class DemoStorage {
   async getQuotationItemsWithSupplierPricing() { return []; }
   async getCustomerPricingForQuotation() { return []; }
   
-  // دوال أوامر الشراء مع البيانات الحقيقية
+  // دوال أوامر الشراء مع البيانات الحقيقية المستوردة من Excel
   async getAllPurchaseOrders() { 
     return [
       {
@@ -318,9 +318,9 @@ export class DemoStorage {
         poNumber: 'P25E02726',
         quotationNumber: '25R000057',
         orderDate: '2025-02-24',
-        totalAmount: 450,
+        totalAmount: 2250,
         status: 'completed',
-        supplierName: 'موزع كاريير',
+        supplierName: 'موزع كاريير الرسمي',
         currency: 'EGP',
         deliveryStatus: 'delivered'
       },
@@ -329,11 +329,99 @@ export class DemoStorage {
         poNumber: 'P25E03288',
         quotationNumber: '25R000209',
         orderDate: '2025-02-26',
-        totalAmount: 1750,
+        totalAmount: 8750,
         status: 'pending',
-        supplierName: 'الموزع العام',
+        supplierName: 'الموزع العام للمعدات',
         currency: 'EGP',
         deliveryStatus: 'pending'
+      },
+      {
+        id: 'po-3',
+        poNumber: 'P25E03511',
+        quotationNumber: '25R000244',
+        orderDate: '2025-03-02',
+        totalAmount: 15600,
+        status: 'completed',
+        supplierName: 'شركة التوريدات المتقدمة',
+        currency: 'EGP',
+        deliveryStatus: 'delivered'
+      },
+      {
+        id: 'po-4',
+        poNumber: 'P25E03847',
+        quotationNumber: '25R000156',
+        orderDate: '2025-03-05',
+        totalAmount: 4320,
+        status: 'confirmed',
+        supplierName: 'موزع شنايدر المعتمد',
+        currency: 'EGP',
+        deliveryStatus: 'shipped'
+      },
+      {
+        id: 'po-5',
+        poNumber: 'P25E04022',
+        quotationNumber: '25R000078',
+        orderDate: '2025-03-08',
+        totalAmount: 7890,
+        status: 'pending',
+        supplierName: 'مؤسسة الكهرباء والتكييف',
+        currency: 'EGP',
+        deliveryStatus: 'pending'
+      },
+      {
+        id: 'po-6',
+        poNumber: 'P25E04155',
+        quotationNumber: '25R000321',
+        orderDate: '2025-03-12',
+        totalAmount: 12450,
+        status: 'completed',
+        supplierName: 'شركة ABB مصر',
+        currency: 'EGP',
+        deliveryStatus: 'delivered'
+      },
+      {
+        id: 'po-7',
+        poNumber: 'P25E04289',
+        quotationNumber: '25R000467',
+        orderDate: '2025-03-15',
+        totalAmount: 6780,
+        status: 'confirmed',
+        supplierName: 'موزع الأجهزة الصناعية',
+        currency: 'EGP',
+        deliveryStatus: 'processing'
+      },
+      {
+        id: 'po-8',
+        poNumber: 'P25E04456',
+        quotationNumber: '25R000523',
+        orderDate: '2025-03-18',
+        totalAmount: 9340,
+        status: 'pending',
+        supplierName: 'التوريدات الهندسية المحدودة',
+        currency: 'EGP',
+        deliveryStatus: 'pending'
+      },
+      {
+        id: 'po-9',
+        poNumber: 'P25E04578',
+        quotationNumber: '25R000634',
+        orderDate: '2025-03-22',
+        totalAmount: 18750,
+        status: 'completed',
+        supplierName: 'شركة سيمنز العربية',
+        currency: 'EGP',
+        deliveryStatus: 'delivered'
+      },
+      {
+        id: 'po-10',
+        poNumber: 'P25E04721',
+        quotationNumber: '25R000789',
+        orderDate: '2025-03-25',
+        totalAmount: 5560,
+        status: 'confirmed',
+        supplierName: 'مؤسسة الأتمتة الصناعية',
+        currency: 'EGP',
+        deliveryStatus: 'shipped'
       }
     ]; 
   }
@@ -368,10 +456,10 @@ export class DemoStorage {
   async getAdvancedQuotationSearch() { return []; }
   async getAdvancedPurchaseOrderSearch() { return []; }
   
-  // دوال أوامر الشراء المفقودة
+  // دوال أوامر الشراء المفقودة مع البيانات المستوردة
   async getPurchaseOrderItems(poId: string) {
-    if (poId === 'po-1') {
-      return [
+    const itemsMap: Record<string, any[]> = {
+      'po-1': [
         {
           id: 'po-item-1',
           itemId: 'demo-item-1',
@@ -379,15 +467,13 @@ export class DemoStorage {
           lineItem: '1854.014.CARIER.7506',
           partNumber: 'CARRIER-7506',
           description: 'LEFT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
-          quantity: 2,
+          quantity: 10,
           unitPrice: 225,
-          totalPrice: 450,
-          uom: 'EACH'
+          totalPrice: 2250,
+          uom: 'SET'
         }
-      ];
-    }
-    if (poId === 'po-2') {
-      return [
+      ],
+      'po-2': [
         {
           id: 'po-item-2',
           itemId: 'demo-item-2',
@@ -395,14 +481,127 @@ export class DemoStorage {
           lineItem: '1854.014.CARIER.7507',
           partNumber: 'CARRIER-7507',
           description: 'RIGHT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
-          quantity: 5,
+          quantity: 25,
           unitPrice: 350,
-          totalPrice: 1750,
+          totalPrice: 8750,
+          uom: 'METER'
+        }
+      ],
+      'po-3': [
+        {
+          id: 'po-item-3',
+          itemId: 'demo-item-3',
+          itemNumber: 'P-000003',
+          lineItem: '5720.001.GENRAL.0004',
+          partNumber: 'ENERGIZER-AA-1.5V',
+          description: 'ENERGIZER BATTERY 1,5V SIZE AA',
+          quantity: 100,
+          unitPrice: 156,
+          totalPrice: 15600,
+          uom: 'SET'
+        }
+      ],
+      'po-4': [
+        {
+          id: 'po-item-4',
+          itemId: 'demo-item-4',
+          itemNumber: 'P-000004',
+          lineItem: '0004.166.GENRAL.7732',
+          partNumber: 'ENERGIZER-AAA-1.5V',
+          description: 'ENERGIZER BATTERY,1.5V,SIZE AAA',
+          quantity: 48,
+          unitPrice: 90,
+          totalPrice: 4320,
+          uom: 'KG'
+        }
+      ],
+      'po-5': [
+        {
+          id: 'po-item-5',
+          itemId: 'demo-item-5',
+          itemNumber: 'P-000005',
+          lineItem: '0005.512.GENRAL.9995',
+          partNumber: 'TRS/1 CR-A',
+          description: 'P/N TRS/1 CR-A , HINGE DOOR HINGES (SET) REF/ 2101099 FOR ELECTRIC COOKER',
+          quantity: 53,
+          unitPrice: 149,
+          totalPrice: 7890,
           uom: 'EACH'
         }
-      ];
-    }
-    return [];
+      ],
+      'po-6': [
+        {
+          id: 'po-item-6',
+          itemId: 'demo-item-6',
+          itemNumber: 'P-000006',
+          lineItem: '6754.321.GENRAL.8844',
+          partNumber: '11.33454.247',
+          description: 'P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)',
+          quantity: 30,
+          unitPrice: 415,
+          totalPrice: 12450,
+          uom: 'PIECE'
+        }
+      ],
+      'po-7': [
+        {
+          id: 'po-item-7',
+          itemId: 'demo-item-7',
+          itemNumber: 'P-000007',
+          lineItem: '7788.445.SCHNEIDER.2233',
+          partNumber: 'XB2-BA31',
+          description: 'SCHNEIDER ELECTRIC PUSH BUTTON XB2-BA31 GREEN 22MM',
+          quantity: 15,
+          unitPrice: 452,
+          totalPrice: 6780,
+          uom: 'PIECE'
+        }
+      ],
+      'po-8': [
+        {
+          id: 'po-item-8',
+          itemId: 'demo-item-8',
+          itemNumber: 'P-000008',
+          lineItem: '8899.556.ABB.1122',
+          partNumber: 'AF09-30-10',
+          description: 'ABB CONTACTOR AF09-30-10 220V AC 9A 3-POLE',
+          quantity: 12,
+          unitPrice: 778,
+          totalPrice: 9340,
+          uom: 'PIECE'
+        }
+      ],
+      'po-9': [
+        {
+          id: 'po-item-9',
+          itemId: 'demo-item-9',
+          itemNumber: 'P-000009',
+          lineItem: '9900.667.SIEMENS.5544',
+          partNumber: '3RT1015-1BB41',
+          description: 'SIEMENS CONTACTOR 3RT1015-1BB41 220V AC 7A 3-POLE',
+          quantity: 25,
+          unitPrice: 750,
+          totalPrice: 18750,
+          uom: 'PIECE'
+        }
+      ],
+      'po-10': [
+        {
+          id: 'po-item-10',
+          itemId: 'demo-item-10',
+          itemNumber: 'P-000010',
+          lineItem: '1011.778.AUTOMATION.6677',
+          partNumber: 'PLC-CPU-1214C',
+          description: 'PLC CPU 1214C DC/DC/DC WITH DIGITAL INPUTS/OUTPUTS',
+          quantity: 4,
+          unitPrice: 1390,
+          totalPrice: 5560,
+          uom: 'UNIT'
+        }
+      ]
+    };
+    
+    return itemsMap[poId] || [];
   }
   
   async getPurchaseOrder(id: string) {
