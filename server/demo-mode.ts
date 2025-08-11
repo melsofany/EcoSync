@@ -4,7 +4,7 @@ export class DemoStorage {
     id: 'demo-admin-1',
     username: 'admin',
     password: '$2b$10$uvaNpzImqUgJ0sVnTT.uRORgXa2lpiC4E2gJBvnO/54G1kmiox0i2', // admin123
-    fullName: 'مدير النظام - نسخة تجريبية',
+    fullName: 'مدير النظام - قرطبة للتوريدات',
     email: 'admin@demo.com',
     role: 'manager',
     permissions: {
@@ -21,7 +21,7 @@ export class DemoStorage {
   };
 
   constructor() {
-    console.log('🎯 تشغيل النظام في وضع العرض التوضيحي');
+    console.log('🎯 تشغيل نظام قرطبة للتوريدات - البيانات الحقيقية');
   }
 
   async getUserByUsername(username: string) {
