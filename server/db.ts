@@ -1,15 +1,12 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+// استخدام قاعدة بيانات مؤقتة للتطوير
+import { tempDb, initTempDatabase } from './temp-db.js';
 import * as schema from "@shared/schema";
 
-neonConfig.webSocketConstructor = ws;
+// تصدير قاعدة البيانات المؤقتة
+export const db = tempDb;
+export const pool = null; // لن نحتاج للتجمع في قاعدة البيانات المؤقتة
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
+// تهيئة قاعدة البيانات عند التحميل
+await initTempDatabase();
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+console.log('🔄 استخدام قاعدة بيانات مؤقتة للتطوير');

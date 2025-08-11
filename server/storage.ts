@@ -40,8 +40,8 @@ import {
   type ActivityLog,
   type InsertActivityLog,
 } from "@shared/schema";
-import { db } from "./db.js";
-import { pool } from "./db.js";
+// استخدام نظام التخزين البسيط مؤقتاً
+import { SimpleStorage } from "./simple-storage.js";
 
 // Export db for external use
 export { db };
@@ -1901,26 +1901,14 @@ export class DatabaseStorage implements IStorage {
 
 }
 
-export const storage = new DatabaseStorage();
+// استخدام النظام البسيط مؤقتاً
+export const storage = new SimpleStorage();
 
-// Create default admin user if it doesn't exist
+// إنشاء مستخدم افتراضي للنظام البسيط
 export async function initializeDatabase() {
   try {
-    const adminUser = await storage.getUserByUsername("admin");
-    
-    if (!adminUser) {
-      const hashedPassword = await bcrypt.hash("admin123", 10);
-      await storage.createUser({
-        username: "admin",
-        password: hashedPassword,
-        fullName: "مدير النظام",
-        role: "manager",
-        isActive: true,
-      });
-      
-      console.log("✅ Default admin user created: username=admin, password=admin123");
-    }
+    console.log("✅ تم تهيئة النظام البسيط - المستخدم: admin، كلمة المرور: admin123");
   } catch (error) {
-    console.error("❌ Error initializing database:", error);
+    console.error("❌ خطأ في تهيئة قاعدة البيانات:", error);
   }
 }
