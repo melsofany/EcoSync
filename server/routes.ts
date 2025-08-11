@@ -2897,6 +2897,38 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Check Google Sheets items
+  app.get('/api/check-sheets-items', async (req, res) => {
+    try {
+      const user = req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      console.log('🔍 فحص ورقة الأصناف في Google Sheets...');
+      
+      const { googleSheetsStorage } = await import('./google-sheets-storage');
+      const items = await googleSheetsStorage.getAllItems();
+      
+      const sampleItems = items.slice(0, 10).map(item => ({
+        itemNumber: item.itemNumber || 'غير محدد',
+        partNumber: item.partNumber || 'فارغ',
+        lineItem: item.lineItem || 'فارغ',
+        description: item.description?.substring(0, 100) || 'فارغ'
+      }));
+      
+      res.json({
+        success: true,
+        totalItems: items.length,
+        sampleItems: sampleItems
+      });
+
+    } catch (error) {
+      console.error('❌ خطأ في فحص الأصناف:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
