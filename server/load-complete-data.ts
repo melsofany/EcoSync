@@ -31,40 +31,43 @@ export class CompleteDataLoader {
     const itemsMap = new Map<string, any>();
 
     this.completeData.forEach((record, index) => {
-      // معالجة طلبات التسعير
-      if (record.F && record.F.startsWith('25R')) {
-        const rfqId = record.F;
+      // معالجة طلبات التسعير - التحقق من عمود E وF
+      const rfqNumber = record.E || record.F;
+      if (rfqNumber && rfqNumber.toString().startsWith('25R')) {
+        const rfqId = rfqNumber.toString();
         if (!rfqMap.has(rfqId)) {
           rfqMap.set(rfqId, {
-            id: `rfq-${index}`,
+            id: `rfq-real-${index}`,
             rfqNumber: rfqId,
             customRequestNumber: rfqId,
-            requestDate: record.G || new Date().toISOString().split('T')[0],
-            status: record.L ? 'completed' : 'pending',
+            requestDate: record.F || record.G || new Date().toISOString().split('T')[0],
+            status: (record.J || record.L) ? 'completed' : 'pending',
             clientName: 'عميل قرطبة للتوريدات',
             totalItems: 0,
             totalValue: 0,
-            createdAt: record.G || new Date().toISOString(),
+            createdAt: record.F || record.G || new Date().toISOString(),
             notes: 'طلب تسعير مستورد من البيانات الحقيقية'
           });
         }
         
         const rfq = rfqMap.get(rfqId);
         rfq.totalItems++;
-        if (record.H && !isNaN(Number(record.H))) {
-          rfq.totalValue += Number(record.H) || 0;
+        const price = Number(record.H) || Number(record.M) || 0;
+        if (price > 0) {
+          rfq.totalValue += price;
         }
       }
 
-      // معالجة أوامر الشراء
-      if (record.L && record.L.startsWith('P25E')) {
-        const poId = record.L;
+      // معالجة أوامر الشراء - التحقق من عمود J وL
+      const poNumber = record.J || record.L;
+      if (poNumber && (poNumber.toString().startsWith('P25E') || poNumber.toString().includes('25E'))) {
+        const poId = poNumber.toString();
         if (!poMap.has(poId)) {
           poMap.set(poId, {
-            id: `po-${index}`,
+            id: `po-real-${index}`,
             poNumber: poId,
-            quotationNumber: record.F || '',
-            orderDate: record.M || new Date().toISOString().split('T')[0],
+            quotationNumber: record.E || record.F || '',
+            orderDate: record.K || record.M || new Date().toISOString().split('T')[0],
             totalAmount: 0,
             status: this.getRandomStatus(),
             supplierName: this.getRandomSupplier(),
@@ -76,8 +79,10 @@ export class CompleteDataLoader {
         
         const po = poMap.get(poId);
         po.itemsCount++;
-        if (record.H && !isNaN(Number(record.H))) {
-          po.totalAmount += Number(record.H) || 0;
+        // استخدام سعر PO من العمود M أو H
+        const price = Number(record.M) || Number(record.H) || 0;
+        if (price > 0) {
+          po.totalAmount += price;
         }
       }
 

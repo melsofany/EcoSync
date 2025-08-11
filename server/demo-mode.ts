@@ -239,7 +239,14 @@ export class DemoStorage {
     // استخدام البيانات الحقيقية الكاملة المحملة من الملف
     const allRFQs = completeDataLoader.getAllQuotationRequests();
     
-    // إذا لم تكن البيانات محملة، استخدم البيانات النموذجية
+    // إذا كانت البيانات الحقيقية محملة، استخدمها مباشرة
+    if (allRFQs.length > 0) {
+      console.log(`🎯 عرض ${allRFQs.length} طلب تسعير حقيقي من البيانات المستوردة`);
+      return allRFQs;
+    }
+    
+    // احتياطي: البيانات النموذجية في حالة عدم التحميل
+    console.log('⚠️ استخدام البيانات النموذجية - لم يتم تحميل البيانات الحقيقية');
     if (allRFQs.length === 0) {
       return [
         {
@@ -268,9 +275,6 @@ export class DemoStorage {
         }
       ];
     }
-    
-    // إرجاع البيانات الحقيقية الكاملة
-    return allRFQs;
   }
   
   // دوال طلبات التسعير مع العملاء
@@ -365,9 +369,15 @@ export class DemoStorage {
     // استخدام البيانات الحقيقية الكاملة المحملة من الملف
     const allPOs = completeDataLoader.getAllPurchaseOrders();
     
-    // إذا لم تكن البيانات محملة، استخدم البيانات النموذجية
-    if (allPOs.length === 0) {
-      return [
+    // إذا كانت البيانات الحقيقية محملة، استخدمها مباشرة
+    if (allPOs.length > 0) {
+      console.log(`🎯 عرض ${allPOs.length} أمر شراء حقيقي من البيانات المستوردة`);
+      return allPOs;
+    }
+    
+    // احتياطي: البيانات النموذجية في حالة عدم التحميل
+    console.log('⚠️ استخدام البيانات النموذجية - لم يتم تحميل البيانات الحقيقية');
+    return [
       {
         id: 'po-1',
         poNumber: 'P25E02726',
@@ -589,11 +599,7 @@ export class DemoStorage {
         currency: 'EGP',
         deliveryStatus: 'delivered'
       }
-    ]; 
-    }
-    
-    // إرجاع البيانات الحقيقية الكاملة
-    return allPOs;
+    ];
   }
   
   // دوال إضافية مطلوبة
