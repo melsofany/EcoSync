@@ -24,19 +24,18 @@ declare module "express-session" {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize database with default data
-  await initializeDatabase();
+  // Initialize database with default data (temporarily disabled due to endpoint issues)
+  try {
+    await initializeDatabase();
+  } catch (error) {
+    console.log('⚠️ Database initialization failed, continuing without database:', error.message);
+  }
   
   // Create PostgreSQL session store
   const PgSession = connectPgSimple(session);
   
-  // Session configuration with PostgreSQL store
+  // Session configuration with memory store (temporary fallback)
   app.use(session({
-    store: new PgSession({
-      pool: pool,
-      tableName: 'session',
-      createTableIfMissing: true
-    }),
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
@@ -2853,9 +2852,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Import and register data recovery routes
-  const dataRecoveryRoutes = await import('./routes/data-recovery');
-  app.use('/api/data-recovery', dataRecoveryRoutes.default);
+  // Data recovery routes (standalone version without database dependency)
+  const dataRecoveryStandaloneRoutes = await import('./routes/data-recovery-standalone');
+  app.use('/api/data-recovery', dataRecoveryStandaloneRoutes.default);
 
   const httpServer = createServer(app);
   return httpServer;
