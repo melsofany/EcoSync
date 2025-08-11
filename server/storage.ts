@@ -42,6 +42,9 @@ import {
 } from "@shared/schema";
 import { db } from "./db.js";
 import { pool } from "./db.js";
+
+// Export db for external use
+export { db };
 import { eq, desc, like, and, isNull, isNotNull, sql, or, inArray, not, gt, asc, count, exists, ilike } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
