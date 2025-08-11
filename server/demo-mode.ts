@@ -301,6 +301,72 @@ export class DemoStorage {
       }
     };
   }
+  
+  // دوال الأسعار والطلبات
+  async getQuotationItemsByQuotation() { return []; }
+  async getItemsRequiringPricing() { return []; }
+  async getItemsReadyForCustomerPricing() { return []; }
+  async getQuotationItemsWithoutSupplierPricing() { return []; }
+  async getQuotationItemsWithSupplierPricing() { return []; }
+  async getCustomerPricingForQuotation() { return []; }
+  
+  // دوال أوامر الشراء مع البيانات الحقيقية
+  async getAllPurchaseOrders() { 
+    return [
+      {
+        id: 'po-1',
+        poNumber: 'P25E02726',
+        quotationNumber: '25R000057',
+        orderDate: '2025-02-24',
+        totalAmount: 450,
+        status: 'completed',
+        supplierName: 'موزع كاريير',
+        currency: 'EGP',
+        deliveryStatus: 'delivered'
+      },
+      {
+        id: 'po-2', 
+        poNumber: 'P25E03288',
+        quotationNumber: '25R000209',
+        orderDate: '2025-02-26',
+        totalAmount: 1750,
+        status: 'pending',
+        supplierName: 'الموزع العام',
+        currency: 'EGP',
+        deliveryStatus: 'pending'
+      }
+    ]; 
+  }
+  
+  // دوال إضافية مطلوبة
+  async getQuotationItemsByQuotationId() { return []; }
+  async createQuotationItem() { return {}; }
+  async updateQuotationItems() { return []; }
+  async deleteQuotationItems() { return; }
+  
+  async createPurchaseOrderItem() { return {}; }
+  async updatePurchaseOrderItems() { return []; }
+  async deletePurchaseOrderItems() { return; }
+  
+  async createSupplierQuote() { return {}; }
+  async updateSupplierQuote() { return {}; }
+  async deleteSupplierQuote() { return; }
+  
+  async createSupplierPricing() { return {}; }
+  async updateSupplierPricing() { return {}; }
+  async deleteSupplierPricing() { return; }
+  
+  async createCustomerPricing() { return {}; }
+  async updateCustomerPricing() { return {}; }
+  async deleteCustomerPricing() { return; }
+  
+  async getQuotationsByStatusAndClient() { return []; }
+  async getItemsBySupplierAndCategory() { return []; }
+  async getPurchaseOrdersByDateRange() { return []; }
+  
+  async getAdvancedItemSearch() { return []; }
+  async getAdvancedQuotationSearch() { return []; }
+  async getAdvancedPurchaseOrderSearch() { return []; }
   async getTopSuppliers() { return []; }
   async getMonthlyStats() { return []; }
   async backupDatabase() { return ''; }
