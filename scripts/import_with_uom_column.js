@@ -91,13 +91,13 @@ async function processImportData() {
   try {
     console.log('🚀 بدء الاستيراد مع عمود الوحدات...');
     
-    // قراءة بيانات الـ Excel
-    const excelDataPath = './attached_assets/complete_excel_data.json';
-    if (!fs.existsSync(excelDataPath)) {
-      throw new Error('ملف البيانات غير موجود');
+    // قراءة البيانات النظيفة مع PART NO
+    const cleanDataPath = './attached_assets/clean_import_data_5449.json';
+    if (!fs.existsSync(cleanDataPath)) {
+      throw new Error('ملف البيانات النظيفة غير موجود. يرجى تشغيل create_clean_import_data.js أولاً');
     }
     
-    const excelData = JSON.parse(fs.readFileSync(excelDataPath, 'utf8'));
+    const excelData = JSON.parse(fs.readFileSync(cleanDataPath, 'utf8'));
     console.log(`📊 تم تحميل ${excelData.length} صف من البيانات`);
     
     // إحصائيات الاستيراد
@@ -120,7 +120,7 @@ async function processImportData() {
         const poNumber = row['L'];  // عمود L - رقم أمر الشراء من نفس الصف
         const description = row['A']; // الوصف
         const lineItem = row['I']; // عمود I - LINE ITEM
-        const partNumber = row['B']; // عمود B - PART NO (رقم الجزء)
+        const partNumber = row['PART_NO'] || row['B']; // PART NO المدمج أو عمود B
         const unitOfMeasure = row['H']; // عمود H - الوحدة (UOM)
         const quantity = parseFloat(row['C']) || 0; // الكمية
         const unitPrice = parseFloat(row['D']) || 0; // سعر الوحدة
