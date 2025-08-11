@@ -69,7 +69,49 @@ export class DemoStorage {
   async deleteQuotationRequest() { return; }
   
   async createItem() { return {}; }
-  async getAllItems() { return []; }
+  async getAllItems() { 
+    return [
+      {
+        id: 'demo-item-1',
+        itemNumber: 'P-000001',
+        lineItem: '1854.014.CARIER.7506',
+        partNumber: 'CARRIER-7506',
+        description: 'LEFT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
+        uom: 'EACH',
+        category: 'Air Conditioning',
+        brand: 'CARRIER',
+        createdAt: '2025-08-11T20:00:00.000Z',
+        aiStatus: 'processed',
+        aiConfidence: 95
+      },
+      {
+        id: 'demo-item-2',
+        itemNumber: 'P-000002',
+        lineItem: '1854.014.CARIER.7507',
+        partNumber: 'CARRIER-7507',
+        description: 'RIGHT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
+        uom: 'EACH',
+        category: 'Air Conditioning',
+        brand: 'CARRIER',
+        createdAt: '2025-08-11T20:01:00.000Z',
+        aiStatus: 'processed',
+        aiConfidence: 94
+      },
+      {
+        id: 'demo-item-3',
+        itemNumber: 'P-000003',
+        lineItem: '5720.001.GENRAL.0004',
+        partNumber: 'ENERGIZER-AA-1.5V',
+        description: 'ENERGIZER BATTERY 1,5V SIZE AA',
+        uom: 'EACH',
+        category: 'Electrical',
+        brand: 'ENERGIZER',
+        createdAt: '2025-08-11T20:02:00.000Z',
+        aiStatus: 'processed',
+        aiConfidence: 99
+      }
+    ]; 
+  }
   async getItem() { return undefined; }
   async updateItem() { return {}; }
   async deleteItem() { return; }
@@ -180,6 +222,51 @@ export class DemoStorage {
   
   async updateItemNumbers() { return; }
   async generateBulkItemNumbers() { return []; }
+  
+  // دوال طلبات التسعير مع العملاء
+  async getAllQuotationRequestsWithClients() { 
+    return [
+      {
+        id: 'demo-rfq-1',
+        rfqNumber: '25R000057',
+        clientName: 'شركة المثال للهندسة',
+        requestDate: '2025-01-05',
+        status: 'quoted',
+        totalItems: 3,
+        totalValue: 675
+      }
+    ]; 
+  }
+  
+  async getQuotationRequestWithItems() { 
+    return {
+      id: 'demo-rfq-1',
+      rfqNumber: '25R000057',
+      clientName: 'شركة المثال للهندسة',
+      requestDate: '2025-01-05',
+      status: 'quoted',
+      items: [
+        {
+          id: 'demo-item-1',
+          lineItem: '1854.014.CARIER.7506',
+          partNumber: 'CARRIER-7506',
+          description: 'LEFT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
+          uom: 'EACH',
+          quantity: 2,
+          price: 225
+        }
+      ]
+    }; 
+  }
+  
+  // دوال إضافية مفقودة
+  async createClient() { return {}; }
+  async updateClient() { return {}; }
+  async deleteClient() { return {}; }
+  
+  async createSupplier() { return {}; }
+  async updateSupplier() { return {}; }
+  async deleteSupplier() { return {}; }
   async getTopSuppliers() { return []; }
   async getMonthlyStats() { return []; }
   async backupDatabase() { return ''; }
