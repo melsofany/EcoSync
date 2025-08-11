@@ -232,56 +232,180 @@ export default function DataRecoveryPage() {
         </CardContent>
       </Card>
 
-      {/* Data Preview */}
+      {/* Data Preview Table */}
       {showPreview && previewData.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Eye className="w-5 h-5 ml-2" />
-              معاينة البيانات المستردة
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Eye className="w-5 h-5 ml-2" />
+                معاينة البيانات المستردة - جدول شامل
+              </div>
+              <Badge variant="outline">
+                {previewData.length.toLocaleString()} صف مُحمّل
+              </Badge>
             </CardTitle>
+            <CardDescription>
+              عرض البيانات المستردة من جميع الأعمدة الـ 13 (A-M) في تخطيط جدول واضح
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-96">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm border-collapse border border-gray-300">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border border-gray-300 p-2 text-right">الصف</th>
-                      {columns.map(col => (
-                        <th key={col.name} className="border border-gray-300 p-2 text-right min-w-[120px]">
-                          {col.name} - {col.arabicName.split(' ')[0]}
-                        </th>
-                      ))}
+            <ScrollArea className="h-[600px] w-full">
+              <div className="min-w-[1400px]">
+                <table className="w-full text-xs border-collapse border border-gray-300 bg-white">
+                  <thead className="sticky top-0 bg-gray-50">
+                    <tr>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-bold text-gray-700 min-w-[50px] bg-gray-100">
+                        الصف
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-blue-700 min-w-[80px]">
+                        A<br/>
+                        <span className="text-xs font-normal">وحدة القياس</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-blue-700 min-w-[80px]">
+                        B<br/>
+                        <span className="text-xs font-normal">رقم البند</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-blue-700 min-w-[120px]">
+                        C<br/>
+                        <span className="text-xs font-normal">رقم القطعة</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-blue-700 min-w-[150px]">
+                        D<br/>
+                        <span className="text-xs font-normal">الوصف</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-green-700 min-w-[100px]">
+                        E<br/>
+                        <span className="text-xs font-normal">رقم RFQ</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-green-700 min-w-[100px]">
+                        F<br/>
+                        <span className="text-xs font-normal">تاريخ الطلب</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-center font-semibold text-green-700 min-w-[80px]">
+                        G<br/>
+                        <span className="text-xs font-normal">الكمية</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-center font-semibold text-green-700 min-w-[80px]">
+                        H<br/>
+                        <span className="text-xs font-normal">السعر</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-orange-700 min-w-[100px]">
+                        I<br/>
+                        <span className="text-xs font-normal">تاريخ الرد</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-purple-700 min-w-[120px]">
+                        J<br/>
+                        <span className="text-xs font-normal">رقم PO</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-right font-semibold text-purple-700 min-w-[100px]">
+                        K<br/>
+                        <span className="text-xs font-normal">تاريخ PO</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-center font-semibold text-purple-700 min-w-[80px]">
+                        L<br/>
+                        <span className="text-xs font-normal">كمية PO</span>
+                      </th>
+                      <th className="border border-gray-300 px-2 py-3 text-center font-semibold text-purple-700 min-w-[80px]">
+                        M<br/>
+                        <span className="text-xs font-normal">سعر PO</span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {previewData.slice(0, 20).map((row, index) => (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="border border-gray-300 p-2 font-medium">
+                    {previewData.slice(0, 50).map((row, index) => (
+                      <tr key={index} className={`hover:bg-blue-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                        <td className="border border-gray-300 px-2 py-2 font-bold text-blue-600 text-center bg-gray-50">
                           {index + 1}
                         </td>
-                        {columns.map(col => (
-                          <td key={col.name} className="border border-gray-300 p-2">
-                            {row[col.name] ? (
-                              <span className="text-gray-900">{row[col.name]}</span>
-                            ) : (
-                              <span className="text-gray-400 italic">فارغ</span>
-                            )}
-                          </td>
-                        ))}
+                        <td className="border border-gray-300 px-2 py-2">
+                          <span className={row.A ? 'text-gray-800 font-medium' : 'text-gray-400 italic text-xs'}>
+                            {row.A || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2 text-center">
+                          <span className={row.B ? 'text-gray-800 font-semibold' : 'text-gray-400 italic text-xs'}>
+                            {row.B || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2">
+                          <span 
+                            className={row.C ? 'text-gray-800 font-mono text-xs bg-blue-50 px-1 rounded' : 'text-gray-400 italic text-xs'} 
+                            title={row.C}
+                          >
+                            {row.C ? String(row.C).substring(0, 15) + (String(row.C).length > 15 ? '...' : '') : 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2">
+                          <span 
+                            className={row.D ? 'text-gray-800 text-xs' : 'text-gray-400 italic text-xs'} 
+                            title={row.D}
+                          >
+                            {row.D ? String(row.D).substring(0, 25) + (String(row.D).length > 25 ? '...' : '') : 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2">
+                          <span className={row.E ? 'text-green-700 font-bold bg-green-50 px-2 py-1 rounded text-xs' : 'text-gray-400 italic text-xs'}>
+                            {row.E || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2 text-xs">
+                          <span className={row.F ? 'text-gray-800' : 'text-gray-400 italic'}>
+                            {row.F || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2 text-center">
+                          <span className={row.G ? 'text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded text-xs' : 'text-gray-400 italic text-xs'}>
+                            {row.G || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2 text-center">
+                          <span className={row.H ? 'text-green-600 font-bold bg-green-50 px-2 py-1 rounded text-xs' : 'text-gray-400 italic text-xs'}>
+                            {row.H ? `${row.H}` : 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2 text-xs">
+                          <span className={row.I ? 'text-gray-800' : 'text-gray-400 italic'}>
+                            {row.I || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2">
+                          <span className={row.J ? 'text-purple-700 font-mono text-xs bg-purple-50 px-1 rounded' : 'text-gray-400 italic text-xs'}>
+                            {row.J || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2 text-xs">
+                          <span className={row.K ? 'text-gray-800' : 'text-gray-400 italic'}>
+                            {row.K || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2 text-center">
+                          <span className={row.L ? 'text-purple-600 font-bold bg-purple-50 px-2 py-1 rounded text-xs' : 'text-gray-400 italic text-xs'}>
+                            {row.L || 'فارغ'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-2 text-center">
+                          <span className={row.M ? 'text-purple-600 font-bold bg-purple-50 px-2 py-1 rounded text-xs' : 'text-gray-400 italic text-xs'}>
+                            {row.M ? `${row.M}` : 'فارغ'}
+                          </span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                
+                {previewData.length > 50 && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+                    <div className="text-sm text-blue-800 font-medium">
+                      📊 عرض أول 50 صف من إجمالي {previewData.length.toLocaleString()} صف مسترجع
+                    </div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      البيانات الكاملة تحتوي على {(previewData.length * 13).toLocaleString()} خلية بيانات
+                    </div>
+                  </div>
+                )}
               </div>
             </ScrollArea>
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg flex items-center">
-              <AlertCircle className="w-4 h-4 text-blue-600 ml-2" />
-              <span className="text-sm text-blue-800">
-                معاينة أول 20 صف من البيانات المستردة. الخلايا الفارغة محفوظة كما هي في البيانات الأصلية.
-              </span>
-            </div>
           </CardContent>
         </Card>
       )}

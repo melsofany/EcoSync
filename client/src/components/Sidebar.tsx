@@ -73,6 +73,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "supplier_pricing",
     },
     {
+      title: "استرداد البيانات",
+      href: "/data-recovery",
+      icon: Download,
+      section: "data_recovery",
+    },
+    {
       title: "تسعير العملاء",
       href: "/customer-pricing",
       icon: DollarSign,
@@ -126,13 +132,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: Bot,
       section: "admin",
     },
-    {
-      title: "استرداد البيانات",
-      href: "/data-recovery",
-      icon: Download,
-      section: "admin",
-    },
-
   ];
 
   const getRoleLabel = (role: string) => {
