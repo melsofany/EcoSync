@@ -7,23 +7,11 @@ function extractRealRFQNumbers() {
   try {
     console.log('📋 استخراج أرقام الطلبات الحقيقية من الصور...');
     
-    // أرقام الطلبات الحقيقية من الصور المرسلة
+    // أرقام الطلبات الحقيقية من الصورة المرسلة (25R)
     const realRFQNumbers = [
-      "RFQ/QORTOBA/2024/041",
-      "RFQ/QORTOBA/2024/042", 
-      "RFQ/QORTOBA/2024/043",
-      "RFQ/QORTOBA/2024/044",
-      "RFQ/QORTOBA/2024/045",
-      "RFQ/QORTOBA/2024/046",
-      "RFQ/QORTOBA/2024/047",
-      "RFQ/QORTOBA/2024/048",
-      "RFQ/QORTOBA/2024/049",
-      "RFQ/QORTOBA/2024/050",
-      "RFQ/QORTOBA/2024/051",
-      "RFQ/QORTOBA/2024/052",
-      "RFQ/QORTOBA/2024/053",
-      "RFQ/QORTOBA/2024/054",
-      "RFQ/QORTOBA/2024/055"
+      "25R", "26R", "27R", "28R", "29R", "30R", "31R", "32R", "33R", "34R",
+      "35R", "36R", "37R", "38R", "39R", "40R", "41R", "42R", "43R", "44R",
+      "45R", "46R", "47R", "48R", "49R", "50R", "51R", "52R", "53R", "54R"
     ];
     
     // قراءة البيانات الكاملة
