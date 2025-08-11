@@ -39,7 +39,7 @@ export default function PurchaseOrders() {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { label: "في الانتظار", variant: "secondary" as const },
-      confirmed: { label: "مؤكد", variant: "default" as const },
+      completed: { label: "مكتمل", variant: "default" as const },
       delivered: { label: "تم التسليم", variant: "default" as const },
       invoiced: { label: "تم إصدار الفاتورة", variant: "default" as const },
     };
@@ -49,7 +49,7 @@ export default function PurchaseOrders() {
       <Badge 
         variant={config.variant} 
         className={
-          status === "confirmed" || status === "delivered" || status === "invoiced" ? "bg-green-100 text-green-800 hover:bg-green-100" :
+          status === "completed" || status === "delivered" || status === "invoiced" ? "bg-green-100 text-green-800 hover:bg-green-100" :
           status === "pending" ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" : ""
         }
       >
@@ -71,9 +71,8 @@ export default function PurchaseOrders() {
     }).format(Number(amount));
   };
 
-  const getQuotationNumber = (quotationId: string) => {
-    const quotation = quotations?.find((q: any) => q.id === quotationId);
-    return quotation?.customRequestNumber || quotation?.requestNumber || "غير محدد";
+  const getQuotationNumber = (quotationNumber: string) => {
+    return quotationNumber || "غير محدد";
   };
 
   // Get purchase order items
@@ -201,8 +200,8 @@ export default function PurchaseOrders() {
 
   // Calculate statistics
   const pendingPOs = purchaseOrders?.filter((po: any) => po.status === "pending").length || 0;
-  const confirmedPOs = purchaseOrders?.filter((po: any) => po.status === "confirmed").length || 0;
-  const totalValue = purchaseOrders?.reduce((sum: number, po: any) => sum + (Number(po.totalValue) || 0), 0) || 0;
+  const completedPOs = purchaseOrders?.filter((po: any) => po.status === "completed").length || 0;
+  const totalValue = purchaseOrders?.reduce((sum: number, po: any) => sum + (Number(po.totalAmount) || 0), 0) || 0;
   
   // Check if current user is manager
   const isManager = currentUser?.role === 'manager';
@@ -259,8 +258,8 @@ export default function PurchaseOrders() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">أوامر مؤكدة</p>
-                <p className="text-2xl font-bold text-green-600">{confirmedPOs}</p>
+                <p className="text-sm font-medium text-gray-600">أوامر مكتملة</p>
+                <p className="text-2xl font-bold text-green-600">{completedPOs}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <CheckCircle className="h-6 w-6 text-green-600" />
@@ -315,20 +314,20 @@ export default function PurchaseOrders() {
                     <TableRow key={po.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">{po.poNumber}</TableCell>
                       <TableCell className="text-blue-600">
-                        {getQuotationNumber(po.quotationId)}
+                        {getQuotationNumber(po.quotationNumber)}
                       </TableCell>
-                      <TableCell>{formatDate(po.poDate)}</TableCell>
+                      <TableCell>{formatDate(po.orderDate)}</TableCell>
                       {isManager && (
                         <TableCell className="font-medium">
-                          {formatCurrency(po.totalValue)}
+                          {formatCurrency(po.totalAmount)}
                         </TableCell>
                       )}
                       <TableCell>{getStatusBadge(po.status)}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
-                          <div className={`w-2 h-2 rounded-full ${po.deliveryStatus ? 'bg-green-400' : 'bg-gray-300'}`}></div>
+                          <div className={`w-2 h-2 rounded-full ${po.deliveryStatus === 'delivered' ? 'bg-green-400' : 'bg-gray-300'}`}></div>
                           <span className="text-sm">
-                            {po.deliveryStatus ? 'تم التسليم' : 'لم يتم التسليم'}
+                            {po.deliveryStatus === 'delivered' ? 'تم التسليم' : 'قيد الانتظار'}
                           </span>
                         </div>
                       </TableCell>
