@@ -40,35 +40,11 @@ export class DemoStorage {
     this.syncToGoogleSheets();
   }
 
-  // مزامنة البيانات مع Google Sheets
+  // مزامنة البيانات مع Google Sheets (معطلة حالياً)
   private async syncToGoogleSheets() {
-    // تأخير المزامنة لضمان اكتمال تحميل البيانات
-    setTimeout(async () => {
-      try {
-        console.log('🔄 بدء مزامنة البيانات مع Google Sheets...');
-        
-        // تهيئة Google Sheets
-        await googleSheetsStorage.initializeSheets();
-        
-        // حفظ البيانات تدريجياً لتجنب حدود API
-        console.log('📊 حفظ أوامر الشراء...');
-        await googleSheetsStorage.savePurchaseOrders(this.realData.purchaseOrders.slice(0, 100));
-        
-        setTimeout(async () => {
-          console.log('📋 حفظ طلبات التسعير...');
-          await googleSheetsStorage.saveQuotationRequests(this.realData.quotationRequests.slice(0, 100));
-          
-          setTimeout(async () => {
-            console.log('📦 حفظ الأصناف...');
-            await googleSheetsStorage.saveItems(this.realData.items.slice(0, 200));
-            console.log('✅ تم حفظ عينة من البيانات في Google Sheets');
-          }, 2000);
-        }, 2000);
-        
-      } catch (error) {
-        console.log('⚠️ تم تعطيل مزامنة Google Sheets مؤقتاً:', error.message);
-      }
-    }, 3000);
+    console.log('🔄 مزامنة Google Sheets معطلة - تم مسح البيانات بناءً على طلب المستخدم');
+    console.log('📋 النظام يعمل بالذاكرة فقط مع البيانات الحقيقية');
+    console.log('🗂️ البيانات متوفرة: 300 أمر شراء + 1000 طلب تسعير + 5449 صنف');
   }
 
   async getUserByUsername(username: string) {

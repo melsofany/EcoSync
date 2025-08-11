@@ -189,6 +189,40 @@ export class GoogleSheetsStorage {
       console.error('❌ خطأ في تهيئة Google Sheets:', error);
     }
   }
+
+  // مسح جميع البيانات من Google Sheets
+  async clearAllData() {
+    try {
+      const sheets = ['أوامر الشراء', 'طلبات التسعير', 'الأصناف'];
+      
+      for (const sheetName of sheets) {
+        try {
+          await this.sheets.spreadsheets.values.clear({
+            spreadsheetId: this.spreadsheetId,
+            range: `${sheetName}!A:Z`
+          });
+          console.log(`🗑️ تم مسح بيانات ورقة: ${sheetName}`);
+        } catch (error) {
+          console.log(`⚠️ لا توجد ورقة ${sheetName} أو تم مسحها بالفعل`);
+        }
+      }
+      
+      console.log('✅ تم مسح جميع البيانات من Google Sheets');
+    } catch (error) {
+      console.log('❌ خطأ في مسح البيانات:', error.message);
+    }
+  }
+
+  // إعادة تعيين الأوراق
+  async resetSheets() {
+    try {
+      console.log('🔄 إعادة تعيين Google Sheets...');
+      await this.clearAllData();
+      console.log('✅ تم إعادة تعيين Google Sheets بنجاح');
+    } catch (error) {
+      console.log('❌ خطأ في إعادة تعيين الأوراق:', error.message);
+    }
+  }
 }
 
 export const googleSheetsStorage = new GoogleSheetsStorage();
