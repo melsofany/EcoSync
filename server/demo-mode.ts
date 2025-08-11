@@ -1,4 +1,6 @@
 // نظام عرض توضيحي للبيانات المستخرجة
+import { completeDataLoader } from './load-complete-data';
+
 export class DemoStorage {
   private demoUser = {
     id: 'demo-admin-1',
@@ -70,47 +72,56 @@ export class DemoStorage {
   
   async createItem() { return {}; }
   async getAllItems() { 
-    return [
-      {
-        id: 'demo-item-1',
-        itemNumber: 'P-000001',
-        lineItem: '1854.014.CARIER.7506',
-        partNumber: 'CARRIER-7506',
-        description: 'LEFT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
-        uom: 'EACH',
-        category: 'Air Conditioning',
-        brand: 'CARRIER',
-        createdAt: '2025-08-11T20:00:00.000Z',
-        aiStatus: 'processed',
-        aiConfidence: 95
-      },
-      {
-        id: 'demo-item-2',
-        itemNumber: 'P-000002',
-        lineItem: '1854.014.CARIER.7507',
-        partNumber: 'CARRIER-7507',
-        description: 'RIGHT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
-        uom: 'EACH',
-        category: 'Air Conditioning',
-        brand: 'CARRIER',
-        createdAt: '2025-08-11T20:01:00.000Z',
-        aiStatus: 'processed',
-        aiConfidence: 94
-      },
-      {
-        id: 'demo-item-3',
-        itemNumber: 'P-000003',
-        lineItem: '5720.001.GENRAL.0004',
-        partNumber: 'ENERGIZER-AA-1.5V',
-        description: 'ENERGIZER BATTERY 1,5V SIZE AA',
-        uom: 'EACH',
-        category: 'Electrical',
-        brand: 'ENERGIZER',
-        createdAt: '2025-08-11T20:02:00.000Z',
-        aiStatus: 'processed',
-        aiConfidence: 99
-      }
-    ]; 
+    // استخدام البيانات الحقيقية الكاملة المحملة من الملف
+    const allItems = completeDataLoader.getAllItems();
+    
+    // إذا لم تكن البيانات محملة، استخدم البيانات النموذجية
+    if (allItems.length === 0) {
+      return [
+        {
+          id: 'demo-item-1',
+          itemNumber: 'P-000001',
+          lineItem: '1854.014.CARIER.7506',
+          partNumber: 'CARRIER-7506',
+          description: 'LEFT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
+          uom: 'EACH',
+          category: 'Air Conditioning',
+          brand: 'CARRIER',
+          createdAt: '2025-08-11T20:00:00.000Z',
+          aiStatus: 'processed',
+          aiConfidence: 95
+        },
+        {
+          id: 'demo-item-2',
+          itemNumber: 'P-000002',
+          lineItem: '1854.014.CARIER.7507',
+          partNumber: 'CARRIER-7507',
+          description: 'RIGHT BRACKET FOR A/C CARRIER QG MODEL 42QG18H',
+          uom: 'EACH',
+          category: 'Air Conditioning',
+          brand: 'CARRIER',
+          createdAt: '2025-08-11T20:01:00.000Z',
+          aiStatus: 'processed',
+          aiConfidence: 94
+        },
+        {
+          id: 'demo-item-3',
+          itemNumber: 'P-000003',
+          lineItem: '5720.001.GENRAL.0004',
+          partNumber: 'ENERGIZER-AA-1.5V',
+          description: 'ENERGIZER BATTERY 1,5V SIZE AA',
+          uom: 'EACH',
+          category: 'Electrical',
+          brand: 'ENERGIZER',
+          createdAt: '2025-08-11T20:02:00.000Z',
+          aiStatus: 'processed',
+          aiConfidence: 99
+        }
+      ];
+    }
+    
+    // إرجاع البيانات الحقيقية الكاملة
+    return allItems;
   }
   async getItem() { return undefined; }
   async updateItem() { return {}; }
@@ -223,6 +234,45 @@ export class DemoStorage {
   async updateItemNumbers() { return; }
   async generateBulkItemNumbers() { return []; }
   
+  // دوال طلبات التسعير مع البيانات الحقيقية
+  async getAllQuotations() {
+    // استخدام البيانات الحقيقية الكاملة المحملة من الملف
+    const allRFQs = completeDataLoader.getAllQuotationRequests();
+    
+    // إذا لم تكن البيانات محملة، استخدم البيانات النموذجية
+    if (allRFQs.length === 0) {
+      return [
+        {
+          id: 'demo-rfq-1',
+          rfqNumber: '25R000057',
+          customRequestNumber: '25R000057',
+          requestDate: '2025-02-20',
+          status: 'completed',
+          clientName: 'شركة المشاريع الهندسية المحدودة',
+          totalItems: 15,
+          totalValue: 25000,
+          createdAt: '2025-02-20T10:00:00.000Z',
+          notes: 'طلب تسعير لمعدات التكييف والتهوية'
+        },
+        {
+          id: 'demo-rfq-2', 
+          rfqNumber: '25R000209',
+          customRequestNumber: '25R000209',
+          requestDate: '2025-02-22',
+          status: 'quoted',
+          clientName: 'مؤسسة الكهرباء والميكانيكا',
+          totalItems: 8,
+          totalValue: 18500,
+          createdAt: '2025-02-22T14:30:00.000Z',
+          notes: 'طلب تسعير للأجهزة الكهربائية'
+        }
+      ];
+    }
+    
+    // إرجاع البيانات الحقيقية الكاملة
+    return allRFQs;
+  }
+  
   // دوال طلبات التسعير مع العملاء
   async getAllQuotationRequestsWithClients() { 
     return [
@@ -312,8 +362,12 @@ export class DemoStorage {
   
   // دوال أوامر الشراء مع البيانات الحقيقية المستوردة من Excel (451 أمر فريد من 698 إجمالي)
   async getAllPurchaseOrders() { 
-    // عينة من أوامر الشراء الحقيقية (عرض أول 50 أمر للأداء)
-    return [
+    // استخدام البيانات الحقيقية الكاملة المحملة من الملف
+    const allPOs = completeDataLoader.getAllPurchaseOrders();
+    
+    // إذا لم تكن البيانات محملة، استخدم البيانات النموذجية
+    if (allPOs.length === 0) {
+      return [
       {
         id: 'po-1',
         poNumber: 'P25E02726',
@@ -536,6 +590,10 @@ export class DemoStorage {
         deliveryStatus: 'delivered'
       }
     ]; 
+    }
+    
+    // إرجاع البيانات الحقيقية الكاملة
+    return allPOs;
   }
   
   // دوال إضافية مطلوبة

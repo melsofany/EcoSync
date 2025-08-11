@@ -229,7 +229,7 @@ export default function PurchaseOrders() {
           <h2 className="text-2xl font-bold text-gray-800">إدارة أوامر الشراء</h2>
           <p className="text-gray-600">إنشاء ومتابعة أوامر الشراء المرتبطة بطلبات التسعير</p>
           <p className="text-sm text-blue-600 mt-1">
-            إجمالي: 698 أمر شراء | أوامر فريدة: 451 | معروض: {totalPOs}
+            📊 إجمالي: 698 أمر شراء | أوامر فريدة: 451 | معروض: {totalPOs} | البيانات من الملف الحقيقي 5,449 صف
           </p>
         </div>
         <div className="flex gap-2">
