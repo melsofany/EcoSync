@@ -3,8 +3,14 @@ import { registerRoutes } from "./routes";
 import "./telegram-bot"; // Initialize Telegram bot
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+
+// زيادة حد حجم الطلب لدعم ملفات Excel الكبيرة (حتى 100 ميجابايت)
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ 
+  limit: '100mb',
+  extended: false,
+  parameterLimit: 50000 // زيادة حد المعاملات أيضاً
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -49,7 +55,7 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    console.error(`Express error (${status}): ${message}`, err);
   });
 
   // importantly only setup vite in development and after
@@ -84,7 +90,7 @@ app.use((req, res, next) => {
         const { initializeAutoUnification } = await import('./auto-unification.js');
         await initializeAutoUnification();
       } catch (error) {
-        console.log('⚠️ التوحيد التلقائي غير متاح:', error.message);
+        console.log('⚠️ التوحيد التلقائي غير متاح:', (error as Error).message);
       }
     }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
   });
