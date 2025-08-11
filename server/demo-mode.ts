@@ -372,7 +372,7 @@ export class DemoStorage {
   async getAllPurchaseOrders() { 
     // إرجاع البيانات الحقيقية المولدة من الملف مباشرة
     if (this.realData && this.realData.purchaseOrders.length > 0) {
-      console.log(`🎯 عرض ${this.realData.purchaseOrders.length} أمر شراء حقيقي`);
+      console.log(`🎯 عرض ${this.realData.purchaseOrders.length} أمر شراء حقيقي من البيانات المستوردة - لا نحتاج قاعدة البيانات`);
       return this.realData.purchaseOrders;
     }
     
