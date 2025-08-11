@@ -123,6 +123,63 @@ export class DemoStorage {
   async getQuotationsByStatus() { return []; }
   async getItemsBySupplier() { return []; }
   async getTopClients() { return []; }
+  
+  // إضافة الدوال المفقودة
+  async getStatistics() { 
+    return {
+      totalQuotations: 0,
+      totalItems: 0,
+      totalClients: 0,
+      totalSuppliers: 0,
+      pendingQuotations: 0,
+      completedQuotations: 0
+    }; 
+  }
+  
+  async getActivities() { return []; }
+  
+  async getAllQuotationsDetailed() { return []; }
+  async getAllItemsDetailed() { return []; }
+  async getAllPurchaseOrdersDetailed() { return []; }
+  async getAllSuppliersDetailed() { return []; }
+  
+  async searchPurchaseOrdersByClientId() { return []; }
+  async searchQuotationRequestsByClientId() { return []; }
+  async createOrUpdateItem() { return {}; }
+  async generateItemNumber() { return 'P-000001'; }
+  
+  async getUnprocessedQuotationRequests() { return []; }
+  async updateQuotationRequestStatus() { return {}; }
+  
+  async getItemsWithPricing() { return []; }
+  async getQuotationItemsWithPricing() { return []; }
+  
+  async getAllQuotationItemsDetailed() { return []; }
+  async getAvailableItemsForQuotation() { return []; }
+  
+  async createManyQuotationItems() { return []; }
+  async updateManyQuotationItems() { return []; }
+  
+  async getNewestItems() { return []; }
+  async getPopularItems() { return []; }
+  
+  async getItemByPartNumber() { return undefined; }
+  async getItemByKId() { return undefined; }
+  
+  async createOrFindSimilarItem() { return {}; }
+  async findSimilarItems() { return []; }
+  
+  async getItemsByCategory() { return []; }
+  async getItemsByBrand() { return []; }
+  
+  async exportQuotationItems() { return []; }
+  async importQuotationItems() { return []; }
+  
+  async getQuotationRequestsWithCounts() { return []; }
+  async getItemsWithCounts() { return []; }
+  
+  async updateItemNumbers() { return; }
+  async generateBulkItemNumbers() { return []; }
   async getTopSuppliers() { return []; }
   async getMonthlyStats() { return []; }
   async backupDatabase() { return ''; }
