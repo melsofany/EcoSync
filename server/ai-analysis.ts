@@ -33,20 +33,8 @@ async function main() {
     // إحصائيات بعد التحليل
     console.log('\n📈 إحصائيات ما بعد التحليل:');
     
-    const duplicateStats: any[] = []; // await storage.db.execute(`
-      SELECT 
-        normalized_part_number,
-        COUNT(*) as count,
-        string_agg(DISTINCT part_number, ', ') as part_numbers
-      FROM items 
-      WHERE normalized_part_number IS NOT NULL 
-        AND normalized_part_number != 'UNKNOWN'
-        AND ai_status = 'processed'
-      GROUP BY normalized_part_number 
-      HAVING COUNT(*) > 1
-      ORDER BY count DESC
-      LIMIT 10
-    `);
+    // إحصائيات مؤقتة - معطلة حالياً
+    const duplicateStats: any[] = [];
     
     console.log('🎯 أهم 10 مجموعات موحدة:');
     for (const stat of duplicateStats) {

@@ -13,9 +13,8 @@ interface ItemForUnification {
   id: string;
   itemNumber: string;
   description: string;
-  partNumber?: string;
-  brand?: string;
-  specifications?: string;
+  partNumber?: string | null;
+  brand?: string | null;
 }
 
 interface UnificationGroup {
@@ -41,7 +40,6 @@ ${items.map((item, index) =>
      التوصيف: ${item.description}
      رقم القطعة: ${item.partNumber || 'غير محدد'}
      العلامة التجارية: ${item.brand || 'غير محدد'}
-     المواصفات: ${item.specifications || 'غير محدد'}
   `
 ).join('\n\n')}
 
@@ -111,8 +109,7 @@ async function unifyDuplicateItems(unificationGroup: UnificationGroup): Promise<
       .update(items)
       .set({
         description: unifiedDescription,
-        partNumber: unifiedPartNumber || undefined,
-        updatedAt: new Date()
+        partNumber: unifiedPartNumber || undefined
       })
       .where(eq(items.id, masterItemId));
 
@@ -152,17 +149,17 @@ export async function unifyItemsWithAI(limit = 50): Promise<{
   try {
     console.log('🔍 بدء تحليل البنود للتوحيد...');
 
-    // جلب البنود للتحليل
+    // جلب البنود للتحليل - مع التحقق من القيم الفارغة
     const itemsToAnalyze = await db
       .select({
         id: items.id,
         itemNumber: items.itemNumber,
         description: items.description,
         partNumber: items.partNumber,
-        brand: items.brand,
-        specifications: items.specifications
+        brand: items.brand
       })
       .from(items)
+      .where(sql`${items.id} NOT LIKE 'user-%'`)
       .limit(limit)
       .orderBy(items.createdAt);
 
