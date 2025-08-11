@@ -2860,6 +2860,43 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   const saveToDbRoutes = await import('./routes/save-to-database.js');
   app.use('/api/database', saveToDbRoutes.default);
 
+  // Sync to Google Sheets
+  app.post('/api/sync-to-sheets', async (req, res) => {
+    try {
+      const user = req.session.user;
+      if (!user) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      console.log('🔄 بدء مزامنة البيانات إلى Google Sheets...');
+      
+      // تشغيل سكريپت المزامنة
+      const { exec } = require('child_process');
+      
+      exec('npx tsx server/sync-saved-data-to-sheets.ts', (error: any, stdout: string, stderr: string) => {
+        if (error) {
+          console.error('❌ خطأ في المزامنة:', error);
+          return res.status(500).json({ 
+            success: false, 
+            message: 'فشل في المزامنة',
+            error: error.message 
+          });
+        }
+        
+        console.log('✅ اكتملت المزامنة:', stdout);
+        res.json({
+          success: true,
+          message: 'تم مزامنة البيانات إلى Google Sheets بنجاح',
+          output: stdout
+        });
+      });
+
+    } catch (error) {
+      console.error('❌ خطأ في مزامنة البيانات:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
