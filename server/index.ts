@@ -84,7 +84,14 @@ app.use((req, res, next) => {
     })} [express] serving on port ${port}`);
     console.log(`Health endpoint available at: http://0.0.0.0:${port}/api/health`);
     
-    // Auto-unification disabled due to database issues
-    console.log('⚠️ التوحيد التلقائي معطل مؤقتاً بسبب مشاكل قاعدة البيانات');
+    // تشغيل التوحيد التلقائي للبنود المكررة
+    setTimeout(async () => {
+      try {
+        const { initializeAutoUnification } = await import('./auto-unification.js');
+        await initializeAutoUnification();
+      } catch (error) {
+        console.log('⚠️ التوحيد التلقائي غير متاح:', (error as Error).message);
+      }
+    }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
   });
 })();
