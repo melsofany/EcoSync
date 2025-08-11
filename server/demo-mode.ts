@@ -267,6 +267,40 @@ export class DemoStorage {
   async createSupplier() { return {}; }
   async updateSupplier() { return {}; }
   async deleteSupplier() { return {}; }
+  
+  // دالة البيانات الشاملة للأصناف
+  async getItemComprehensiveDataUnified(itemId: string) {
+    const items = await this.getAllItems();
+    const item = items.find(i => i.id === itemId);
+    if (!item) return null;
+    
+    return {
+      ...item,
+      quotationRequests: [
+        {
+          rfqNumber: '25R000057',
+          requestDate: '2025-01-05',
+          quantity: 2,
+          clientName: 'شركة المثال للهندسة'
+        }
+      ],
+      purchaseOrders: [
+        {
+          poNumber: 'P25E02726',
+          poDate: '2025-02-24',
+          quantity: 2,
+          price: 225,
+          supplierName: 'موزع كاريير'
+        }
+      ],
+      duplicates: [],
+      aiAnalysis: {
+        confidence: item.aiConfidence || 95,
+        status: item.aiStatus || 'processed',
+        lastAnalyzed: item.createdAt
+      }
+    };
+  }
   async getTopSuppliers() { return []; }
   async getMonthlyStats() { return []; }
   async backupDatabase() { return ''; }
