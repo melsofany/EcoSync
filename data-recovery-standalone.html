@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استرداد البيانات - قرطبة للتوريدات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        .loading-spinner { 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { 
+            from { transform: rotate(0deg); } 
+            to { transform: rotate(360deg); } 
+        }
+        .table-scroll {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .sticky-header th {
+            position: sticky;
+            top: 0;
+            background: #f8fafc;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto p-6 max-w-7xl">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">استرداد البيانات من الصور</h1>
+                <p class="text-gray-600">نظام استرداد البيانات المستخرجة من الصور (5,449 صف × 13 عمود)</p>
+            </div>
+            
+            <div class="flex justify-center gap-4 mb-8">
+                <button onclick="startRecovery()" id="startBtn" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
+                    تحميل البيانات المستردة
+                </button>
+                <button onclick="downloadData()" id="downloadBtn" 
+                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium hidden">
+                    تحميل البيانات كـ JSON
+                </button>
+            </div>
+            
+            <div id="progress" class="hidden mb-6">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">حالة التحميل</span>
+                        <span id="progressText" class="text-blue-600 font-bold">جاري التحميل...</span>
+                    </div>
+                    <div class="w-full bg-blue-200 rounded-full h-4">
+                        <div id="progressBar" class="bg-blue-600 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="stats" class="hidden mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="totalRows">0</div>
+                        <div class="text-sm text-gray-600">إجمالي الصفوف</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-green-600" id="totalColumns">13</div>
+                        <div class="text-sm text-gray-600">إجمالي الأعمدة</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-purple-600" id="totalCells">0</div>
+                        <div class="text-sm text-gray-600">إجمالي الخلايا</div>
+                    </div>
+                    <div class="bg-orange-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-orange-600" id="dataPercentage">0%</div>
+                        <div class="text-sm text-gray-600">نسبة البيانات</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="preview" class="hidden">
+                <div class="bg-gray-50 border rounded-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">معاينة البيانات المستردة</h3>
+                        <div class="text-sm text-gray-600">
+                            عرض <span id="displayedRows">0</span> من <span id="totalRowsDisplay">0</span> صف
+                        </div>
+                    </div>
+                    
+                    <div class="table-scroll overflow-x-auto border rounded-lg">
+                        <table class="w-full border-collapse text-sm">
+                            <thead class="sticky-header">
+                                <tr class="bg-gray-100">
+                                    <th class="border border-gray-300 p-2 text-right font-bold">الصف</th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[80px] bg-blue-50">A<br><span class="text-xs font-normal">وحدة القياس</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[80px] bg-blue-50">B<br><span class="text-xs font-normal">رقم البند</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[120px] bg-blue-50">C<br><span class="text-xs font-normal">رقم القطعة</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[150px] bg-blue-50">D<br><span class="text-xs font-normal">الوصف</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[100px] bg-green-50">E<br><span class="text-xs font-normal">رقم RFQ</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[100px] bg-green-50">F<br><span class="text-xs font-normal">تاريخ الطلب</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[80px] bg-green-50">G<br><span class="text-xs font-normal">الكمية</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[80px] bg-green-50">H<br><span class="text-xs font-normal">السعر</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[100px] bg-green-50">I<br><span class="text-xs font-normal">تاريخ الرد</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[100px] bg-purple-50">J<br><span class="text-xs font-normal">رقم PO</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[100px] bg-purple-50">K<br><span class="text-xs font-normal">تاريخ PO</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[80px] bg-purple-50">L<br><span class="text-xs font-normal">كمية PO</span></th>
+                                    <th class="border border-gray-300 p-2 text-right min-w-[80px] bg-purple-50">M<br><span class="text-xs font-normal">سعر PO</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTable">
+                                <!-- Data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+        let isLoaded = false;
+
+        async function startRecovery() {
+            if (isLoaded) {
+                showPreview();
+                return;
+            }
+            
+            document.getElementById('progress').classList.remove('hidden');
+            document.getElementById('startBtn').innerHTML = '🔄 جاري التحميل...';
+            document.getElementById('progressBar').style.width = '10%';
+            document.getElementById('progressText').textContent = 'جاري تحميل البيانات...';
+            
+            try {
+                await loadDataFiles();
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('progressText').textContent = 'اكتمل التحميل!';
+                document.getElementById('startBtn').innerHTML = '✅ عرض البيانات';
+                document.getElementById('downloadBtn').classList.remove('hidden');
+                isLoaded = true;
+                
+                setTimeout(() => {
+                    showPreview();
+                }, 500);
+            } catch (error) {
+                document.getElementById('progressText').textContent = 'خطأ في التحميل';
+                alert('خطأ في تحميل البيانات: ' + error.message);
+            }
+        }
+
+        async function loadDataFiles() {
+            // Column mapping for file loading
+            const columnMapping = {
+                'A': 'UOM',
+                'B': 'LINE_ITEM', 
+                'C': 'PART_NO',
+                'D': 'DESCRIPTION',
+                'E': 'RFQ_NUMBER',
+                'F': 'REQUEST_DATE',
+                'G': 'QUANTITY',
+                'H': 'PRICE',
+                'I': 'RESPONSE_DATE',
+                'J': 'PO_NUMBER',
+                'K': 'PO_DATE',
+                'L': 'PO_QUANTITY',
+                'M': 'PO_PRICE'
+            };
+
+            const columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+            const combinedData = [];
+            
+            for (let i = 0; i < columns.length; i++) {
+                const columnLetter = columns[i];
+                const columnName = columnMapping[columnLetter];
+                
+                try {
+                    const response = await fetch(`./attached_assets/column_${columnLetter}_${columnName}.json`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to load column ${columnLetter}: ${response.status}`);
+                    }
+                    
+                    const columnData = await response.json();
+                    document.getElementById('progressBar').style.width = `${((i + 1) / columns.length) * 90}%`;
+                    document.getElementById('progressText').textContent = `تحميل العمود ${columnLetter}...`;
+                    
+                    // Initialize or merge data
+                    if (i === 0) {
+                        for (let row = 0; row < columnData.length; row++) {
+                            combinedData[row] = { [columnLetter]: columnData[row] };
+                        }
+                    } else {
+                        for (let row = 0; row < Math.min(columnData.length, combinedData.length); row++) {
+                            if (combinedData[row]) {
+                                combinedData[row][columnLetter] = columnData[row];
+                            }
+                        }
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100)); // Small delay for visual feedback
+                } catch (error) {
+                    console.error(`Error loading column ${columnLetter}:`, error);
+                    // Continue with other columns even if one fails
+                }
+            }
+            
+            allData = combinedData;
+            updateStats();
+        }
+
+        function updateStats() {
+            const totalRows = allData.length;
+            const totalColumns = 13;
+            const totalCells = totalRows * totalColumns;
+            
+            let filledCells = 0;
+            allData.forEach(row => {
+                Object.values(row).forEach(cell => {
+                    if (cell !== null && cell !== undefined && cell !== '') {
+                        filledCells++;
+                    }
+                });
+            });
+            
+            const dataPercentage = Math.round((filledCells / totalCells) * 100);
+            
+            document.getElementById('totalRows').textContent = totalRows.toLocaleString();
+            document.getElementById('totalCells').textContent = totalCells.toLocaleString();
+            document.getElementById('dataPercentage').textContent = dataPercentage + '%';
+            
+            document.getElementById('stats').classList.remove('hidden');
+        }
+
+        function showPreview() {
+            const displayRows = Math.min(50, allData.length);
+            const tableBody = document.getElementById('dataTable');
+            const columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+            
+            let tableHTML = '';
+            
+            for (let i = 0; i < displayRows; i++) {
+                const row = allData[i];
+                const rowClass = i % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                
+                tableHTML += `<tr class="${rowClass}">`;
+                tableHTML += `<td class="border border-gray-300 p-2 font-bold text-blue-600">${i + 1}</td>`;
+                
+                columns.forEach(col => {
+                    const value = row[col];
+                    let displayValue = '';
+                    let cellClass = 'border border-gray-300 p-2';
+                    
+                    if (value !== null && value !== undefined && value !== '') {
+                        displayValue = String(value).length > 25 ? 
+                            String(value).substring(0, 25) + '...' : String(value);
+                        cellClass += ' text-gray-800';
+                    } else {
+                        displayValue = '—';
+                        cellClass += ' text-gray-400 text-center';
+                    }
+                    
+                    // Add column-specific styling
+                    if (['A', 'B', 'C', 'D'].includes(col)) {
+                        cellClass += ' bg-blue-50';
+                    } else if (['E', 'F', 'G', 'H', 'I'].includes(col)) {
+                        cellClass += ' bg-green-50';
+                    } else {
+                        cellClass += ' bg-purple-50';
+                    }
+                    
+                    tableHTML += `<td class="${cellClass}" title="${value || 'فارغ'}">${displayValue}</td>`;
+                });
+                
+                tableHTML += '</tr>';
+            }
+            
+            tableBody.innerHTML = tableHTML;
+            document.getElementById('displayedRows').textContent = displayRows.toLocaleString();
+            document.getElementById('totalRowsDisplay').textContent = allData.length.toLocaleString();
+            document.getElementById('preview').classList.remove('hidden');
+        }
+
+        function downloadData() {
+            const dataStr = JSON.stringify(allData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'recovered_data_complete_5449.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

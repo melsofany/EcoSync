@@ -74,8 +74,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
-  // Data Recovery routes
-  const dataRecoveryRoutes = await import("./routes/data-recovery");
+  // Data Recovery routes (simplified version for offline use)
+  const dataRecoveryRoutes = await import("./routes/data-recovery-simple");
   app.use("/api/data-recovery", dataRecoveryRoutes.default);
 
 
