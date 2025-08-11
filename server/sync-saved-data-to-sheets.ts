@@ -164,16 +164,46 @@ async function syncSavedDataToSheets() {
   }
 }
 
-// تحويل تاريخ Excel
-function parseExcelDate(excelDate: string): string {
-  if (!excelDate || excelDate.trim() === '') return new Date().toISOString().split('T')[0];
+// تحويل تاريخ Excel مع دعم صيغ متعددة
+function parseExcelDate(dateValue: any): string {
+  if (!dateValue) return new Date().toISOString().split('T')[0];
   
-  const dateNumber = parseInt(excelDate);
-  if (isNaN(dateNumber)) return new Date().toISOString().split('T')[0];
+  // إذا كان نص تاريخ
+  if (typeof dateValue === 'string') {
+    const cleanDate = dateValue.trim();
+    
+    // صيغة MM/DD/YY مثل "1/5/25"
+    const mmddyy = cleanDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);
+    if (mmddyy) {
+      const [, month, day, year] = mmddyy;
+      const fullYear = `20${year}`; // تحويل 25 إلى 2025
+      return `${fullYear}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    
+    // صيغة MM/DD/YYYY مثل "1/5/2025"
+    const mmddyyyy = cleanDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (mmddyyyy) {
+      const [, month, day, year] = mmddyyyy;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    
+    // محاولة تحليل التاريخ بطريقة عادية
+    const date = new Date(cleanDate);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  }
   
-  const excelEpoch = new Date(1900, 0, 1);
-  const actualDate = new Date(excelEpoch.getTime() + (dateNumber - 2) * 24 * 60 * 60 * 1000);
-  return actualDate.toISOString().split('T')[0];
+  // إذا كان رقم (Excel date serial)
+  if (typeof dateValue === 'number') {
+    if (dateValue > 25000 && dateValue < 50000) {
+      const excelEpoch = new Date(1900, 0, 1);
+      const date = new Date(excelEpoch.getTime() + (dateValue - 2) * 24 * 60 * 60 * 1000);
+      return date.toISOString().split('T')[0];
+    }
+  }
+  
+  return new Date().toISOString().split('T')[0];
 }
 
 // تصدير دالة المزامنة للاستخدام من routes أخرى
