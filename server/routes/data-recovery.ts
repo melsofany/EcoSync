@@ -114,102 +114,69 @@ router.get('/progress', (req, res) => {
   });
 });
 
-// Run data extraction using the existing generated files
+// Load and display the real extracted data
 async function runDataExtraction() {
-  const startTime = Date.now();
-  
-  for (let colIndex = 0; colIndex < recoveryState.columns.length; colIndex++) {
-    const column = recoveryState.columns[colIndex];
-    
-    // Update current column
-    recoveryState.progress.currentColumn = column.name;
-    column.status = 'processing';
-    
-    // Simulate processing rows in batches
-    const batchSize = 100;
-    const totalRows = 5449;
-    
-    for (let row = 0; row < totalRows; row += batchSize) {
-      const endRow = Math.min(row + batchSize, totalRows);
-      
-      // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 50));
-      
-      // Generate sample data for this batch
-      const batchData: any[] = [];
-      for (let i = row; i < endRow; i++) {
-        const rowData: any = {};
-        
-        // Add data for current column and completed columns
-        recoveryState.columns.forEach((col, idx) => {
-          if (idx <= colIndex) {
-            const samples = sampleDataByColumn[col.name as keyof typeof sampleDataByColumn];
-            if (samples && Math.random() > 0.1) { // 90% chance of having data (10% empty cells)
-              rowData[col.name] = samples[Math.floor(Math.random() * samples.length)];
-            } else {
-              rowData[col.name] = null; // Empty cell
-            }
-          }
-        });
-        
-        batchData.push(rowData);
-      }
-      
-      // Update preview data (keep only first 1000 rows for memory)
-      if (row < 1000) {
-        if (row === 0) {
-          recoveryState.previewData = [...batchData.slice(0, 1000)];
-        } else {
-          recoveryState.previewData = [...recoveryState.previewData, ...batchData.slice(0, Math.max(0, 1000 - row))];
-        }
-      }
-      
-      // Update column progress
-      column.processedRows = endRow;
-      column.sampleData = batchData.slice(0, 10); // Keep sample of processed data
-      
-      // Update overall progress
-      recoveryState.progress.processedRows = colIndex * totalRows + endRow;
-      
-      // Calculate estimated time remaining
-      const elapsed = Date.now() - startTime;
-      const totalProgress = recoveryState.progress.processedRows / (recoveryState.progress.totalColumns * totalRows);
-      if (totalProgress > 0) {
-        const estimatedTotal = elapsed / totalProgress;
-        const remaining = estimatedTotal - elapsed;
-        recoveryState.progress.estimatedTimeRemaining = formatTime(remaining);
-      }
-    }
-    
-    // Mark column as completed
-    column.status = 'completed';
-    recoveryState.progress.completedColumns = colIndex + 1;
-    
-    // Save column data to file
-    try {
-      const columnData = recoveryState.previewData.map(row => row[column.name]);
-      await fs.writeFile(
-        path.join('attached_assets', `column_${column.name}_${column.arabicName.split(' ')[0]}.json`),
-        JSON.stringify(columnData, null, 2)
-      );
-    } catch (error) {
-      console.error(`Error saving column ${column.name}:`, error);
-      column.status = 'error';
-    }
-  }
-  
-  // Complete the process
-  recoveryState.progress.status = 'completed';
-  recoveryState.progress.estimatedTimeRemaining = 'مكتمل';
-  
-  // Save final combined data
   try {
-    await fs.writeFile(
-      path.join('attached_assets', 'recovered_data_complete.json'),
-      JSON.stringify(recoveryState.previewData, null, 2)
-    );
+    // Load the corrected real data
+    const correctedDataPath = path.join(process.cwd(), 'attached_assets', 'corrected_data_5449.json');
+    const realData = JSON.parse(await fs.readFile(correctedDataPath, 'utf8'));
+    
+    console.log('✅ تم تحميل البيانات الحقيقية المصححة:', realData.length, 'سجل');
+    
+    // Process each column to show realistic progress
+    for (let colIndex = 0; colIndex < recoveryState.columns.length; colIndex++) {
+      const column = recoveryState.columns[colIndex];
+      
+      // Update current column
+      recoveryState.progress.currentColumn = column.name;
+      column.status = 'processing';
+      
+      // Get the mapping for column names
+      const columnMapping: { [key: string]: string } = {
+        'A': 'UOM',
+        'B': 'LINE_ITEM', 
+        'C': 'PART_NO',
+        'D': 'DESCRIPTION',
+        'E': 'RFQ_NUMBER',
+        'F': 'REQUEST_DATE',
+        'G': 'QUANTITY',
+        'H': 'PRICE',
+        'I': 'RESPONSE_DATE',
+        'J': 'PO_NUMBER',
+        'K': 'PO_DATE',
+        'L': 'PO_QUANTITY',
+        'M': 'PO_PRICE'
+      };
+      
+      const realColumnName = columnMapping[column.name];
+      
+      // Simulate processing time for realism
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Collect sample data from real data
+      column.sampleData = realData
+        .filter(row => row[realColumnName] !== null && row[realColumnName] !== undefined)
+        .slice(0, 10)
+        .map(row => row[realColumnName]);
+      
+      // Update row counts  
+      column.processedRows = realData.length;
+      recoveryState.progress.processedRows = (colIndex + 1) * realData.length;
+      
+      // Mark column as completed
+      column.status = 'completed';
+      recoveryState.progress.completedColumns = colIndex + 1;
+    }
+    
+    // Load real data into preview (first 100 rows)
+    recoveryState.previewData = realData.slice(0, 100);
+    recoveryState.progress.status = 'completed';
+    recoveryState.progress.estimatedTimeRemaining = 'مكتمل';
+    
+    console.log('✅ اكتمل تحميل جميع البيانات الحقيقية');
+    
   } catch (error) {
-    console.error('Error saving final data:', error);
+    console.error('❌ خطأ في تحميل البيانات الحقيقية:', error);
     recoveryState.progress.status = 'error';
   }
 }
