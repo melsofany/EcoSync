@@ -42,23 +42,33 @@ export class DemoStorage {
 
   // مزامنة البيانات مع Google Sheets
   private async syncToGoogleSheets() {
-    try {
-      console.log('🔄 مزامنة البيانات مع Google Sheets...');
-      
-      // تهيئة Google Sheets
-      await googleSheetsStorage.initializeSheets();
-      
-      // حفظ جميع البيانات
-      await Promise.all([
-        googleSheetsStorage.savePurchaseOrders(this.realData.purchaseOrders),
-        googleSheetsStorage.saveQuotationRequests(this.realData.quotationRequests),
-        googleSheetsStorage.saveItems(this.realData.items)
-      ]);
-      
-      console.log('✅ تم مزامنة البيانات مع Google Sheets بنجاح');
-    } catch (error) {
-      console.log('⚠️ مزامنة Google Sheets معطلة - يتطلب إعداد المفاتيح');
-    }
+    // تأخير المزامنة لضمان اكتمال تحميل البيانات
+    setTimeout(async () => {
+      try {
+        console.log('🔄 بدء مزامنة البيانات مع Google Sheets...');
+        
+        // تهيئة Google Sheets
+        await googleSheetsStorage.initializeSheets();
+        
+        // حفظ البيانات تدريجياً لتجنب حدود API
+        console.log('📊 حفظ أوامر الشراء...');
+        await googleSheetsStorage.savePurchaseOrders(this.realData.purchaseOrders.slice(0, 100));
+        
+        setTimeout(async () => {
+          console.log('📋 حفظ طلبات التسعير...');
+          await googleSheetsStorage.saveQuotationRequests(this.realData.quotationRequests.slice(0, 100));
+          
+          setTimeout(async () => {
+            console.log('📦 حفظ الأصناف...');
+            await googleSheetsStorage.saveItems(this.realData.items.slice(0, 200));
+            console.log('✅ تم حفظ عينة من البيانات في Google Sheets');
+          }, 2000);
+        }, 2000);
+        
+      } catch (error) {
+        console.log('⚠️ تم تعطيل مزامنة Google Sheets مؤقتاً:', error.message);
+      }
+    }, 3000);
   }
 
   async getUserByUsername(username: string) {
