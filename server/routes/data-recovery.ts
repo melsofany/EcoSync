@@ -34,25 +34,25 @@ let recoveryState: {
     currentColumn: 'A',
     totalColumns: 13,
     completedColumns: 0,
-    totalRows: 5449,
+    totalRows: 0, // سيتم تحديثها من الملف الجديد
     processedRows: 0,
     estimatedTimeRemaining: 'حساب الوقت...',
     status: 'initializing'
   },
   columns: [
-    { name: 'A', arabicName: 'وحدة القياس (UOM)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'B', arabicName: 'رقم البند (LINE_ITEM)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'C', arabicName: 'رقم القطعة (PART_NO)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'D', arabicName: 'الوصف (DESCRIPTION)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'E', arabicName: 'رقم طلب التسعير (RFQ_NUMBER)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'F', arabicName: 'تاريخ طلب التسعير (DATE/RFQ)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'G', arabicName: 'كمية طلب التسعير (QTY_OF_RFQ)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'H', arabicName: 'سعر طلب التسعير (PRICE_OF_RFQ)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'I', arabicName: 'تاريخ الاستجابة (RESPONSE_DATE)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'J', arabicName: 'رقم طلب الشراء (PO_NUMBER)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'K', arabicName: 'تاريخ طلب الشراء (DATE_OF_PO)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'L', arabicName: 'كمية طلب الشراء (QUANTITY_OF_PO)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] },
-    { name: 'M', arabicName: 'سعر طلب الشراء (PRICE_OF_PO)', processedRows: 0, totalRows: 5449, status: 'pending', sampleData: [] }
+    { name: 'A', arabicName: 'وحدة القياس (UOM)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'B', arabicName: 'رقم البند (LINE_ITEM)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'C', arabicName: 'رقم القطعة (PART_NO)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'D', arabicName: 'الوصف (DESCRIPTION)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'E', arabicName: 'رقم طلب التسعير (RFQ_NUMBER)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'F', arabicName: 'تاريخ طلب التسعير (DATE/RFQ)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'G', arabicName: 'كمية طلب التسعير (QTY_OF_RFQ)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'H', arabicName: 'سعر طلب التسعير (PRICE_OF_RFQ)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'I', arabicName: 'تاريخ الاستجابة (RESPONSE_DATE)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'J', arabicName: 'رقم طلب الشراء (PO_NUMBER)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'K', arabicName: 'تاريخ طلب الشراء (DATE_OF_PO)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'L', arabicName: 'كمية طلب الشراء (QUANTITY_OF_PO)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] },
+    { name: 'M', arabicName: 'سعر طلب الشراء (PRICE_OF_PO)', processedRows: 0, totalRows: 0, status: 'pending', sampleData: [] }
   ],
   previewData: []
 };
@@ -117,11 +117,17 @@ router.get('/progress', (req, res) => {
 // Load and display the real extracted data
 async function runDataExtraction() {
   try {
-    // Load the structured data with RFQ-PO linking
-    const structuredDataPath = path.join(process.cwd(), 'attached_assets', 'structured_data_with_linking_5449.json');
-    const realData = JSON.parse(await fs.readFile(structuredDataPath, 'utf8'));
+    // Load the latest Excel data processed from the most recent file
+    const latestDataPath = path.join(process.cwd(), 'attached_assets', 'latest_excel_data_processed.json');
+    const realData = JSON.parse(await fs.readFile(latestDataPath, 'utf8'));
     
-    console.log('✅ تم تحميل البيانات الحقيقية المصححة:', realData.length, 'سجل');
+    console.log('✅ تم تحميل البيانات من آخر ملف Excel:', realData.length, 'سجل');
+    
+    // تحديث إجمالي الصفوف
+    recoveryState.progress.totalRows = realData.length;
+    recoveryState.columns.forEach(col => {
+      col.totalRows = realData.length;
+    });
     
     // Process each column to show realistic progress
     for (let colIndex = 0; colIndex < recoveryState.columns.length; colIndex++) {
