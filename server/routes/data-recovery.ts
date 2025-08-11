@@ -185,20 +185,20 @@ async function runDataExtraction() {
     // Format preview data for display - skip header row and show meaningful data
     const dataWithoutHeader = realData.slice(1); // تجاهل صف العناوين
     recoveryState.previewData = dataWithoutHeader.slice(0, 20).map((record, index) => ({
-      'الصف': index + 2, // بدء من الصف 2 (بعد العناوين)
-      'A - وحدة': record.uom || '-',
-      'B - رقم': record.lineItem || '-',
-      'C - رقم': record.partNo || '-',
-      'D - الوصف': record.description?.substring(0, 50) || '-',
-      'E - رقم': record.rfq?.number || '-',
-      'F - تاريخ': record.rfq?.date || '-',
-      'G - كمية': record.rfq?.quantity || '-',
-      'H - سعر': record.rfq?.price || '-',
-      'I - تاريخ': record.rfq?.responseDate || '-',
-      'J - رقم': record.po?.number || '-',
-      'K - تاريخ': record.po?.date || '-',
-      'L - كمية': record.po?.quantity || '-',
-      'M - سعر': record.po?.price || '-'
+      // Format data to match frontend expectations (column names as keys)
+      'A': record.uom || '-',
+      'B': record.lineItem || '-', 
+      'C': record.partNo || '-',
+      'D': record.description?.substring(0, 50) || '-',
+      'E': record.rfq?.number || '-',
+      'F': record.rfq?.date || '-',
+      'G': record.rfq?.quantity || '-',
+      'H': record.rfq?.price || '-',
+      'I': record.rfq?.responseDate || '-',
+      'J': record.po?.number || '-',
+      'K': record.po?.date || '-',
+      'L': record.po?.quantity || '-',
+      'M': record.po?.price || '-'
     }));
     
     recoveryState.progress.status = 'completed';
