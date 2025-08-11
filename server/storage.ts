@@ -1902,8 +1902,10 @@ export class DatabaseStorage implements IStorage {
 
 }
 
-// النظام الحقيقي مع البيانات المعالجة كاملة
-export const storage = new DemoStorage();
+// استخدام نظام بيانات Excel فقط
+import { ExcelOnlyStorage } from './excel-only-storage';
+
+export const storage = new ExcelOnlyStorage();
 
 // تهيئة النظام الهجين مع البيانات الحقيقية
 export async function initializeDatabase() {

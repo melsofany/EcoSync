@@ -42,9 +42,9 @@ export class DemoStorage {
 
   // مزامنة البيانات مع Google Sheets (معطلة حالياً)
   private async syncToGoogleSheets() {
-    console.log('🔄 مزامنة Google Sheets معطلة - تم مسح البيانات بناءً على طلب المستخدم');
-    console.log('📋 النظام يعمل بالذاكرة فقط مع البيانات الحقيقية');
-    console.log('🗂️ البيانات متوفرة: 300 أمر شراء + 1000 طلب تسعير + 5449 صنف');
+    console.log('🔄 مزامنة Google Sheets معطلة - النظام يستخدم بيانات Excel فقط');
+    console.log('📋 النظام يعمل بالذاكرة فقط مع البيانات من Excel الجديد');
+    console.log(`🗂️ البيانات متوفرة: ${this.realData.items.length} صنف من Excel`);
   }
 
   async getUserByUsername(username: string) {

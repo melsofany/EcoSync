@@ -15,13 +15,11 @@ export class CompleteDataLoader {
 
   private loadCompleteData() {
     try {
-      // تحميل البيانات الأساسية
-      const dataPath = join(process.cwd(), 'attached_assets', 'final_import_data_5449.json');
-      const rawData = readFileSync(dataPath, 'utf-8');
-      this.completeData = JSON.parse(rawData);
-      console.log(`📊 تم تحميل ${this.completeData.length} سجل من البيانات الحقيقية الأساسية`);
+      // إبداء بمصفوفة فارغة - لا نريد البيانات القديمة
+      this.completeData = [];
+      console.log(`📊 بدء النظام بدون بيانات قديمة - Excel فقط`);
       
-      // تحميل البيانات الجديدة من Excel
+      // استبدال البيانات بالكامل بالبيانات الجديدة من Excel
       try {
         const newDataPath = join(process.cwd(), 'attached_assets', 'new_excel_import_data.json');
         const newRawData = readFileSync(newDataPath, 'utf-8');
@@ -46,9 +44,9 @@ export class CompleteDataLoader {
             PO_PRICE: item.poPrice
           }));
           
-          this.completeData.push(...convertedNewData);
-          console.log(`📥 تم دمج ${newData.items.length} صنف جديد من Excel الحديث`);
-          console.log(`📊 إجمالي البيانات بعد الدمج: ${this.completeData.length} سجل`);
+          // استبدال البيانات بالكامل بدلاً من الدمج
+          this.completeData = convertedNewData;
+          console.log(`✅ تم استبدال البيانات بالكامل - النظام يعمل بـ ${this.completeData.length} سجل من Excel فقط`);
         }
       } catch (error) {
         console.log('📥 لا توجد بيانات Excel جديدة - يتم استخدام البيانات الأساسية فقط');
