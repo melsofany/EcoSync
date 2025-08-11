@@ -8,14 +8,16 @@ export class GoogleSheetsStorage {
   private spreadsheetId: string;
 
   constructor() {
-    // إعداد المصادقة مع Google Sheets API
+    // إعداد المصادقة مع Google Sheets API باستخدام الملف المحلي
     this.auth = new GoogleAuth({
-      keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_KEY, // مفتاح الخدمة
+      keyFile: './service-account-key.json', // استخدام الملف المحلي
       scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
     
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
     this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '';
+    
+    console.log(`🔗 متصل بـ Google Sheets: ${this.spreadsheetId}`);
   }
 
   // حفظ أوامر الشراء في Google Sheets
