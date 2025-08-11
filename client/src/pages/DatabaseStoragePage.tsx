@@ -49,7 +49,8 @@ export default function DatabaseStoragePage() {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/database/stats'],
     queryFn: async (): Promise<DatabaseStats> => {
-      return apiRequest('/api/database/stats');
+      const response = await apiRequest('GET', '/api/database/stats');
+      return response.json();
     }
   });
 
@@ -57,14 +58,16 @@ export default function DatabaseStoragePage() {
   const { data: savedDataResponse, isLoading: dataLoading } = useQuery({
     queryKey: ['/api/database/saved-data'],
     queryFn: async () => {
-      return apiRequest('/api/database/saved-data?page=1&limit=20');
+      const response = await apiRequest('GET', '/api/database/saved-data?page=1&limit=20');
+      return response.json();
     }
   });
 
   // حفظ البيانات في قاعدة البيانات
   const saveMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/database/save', 'POST');
+      const response = await apiRequest('POST', '/api/database/save', {});
+      return response.json();
     },
     onSuccess: (data) => {
       setSaveResult(data);
