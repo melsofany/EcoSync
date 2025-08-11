@@ -147,9 +147,20 @@ async function syncSavedDataToSheets() {
 
     console.log('🎉 اكتملت مزامنة جميع البيانات إلى Google Sheets');
     console.log('📊 يمكنك الآن مراجعة البيانات في Google Sheets');
+    
+    return {
+      success: true,
+      itemsCount: itemsData.length,
+      quotationsCount: quotationRequests.length,
+      purchaseOrdersCount: purchaseOrders.length
+    };
 
   } catch (error) {
     console.error('❌ خطأ في مزامنة البيانات:', error);
+    return {
+      success: false,
+      error: error.message || 'خطأ غير معروف'
+    };
   }
 }
 
@@ -165,11 +176,16 @@ function parseExcelDate(excelDate: string): string {
   return actualDate.toISOString().split('T')[0];
 }
 
-// تشغيل المزامنة
-syncSavedDataToSheets().then(() => {
-  console.log('✅ اكتملت عملية المزامنة');
-  process.exit(0);
-}).catch((error) => {
-  console.error('❌ خطأ:', error);
-  process.exit(1);
-});
+// تصدير دالة المزامنة للاستخدام من routes أخرى
+export { syncSavedDataToSheets };
+
+// تشغيل المزامنة عند تشغيل هذا الملف مباشرة
+if (import.meta.url === `file://${process.argv[1]}`) {
+  syncSavedDataToSheets().then(() => {
+    console.log('✅ اكتملت عملية المزامنة');
+    process.exit(0);
+  }).catch((error) => {
+    console.error('❌ خطأ:', error);
+    process.exit(1);
+  });
+}

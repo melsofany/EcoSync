@@ -2868,28 +2868,28 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      console.log('🔄 بدء مزامنة البيانات إلى Google Sheets...');
+      console.log('🔄 بدء مزامنة البيانات المصححة إلى Google Sheets...');
       
-      // تشغيل سكريپت المزامنة
-      const { exec } = require('child_process');
+      // استيراد وتشغيل دالة المزامنة مباشرة
+      const { syncSavedDataToSheets } = await import('./sync-saved-data-to-sheets');
       
-      exec('npx tsx server/sync-saved-data-to-sheets.ts', (error: any, stdout: string, stderr: string) => {
-        if (error) {
-          console.error('❌ خطأ في المزامنة:', error);
-          return res.status(500).json({ 
-            success: false, 
-            message: 'فشل في المزامنة',
-            error: error.message 
-          });
-        }
-        
-        console.log('✅ اكتملت المزامنة:', stdout);
+      const result = await syncSavedDataToSheets();
+      
+      if (result.success) {
+        console.log('✅ اكتملت مزامنة التواريخ المصححة');
         res.json({
           success: true,
-          message: 'تم مزامنة البيانات إلى Google Sheets بنجاح',
-          output: stdout
+          message: 'تم مزامنة البيانات مع التواريخ المصححة إلى Google Sheets بنجاح',
+          data: result
         });
-      });
+      } else {
+        console.error('❌ فشل في المزامنة:', result.error);
+        res.status(500).json({ 
+          success: false, 
+          message: 'فشل في المزامنة',
+          error: result.error
+        });
+      }
 
     } catch (error) {
       console.error('❌ خطأ في مزامنة البيانات:', error);
