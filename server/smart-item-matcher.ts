@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
-import { db } from './db/index.js';
-import { items } from './db/schema.js';
+import { db } from './storage.js';
+import { items } from '../shared/schema.js';
 import { like, or, sql } from 'drizzle-orm';
 
 // Initialize DeepSeek client
