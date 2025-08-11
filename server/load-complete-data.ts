@@ -15,10 +15,45 @@ export class CompleteDataLoader {
 
   private loadCompleteData() {
     try {
+      // تحميل البيانات الأساسية
       const dataPath = join(process.cwd(), 'attached_assets', 'final_import_data_5449.json');
       const rawData = readFileSync(dataPath, 'utf-8');
       this.completeData = JSON.parse(rawData);
-      console.log(`📊 تم تحميل ${this.completeData.length} سجل من البيانات الحقيقية`);
+      console.log(`📊 تم تحميل ${this.completeData.length} سجل من البيانات الحقيقية الأساسية`);
+      
+      // تحميل البيانات الجديدة من Excel
+      try {
+        const newDataPath = join(process.cwd(), 'attached_assets', 'new_excel_import_data.json');
+        const newRawData = readFileSync(newDataPath, 'utf-8');
+        const newData = JSON.parse(newRawData);
+        
+        if (newData.items && newData.items.length > 0) {
+          // تحويل البيانات الجديدة إلى صيغة متوافقة
+          const convertedNewData = newData.items.map((item: any) => ({
+            id: item.id,
+            UOM: item.uom,
+            LINE_ITEM: item.lineItem,
+            PART_NO: item.partNumber,
+            DESCRIPTION: item.description,
+            RFQ_NUMBER: item.rfqNumber,
+            REQUEST_DATE: item.requestDate,
+            QUANTITY: item.quantity,
+            PRICE: item.price,
+            RESPONSE_DATE: item.responseDate,
+            PO_NUMBER: item.poNumber,
+            PO_DATE: item.poDate,
+            PO_QUANTITY: item.poQuantity,
+            PO_PRICE: item.poPrice
+          }));
+          
+          this.completeData.push(...convertedNewData);
+          console.log(`📥 تم دمج ${newData.items.length} صنف جديد من Excel الحديث`);
+          console.log(`📊 إجمالي البيانات بعد الدمج: ${this.completeData.length} سجل`);
+        }
+      } catch (error) {
+        console.log('📥 لا توجد بيانات Excel جديدة - يتم استخدام البيانات الأساسية فقط');
+      }
+      
     } catch (error) {
       console.error('❌ خطأ في تحميل البيانات:', error);
       this.completeData = [];
