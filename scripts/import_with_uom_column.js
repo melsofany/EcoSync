@@ -115,11 +115,12 @@ async function processImportData() {
       try {
         console.log(`\n📝 معالجة الصف ${i + 1}/${Math.min(excelData.length, 5449)}`);
         
-        // استخراج البيانات مع عمود الوحدة و LINE ITEM
+        // استخراج البيانات مع عمود الوحدة و LINE ITEM و PART NO
         const rfqNumber = row['F']; // عمود F - رقم طلب التسعير
         const poNumber = row['L'];  // عمود L - رقم أمر الشراء من نفس الصف
         const description = row['A']; // الوصف
         const lineItem = row['I']; // عمود I - LINE ITEM
+        const partNumber = row['B']; // عمود B - PART NO (رقم الجزء)
         const unitOfMeasure = row['H']; // عمود H - الوحدة (UOM)
         const quantity = parseFloat(row['C']) || 0; // الكمية
         const unitPrice = parseFloat(row['D']) || 0; // سعر الوحدة
@@ -139,20 +140,21 @@ async function processImportData() {
         let itemId;
         const itemNumber = await generateNextItemNumber();
         
-        // إدراج البند مع الوحدة و LINE ITEM
+        // إدراج البند مع الوحدة و LINE ITEM و PART NO
         const itemResult = await sql`
           INSERT INTO items (
-            id, item_number, description, part_number, unit, category, created_by
+            id, item_number, description, part_number, unit, category, created_by, notes
           ) VALUES (
             ${nanoid()}, ${itemNumber}, ${description || 'بند غير محدد'}, 
-            ${lineItem || null}, ${unitOfMeasure || 'Piece'}, 'مستورد', 
-            (SELECT id FROM users WHERE username = 'admin' LIMIT 1)
+            ${partNumber || lineItem || null}, ${unitOfMeasure || 'Piece'}, 'مستورد', 
+            (SELECT id FROM users WHERE username = 'admin' LIMIT 1),
+            ${lineItem ? `LINE ITEM: ${lineItem}` : null}
           ) RETURNING id
         `;
         
         itemId = itemResult[0].id;
         createdItems++;
-        console.log(`📦 تم إنشاء البند: ${itemNumber} - LINE ITEM: ${lineItem || 'غير محدد'} - الوحدة: ${unitOfMeasure || 'Piece'}`);
+        console.log(`📦 تم إنشاء البند: ${itemNumber} - PART NO: ${partNumber || 'غير محدد'} - LINE ITEM: ${lineItem || 'غير محدد'} - الوحدة: ${unitOfMeasure || 'Piece'}`);
         
         // إنشاء طلب التسعير إذا كان موجود
         if (rfqNumber) {
@@ -169,7 +171,7 @@ async function processImportData() {
               ${rfqDate ? new Date(new Date(rfqDate).getTime() + 7*24*60*60*1000).toISOString() : new Date(Date.now() + 7*24*60*60*1000).toISOString()},
               'pending', 
               (SELECT id FROM users WHERE username = 'admin' LIMIT 1),
-              ${`استيراد من Excel - الصف ${i + 1} - LINE ITEM: ${lineItem || 'غير محدد'} - الوحدة: ${unitOfMeasure || 'Piece'}`}
+              ${`استيراد من Excel - الصف ${i + 1} - PART NO: ${partNumber || 'غير محدد'} - LINE ITEM: ${lineItem || 'غير محدد'} - الوحدة: ${unitOfMeasure || 'Piece'}`}
             )
           `;
           
@@ -198,7 +200,7 @@ async function processImportData() {
                 ${poId}, ${poNumber}, ${rfqNumber}, ${poDate || new Date().toISOString()},
                 'pending', ${quantity * unitPrice}, 'EGP',
                 (SELECT id FROM users WHERE username = 'admin' LIMIT 1),
-                ${`مرتبط بطلب التسعير ${rfqNumber} - الصف ${i + 1} - LINE ITEM: ${lineItem || 'غير محدد'} - الوحدة: ${unitOfMeasure || 'Piece'}`}
+                ${`مرتبط بطلب التسعير ${rfqNumber} - الصف ${i + 1} - PART NO: ${partNumber || 'غير محدد'} - LINE ITEM: ${lineItem || 'غير محدد'} - الوحدة: ${unitOfMeasure || 'Piece'}`}
               )
             `;
             
