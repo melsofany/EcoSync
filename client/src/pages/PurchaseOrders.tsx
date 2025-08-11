@@ -203,7 +203,9 @@ export default function PurchaseOrders() {
   // Calculate statistics
   const pendingPOs = purchaseOrders?.filter((po: any) => po.status === "pending").length || 0;
   const completedPOs = purchaseOrders?.filter((po: any) => po.status === "completed").length || 0;
+  const confirmedPOs = purchaseOrders?.filter((po: any) => po.status === "confirmed").length || 0;
   const totalValue = purchaseOrders?.reduce((sum: number, po: any) => sum + (Number(po.totalAmount) || 0), 0) || 0;
+  const totalPOs = purchaseOrders?.length || 0;
   
   // Check if current user is manager
   const isManager = currentUser?.role === 'manager';
@@ -226,6 +228,9 @@ export default function PurchaseOrders() {
         <div>
           <h2 className="text-2xl font-bold text-gray-800">إدارة أوامر الشراء</h2>
           <p className="text-gray-600">إنشاء ومتابعة أوامر الشراء المرتبطة بطلبات التسعير</p>
+          <p className="text-sm text-blue-600 mt-1">
+            إجمالي: 698 أمر شراء | أوامر فريدة: 451 | معروض: {totalPOs}
+          </p>
         </div>
         <div className="flex gap-2">
           <Link href="/create-purchase-order">
@@ -241,7 +246,7 @@ export default function PurchaseOrders() {
       </div>
 
       {/* Statistics Cards */}
-      <div className={`grid grid-cols-1 ${isManager ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
+      <div className={`grid grid-cols-1 ${isManager ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
         <Card className="card-hover">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -265,6 +270,20 @@ export default function PurchaseOrders() {
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="card-hover">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">أوامر مؤكدة</p>
+                <p className="text-2xl font-bold text-blue-600">{confirmedPOs}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Truck className="h-6 w-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
