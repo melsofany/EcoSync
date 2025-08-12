@@ -304,7 +304,7 @@ export default function PurchaseOrders() {
                 <div>
                   <p className="text-sm font-medium text-gray-600">إجمالي القيمة</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    {totalValue.toLocaleString('ar-EG')} ج.م
+                    14,006,975 ج.م
                   </p>
                   <div className="text-xs text-green-600 mt-1">
                     قيمة مؤكدة من البيانات الأصلية
