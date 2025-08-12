@@ -4280,5 +4280,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // إضافة API التوحيد الذكي
+  const aiMonitorRouter = await import('./ai-monitor-api.js');
+  app.use('/api/ai-monitor', aiMonitorRouter.default);
+
   return httpServer;
 }
