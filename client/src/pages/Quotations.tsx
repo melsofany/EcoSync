@@ -250,7 +250,7 @@ export default function Quotations() {
                   filteredQuotations.map((quotation: any) => (
                     <TableRow key={quotation.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">{quotation.customRequestNumber || quotation.requestNumber}</TableCell>
-                      <TableCell>{getClientName(quotation.clientId)}</TableCell>
+                      <TableCell>{quotation.clientName || getClientName(quotation.clientId)}</TableCell>
                       <TableCell>{formatDate(quotation.requestDate)}</TableCell>
                       <TableCell>
                         {quotation.expiryDate ? formatDate(quotation.expiryDate) : "غير محدد"}
