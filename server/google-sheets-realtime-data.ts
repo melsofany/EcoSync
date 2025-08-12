@@ -54,8 +54,6 @@ export class GoogleSheetsRealtimeData {
 
       const rows = response.data.values || [];
       console.log(`📊 تم قراءة ${rows.length} صف من Google Sheets`);
-      
-
 
       return rows;
     } catch (error) {
@@ -63,8 +61,6 @@ export class GoogleSheetsRealtimeData {
       return [];
     }
   }
-
-
 
   async calculateTotalValue(): Promise<number> {
     try {
@@ -120,19 +116,17 @@ export class GoogleSheetsRealtimeData {
           createdAt: new Date().toISOString()
         };
 
-        // طباعة عينة من البيانات للتشخيص (أول 5 صفوف فقط)
-        if (i < 5) {
-          const originalTotal = row[14] || '';
-          // const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
+        // طباعة عينة من البيانات للتشخيص (أول 10 صفوف فقط)
+        if (i < 10) {
           console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
             rfqNumber: row[5],
-            quantity_M: row[12] || 'فارغ',
-            price_N: row[13] || 'فارغ',
-            original_O: originalTotal,
-            // corrected_O: correctedTotal,
-            responsibleEmployee_Q: `"${row[16] || ''}"`,
-            isValueError: originalTotal.includes('#VALUE!') || originalTotal.includes('#ERROR!'),
-            totalColumns: row.length
+            clientName: row[15] || 'فارغ',
+            columnQ16: `"${row[16] || ''}"`, // العمود 16 (Q)
+            columnR17: `"${row[17] || ''}"`, // العمود 17 (R) - ربما هنا البيانات؟
+            columnS18: `"${row[18] || ''}"`, // العمود 18 (S)
+            columnT19: `"${row[19] || ''}"`, // العمود 19 (T)
+            totalColumns: row.length,
+            allRow: row.slice(15, 20) // عرض الأعمدة P-T
           });
         }
 
