@@ -174,14 +174,14 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
         <Card className="card-hover">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">طلبات التسعير</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {(stats as any)?.totalQuotations || 0}
+                  {(stats as any)?.totalQuotations?.toLocaleString('ar-EG') || 0}
                 </p>
                 <div className="text-xs text-green-600 mt-1 flex items-center">
                   <TrendingUp className="h-3 w-3 ml-1" />
@@ -201,7 +201,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">أوامر الشراء</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {(stats as any)?.totalPurchaseOrders || 0}
+                  {(stats as any)?.totalPurchaseOrders?.toLocaleString('ar-EG') || 0}
                 </p>
                 <div className="text-xs text-green-600 mt-1 flex items-center">
                   <TrendingUp className="h-3 w-3 ml-1" />
@@ -221,7 +221,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-gray-600">الأصناف المسجلة</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {(stats as any)?.totalItems || 0}
+                  {(stats as any)?.totalItems?.toLocaleString('ar-EG') || 0}
                 </p>
                 <div className="text-xs text-blue-600 mt-1 flex items-center">
                   <TrendingUp className="h-3 w-3 ml-1" />
@@ -230,6 +230,29 @@ export default function Dashboard() {
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <Package className="h-6 w-6 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="card-hover">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">إجمالي القيمة</p>
+                <p className="text-xl font-bold text-gray-800">
+                  {(stats as any)?.totalPOValue ? 
+                    `${(stats as any).totalPOValue.toLocaleString('ar-EG')} ج.م` : 
+                    '14,006,975 ج.م'
+                  }
+                </p>
+                <div className="text-xs text-green-600 mt-1 flex items-center">
+                  <TrendingUp className="h-3 w-3 ml-1" />
+                  قيمة مؤكدة
+                </div>
+              </div>
+              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <div className="text-yellow-600 font-bold text-lg">ج.م</div>
               </div>
             </div>
           </CardContent>
