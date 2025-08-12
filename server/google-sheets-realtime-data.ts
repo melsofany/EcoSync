@@ -121,6 +121,7 @@ export class GoogleSheetsRealtimeData {
           console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
             rfqNumber: row[5],
             clientName: row[15] || 'فارغ',
+            responsibleEmployee: row[16] || 'فارغ',
             totalColumns: row.length
           });
         }
@@ -153,7 +154,7 @@ export class GoogleSheetsRealtimeData {
             clientName: item.clientName && item.clientName.trim() ? item.clientName.trim() : 'غير محدد', // اسم العميل من العمود P
             requestDate: item.requestDate, // التاريخ من العمود G
             expiryDate: item.responseDate || null, // تاريخ الانتهاء من العمود J
-            responsibleEmployee: item.responsibleEmployee && item.responsibleEmployee.trim() ? item.responsibleEmployee.trim() : 'نظام المزامنة', // الموظف المسؤول من العمود Q
+            responsibleEmployee: item.responsibleEmployee && item.responsibleEmployee.trim() ? item.responsibleEmployee.trim() : 'غير محدد', // الموظف المسؤول من العمود Q
             status: 'completed',
             notes: `طلب مستورد من Google Sheets`,
             totalItems: 0,
