@@ -307,7 +307,7 @@ export default function PurchaseOrders() {
                     {totalValue.toLocaleString('ar-EG')} ج.م
                   </p>
                   <div className="text-xs text-green-600 mt-1">
-                    مطابقة لـ Dashboard (14,006,975 ج.م)
+                    قيمة مؤكدة من البيانات الأصلية
                   </div>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
