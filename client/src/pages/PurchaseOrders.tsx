@@ -31,12 +31,11 @@ function POTotalAmount({ poNumber, fallbackAmount }: { poNumber: string; fallbac
     }
     
     if (poItems.length > 0) {
-      // حساب الإجمالي من العمود N (totalPOValue) - القيمة المؤكدة
+      // معادلة الحساب: جمع العمود N (totalPOValue)
       const calculatedTotal = poItems.reduce((sum: number, item: any) => {
-        return sum + (item.totalPOValue || 0);
+        return sum + (parseFloat(item.totalPOValue) || 0);
       }, 0);
       
-      // عرض القيمة بالتنسيق المطلوب
       return <span>{calculatedTotal.toLocaleString('ar-EG')} ج.م</span>;
     }
   }

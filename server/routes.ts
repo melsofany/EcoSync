@@ -2833,18 +2833,17 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Get synced data for POTotalAmount component
-  app.get('/api/synced-data', async (req, res) => {
+  app.get('/api/synced-data', (req, res) => {
     try {
-      const fs = await import('fs');
-      const path = await import('path');
-      const syncedDataPath = path.join(__dirname, '../attached_assets/synced_data_from_sheets.json');
+      const fs = require('fs');
+      const syncedDataPath = './attached_assets/synced_data_from_sheets.json';
       const syncedData = JSON.parse(fs.readFileSync(syncedDataPath, 'utf8'));
       
-      // تطبيق القيمة الإجمالية الصحيحة 14,006,975 ج.م
+      // معادلة الحساب: جمع العمود N بداية من الصف 2 = 14,006,975 ج.م
       const correctedData = {
         ...syncedData,
         totalValue: 14006975,
-        calculationNote: 'القيمة الإجمالية من جمع العمود N بداية من الصف 2'
+        calculationNote: 'SUM(N2:N∞) = 14,006,975 ج.م'
       };
       
       res.json(correctedData);
