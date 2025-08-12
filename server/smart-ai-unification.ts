@@ -7,7 +7,7 @@ class SmartAIUnification {
   private apiUrl: string = 'https://api.deepseek.com/v1/chat/completions';
 
   constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY || '';
+    this.apiKey = 'sk-0cf4004a1ce7403880ef677bb2fe92f9';
   }
 
   // استدعاء DeepSeek API
