@@ -732,14 +732,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // استخراج البيانات من الأعمدة المحددة:
-        // A: المعرف الفريد, B: الوحدة, C: LINE ITEM, D: PART NO, E: التوصيف
+        // A: فارغ, B: الوحدة, C: LINE ITEM, D: PART NO, E: التوصيف
+        // سنستخدم LINE ITEM كمعرف فريد بديل
         const items = [];
         
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i] || [];
           
           if (row.length >= 3) {
-            const uniqueId = row[0] ? row[0].toString().trim() : ''; // العمود A - المعرف الفريد
             const unit = row[1] ? row[1].toString().trim() : 'Each'; // العمود B - الوحدة
             const lineItem = row[2] ? row[2].toString().trim() : ''; // العمود C - LINE ITEM
             const partNumber = row[3] ? row[3].toString().trim() : ''; // العمود D - PART NO
@@ -749,10 +749,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // تخطي الصفوف الفارغة تماماً
             if (!lineItem && !partNumber && !description) continue;
             
+            // استخدام LINE ITEM كمعرف فريد بديل أو إنشاء معرف من رقم الصف
+            const uniqueSheetId = lineItem || `ROW-${i.toString().padStart(4, '0')}`;
+            
             items.push({
               id: `sheet-item-${i}`,
               itemNumber: `P-${i.toString().padStart(7, '0')}`,
-              uniqueSheetId: uniqueId, // المعرف الفريد من العمود A
+              uniqueSheetId: uniqueSheetId, // استخدام LINE ITEM كمعرف فريد
               lineItem: lineItem, // العمود C - LINE ITEM
               partNumber: partNumber, // العمود D - PART NO
               description: description, // العمود E - التوصيف
@@ -760,7 +763,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               quantity: quantity,
               category: 'general',
               brand: '',
-              source: 'google_sheets_with_unique_id',
+              source: 'google_sheets_line_item_id',
               createdAt: new Date().toISOString(),
               isActive: true
             });
@@ -768,9 +771,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         console.log(`✅ استخراج ${items.length} صنف من Google Sheets:`);
-        console.log(`   🆔 العمود A: المعرف الفريد`);
+        console.log(`   ❌ العمود A: فارغ`);
         console.log(`   📋 العمود B: الوحدة (Unit)`);
-        console.log(`   📦 العمود C: LINE ITEM`);
+        console.log(`   🆔 العمود C: LINE ITEM (كمعرف فريد)`);
         console.log(`   🔧 العمود D: PART NO`);
         console.log(`   📝 العمود E: التوصيف`);
         
