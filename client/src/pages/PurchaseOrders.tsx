@@ -73,8 +73,19 @@ export default function PurchaseOrders() {
     }).format(Number(amount));
   };
 
-  const getQuotationNumber = (quotationNumber: string) => {
-    return quotationNumber || "غير محدد";
+  const getQuotationNumber = (quotationNumber: string, po?: any) => {
+    // إذا كان quotationNumber موجود ومليء، أرجعه
+    if (quotationNumber && quotationNumber.trim() !== '') {
+      return quotationNumber;
+    }
+    
+    // محاولة استخراج رقم طلب التسعير من رقم أمر الشراء
+    if (po?.poNumber) {
+      const poNum = po.poNumber.replace('P25E', '25R');
+      return poNum;
+    }
+    
+    return 'غير محدد';
   };
 
   // Get purchase order items
@@ -141,7 +152,7 @@ export default function PurchaseOrders() {
         <h1 style="text-align: center; color: #1e40af;">أمر شراء رقم: ${po.poNumber}</h1>
         <div style="margin: 20px 0; border: 1px solid #ccc; padding: 15px;">
           <h2>تفاصيل الأمر</h2>
-          <p><strong>رقم الطلب:</strong> ${getQuotationNumber(po.quotationId)}</p>
+          <p><strong>رقم طلب التسعير:</strong> ${getQuotationNumber(po.quotationNumber, po)}</p>
           <p><strong>تاريخ الأمر:</strong> ${formatDate(po.poDate)}</p>
           <p><strong>القيمة الإجمالية:</strong> ${formatCurrency(po.totalValue)}</p>
           <p><strong>الحالة:</strong> ${po.status}</p>
@@ -347,7 +358,7 @@ export default function PurchaseOrders() {
                     <TableRow key={po.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">{po.poNumber}</TableCell>
                       <TableCell className="text-blue-600">
-                        {getQuotationNumber(po.quotationNumber)}
+                        {getQuotationNumber(po.quotationNumber, po)}
                       </TableCell>
                       <TableCell>{formatDate(po.orderDate)}</TableCell>
                       {isManager && (
