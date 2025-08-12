@@ -50,7 +50,7 @@ async function syncSavedDataToSheets() {
       id: record.id || `item-${index}`,
       itemNumber: `P-${(index + 1).toString().padStart(6, '0')}`,
       lineItem: record.lineItem || '',
-      partNumber: record.lineItem || '', // نسخ lineItem إلى partNumber
+      partNumber: record.partNumber || '', // استخدام partNumber الحقيقي من الملف
       description: record.description || '',
       uom: record.uom || 'EACH',
       category: 'مستورد من قاعدة البيانات',
