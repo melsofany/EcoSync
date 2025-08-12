@@ -10,6 +10,7 @@ import bcrypt from "bcrypt";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import { randomBytes } from "crypto";
+import path from "path";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 
@@ -4283,6 +4284,15 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إضافة API التوحيد الذكي
   const aiMonitorRouter = await import('./ai-monitor-api.js');
   app.use('/api/ai-monitor', aiMonitorRouter.default);
+
+  // إضافة route مباشر لشاشة التوحيد الذكي
+  app.get('/ai-unification-monitor', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public/ai-unification-monitor/index.html'));
+  });
+
+  app.get('/ai-unification-monitor/', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public/ai-unification-monitor/index.html'));
+  });
 
   return httpServer;
 }
