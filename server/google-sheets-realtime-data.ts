@@ -105,6 +105,7 @@ export class GoogleSheetsRealtimeData {
           quantity: row[7] || '', // العمود H - QUANTITY
           price: row[8] || '', // العمود I - PRICE
           responseDate: row[9] || '', // العمود J - RESPONSE DATE
+          responseDate: row[9] || '', // العمود J - تاريخ الانتهاء/الاستجابة
           poNumber: row[10] || '', // العمود K - PO NUMBER
           poDate: row[11] || '', // العمود L - PO DATE
           poQuantity: row[12] || '', // العمود M - PO QUANTITY
@@ -151,7 +152,7 @@ export class GoogleSheetsRealtimeData {
             customRequestNumber: item.rfqNumber, // رقم الطلب من العمود F
             clientName: item.clientName && item.clientName.trim() ? item.clientName.trim() : 'غير محدد', // اسم العميل من العمود P
             requestDate: item.requestDate, // التاريخ من العمود G
-            expiryDate: null,
+            expiryDate: item.responseDate || null, // تاريخ الانتهاء من العمود J
             status: 'completed',
             responsibleEmployee: 'نظام المزامنة',
             notes: `طلب مستورد من Google Sheets`,
