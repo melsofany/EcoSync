@@ -245,7 +245,7 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-800">إجمالي القيمة (Google Sheets)</p>
+                <p className="text-sm font-medium text-green-800">إجمالي القيمة</p>
                 <p className="text-xl font-bold text-green-900">
                   {googleSheetsLoading ? "جاري التحميل..." : 
                    googleSheetsData && googleSheetsData.totalValue > 0 ? 
@@ -253,7 +253,7 @@ export default function Dashboard() {
                 </p>
                 <div className="text-xs text-green-700 mt-1 flex items-center">
                   <Database className="h-3 w-3 ml-1" />
-                  انتظار البيانات من Google Sheets
+                  جاهز لاستقبال البيانات
                 </div>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
