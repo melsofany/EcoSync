@@ -270,6 +270,38 @@ export default function Items() {
     }
   };
 
+  const [isUnifyingColumnA, setIsUnifyingColumnA] = useState(false);
+
+  const handleUnifyColumnAIds = async () => {
+    setIsUnifyingColumnA(true);
+    try {
+      const response = await apiRequest("POST", "/api/unify-column-a-ids", {});
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "تم توحيد المعرفات بنجاح! 🆔",
+          description: result.message + ` (معالجة ${result.totalProcessed} صنف)`,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/items"] });
+      } else {
+        toast({
+          title: "فشل في توحيد المعرفات",
+          description: result.message || "حدث خطأ غير متوقع",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "خطأ في الاتصال",
+        description: "فشل في الاتصال بالخادم",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUnifyingColumnA(false);
+    }
+  };
+
   const getAIStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { label: "في الانتظار", variant: "secondary" as const, icon: Clock },
@@ -443,6 +475,25 @@ export default function Items() {
                   <>
                     <FileText className="h-4 w-4 ml-2" />
                     📝 كتابة المعرفات
+                  </>
+                )}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleUnifyColumnAIds}
+                disabled={isUnifyingColumnA}
+                className="text-orange-600 border-orange-600 hover:bg-orange-50"
+              >
+                {isUnifyingColumnA ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-orange-600 border-t-transparent" />
+                    جاري توحيد المعرفات...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 ml-2" />
+                    🆔 توحيد العمود A
                   </>
                 )}
               </Button>
