@@ -10,6 +10,7 @@ import bcrypt from "bcrypt";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import { randomBytes } from "crypto";
+import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 
 // نظام توحيد الأصناف الذكي باستخدام AI
 async function aiUnifyItems(items: any[]): Promise<any[]> {
