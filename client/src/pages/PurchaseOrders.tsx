@@ -24,33 +24,25 @@ function POTotalAmount({ poNumber, fallbackAmount }: { poNumber: string; fallbac
     // البحث عن أصناف هذا الأمر في البيانات المزامنة
     let poItems = syncedData.items.filter((item: any) => item.poNumber === poNumber);
     
-    // للأمر P25E02726، استخدم الأصناف الثلاثة المحددة فقط
+    // للأمر P25E02726، استخدم الأصناف الثلاثة المحددة فقط (كما طلب المستخدم)
     if (poNumber === 'P25E02726') {
       const requiredItems = ['P-0000975', 'P-0000978', 'P-0001793'];
       poItems = poItems.filter((item: any) => requiredItems.includes(item.id));
     }
     
     if (poItems.length > 0) {
-      // جمع القيم من العمود N (totalPOValue)
+      // حساب الإجمالي من العمود N (totalPOValue) - القيمة المؤكدة
       const calculatedTotal = poItems.reduce((sum: number, item: any) => {
         return sum + (item.totalPOValue || 0);
       }, 0);
       
-      return <span>{(calculatedTotal || 0).toLocaleString('ar-EG', { 
-        style: 'currency', 
-        currency: 'EGP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      })}</span>;
+      // عرض القيمة بالتنسيق المطلوب
+      return <span>{calculatedTotal.toLocaleString('ar-EG')} ج.م</span>;
     }
   }
   
-  return <span>{(fallbackAmount || 0).toLocaleString('ar-EG', { 
-    style: 'currency', 
-    currency: 'EGP',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  })}</span>;
+  // القيمة الاحتياطية بنفس التنسيق
+  return <span>{(fallbackAmount || 0).toLocaleString('ar-EG')} ج.م</span>;
 }
 
 export default function PurchaseOrders() {
