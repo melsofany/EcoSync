@@ -476,16 +476,16 @@ export default function PurchaseOrders() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">رقم الطلب</label>
-                  <p className="text-blue-600 font-medium">{getQuotationNumber(selectedPO.quotationId)}</p>
+                  <label className="text-sm font-medium text-gray-600">رقم طلب التسعير</label>
+                  <p className="text-blue-600 font-medium">{getQuotationNumber(selectedPO.quotationNumber, selectedPO)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">تاريخ الأمر</label>
-                  <p>{formatDate(selectedPO.poDate)}</p>
+                  <p>{formatDate(selectedPO.orderDate)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">القيمة الإجمالية</label>
-                  <p className="font-bold text-green-600">{formatCurrency(selectedPO.totalValue)}</p>
+                  <p className="font-bold text-green-600">{formatCurrency(selectedPO.totalAmount)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">الحالة</label>
@@ -562,7 +562,7 @@ export default function PurchaseOrders() {
                       <div className="flex justify-between items-center">
                         <span className="font-semibold">إجمالي أمر الشراء:</span>
                         <span className="font-bold text-xl text-green-600">
-                          {formatCurrency(selectedPO.totalValue)}
+                          {formatCurrency(selectedPO.totalAmount)}
                         </span>
                       </div>
                     </div>
