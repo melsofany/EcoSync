@@ -446,6 +446,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoints لصفحة مراقبة التوحيد
+  let monitorInstance: any = null;
+
+  app.get("/api/monitor/stats", async (req: Request, res: Response) => {
+    try {
+      if (!monitorInstance) {
+        const { UnificationMonitorAPI } = await import('./unification-monitor-api');
+        monitorInstance = new UnificationMonitorAPI();
+      }
+      
+      const stats = await monitorInstance.getInitialStats();
+      res.json(stats);
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: "خطأ في قراءة الإحصائيات: " + error.message
+      });
+    }
+  });
+
+  app.post("/api/monitor/start", async (req: Request, res: Response) => {
+    try {
+      if (!monitorInstance) {
+        const { UnificationMonitorAPI } = await import('./unification-monitor-api');
+        monitorInstance = new UnificationMonitorAPI();
+      }
+      
+      if (monitorInstance.isProcessRunning()) {
+        return res.json({
+          success: false,
+          message: "العملية قيد التشغيل بالفعل"
+        });
+      }
+      
+      monitorInstance.startRealTimeUnification();
+      res.json({
+        success: true,
+        message: "تم بدء عملية التوحيد"
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: "خطأ في بدء التوحيد: " + error.message
+      });
+    }
+  });
+
+  app.post("/api/monitor/stop", async (req: Request, res: Response) => {
+    try {
+      if (monitorInstance) {
+        monitorInstance.stopUnification();
+      }
+      res.json({
+        success: true,
+        message: "تم إيقاف عملية التوحيد"
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: "خطأ في إيقاف التوحيد: " + error.message
+      });
+    }
+  });
+
   // API لتوحيد المعرفات في العمود A مباشرة
   app.post("/api/unify-column-a-ids", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
