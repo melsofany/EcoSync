@@ -91,16 +91,16 @@ export class GoogleSheetsRealtimeData {
           lineItem: row[1] || '', // العمود B - LINE ITEM
           partNumber: row[2] || '', // العمود C - PART NO
           description: row[3] || '', // العمود D - DESCRIPTION
-          rfqNumber: row[4] || '', // العمود E - RFQ NUMBER
-          requestDate: row[5] || '', // العمود F - REQUEST DATE
-          quantity: row[6] || '', // العمود G - QUANTITY
-          price: row[7] || '', // العمود H - PRICE
-          responseDate: row[8] || '', // العمود I - RESPONSE DATE
-          poNumber: row[9] || '', // العمود J - PO NUMBER
-          poDate: row[10] || '', // العمود K - PO DATE
-          poQuantity: row[11] || '', // العمود L - PO QUANTITY
-          poPrice: row[12] || '', // العمود M - PO PRICE
-          totalValue: row[13] || '', // العمود N - القيمة الإجمالية
+          rfqNumber: row[5] || '', // العمود F - RFQ NUMBER  
+          requestDate: row[6] || '', // العمود G - REQUEST DATE
+          quantity: row[7] || '', // العمود H - QUANTITY
+          price: row[8] || '', // العمود I - PRICE
+          responseDate: row[9] || '', // العمود J - RESPONSE DATE
+          poNumber: row[10] || '', // العمود K - PO NUMBER
+          poDate: row[11] || '', // العمود L - PO DATE
+          poQuantity: row[12] || '', // العمود M - PO QUANTITY
+          poPrice: row[13] || '', // العمود N - PO PRICE
+          totalValue: row[14] || '', // العمود O - القيمة الإجمالية
           isActive: true,
           createdAt: new Date().toISOString()
         };
