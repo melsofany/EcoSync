@@ -3112,18 +3112,35 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   const syncRouter = await import('./routes/sync');
   app.use('/api', syncRouter.default);
 
-  // إنشاء صفحة DATA مع معرف البند
-  app.post('/api/create/data-sheet', requireAuth, async (req, res) => {
+  // مزامنة النظام مع Google Sheets
+  app.post('/api/sync/with-sheets', requireAuth, async (req, res) => {
     try {
-      const { createDataSheet } = await import('./create-data-sheet');
-      const result = await createDataSheet();
+      const { syncWithSheets } = await import('./sync-with-sheets');
+      const result = await syncWithSheets();
       
       res.json(result);
     } catch (error) {
-      console.error('خطأ في إنشاء صفحة DATA:', error);
+      console.error('خطأ في المزامنة:', error);
       res.status(500).json({
         success: false,
-        message: 'خطأ في إنشاء صفحة DATA',
+        message: 'خطأ في مزامنة النظام مع Google Sheets',
+        error: (error as Error).message
+      });
+    }
+  });
+
+  // إعداد المزامنة الحقيقية
+  app.post('/api/sync/setup-realtime', requireAuth, async (req, res) => {
+    try {
+      const { setupRealTimeSync } = await import('./sync-with-sheets');
+      const result = await setupRealTimeSync();
+      
+      res.json(result);
+    } catch (error) {
+      console.error('خطأ في إعداد المزامنة الحقيقية:', error);
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في إعداد المزامنة الحقيقية',
         error: (error as Error).message
       });
     }

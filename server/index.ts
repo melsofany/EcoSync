@@ -4,6 +4,7 @@ import "./telegram-bot"; // Initialize Telegram bot
 import GoogleSheetsSync from "./google-sheets-sync";
 import { realTimeSync } from "./real-time-google-sheets-sync";
 import { storage } from "./storage";
+import { setupRealTimeSync } from "./sync-with-sheets";
 
 const app = express();
 
@@ -106,5 +107,16 @@ app.use((req, res, next) => {
         console.log('⚠️ المزامنة الحقيقية غير متاحة:', (error as Error).message);
       }
     }, 3000); // بدء المزامنة بعد 3 ثوان
+
+    // إعداد المزامنة التلقائية مع Google Sheets
+    setTimeout(async () => {
+      try {
+        console.log('⚡ تشغيل المزامنة التلقائية مع Google Sheets...');
+        await setupRealTimeSync();
+        console.log('✅ تم تفعيل المزامنة التلقائية مع Google Sheets');
+      } catch (error) {
+        console.log('⚠️ سيتم المحاولة لاحقاً:', (error as Error).message);
+      }
+    }, 5000); // انتظار 5 ثوانِ
   });
 })();
