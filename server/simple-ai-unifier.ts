@@ -168,7 +168,9 @@ class SimpleAIUnifier {
       let successCount = 0;
       for (const update of updates) {
         try {
-          await this.sheets.spreadsheets.values.update({
+          this.addLog(`🔄 كتابة ${update.range} = ${update.values[0][0]}`);
+          
+          const result = await this.sheets.spreadsheets.values.update({
             spreadsheetId: this.spreadsheetId,
             range: update.range,
             valueInputOption: 'RAW',
@@ -176,14 +178,20 @@ class SimpleAIUnifier {
               values: update.values
             }
           });
+          
+          this.addLog(`✅ نجحت كتابة ${update.range} - خلايا محدثة: ${result.data.updatedCells}`);
           successCount++;
+          
+          // انتظار قصير بين التحديثات
+          await new Promise(resolve => setTimeout(resolve, 50));
+          
         } catch (updateError: any) {
           this.addLog(`❌ خطأ في كتابة ${update.range}: ${updateError.message}`, 'error');
         }
       }
       
       if (successCount > 0) {
-        this.addLog(`✅ تم كتابة ${successCount} من ${updates.length} تحديث إلى Google Sheets`);
+        this.addLog(`🎯 تم كتابة ${successCount} من ${updates.length} تحديث بنجاح`);
       }
       
     } catch (error: any) {
@@ -283,8 +291,8 @@ class SimpleAIUnifier {
         currentIdCounter++;
         this.status.processed = processedItems.size;
 
-        // كتابة التحديثات كل 10 عناصر
-        if (updates.length >= 10) {
+        // كتابة التحديثات كل 5 عناصر لمراقبة أفضل
+        if (updates.length >= 5) {
           await this.writeUpdatesToSheets(updates);
           updates.length = 0; // مسح المصفوفة
         }
