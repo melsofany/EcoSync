@@ -3146,18 +3146,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // التحقق من القيمة المالية
-  app.get('/api/verify/value', requireAuth, async (req, res) => {
+  // تصحيح القيمة الدقيقة
+  app.post('/api/fix/exact-value', requireAuth, async (req, res) => {
     try {
-      const { verifyFinalValue } = await import('./final-value-correction');
-      const result = await verifyFinalValue();
+      const { fixExactValue } = await import('./fix-exact-value');
+      const result = await fixExactValue();
       
       res.json(result);
     } catch (error) {
-      console.error('خطأ في التحقق:', error);
+      console.error('خطأ في التصحيح الدقيق:', error);
       res.status(500).json({
         success: false,
-        message: 'خطأ في التحقق من القيمة المالية',
+        message: 'خطأ في تصحيح القيمة الدقيقة',
         error: (error as Error).message
       });
     }
