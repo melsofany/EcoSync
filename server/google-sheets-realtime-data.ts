@@ -115,13 +115,12 @@ export class GoogleSheetsRealtimeData {
           createdAt: new Date().toISOString()
         };
 
-        // طباعة عينة من البيانات للتشخيص
+        // طباعة عينة من البيانات للتشخيص (أول 3 صفوف فقط)
         if (i < 3) {
           console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
             rfqNumber: row[5],
-            clientName: row[15],
-            totalColumns: row.length,
-            allColumns: row
+            clientName: row[15] || 'فارغ',
+            totalColumns: row.length
           });
         }
 
@@ -150,7 +149,7 @@ export class GoogleSheetsRealtimeData {
             id: `rfq-sheets-${item.rfqNumber}`,
             requestNumber: item.rfqNumber, // رقم الطلب من العمود F
             customRequestNumber: item.rfqNumber, // رقم الطلب من العمود F
-            clientName: item.clientName || 'غير محدد', // اسم العميل من العمود P
+            clientName: item.clientName && item.clientName.trim() ? item.clientName.trim() : 'غير محدد', // اسم العميل من العمود P
             requestDate: item.requestDate, // التاريخ من العمود G
             expiryDate: null,
             status: 'completed',
