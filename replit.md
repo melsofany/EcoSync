@@ -6,6 +6,7 @@ A comprehensive web application for قرطبة للتوريدات (Qurtoba Suppl
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 Data source: Google Sheets ONLY - no database storage, all data must come from Google Sheets exclusively.
+UI Preferences: No unification buttons in main Items page - all unification operations should be separate/programmatic.
 
 ## System Architecture
 
@@ -34,7 +35,7 @@ Data source: Google Sheets ONLY - no database storage, all data must come from G
 ### Feature Specifications
 - **Quotation Management**: Full lifecycle from request to completion with accurate data import from Excel, following a unified workflow with stages.
 - **Item Catalog**: AI-enhanced item management with intelligent duplicate detection, focusing on part number normalization, description similarity, and keyword extraction.
-- **AI-Powered Item Unification**: Integration for intelligent item consolidation based on part number matching and description similarity analysis. Automated system to merge duplicate items.
+- **AI-Powered Item Unification**: Integration for intelligent item consolidation based on part number matching and description similarity analysis. Automated system to merge duplicate items. Independent monitoring page at /monitor for real-time unification tracking (August 2025).
 - **Purchase Order Processing**: Integration with the quotation system, including robust search capabilities and importing existing POs from Excel.
 - **User Management**: Role-based access and activity monitoring.
 - **Client & Supplier Management**: Functionality for adding, editing, and deleting clients and suppliers with soft delete logic.
