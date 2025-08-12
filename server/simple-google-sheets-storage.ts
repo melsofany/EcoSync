@@ -177,11 +177,14 @@ export class SimpleGoogleSheetsStorage {
 
   // دوال المستخدمين والتوافق
   async getUserByUsername(username: string) {
+    console.log(`🔍 البحث عن المستخدم: ${username}`);
+    
     if (username === 'admin') {
+      console.log('✅ تم العثور على المستخدم admin');
       return {
         id: 'admin-google-sheets',
         username: 'admin',
-        password: 'b0.uRORgXa2lpiC4E2gJBvnO/54G1kmiox0i2',
+        password: '$2b$10$Ybm8FXXJQdbSP8LjWr3kUuJPWMLI2/YvzX7XMUk0AqjdM4ula3CCe', // admin123
         fullName: 'مدير النظام - Google Sheets',
         email: 'admin@sheets.com',
         role: 'manager',
