@@ -3391,10 +3391,17 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       // استخراج الإحصائيات
       const uniqueRFQs = new Set();
       const uniquePOs = new Set();
+      let confirmedPOsCount = 0;
       
       for (const row of rows) {
         if (row[4]) uniqueRFQs.add(row[4]); // العمود E - RFQ NUMBER
         if (row[9]) uniquePOs.add(row[9]); // العمود J - PO NUMBER
+        
+        // عد القيم الموجودة في العمود K (PO DATE) - العمود رقم 10
+        if (row[10] && row[10].toString().trim()) {
+          confirmedPOsCount++;
+          console.log(`📅 العمود K الصف ${rows.indexOf(row) + 2}: ${row[10]}`);
+        }
       }
 
       const stats = {
@@ -3402,6 +3409,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         totalItems: rows.length,
         totalQuotations: uniqueRFQs.size,
         totalPurchaseOrders: uniquePOs.size,
+        confirmedPOs: confirmedPOsCount,
         totalValue: totalValue,
         targetValue: 14006975,
         accuracyPercentage: totalValue === 14006975 ? 100 : 
@@ -3413,6 +3421,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log(`💰 إجمالي القيمة من Google Sheets: ${totalValue.toLocaleString()} ج.م`);
       console.log(`🎯 القيمة المستهدفة: ${(14006975).toLocaleString()} ج.م`);
       console.log(`📊 دقة المطابقة: ${stats.accuracyPercentage}%`);
+      console.log(`📅 عدد الأوامر المؤكدة (العمود K): ${confirmedPOsCount}`);
 
       res.json(stats);
     } catch (error) {

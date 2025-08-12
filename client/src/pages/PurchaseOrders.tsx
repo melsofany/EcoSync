@@ -335,7 +335,15 @@ export default function PurchaseOrders() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">أوامر مؤكدة</p>
-                <p className="text-2xl font-bold text-blue-600">{confirmedPOs}</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {googleSheetsLoading ? "..." : 
+                   googleSheetsData?.confirmedPOs !== undefined ? 
+                   googleSheetsData.confirmedPOs : confirmedPOs}
+                </p>
+                <div className="text-xs text-gray-600 mt-1">
+                  {googleSheetsData?.confirmedPOs !== undefined ? 
+                   `عدد القيم في العمود K` : "البيانات المحلية"}
+                </div>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Truck className="h-6 w-6 text-blue-600" />
