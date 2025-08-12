@@ -25,8 +25,8 @@ export class RealDataStorage {
       // التحقق من وجود البيانات المزامنة أولاً
       const syncedData = JSON.parse(readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8'));
       
-      // إذا كانت البيانات فارغة، استخدم بيانات فارغة
-      if (!syncedData.items || syncedData.items.length === 0) {
+      // إذا كانت البيانات فارغة أو حالة مسح كامل، استخدم بيانات فارغة
+      if (syncedData.status === 'completely_empty' || !syncedData.items || syncedData.items.length === 0) {
         console.log('📭 لا توجد بيانات مزامنة - النظام فارغ');
         this.createEmptyData();
         return;

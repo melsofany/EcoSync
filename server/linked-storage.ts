@@ -14,11 +14,20 @@ class LinkedStorage {
   private loadLinkedData() {
     try {
       const data = readFileSync(this.dataPath, 'utf8');
-      this.linkedData = JSON.parse(data);
-      console.log(`🔗 تم تحميل البيانات المربوطة: ${this.linkedData.summary.totalItems} صنف`);
+      const parsedData = JSON.parse(data);
+      
+      // التحقق من حالة البيانات
+      if (parsedData.status === 'completely_empty' || !parsedData.items || parsedData.items.length === 0) {
+        console.log('🚫 البيانات المربوطة فارغة');
+        this.linkedData = { items: [], quotations: [], purchaseOrders: [], summary: { totalItems: 0 } };
+        return;
+      }
+      
+      this.linkedData = parsedData;
+      console.log(`🔗 تم تحميل البيانات المربوطة: ${this.linkedData.summary?.totalItems || 0} صنف`);
     } catch (error) {
-      console.error('❌ خطأ في تحميل البيانات المربوطة:', error.message);
-      this.linkedData = { items: [], quotations: [], purchaseOrders: [] };
+      console.log('📭 البيانات المربوطة فارغة');
+      this.linkedData = { items: [], quotations: [], purchaseOrders: [], summary: { totalItems: 0 } };
     }
   }
 
