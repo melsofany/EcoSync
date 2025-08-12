@@ -62,15 +62,46 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
+  // دالة لحساب القيمة الإجمالية للصف مع معالجة أخطاء #VALUE!
+  calculateRowTotal(quantity: string, price: string, totalValue: string): string {
+    try {
+      // إذا كانت القيمة الإجمالية صحيحة، استخدمها
+      if (totalValue && !totalValue.includes('#VALUE!') && !totalValue.includes('#ERROR!') && totalValue !== '0') {
+        const numValue = parseFloat(totalValue.toString().replace(/[^\d.-]/g, ''));
+        if (!isNaN(numValue) && numValue > 0) {
+          return totalValue;
+        }
+      }
+
+      // إذا كانت القيمة الإجمالية خاطئة أو فارغة، احسبها من M × N
+      if (quantity && price) {
+        const qtyNum = parseFloat(quantity.toString().replace(/[^\d.-]/g, ''));
+        const priceNum = parseFloat(price.toString().replace(/[^\d.-]/g, ''));
+        
+        if (!isNaN(qtyNum) && !isNaN(priceNum)) {
+          const calculated = qtyNum * priceNum;
+          console.log(`🔧 تم إصلاح القيمة: ${quantity} × ${price} = ${calculated}`);
+          return calculated.toString();
+        }
+      }
+
+      return totalValue || '';
+    } catch (error) {
+      console.log(`❌ خطأ في حساب القيمة: ${error}`);
+      return totalValue || '';
+    }
+  }
+
   async calculateTotalValue(): Promise<number> {
     try {
       const rows = await this.readDataSheet();
       let totalValue = 0;
 
-      // حساب مجموع العمود N (العمود رقم 13 - محسوب من 0)
+      // حساب مجموع العمود O مع معالجة #VALUE! errors
       for (const row of rows) {
-        if (row.length > 13 && row[13]) {
-          const value = parseFloat(row[13].toString().replace(/[^\d.-]/g, ''));
+        if (row.length > 14) {
+          const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
+          const value = parseFloat(correctedTotal.toString().replace(/[^\d.-]/g, ''));
           if (!isNaN(value)) {
             totalValue += value;
           }
@@ -109,7 +140,7 @@ export class GoogleSheetsRealtimeData {
           poDate: row[11] || '', // العمود L - PO DATE
           poQuantity: row[12] || '', // العمود M - PO QUANTITY
           poPrice: row[13] || '', // العمود N - PO PRICE
-          totalValue: row[14] || '', // العمود O - القيمة الإجمالية
+          totalValue: this.calculateRowTotal(row[12], row[13], row[14]), // العمود O - حساب القيمة الإجمالية مع معالجة #VALUE!
           clientName: row[15] || '', // العمود P - اسم العميل
           responsibleEmployee: row[16] || '', // العمود Q (فهرس 16) - الموظف المسؤول
           isActive: true,
