@@ -86,10 +86,10 @@ export function RealTimeSync() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <RefreshCw className="h-5 w-5" />
-          المزامنة الفورية مع Google Sheets
+          المزامنة الفورية للبيانات
         </CardTitle>
         <CardDescription>
-          تزامن فوري للبيانات بين النظام و Google Sheets كل 10 ثوانٍ
+          تزامن فوري للبيانات بين النظام والمصادر الخارجية كل 10 ثوانٍ
         </CardDescription>
       </CardHeader>
       
@@ -179,7 +179,7 @@ export function RealTimeSync() {
         <div className="bg-gray-50 dark:bg-gray-900/50 p-3 rounded-md">
           <h4 className="font-medium text-sm mb-2">كيفية عمل المزامنة الفورية:</h4>
           <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• النظام يفحص Google Sheets كل 10 ثوانٍ</li>
+            <li>• النظام يفحص البيانات كل 10 ثوانٍ</li>
             <li>• أي تعديل في الشيت يظهر فوراً في النظام</li>
             <li>• يمكن طلب مزامنة فورية بالأزرار أعلاه</li>
             <li>• المزامنة تشمل: الأصناف، طلبات التسعير، أوامر الشراء</li>

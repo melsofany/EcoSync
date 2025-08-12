@@ -33,7 +33,7 @@ export default function Dashboard() {
     queryKey: ["/api/statistics"],
   });
 
-  // إضافة استعلام لبيانات Google Sheets
+  // إضافة استعلام للبيانات الخارجية
   const { data: googleSheetsData, isLoading: googleSheetsLoading } = useQuery({
     queryKey: ["/api/google-sheets-data"],
     refetchInterval: 5000, // تحديث كل 5 ثوانٍ
@@ -253,7 +253,7 @@ export default function Dashboard() {
                 </p>
                 <div className="text-xs text-green-700 mt-1 flex items-center">
                   <Database className="h-3 w-3 ml-1" />
-                  جاهز لاستقبال البيانات
+                  النظام جاهز
                 </div>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -446,7 +446,7 @@ export default function Dashboard() {
         </Card>
       )}
 
-      {/* Real-time Sync with Google Sheets - For IT Admins */}
+      {/* Real-time Sync - For IT Admins */}
       {user?.role === 'it_admin' && (
         <RealTimeSync />
       )}
