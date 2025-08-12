@@ -40,7 +40,7 @@ export class GoogleSheetsRealtimeData {
       // قراءة البيانات من صفحة DATA بدءاً من الصف 2
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:N10000', // قراءة من A2 إلى N مع حد أقصى 10000 صف
+        range: 'DATA!A2:O10000', // قراءة من A2 إلى O مع حد أقصى 10000 صف
       });
 
       const rows = response.data.values || [];
@@ -128,14 +128,19 @@ export class GoogleSheetsRealtimeData {
         if (!quotationsMap.has(item.rfqNumber)) {
           quotationsMap.set(item.rfqNumber, {
             id: `rfq-sheets-${item.rfqNumber}`,
-            rfqNumber: item.rfqNumber,
-            customRequestNumber: item.rfqNumber,
-            requestDate: item.requestDate,
-            status: 'completed',
+            requestNumber: item.rfqNumber, // رقم الطلب من العمود F
+            customRequestNumber: item.rfqNumber, // رقم الطلب من العمود F
             clientName: 'قرطبة للتوريدات',
+            requestDate: item.requestDate, // التاريخ من العمود G
+            expiryDate: null,
+            status: 'completed',
+            responsibleEmployee: 'نظام المزامنة',
+            notes: `طلب مستورد من Google Sheets`,
             totalItems: 0,
             totalValue: 0,
-            items: []
+            items: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           });
         }
 

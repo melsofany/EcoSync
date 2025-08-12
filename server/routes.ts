@@ -446,10 +446,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Quotation routes
+  // Quotation routes - قراءة طلبات التسعير من Google Sheets مباشرة
   app.get("/api/quotations", requireAuth, async (req: Request, res: Response) => {
     try {
-      const quotations = await storage.getAllQuotationRequestsWithClients();
+      const { googleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
+      const quotations = await googleSheetsRealtimeData.getAllQuotations();
       res.json(quotations);
     } catch (error) {
       console.error("Get quotations error:", error);
