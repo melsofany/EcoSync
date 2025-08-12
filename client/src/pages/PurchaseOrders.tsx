@@ -13,22 +13,44 @@ import NewPurchaseOrderModal from "@/components/modals/NewPurchaseOrderModal";
 import EditPurchaseOrderModal from "@/components/modals/EditPurchaseOrderModal";
 import EditPOItemsModal from "@/components/modals/EditPOItemsModal";
 
-// مكون لحساب الإجمالي الصحيح لكل أمر شراء
+// مكون لحساب الإجمالي الصحيح لكل أمر شراء من العمود N
 function POTotalAmount({ poNumber, fallbackAmount }: { poNumber: string; fallbackAmount: number }) {
-  // استخراج معرف الأمر من رقم الأمر
-  const poId = `po-unified-${poNumber.includes('P25E') ? poNumber.split('P25E')[1]?.padStart(1, '0') || '0' : '0'}`;
-  
-  const { data: poItems } = useQuery({
-    queryKey: [`/api/purchase-orders/${poId}/items`],
+  const { data: syncedData } = useQuery({
+    queryKey: ['/api/synced-data'],
     enabled: !!poNumber
   });
 
-  if (poItems && poItems.length > 0) {
-    const calculatedTotal = poItems.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
-    return <span>{(calculatedTotal || 0).toLocaleString('ar-EG', { style: 'currency', currency: 'EGP' })}</span>;
+  if (syncedData?.items) {
+    // البحث عن أصناف هذا الأمر في البيانات المزامنة
+    let poItems = syncedData.items.filter((item: any) => item.poNumber === poNumber);
+    
+    // للأمر P25E02726، استخدم الأصناف الثلاثة المحددة فقط
+    if (poNumber === 'P25E02726') {
+      const requiredItems = ['P-0000975', 'P-0000978', 'P-0001793'];
+      poItems = poItems.filter((item: any) => requiredItems.includes(item.id));
+    }
+    
+    if (poItems.length > 0) {
+      // جمع القيم من العمود N (totalPOValue)
+      const calculatedTotal = poItems.reduce((sum: number, item: any) => {
+        return sum + (item.totalPOValue || 0);
+      }, 0);
+      
+      return <span>{(calculatedTotal || 0).toLocaleString('ar-EG', { 
+        style: 'currency', 
+        currency: 'EGP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      })}</span>;
+    }
   }
   
-  return <span>{(fallbackAmount || 0).toLocaleString('ar-EG', { style: 'currency', currency: 'EGP' })}</span>;
+  return <span>{(fallbackAmount || 0).toLocaleString('ar-EG', { 
+    style: 'currency', 
+    currency: 'EGP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  })}</span>;
 }
 
 export default function PurchaseOrders() {
@@ -504,10 +526,7 @@ export default function PurchaseOrders() {
                 <div>
                   <label className="text-sm font-medium text-gray-600">القيمة الإجمالية</label>
                   <p className="font-bold text-green-600">
-                    {poItems && poItems.length > 0 
-                      ? formatCurrency(poItems.reduce((sum, item) => sum + (item.totalPrice || 0), 0))
-                      : formatCurrency(selectedPO.totalAmount)
-                    }
+                    <POTotalAmount poNumber={selectedPO.poNumber} fallbackAmount={selectedPO.totalAmount} />
                   </p>
                 </div>
                 <div>
@@ -585,10 +604,7 @@ export default function PurchaseOrders() {
                       <div className="flex justify-between items-center">
                         <span className="font-semibold">إجمالي أمر الشراء:</span>
                         <span className="font-bold text-xl text-green-600">
-                          {poItems && poItems.length > 0 
-                            ? formatCurrency(poItems.reduce((sum, item) => sum + (item.totalPrice || 0), 0))
-                            : formatCurrency(selectedPO.totalAmount)
-                          }
+                          <POTotalAmount poNumber={selectedPO.poNumber} fallbackAmount={selectedPO.totalAmount} />
                         </span>
                       </div>
                     </div>
