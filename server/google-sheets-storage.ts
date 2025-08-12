@@ -110,10 +110,11 @@ export class GoogleSheetsStorage {
       console.log(`📊 حفظ ${items.length} صنف في Google Sheets`);
       
       const values = [
-        ['المعرف', 'LINE ITEM', 'الوصف', 'وحدة القياس', 'العلامة التجارية', 'السعر', 'تاريخ الإنشاء'],
+        ['المعرف', 'LINE ITEM', 'PART NO', 'الوصف', 'وحدة القياس', 'العلامة التجارية', 'السعر', 'تاريخ الإنشاء'],
         ...items.map(item => [
           item.id,
-          item.lineItem || item.partNumber || '',
+          item.lineItem || '',
+          item.partNumber || item.lineItem || '',
           item.description || '',
           item.uom || '',
           item.brand || '',
