@@ -13,6 +13,24 @@ import NewPurchaseOrderModal from "@/components/modals/NewPurchaseOrderModal";
 import EditPurchaseOrderModal from "@/components/modals/EditPurchaseOrderModal";
 import EditPOItemsModal from "@/components/modals/EditPOItemsModal";
 
+// مكون لحساب الإجمالي الصحيح لكل أمر شراء
+function POTotalAmount({ poNumber, fallbackAmount }: { poNumber: string; fallbackAmount: number }) {
+  // استخراج معرف الأمر من رقم الأمر
+  const poId = `po-unified-${poNumber.includes('P25E') ? poNumber.split('P25E')[1]?.padStart(1, '0') || '0' : '0'}`;
+  
+  const { data: poItems } = useQuery({
+    queryKey: [`/api/purchase-orders/${poId}/items`],
+    enabled: !!poNumber
+  });
+
+  if (poItems && poItems.length > 0) {
+    const calculatedTotal = poItems.reduce((sum: number, item: any) => sum + (item.totalPrice || 0), 0);
+    return <span>{(calculatedTotal || 0).toLocaleString('ar-EG', { style: 'currency', currency: 'EGP' })}</span>;
+  }
+  
+  return <span>{(fallbackAmount || 0).toLocaleString('ar-EG', { style: 'currency', currency: 'EGP' })}</span>;
+}
+
 export default function PurchaseOrders() {
   const [isNewPOModalOpen, setIsNewPOModalOpen] = useState(false);
   const [selectedPO, setSelectedPO] = useState<any>(null);
@@ -363,7 +381,7 @@ export default function PurchaseOrders() {
                       <TableCell>{formatDate(po.orderDate)}</TableCell>
                       {isManager && (
                         <TableCell className="font-medium">
-                          {po.poNumber === 'P25E02726' ? formatCurrency(3554) : formatCurrency(po.totalAmount)}
+                          <POTotalAmount poNumber={po.poNumber} fallbackAmount={po.totalAmount} />
                         </TableCell>
                       )}
                       <TableCell>{getStatusBadge(po.status)}</TableCell>
