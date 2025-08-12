@@ -3408,17 +3408,31 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       // تحضير بيانات أوامر الشراء الفريدة
       const uniquePOArray = Array.from(uniqueConfirmedPOs);
       const purchaseOrdersData = uniquePOArray.map(poNumber => {
-        // البحث عن أول سجل يحتوي على هذا الرقم
+        // البحث عن أول سجل يحتوي على هذا الرقم للحصول على البيانات الأساسية
         const firstRecord = rows.find(row => row[10] && row[10].toString().trim() === poNumber);
+        
+        // حساب مجموع جميع القيم في العمود O للأوامر التي تطابق هذا الرقم
+        let totalAmountForPO = 0;
+        const matchingRows = rows.filter(row => row[10] && row[10].toString().trim() === poNumber);
+        
+        for (const row of matchingRows) {
+          if (row[14]) { // العمود O
+            const value = parseFloat(row[14].toString().replace(/[^\d.-]/g, ''));
+            if (!isNaN(value)) {
+              totalAmountForPO += value;
+            }
+          }
+        }
+        
         if (firstRecord) {
-          console.log(`📅 الأمر ${poNumber}: التاريخ في العمود L = ${firstRecord[11]}`);
+          console.log(`📅 الأمر ${poNumber}: التاريخ = ${firstRecord[11]}, المجموع = ${totalAmountForPO.toLocaleString()}`);
         }
         
         return {
           poNumber: poNumber,
           quotationNumber: firstRecord?.[4] || '', // RFQ NUMBER
           orderDate: firstRecord?.[11] || '', // PO DATE من العمود L
-          totalAmount: firstRecord?.[14] ? parseFloat(firstRecord[14]) || 0 : 0, // العمود O
+          totalAmount: totalAmountForPO, // مجموع العمود O لهذا الرقم
           status: 'confirmed',
           deliveryStatus: 'pending'
         };
