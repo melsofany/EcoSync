@@ -446,6 +446,254 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // صفحة المراقبة المنفصلة
+  app.get("/monitor", (req: Request, res: Response) => {
+    const monitorHTML = `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مراقب التوحيد - قرطبة للتوريدات</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+        .pulse { animation: pulse 2s infinite; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .progress-bar { transition: width 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🔍 مراقب عملية التوحيد</h1>
+            <p class="text-gray-600">مراقبة مباشرة لتوحيد الأصناف في Google Sheets</p>
+            <div class="mt-4 inline-flex items-center space-x-2 space-x-reverse bg-white px-4 py-2 rounded-full shadow-md">
+                <div id="connectionStatus" class="w-3 h-3 bg-red-400 rounded-full"></div>
+                <span id="connectionText" class="text-red-600 font-medium">غير متصل</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                <div class="text-3xl mb-2">📊</div>
+                <div class="text-2xl font-bold text-blue-600" id="totalItems">-</div>
+                <div class="text-sm text-gray-600">إجمالي الأصناف</div>
+            </div>
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                <div class="text-3xl mb-2">🔄</div>
+                <div class="text-2xl font-bold text-orange-600" id="processedItems">-</div>
+                <div class="text-sm text-gray-600">تم معالجتها</div>
+            </div>
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                <div class="text-3xl mb-2">✅</div>
+                <div class="text-2xl font-bold text-green-600" id="unifiedItems">-</div>
+                <div class="text-sm text-gray-600">تم توحيدها</div>
+            </div>
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center">
+                <div class="text-3xl mb-2">⚡</div>
+                <div class="text-2xl font-bold text-purple-600" id="progressPercent">0%</div>
+                <div class="text-sm text-gray-600">نسبة الإنجاز</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">التحكم في العملية</h2>
+                <div class="space-x-2 space-x-reverse">
+                    <button id="startBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">🚀 بدء التوحيد</button>
+                    <button id="stopBtn" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg" disabled>⏹️ إيقاف</button>
+                    <button id="refreshBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">🔄 تحديث</button>
+                </div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4">
+                <div id="progressBar" class="progress-bar bg-gradient-to-r from-blue-600 to-purple-600 h-4 rounded-full" style="width: 0%"></div>
+            </div>
+            <div class="mt-2 text-sm text-gray-600 text-center" id="progressText">جاهز للبدء</div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">السجل المباشر</h2>
+                <button id="clearBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">مسح السجل</button>
+            </div>
+            <div id="logContainer" class="bg-gray-50 rounded-lg p-4 h-96 overflow-y-auto font-mono text-sm">
+                <div class="text-gray-500">📋 جاهز للبدء...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let monitorInterval = null;
+        
+        const elements = {
+            connectionStatus: document.getElementById('connectionStatus'),
+            connectionText: document.getElementById('connectionText'),
+            totalItems: document.getElementById('totalItems'),
+            processedItems: document.getElementById('processedItems'),
+            unifiedItems: document.getElementById('unifiedItems'),
+            progressPercent: document.getElementById('progressPercent'),
+            progressBar: document.getElementById('progressBar'),
+            progressText: document.getElementById('progressText'),
+            logContainer: document.getElementById('logContainer'),
+            startBtn: document.getElementById('startBtn'),
+            stopBtn: document.getElementById('stopBtn'),
+            refreshBtn: document.getElementById('refreshBtn'),
+            clearBtn: document.getElementById('clearBtn')
+        };
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('ar-EG');
+            const colors = { info: 'text-blue-600', success: 'text-green-600', warning: 'text-orange-600', error: 'text-red-600' };
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = \`fade-in \${colors[type]} mb-1\`;
+            logEntry.innerHTML = \`<span class="text-gray-400">[\${timestamp}]</span> \${message}\`;
+            
+            elements.logContainer.appendChild(logEntry);
+            elements.logContainer.scrollTop = elements.logContainer.scrollHeight;
+        }
+        
+        function updateConnection(connected) {
+            if (connected) {
+                elements.connectionStatus.className = 'w-3 h-3 bg-green-400 rounded-full pulse';
+                elements.connectionText.textContent = 'متصل';
+                elements.connectionText.className = 'text-green-600 font-medium';
+            } else {
+                elements.connectionStatus.className = 'w-3 h-3 bg-red-400 rounded-full';
+                elements.connectionText.textContent = 'غير متصل';
+                elements.connectionText.className = 'text-red-600 font-medium';
+            }
+        }
+        
+        function updateStats(stats) {
+            elements.totalItems.textContent = stats.total || '-';
+            elements.processedItems.textContent = stats.processed || '-';
+            elements.unifiedItems.textContent = stats.unified || '-';
+            
+            if (stats.total > 0) {
+                const percent = Math.round((stats.processed / stats.total) * 100);
+                elements.progressPercent.textContent = percent + '%';
+                elements.progressBar.style.width = percent + '%';
+            }
+        }
+        
+        async function startUnification() {
+            if (isRunning) return;
+            
+            try {
+                addLog('🚀 طلب بدء التوحيد...', 'info');
+                
+                const response = await fetch('/api/monitor/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    isRunning = true;
+                    elements.startBtn.disabled = true;
+                    elements.stopBtn.disabled = false;
+                    elements.progressText.textContent = 'جاري التوحيد...';
+                    
+                    addLog('✅ تم بدء العملية', 'success');
+                    startMonitoring();
+                } else {
+                    addLog(\`❌ فشل في البدء: \${result.message}\`, 'error');
+                }
+            } catch (error) {
+                addLog(\`❌ خطأ في الاتصال: \${error.message}\`, 'error');
+            }
+        }
+        
+        async function stopUnification() {
+            try {
+                const response = await fetch('/api/monitor/stop', { method: 'POST' });
+                addLog('⏹️ تم إيقاف العملية', 'warning');
+                
+                isRunning = false;
+                elements.startBtn.disabled = false;
+                elements.stopBtn.disabled = true;
+                elements.progressText.textContent = 'تم الإيقاف';
+                
+                if (monitorInterval) clearInterval(monitorInterval);
+                
+            } catch (error) {
+                addLog(\`❌ خطأ في الإيقاف: \${error.message}\`, 'error');
+            }
+        }
+        
+        async function refreshStats() {
+            try {
+                addLog('🔄 تحديث البيانات...', 'info');
+                
+                const response = await fetch('/api/monitor/stats');
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    updateStats(stats);
+                    updateConnection(true);
+                    addLog('✅ تم تحديث البيانات', 'success');
+                } else {
+                    updateConnection(false);
+                    addLog('❌ فشل في تحديث البيانات', 'error');
+                }
+                
+            } catch (error) {
+                updateConnection(false);
+                addLog(\`❌ خطأ في التحديث: \${error.message}\`, 'error');
+            }
+        }
+        
+        function startMonitoring() {
+            if (monitorInterval) clearInterval(monitorInterval);
+            
+            monitorInterval = setInterval(async () => {
+                if (!isRunning) return;
+                
+                try {
+                    const response = await fetch('/api/monitor/stats');
+                    const stats = await response.json();
+                    
+                    updateStats(stats);
+                    updateConnection(true);
+                    
+                    if (stats.endTime) {
+                        addLog('🎉 تم إكمال التوحيد!', 'success');
+                        elements.progressText.textContent = 'تم الانتهاء';
+                        isRunning = false;
+                        elements.startBtn.disabled = false;
+                        elements.stopBtn.disabled = true;
+                        clearInterval(monitorInterval);
+                    }
+                    
+                } catch (error) {
+                    updateConnection(false);
+                }
+            }, 3000);
+        }
+        
+        elements.startBtn.onclick = startUnification;
+        elements.stopBtn.onclick = stopUnification;
+        elements.refreshBtn.onclick = refreshStats;
+        elements.clearBtn.onclick = () => {
+            elements.logContainer.innerHTML = '<div class="text-gray-500">📋 تم مسح السجل...</div>';
+            addLog('🧹 تم مسح السجل', 'info');
+        };
+        
+        addLog('🎯 مراقب التوحيد جاهز', 'info');
+        refreshStats();
+    </script>
+</body>
+</html>`;
+    
+    res.send(monitorHTML);
+  });
+
   // API endpoints لصفحة مراقبة التوحيد
   let monitorInstance: any = null;
 
