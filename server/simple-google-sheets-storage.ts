@@ -48,10 +48,10 @@ export class SimpleGoogleSheetsStorage {
   }
 
   private getGoogleSheetsPurchaseOrders() {
-    // قراءة البيانات الصحيحة من الملف المعد (37 أمر شراء)
+    // قراءة البيانات الأصلية (5,449 صف مع 273 أمر شراء بدون تكرار)
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/sheets_formatted_5449.json', 'utf8'));
       
       console.log(`🛒 تحميل ${sheetsData.purchaseOrders.length} أمر شراء من البيانات الأصلية`);
       
@@ -79,7 +79,7 @@ export class SimpleGoogleSheetsStorage {
   async getAllQuotationRequests() {
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/sheets_formatted_5449.json', 'utf8'));
       
       console.log(`📋 تحميل ${sheetsData.quotations.length} طلب تسعير من البيانات الأصلية`);
       
@@ -106,7 +106,7 @@ export class SimpleGoogleSheetsStorage {
   async getAllItems() {
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/sheets_formatted_5449.json', 'utf8'));
       
       console.log(`📦 تحميل ${sheetsData.items.length} صنف من البيانات الأصلية`);
       
@@ -131,6 +131,10 @@ export class SimpleGoogleSheetsStorage {
       console.error('❌ خطأ في قراءة الأصناف:', error);
       return [];
     }
+  }
+
+  async getAllQuotationRequestsWithClients() {
+    return await this.getAllQuotationRequests();
   }
 
   private getRandomSupplier() {
