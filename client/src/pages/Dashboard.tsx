@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { ExcelImporter } from "@/components/ExcelImporter";
 import { QuickImporter } from "@/components/QuickImporter";
+import { RealTimeSync } from "@/components/RealTimeSync";
 import { 
   FileText, 
   ShoppingCart, 
@@ -415,6 +416,11 @@ export default function Dashboard() {
             </CardContent>
           )}
         </Card>
+      )}
+
+      {/* Real-time Sync with Google Sheets - For IT Admins */}
+      {user?.role === 'it_admin' && (
+        <RealTimeSync />
       )}
     </div>
   );

@@ -130,4 +130,37 @@ export class SimpleStorage {
   getTopSuppliers() { return Promise.resolve([]); }
   getMonthlyStats() { return Promise.resolve([]); }
   backupDatabase() { return Promise.resolve(''); }
+
+  // تحديث الأصناف من Google Sheets
+  updateItemsFromSheets(items: any[]) {
+    this.items.clear();
+    items.forEach(item => {
+      this.items.set(item.id, item);
+    });
+    console.log(`🔄 تم تحديث ${items.length} صنف من Google Sheets`);
+  }
+
+  // تحديث طلبات التسعير من Google Sheets
+  updateQuotationsFromSheets(quotations: any[]) {
+    quotations.forEach(quotation => {
+      this.quotations.set(quotation.id, quotation);
+    });
+    console.log(`🔄 تم تحديث ${quotations.length} طلب تسعير من Google Sheets`);
+  }
+
+  // تحديث أوامر الشراء من Google Sheets
+  updatePurchaseOrdersFromSheets(purchaseOrders: any[]) {
+    purchaseOrders.forEach(po => {
+      this.purchaseOrders.set(po.id, po);
+    });
+    console.log(`🔄 تم تحديث ${purchaseOrders.length} أمر شراء من Google Sheets`);
+  }
+
+  // تحديث المستخدمين من Google Sheets
+  updateUsersFromSheets(users: any[]) {
+    users.forEach(user => {
+      this.users.set(user.username, user);
+    });
+    console.log(`🔄 تم تحديث ${users.length} مستخدم من Google Sheets`);
+  }
 }

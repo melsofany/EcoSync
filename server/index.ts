@@ -1,6 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import "./telegram-bot"; // Initialize Telegram bot
+import GoogleSheetsSync from "./google-sheets-sync";
+import { storage } from "./storage";
 
 const app = express();
 
@@ -93,5 +95,16 @@ app.use((req, res, next) => {
         console.log('⚠️ التوحيد التلقائي غير متاح:', (error as Error).message);
       }
     }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
+
+    // تفعيل المزامنة الفورية مع Google Sheets
+    setTimeout(async () => {
+      try {
+        const googleSheetsSync = new GoogleSheetsSync(storage);
+        googleSheetsSync.startRealTimeSync();
+        console.log('🔄 تم تفعيل المزامنة الفورية مع Google Sheets');
+      } catch (error) {
+        console.log('⚠️ المزامنة الفورية غير متاحة:', (error as Error).message);
+      }
+    }, 5000); // بدء المزامنة بعد 5 ثوان
   });
 })();
