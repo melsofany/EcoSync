@@ -406,11 +406,11 @@ export default function Items() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div>
-              <Label htmlFor="uniqueSheetId">معرف الصف (LINE ITEM)</Label>
+              <Label htmlFor="uniqueSheetId">معرف الصنف</Label>
               <Input
                 id="uniqueSheetId"
                 dir="ltr"
-                placeholder="2281.004.GAITRO.7046"
+                placeholder="P-0000001"
                 value={filters.uniqueSheetId || ''}
                 onChange={(e) => setFilters({ ...filters, uniqueSheetId: e.target.value })}
                 className="font-mono text-purple-600"
@@ -480,7 +480,7 @@ export default function Items() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-right">معرف الصف</TableHead>
+                  <TableHead className="text-right">معرف الصنف</TableHead>
                   <TableHead className="text-right">رقم الصنف</TableHead>
                   <TableHead className="text-right">LINE ITEM</TableHead>
                   <TableHead className="text-right">رقم القطعة</TableHead>

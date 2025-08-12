@@ -731,10 +731,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.json([]);
         }
         
-        // استخراج البيانات من الأعمدة المحددة:
-        // A: فارغ, B: الوحدة, C: LINE ITEM, D: PART NO, E: التوصيف
-        // سنستخدم LINE ITEM كمعرف فريد بديل
+        // استخراج البيانات وإنشاء معرفات فريدة مسلسلة
+        // A: سيتم إنشاء معرف فريد (P-0000001), B: الوحدة, C: LINE ITEM, D: PART NO, E: التوصيف
         const items = [];
+        const updatedRows = [...rows]; // نسخة من البيانات لتحديث العمود A
+        let itemCounter = 1;
         
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i] || [];
@@ -749,13 +750,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // تخطي الصفوف الفارغة تماماً
             if (!lineItem && !partNumber && !description) continue;
             
-            // استخدام LINE ITEM كمعرف فريد بديل أو إنشاء معرف من رقم الصف
-            const uniqueSheetId = lineItem || `ROW-${i.toString().padStart(4, '0')}`;
+            // إنشاء معرف فريد مسلسل
+            const uniqueItemId = `P-${itemCounter.toString().padStart(7, '0')}`;
+            
+            // تحديث العمود A في البيانات
+            if (!updatedRows[i]) updatedRows[i] = [];
+            updatedRows[i][0] = uniqueItemId;
             
             items.push({
               id: `sheet-item-${i}`,
-              itemNumber: `P-${i.toString().padStart(7, '0')}`,
-              uniqueSheetId: uniqueSheetId, // استخدام LINE ITEM كمعرف فريد
+              itemNumber: uniqueItemId,
+              uniqueSheetId: uniqueItemId, // المعرف الفريد المسلسل
               lineItem: lineItem, // العمود C - LINE ITEM
               partNumber: partNumber, // العمود D - PART NO
               description: description, // العمود E - التوصيف
@@ -763,17 +768,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
               quantity: quantity,
               category: 'general',
               brand: '',
-              source: 'google_sheets_line_item_id',
+              source: 'google_sheets_with_generated_id',
               createdAt: new Date().toISOString(),
               isActive: true
             });
+            
+            itemCounter++;
           }
         }
         
+        // كتابة المعرفات الفريدة في العمود A في Google Sheets
+        try {
+          console.log(`📝 كتابة ${items.length} معرف فريد في العمود A...`);
+          
+          // تحضير البيانات للكتابة (العمود A فقط)
+          const columnAData = updatedRows.map((row, index) => {
+            if (index === 0) return ['معرف الصنف']; // عنوان العمود
+            return [row[0] || '']; // المعرف الفريد أو فارغ
+          });
+          
+          // كتابة البيانات في العمود A
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: process.env.GOOGLE_SHEET_ID,
+            range: 'DATA!A:A',
+            valueInputOption: 'RAW',
+            requestBody: {
+              values: columnAData
+            }
+          });
+          
+          console.log(`✅ تم كتابة المعرفات الفريدة في العمود A بنجاح`);
+        } catch (writeError) {
+          console.error('❌ خطأ في كتابة المعرفات الفريدة:', writeError);
+        }
+        
         console.log(`✅ استخراج ${items.length} صنف من Google Sheets:`);
-        console.log(`   ❌ العمود A: فارغ`);
+        console.log(`   🆔 العمود A: معرف فريد مسلسل (P-0000001)`);
         console.log(`   📋 العمود B: الوحدة (Unit)`);
-        console.log(`   🆔 العمود C: LINE ITEM (كمعرف فريد)`);
+        console.log(`   📦 العمود C: LINE ITEM`);
         console.log(`   🔧 العمود D: PART NO`);
         console.log(`   📝 العمود E: التوصيف`);
         
