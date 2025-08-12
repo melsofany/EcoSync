@@ -42,6 +42,8 @@ import {
 } from "@shared/schema";
 // وضع العرض التوضيحي لعرض البيانات المستخرجة
 import { DemoStorage } from "./demo-mode.js";
+// البيانات المربوطة والموحدة
+import { readFileSync } from 'fs';
 
 import { db } from "./db";
 // Export db for external use

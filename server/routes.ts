@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage, initializeDatabase } from "./storage";
+import { linkedStorage } from "./linked-storage";
 import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
 import { autoMapExcelColumns, processExcelRowForQuotation } from "./simpleExcelImport";
 import { sendEmail, generatePasswordResetEmail } from "./emailService";
@@ -2971,5 +2972,141 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   const httpServer = createServer(app);
+  // ========== البيانات المربوطة والموحدة ==========
+  
+  // إحصائيات النظام المربوط
+  app.get('/api/linked/statistics', requireAuth, async (req, res) => {
+    try {
+      const stats = await linkedStorage.getSystemStatistics();
+      await logActivity(req, "view_linked_statistics", "system", "", "عرض إحصائيات النظام المربوط");
+      res.json(stats);
+    } catch (error) {
+      console.error('خطأ في إحصائيات النظام المربوط:', error);
+      res.status(500).json({ message: 'خطأ في تحميل الإحصائيات' });
+    }
+  });
+
+  // الأصناف المربوطة
+  app.get('/api/linked/items', requireAuth, async (req, res) => {
+    try {
+      const { search, hasRFQ, hasPO, priceMin, priceMax } = req.query;
+      
+      let items;
+      if (search || hasRFQ !== undefined || hasPO !== undefined || priceMin || priceMax) {
+        // بحث متقدم
+        const filters = {
+          partNumber: search as string,
+          hasRFQ: hasRFQ === 'true',
+          hasPO: hasPO === 'true',
+          priceRange: priceMin || priceMax ? {
+            min: priceMin ? parseFloat(priceMin as string) : 0,
+            max: priceMax ? parseFloat(priceMax as string) : Infinity
+          } : undefined
+        };
+        items = await linkedStorage.advancedSearch(filters);
+      } else {
+        items = await linkedStorage.getAllItems();
+      }
+      
+      await logActivity(req, "view_linked_items", "items", "", `عرض ${items.length} صنف مربوط`);
+      res.json(items);
+    } catch (error) {
+      console.error('خطأ في تحميل الأصناف المربوطة:', error);
+      res.status(500).json({ message: 'خطأ في تحميل الأصناف' });
+    }
+  });
+
+  // صنف مربوط محدد
+  app.get('/api/linked/items/:id', requireAuth, async (req, res) => {
+    try {
+      const item = await linkedStorage.getItem(req.params.id);
+      if (!item) {
+        return res.status(404).json({ message: 'الصنف غير موجود' });
+      }
+      
+      await logActivity(req, "view_linked_item", "item", req.params.id, "عرض تفاصيل صنف مربوط");
+      res.json(item);
+    } catch (error) {
+      console.error('خطأ في تحميل الصنف:', error);
+      res.status(500).json({ message: 'خطأ في تحميل الصنف' });
+    }
+  });
+
+  // طلبات التسعير المربوطة
+  app.get('/api/linked/quotations', requireAuth, async (req, res) => {
+    try {
+      const quotations = await linkedStorage.getAllQuotationRequests();
+      await logActivity(req, "view_linked_quotations", "quotations", "", `عرض ${quotations.length} طلب تسعير مربوط`);
+      res.json(quotations);
+    } catch (error) {
+      console.error('خطأ في تحميل طلبات التسعير المربوطة:', error);
+      res.status(500).json({ message: 'خطأ في تحميل طلبات التسعير' });
+    }
+  });
+
+  // أصناف طلب التسعير المربوط
+  app.get('/api/linked/quotations/:id/items', requireAuth, async (req, res) => {
+    try {
+      const items = await linkedStorage.getQuotationItems(req.params.id);
+      await logActivity(req, "view_linked_quotation_items", "quotation", req.params.id, `عرض ${items.length} صنف في طلب التسعير`);
+      res.json(items);
+    } catch (error) {
+      console.error('خطأ في تحميل أصناف طلب التسعير:', error);
+      res.status(500).json({ message: 'خطأ في تحميل أصناف طلب التسعير' });
+    }
+  });
+
+  // أوامر الشراء المربوطة
+  app.get('/api/linked/purchase-orders', requireAuth, async (req, res) => {
+    try {
+      const orders = await linkedStorage.getAllPurchaseOrders();
+      await logActivity(req, "view_linked_purchase_orders", "purchase_orders", "", `عرض ${orders.length} أمر شراء مربوط`);
+      res.json(orders);
+    } catch (error) {
+      console.error('خطأ في تحميل أوامر الشراء المربوطة:', error);
+      res.status(500).json({ message: 'خطأ في تحميل أوامر الشراء' });
+    }
+  });
+
+  // أصناف أمر الشراء المربوط
+  app.get('/api/linked/purchase-orders/:id/items', requireAuth, async (req, res) => {
+    try {
+      const items = await linkedStorage.getPurchaseOrderItems(req.params.id);
+      await logActivity(req, "view_linked_po_items", "purchase_order", req.params.id, `عرض ${items.length} صنف في أمر الشراء`);
+      res.json(items);
+    } catch (error) {
+      console.error('خطأ في تحميل أصناف أمر الشراء:', error);
+      res.status(500).json({ message: 'خطأ في تحميل أصناف أمر الشراء' });
+    }
+  });
+
+  // تحليل الروابط المعقدة
+  app.get('/api/linked/analysis', requireAuth, async (req, res) => {
+    try {
+      const analysis = await linkedStorage.analyzeLinkage();
+      await logActivity(req, "view_linkage_analysis", "system", "", "عرض تحليل الروابط المعقدة");
+      res.json(analysis);
+    } catch (error) {
+      console.error('خطأ في تحليل الروابط:', error);
+      res.status(500).json({ message: 'خطأ في تحليل الروابط' });
+    }
+  });
+
+  // إعادة تحميل البيانات المربوطة
+  app.post('/api/linked/reload', requireAuth, async (req, res) => {
+    try {
+      const stats = await linkedStorage.reloadData();
+      await logActivity(req, "reload_linked_data", "system", "", "إعادة تحميل البيانات المربوطة");
+      res.json({
+        success: true,
+        message: 'تم إعادة تحميل البيانات المربوطة بنجاح',
+        stats
+      });
+    } catch (error) {
+      console.error('خطأ في إعادة تحميل البيانات:', error);
+      res.status(500).json({ message: 'خطأ في إعادة تحميل البيانات' });
+    }
+  });
+
   return httpServer;
 }
