@@ -3478,5 +3478,86 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Quotation Requests from Google Sheets (Column F - unique values)
+  app.get('/api/quotation-requests', async (req, res) => {
+    try {
+      const sheetsData = await getRealtimeGoogleSheetsData();
+      
+      if (!sheetsData.success || !sheetsData.data) {
+        return res.status(500).json({ error: 'فشل في قراءة البيانات من Google Sheets' });
+      }
+
+      const rows = sheetsData.data;
+      const uniqueRFQNumbers = new Set();
+      const quotationRequestsMap = new Map();
+
+      // جمع جميع أرقام طلبات التسعير الفريدة من العمود F
+      for (const row of rows) {
+        if (row[5] && row[5].toString().trim()) { // العمود F
+          const rfqNumber = row[5].toString().trim();
+          
+          if (!uniqueRFQNumbers.has(rfqNumber)) {
+            uniqueRFQNumbers.add(rfqNumber);
+            
+            // تجميع البيانات الأساسية لكل طلب تسعير
+            quotationRequestsMap.set(rfqNumber, {
+              rfqNumber: rfqNumber,
+              requestDate: row[6] || '', // العمود G - REQUEST DATE
+              itemCount: 1,
+              totalValue: 0,
+              status: 'pending',
+              items: []
+            });
+          } else {
+            // زيادة عدد الأصناف لنفس رقم طلب التسعير
+            const existing = quotationRequestsMap.get(rfqNumber);
+            if (existing) {
+              existing.itemCount += 1;
+            }
+          }
+        }
+      }
+
+      // تحويل إلى مصفوفة وحساب القيم الإجمالية
+      const quotationRequests = Array.from(quotationRequestsMap.values()).map(request => {
+        // حساب القيمة الإجمالية لكل أصناف هذا الطلب
+        let totalValue = 0;
+        const matchingRows = rows.filter(row => row[5] && row[5].toString().trim() === request.rfqNumber);
+        
+        for (const row of matchingRows) {
+          if (row[7]) { // العمود H - PRICE
+            const price = parseFloat(row[7].toString().replace(/[^\d.-]/g, ''));
+            const quantity = parseFloat(row[6] ? row[6].toString().replace(/[^\d.-]/g, '') : '1');
+            if (!isNaN(price)) {
+              totalValue += price * (isNaN(quantity) ? 1 : quantity);
+            }
+          }
+        }
+
+        return {
+          ...request,
+          totalValue: totalValue,
+          itemCount: matchingRows.length
+        };
+      });
+
+      // ترتيب حسب تاريخ الطلب (الأحدث أولاً)
+      quotationRequests.sort((a, b) => new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime());
+
+      console.log(`📋 تم جلب ${quotationRequests.length} طلب تسعير فريد من العمود F`);
+
+      res.json({
+        success: true,
+        data: quotationRequests,
+        totalRequests: quotationRequests.length,
+        totalValue: quotationRequests.reduce((sum, req) => sum + req.totalValue, 0)
+      });
+
+    } catch (error) {
+      console.error('❌ خطأ في جلب طلبات التسعير:', error);
+      res.status(500).json({ error: 'خطأ في جلب طلبات التسعير من Google Sheets' });
+    }
+  });
+
   return httpServer;
 }

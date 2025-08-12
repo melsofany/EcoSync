@@ -35,11 +35,23 @@ export default function Quotations() {
     queryKey: ["/api/quotations"],
   });
 
+  // Fetch quotation requests from Google Sheets (Column F)
+  const { data: quotationRequests, isLoading: isLoadingRequests } = useQuery({
+    queryKey: ["/api/quotation-requests"],
+  });
+
+  // Filter real quotation requests from Google Sheets
+  const filteredQuotationRequests = quotationRequests?.data?.filter((request: any) => {
+    return (
+      (!filters.requestNumber || request.rfqNumber.includes(filters.requestNumber)) &&
+      (!filters.status || request.status === filters.status) &&
+      (!filters.date || request.requestDate.includes(filters.date))
+    );
+  }) || [];
+
   const { data: clients } = useQuery({
     queryKey: ["/api/clients"],
   });
-
-
 
   // Delete quotation mutation
   const deleteQuotationMutation = useMutation({
@@ -225,8 +237,122 @@ export default function Quotations() {
         </CardContent>
       </Card>
 
-      {/* Quotations Table */}
+      {/* Real Quotation Requests from Google Sheets */}
       <Card>
+        <CardHeader>
+          <CardTitle className="text-xl text-blue-700">طلبات التسعير (من Google Sheets - العمود F)</CardTitle>
+          <div className="text-sm text-gray-600">
+            عرض البيانات الحقيقية من العمود F بدون تكرار
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-right">رقم طلب التسعير</TableHead>
+                  <TableHead className="text-right">تاريخ الطلب</TableHead>
+                  <TableHead className="text-right">عدد الأصناف</TableHead>
+                  <TableHead className="text-right">القيمة الإجمالية</TableHead>
+                  <TableHead className="text-right">الحالة</TableHead>
+                  <TableHead className="text-right">الإجراءات</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoadingRequests ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      جاري تحميل البيانات من Google Sheets...
+                    </TableCell>
+                  </TableRow>
+                ) : !quotationRequests?.data || quotationRequests.data.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      لا توجد طلبات تسعير في البيانات
+                    </TableCell>
+                  </TableRow>
+                ) : filteredQuotationRequests.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      لا توجد طلبات تطابق معايير البحث
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredQuotationRequests.map((request: any) => (
+                    <TableRow key={request.rfqNumber} className="hover:bg-gray-50">
+                      <TableCell className="font-medium text-blue-600 font-mono">
+                        {request.rfqNumber}
+                      </TableCell>
+                      <TableCell>
+                        {request.requestDate ? new Date(request.requestDate).toLocaleDateString('ar-EG') : 'غير محدد'}
+                      </TableCell>
+                      <TableCell className="text-center font-medium">
+                        {request.itemCount}
+                      </TableCell>
+                      <TableCell className="font-medium text-green-600">
+                        {request.totalValue > 0 ? 
+                          `${request.totalValue.toLocaleString()} ج.م` : 
+                          'غير محدد'
+                        }
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={request.status === 'completed' ? 'default' : 'secondary'}>
+                          {request.status === 'pending' ? 'في الانتظار' :
+                           request.status === 'processing' ? 'قيد المعالجة' :
+                           request.status === 'completed' ? 'مكتمل' : 'جديد'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            title="عرض التفاصيل"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Statistics */}
+          {quotationRequests?.data && quotationRequests.data.length > 0 && (
+            <div className="border-t px-6 py-4 bg-gray-50">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {quotationRequests.totalRequests}
+                  </div>
+                  <div className="text-sm text-gray-600">إجمالي الطلبات</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {quotationRequests.totalValue?.toLocaleString() || 0} ج.م
+                  </div>
+                  <div className="text-sm text-gray-600">القيمة الإجمالية</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-purple-600">
+                    {Math.round((quotationRequests.data.reduce((sum: number, req: any) => sum + req.itemCount, 0) / quotationRequests.totalRequests) * 10) / 10}
+                  </div>
+                  <div className="text-sm text-gray-600">متوسط الأصناف/الطلب</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Original Quotations Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl text-gray-700">طلبات التسعير المحلية (النظام القديم)</CardTitle>
+        </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
