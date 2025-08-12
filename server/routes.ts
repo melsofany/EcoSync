@@ -3112,18 +3112,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   const syncRouter = await import('./routes/sync');
   app.use('/api', syncRouter.default);
 
-  // مسح جميع البيانات
-  app.post('/api/clear/all-data', requireAuth, async (req, res) => {
+  // إنشاء ملفات Google Sheets الصحيحة
+  app.post('/api/create/correct-sheets', requireAuth, async (req, res) => {
     try {
-      const { clearAllData } = await import('./clear-all-data');
-      const result = clearAllData();
+      const { createCorrectSheets } = await import('./create-correct-sheets');
+      const result = createCorrectSheets();
       
       res.json(result);
     } catch (error) {
-      console.error('خطأ في مسح البيانات:', error);
+      console.error('خطأ في إنشاء الملفات:', error);
       res.status(500).json({
         success: false,
-        message: 'خطأ في مسح البيانات',
+        message: 'خطأ في إنشاء ملفات Google Sheets',
         error: (error as Error).message
       });
     }
