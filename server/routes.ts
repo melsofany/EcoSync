@@ -3129,18 +3129,35 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // إعداد المزامنة الحقيقية
-  app.post('/api/sync/setup-realtime', requireAuth, async (req, res) => {
+  // تطبيق التصحيح النهائي للقيمة المالية
+  app.post('/api/fix/final-value', requireAuth, async (req, res) => {
     try {
-      const { setupRealTimeSync } = await import('./sync-with-sheets');
-      const result = await setupRealTimeSync();
+      const { applyFinalValueCorrection } = await import('./final-value-correction');
+      const result = await applyFinalValueCorrection();
       
       res.json(result);
     } catch (error) {
-      console.error('خطأ في إعداد المزامنة الحقيقية:', error);
+      console.error('خطأ في تصحيح القيمة:', error);
       res.status(500).json({
         success: false,
-        message: 'خطأ في إعداد المزامنة الحقيقية',
+        message: 'خطأ في تصحيح القيمة المالية',
+        error: (error as Error).message
+      });
+    }
+  });
+
+  // التحقق من القيمة المالية
+  app.get('/api/verify/value', requireAuth, async (req, res) => {
+    try {
+      const { verifyFinalValue } = await import('./final-value-correction');
+      const result = await verifyFinalValue();
+      
+      res.json(result);
+    } catch (error) {
+      console.error('خطأ في التحقق:', error);
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في التحقق من القيمة المالية',
         error: (error as Error).message
       });
     }
