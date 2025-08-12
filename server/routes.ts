@@ -414,6 +414,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API endpoint لتوحيد المعرفات باستخدام AI
+  app.post("/api/unify-items-ai", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('🤖 طلب توحيد المعرفات باستخدام الذكاء الاصطناعي...');
+      
+      const { aiItemUnifier } = await import('./ai-item-unifier.js');
+      const result = await aiItemUnifier.unifyItemsInSheets();
+      
+      if (result.success) {
+        console.log(`✅ تم توحيد ${result.unifiedGroups} مجموعة، حذف ${result.duplicatesRemoved} صنف مكرر`);
+        res.json({
+          success: true,
+          message: `تم توحيد ${result.unifiedGroups} مجموعة من الأصناف المكررة بنجاح`,
+          totalItems: result.totalItems,
+          unifiedGroups: result.unifiedGroups,
+          duplicatesRemoved: result.duplicatesRemoved,
+          unifiedItems: result.unifiedItems
+        });
+      } else {
+        console.error('❌ فشل توحيد المعرفات:', result.error);
+        res.status(500).json({
+          success: false,
+          message: "فشل في توحيد المعرفات",
+          error: result.error
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في API endpoint التوحيد:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
   // Change password
   app.post("/api/auth/change-password", requireAuth, async (req: Request, res: Response) => {
     try {

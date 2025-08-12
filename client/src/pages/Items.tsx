@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Eye, Edit, Trash2, Check, Clock, DollarSign, FileText } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Check, Clock, DollarSign, FileText, Bot } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Textarea } from "@/components/ui/textarea";
 import NewItemModal from "@/components/modals/NewItemModal";
@@ -210,6 +210,7 @@ export default function Items() {
   });
 
   const [isWritingIds, setIsWritingIds] = useState(false);
+  const [isUnifyingItems, setIsUnifyingItems] = useState(false);
 
   const handleWriteIdsToSheets = async () => {
     setIsWritingIds(true);
@@ -237,6 +238,35 @@ export default function Items() {
       });
     } finally {
       setIsWritingIds(false);
+    }
+  };
+
+  const handleUnifyItemsWithAI = async () => {
+    setIsUnifyingItems(true);
+    try {
+      const response = await apiRequest("POST", "/api/unify-items-ai", {});
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "تم التوحيد بنجاح! 🤖",
+          description: `تم توحيد ${result.unifiedGroups} مجموعة من ${result.totalItems} صنف، وحذف ${result.duplicatesRemoved} صنف مكرر`,
+        });
+      } else {
+        toast({
+          title: "فشل في التوحيد",
+          description: result.message || "حدث خطأ غير متوقع",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "خطأ في الاتصال",
+        description: "فشل في الاتصال بالخادم",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUnifyingItems(false);
     }
   };
 
@@ -397,24 +427,45 @@ export default function Items() {
           </Button>
 
           {(user?.role === 'manager' || user?.role === 'it_admin') && (
-            <Button
-              variant="outline"
-              onClick={handleWriteIdsToSheets}
-              disabled={isWritingIds}
-              className="text-purple-600 border-purple-600 hover:bg-purple-50"
-            >
-              {isWritingIds ? (
-                <>
-                  <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
-                  جاري الكتابة...
-                </>
-              ) : (
-                <>
-                  <FileText className="h-4 w-4 ml-2" />
-                  📝 كتابة المعرفات في Google Sheets
-                </>
-              )}
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={handleWriteIdsToSheets}
+                disabled={isWritingIds}
+                className="text-purple-600 border-purple-600 hover:bg-purple-50"
+              >
+                {isWritingIds ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+                    جاري الكتابة...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4 ml-2" />
+                    📝 كتابة المعرفات
+                  </>
+                )}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleUnifyItemsWithAI}
+                disabled={isUnifyingItems}
+                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+              >
+                {isUnifyingItems ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                    جاري التوحيد...
+                  </>
+                ) : (
+                  <>
+                    <Bot className="h-4 w-4 ml-2" />
+                    🤖 توحيد المعرفات بالذكاء الاصطناعي
+                  </>
+                )}
+              </Button>
+            </>
           )}
 
           <Button onClick={() => setIsNewItemModalOpen(true)}>

@@ -62,6 +62,57 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
+  async updateCellValue(cellAddress: string, value: string): Promise<void> {
+    try {
+      if (!this.sheets) {
+        throw new Error('Google Sheets not initialized');
+      }
+
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `DATA!${cellAddress}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[value]]
+        }
+      });
+
+      console.log(`✅ تم تحديث الخلية ${cellAddress} بالقيمة: ${value}`);
+    } catch (error) {
+      console.error(`❌ خطأ في تحديث الخلية ${cellAddress}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteRow(rowNumber: number): Promise<void> {
+    try {
+      if (!this.sheets) {
+        throw new Error('Google Sheets not initialized');
+      }
+
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: this.spreadsheetId,
+        resource: {
+          requests: [{
+            deleteDimension: {
+              range: {
+                sheetId: 0, // معرف صفحة DATA
+                dimension: 'ROWS',
+                startIndex: rowNumber - 1, // Google Sheets يستخدم فهرسة من 0
+                endIndex: rowNumber
+              }
+            }
+          }]
+        }
+      });
+
+      console.log(`✅ تم حذف الصف ${rowNumber}`);
+    } catch (error) {
+      console.error(`❌ خطأ في حذف الصف ${rowNumber}:`, error);
+      throw error;
+    }
+  }
+
   async calculateTotalValue(): Promise<number> {
     try {
       const rows = await this.readDataSheet();
