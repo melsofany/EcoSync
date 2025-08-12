@@ -55,28 +55,7 @@ export class GoogleSheetsRealtimeData {
       const rows = response.data.values || [];
       console.log(`📊 تم قراءة ${rows.length} صف من Google Sheets`);
       
-      // فحص العمود O للبحث عن أخطاء #VALUE! - التركيز على الصف 1001 وما حوله
-      let valueErrorCount = 0;
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        if (row.length > 14) {
-          const totalValue = row[14] || '';
-          const hasError = totalValue.includes('#VALUE!') || totalValue.includes('#ERROR!') || 
-              totalValue.includes('#NAME?') || totalValue.includes('#REF!');
-          
-          if (hasError) {
-            valueErrorCount++;
-            const actualRowNumber = i + 2; // +2 لأن البيانات تبدأ من A2
-            console.log(`❌ خطأ #VALUE! في الصف ${actualRowNumber}: العمود O = "${totalValue}", M = "${row[12]}", N = "${row[13]}"`);
-          }
-          
-          // طباعة عينة خاصة حول الصف 1001
-          if (i >= 999 && i <= 1002) { // الصفوف 1001-1004 في الشيت
-            console.log(`🔍 فحص الصف ${i + 2}: O="${totalValue}", M="${row[12]}", N="${row[13]}", hasError=${hasError}`);
-          }
-        }
-      }
-      console.log(`🔍 إجمالي أخطاء #VALUE! في العمود O: ${valueErrorCount}`);
+
 
       return rows;
     } catch (error) {
@@ -85,80 +64,22 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
-  // دالة لحساب القيمة الإجمالية للصف مع معالجة أخطاء #VALUE!
-  calculateRowTotal(quantity: string, price: string, totalValue: string): string {
-    try {
-      // التحقق من وجود أخطاء #VALUE! أو #ERROR!
-      const hasError = totalValue && (
-        totalValue.includes('#VALUE!') || 
-        totalValue.includes('#ERROR!') || 
-        totalValue.includes('#NAME?') ||
-        totalValue.includes('#REF!')
-      );
 
-      // إذا كانت القيمة الإجمالية صحيحة وبدون أخطاء، استخدمها
-      if (totalValue && !hasError && totalValue !== '0' && totalValue !== '') {
-        const numValue = parseFloat(totalValue.toString().replace(/[^\d.-]/g, ''));
-        if (!isNaN(numValue) && numValue > 0) {
-          return totalValue;
-        }
-      }
-
-      // إذا كانت القيمة الإجمالية خاطئة أو فارغة، احسبها من M × N
-      if (quantity && price && quantity !== '' && price !== '') {
-        const qtyStr = quantity.toString().replace(/[^\d.-]/g, '');
-        const priceStr = price.toString().replace(/[^\d.-]/g, '');
-        
-        const qtyNum = parseFloat(qtyStr);
-        const priceNum = parseFloat(priceStr);
-        
-        if (!isNaN(qtyNum) && !isNaN(priceNum) && qtyNum > 0 && priceNum > 0) {
-          const calculated = qtyNum * priceNum;
-          if (hasError) {
-            console.log(`🔧 تم إصلاح خطأ #VALUE!: ${quantity} × ${price} = ${calculated}`);
-          }
-          return calculated.toString();
-        }
-      }
-
-      return totalValue || '0';
-    } catch (error) {
-      console.log(`❌ خطأ في حساب القيمة: ${error}`);
-      return totalValue || '0';
-    }
-  }
 
   async calculateTotalValue(): Promise<number> {
     try {
       const rows = await this.readDataSheet();
       let totalValue = 0;
 
-      // حساب مجموع العمود O مع معالجة #VALUE! errors
-      let correctedCount = 0;
-      let errorCount = 0;
-      
+      // حساب مجموع العمود N (العمود رقم 13 - محسوب من 0)
       for (const row of rows) {
-        if (row.length > 14) {
-          const originalValue = row[14] || '';
-          const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
-          
-          // تسجيل الإصلاحات
-          if (originalValue.includes('#VALUE!') || originalValue.includes('#ERROR!')) {
-            errorCount++;
-          }
-          if (correctedTotal !== originalValue) {
-            correctedCount++;
-          }
-          
-          const value = parseFloat(correctedTotal.toString().replace(/[^\d.-]/g, ''));
+        if (row.length > 13 && row[13]) {
+          const value = parseFloat(row[13].toString().replace(/[^\d.-]/g, ''));
           if (!isNaN(value)) {
             totalValue += value;
           }
         }
       }
-      
-      console.log(`🔧 تم إصلاح ${correctedCount} قيمة من أصل ${rows.length} صف`);
-      console.log(`❌ تم العثور على ${errorCount} خطأ #VALUE!`);
 
       console.log(`💰 إجمالي القيمة المحسوبة: ${totalValue.toLocaleString()} ج.م`);
       return totalValue;
@@ -192,31 +113,26 @@ export class GoogleSheetsRealtimeData {
           poDate: row[11] || '', // العمود L - PO DATE
           poQuantity: row[12] || '', // العمود M - PO QUANTITY
           poPrice: row[13] || '', // العمود N - PO PRICE
-          totalValue: this.calculateRowTotal(row[12], row[13], row[14]), // العمود O - حساب القيمة الإجمالية مع معالجة #VALUE!
+          totalValue: row[14] || '', // العمود O - القيمة الإجمالية
           clientName: row[15] || '', // العمود P - اسم العميل
           responsibleEmployee: row[16] || '', // العمود Q (فهرس 16) - الموظف المسؤول
           isActive: true,
           createdAt: new Date().toISOString()
         };
 
-        // طباعة عينة من البيانات للتشخيص - التركيز على الأخطاء وحول الصف 1001
-        const originalTotal = row[14] || '';
-        const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
-        const hasError = originalTotal.includes('#VALUE!') || originalTotal.includes('#ERROR!') || 
-                        originalTotal.includes('#NAME?') || originalTotal.includes('#REF!');
-        const actualRowNumber = i + 2; // +2 لأن البيانات تبدأ من A2
-        
-        // طباعة الأخطاء أو الصفوف حول 1001
-        if (hasError || (actualRowNumber >= 1000 && actualRowNumber <= 1005)) {
-          console.log(`📋 ${hasError ? '❌ خطأ' : '✅ صحيح'} - الصف ${actualRowNumber}:`, {
+        // طباعة عينة من البيانات للتشخيص (أول 5 صفوف فقط)
+        if (i < 5) {
+          const originalTotal = row[14] || '';
+          // const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
+          console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
             rfqNumber: row[5],
-            quantity_M: `"${row[12] || 'فارغ'}"`,
-            price_N: `"${row[13] || 'فارغ'}"`,
-            original_O: `"${originalTotal}"`,
-            corrected_O: `"${correctedTotal}"`,
+            quantity_M: row[12] || 'فارغ',
+            price_N: row[13] || 'فارغ',
+            original_O: originalTotal,
+            // corrected_O: correctedTotal,
             responsibleEmployee_Q: `"${row[16] || ''}"`,
-            hasValueError: hasError,
-            wasFixed: originalTotal !== correctedTotal
+            isValueError: originalTotal.includes('#VALUE!') || originalTotal.includes('#ERROR!'),
+            totalColumns: row.length
           });
         }
 
