@@ -3112,24 +3112,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   const syncRouter = await import('./routes/sync');
   app.use('/api', syncRouter.default);
 
-  // مزامنة مباشرة مع Google Sheets
+  // إنشاء ملفات جاهزة لـ Google Sheets
   app.post('/api/sync/google-sheets', requireAuth, async (req, res) => {
     try {
-      // إنشاء ملفات CSV للتصدير
-      const { generateCsvExport } = await import('./simple-sheets-export');
-      const result = generateCsvExport();
+      const { createSheetsReadyFiles } = await import('./create-sheets-ready-files');
+      const result = createSheetsReadyFiles();
       
-      res.json({
-        success: true,
-        message: 'تم إنشاء ملفات التصدير بنجاح',
-        data: result,
-        instructions: 'يمكنك الآن تحميل الملفات من مجلد attached_assets واستيرادها إلى Google Sheets'
-      });
+      res.json(result);
     } catch (error) {
-      console.error('خطأ في إنشاء التصدير:', error);
+      console.error('خطأ في إنشاء الملفات:', error);
       res.status(500).json({
         success: false,
-        message: 'خطأ في إنشاء ملفات التصدير',
+        message: 'خطأ في إنشاء ملفات Google Sheets',
         error: (error as Error).message
       });
     }
