@@ -11,91 +11,6 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { randomBytes } from "crypto";
 
-// دالة توحيد الأصناف - إزالة المكررات وتجميع البنود المتشابهة
-async function unifyItems(items: any[]): Promise<any[]> {
-  const unifiedItems: any[] = [];
-  const processedPartNumbers = new Set<string>();
-  const processedDescriptions = new Set<string>();
-  
-  console.log(`🔍 بدء تحليل ${items.length} صنف للتوحيد...`);
-  
-  for (const item of items) {
-    let isUnique = true;
-    let mergedWithIndex = -1;
-    
-    // التحقق من تكرار رقم القطعة (PART NO)
-    if (item.partNumber && item.partNumber.trim()) {
-      const normalizedPartNo = item.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
-      
-      if (processedPartNumbers.has(normalizedPartNo)) {
-        // البحث عن البند المطابق لدمجه
-        mergedWithIndex = unifiedItems.findIndex(unified => {
-          const unifiedPartNo = unified.partNumber ? unified.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase() : '';
-          return unifiedPartNo === normalizedPartNo;
-        });
-        isUnique = false;
-      } else {
-        processedPartNumbers.add(normalizedPartNo);
-      }
-    }
-    
-    // التحقق من تكرار الوصف
-    if (isUnique && item.description && item.description.trim()) {
-      const normalizedDesc = item.description.toLowerCase().replace(/[^\w\s]/g, '').trim();
-      
-      if (processedDescriptions.has(normalizedDesc)) {
-        // البحث عن البند المطابق لدمجه
-        mergedWithIndex = unifiedItems.findIndex(unified => {
-          const unifiedDesc = unified.description ? unified.description.toLowerCase().replace(/[^\w\s]/g, '').trim() : '';
-          return unifiedDesc === normalizedDesc;
-        });
-        isUnique = false;
-      } else {
-        processedDescriptions.add(normalizedDesc);
-      }
-    }
-    
-    if (isUnique) {
-      // إضافة صنف جديد
-      unifiedItems.push({
-        ...item,
-        id: `unified-${unifiedItems.length + 1}`,
-        itemNumber: `P-${(unifiedItems.length + 1).toString().padStart(7, '0')}`,
-        duplicateCount: 1,
-        originalIds: [item.id],
-        rfqNumbers: item.rfqNumber ? [item.rfqNumber] : [],
-        source: 'unified_google_sheets'
-      });
-    } else if (mergedWithIndex >= 0) {
-      // دمج مع صنف موجود
-      const existingItem = unifiedItems[mergedWithIndex];
-      existingItem.duplicateCount = (existingItem.duplicateCount || 1) + 1;
-      existingItem.originalIds.push(item.id);
-      
-      // دمج أرقام طلبات التسعير
-      if (item.rfqNumber && !existingItem.rfqNumbers.includes(item.rfqNumber)) {
-        existingItem.rfqNumbers.push(item.rfqNumber);
-      }
-      
-      // تحديث البيانات بأكثر المعلومات اكتمالاً
-      if (!existingItem.partNumber && item.partNumber) {
-        existingItem.partNumber = item.partNumber;
-      }
-      if (!existingItem.description && item.description) {
-        existingItem.description = item.description;
-      }
-      if (!existingItem.lineItem && item.lineItem) {
-        existingItem.lineItem = item.lineItem;
-      }
-    }
-  }
-  
-  console.log(`✅ انتهى التوحيد: ${items.length} → ${unifiedItems.length}`);
-  console.log(`📊 تم توفير ${((items.length - unifiedItems.length) / items.length * 100).toFixed(1)}% من التكرار`);
-  
-  return unifiedItems;
-}
-
 // Extend the Express Request type to include session data
 declare module "express-session" {
   interface SessionData {
@@ -722,12 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`   🔧 العمود D: PART NO`);
         console.log(`   📝 العمود E: الوصف`);
         
-        // توحيد الأصناف (إزالة المكررات)
-        console.log(`🔄 بدء عملية توحيد الأصناف...`);
-        const unifiedItems = await unifyItems(items);
-        console.log(`✅ تم توحيد الأصناف: ${items.length} → ${unifiedItems.length} (تقليل ${items.length - unifiedItems.length} صنف مكرر)`);
-        
-        res.json(unifiedItems);
+        res.json(items);
         
       } catch (sheetsError) {
         console.error('❌ خطأ في الوصول لـ Google Sheets:', sheetsError.message);
