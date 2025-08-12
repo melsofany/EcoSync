@@ -2161,8 +2161,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         console.log(`Found ${poItems.length} real items for PO: ${po.poNumber}`);
         
         if (poItems.length > 0) {
+          // ترتيب الأصناف حسب القيمة وأخذ الـ 3 الأعلى
+          const sortedItems = poItems.sort((a, b) => (b.totalPOValue || 0) - (a.totalPOValue || 0));
+          const top3Items = sortedItems.slice(0, 3);
+          
           let totalCalculated = 0;
-          realItems = poItems.map((item, index) => {
+          realItems = top3Items.map((item, index) => {
             const itemTotal = item.totalPOValue || (item.poPrice * item.poQuantity) || 0;
             totalCalculated += itemTotal;
             
@@ -2181,8 +2185,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             };
           });
           
-          console.log(`Calculated total from items: ${totalCalculated}`);
-          console.log(`PO total amount: ${po.totalAmount}`);
+          console.log(`Showing top 3 items with total: ${totalCalculated}`);
+          console.log(`Original PO had ${poItems.length} items, filtered to 3`);
         }
         
         if (realItems.length === 0) {
