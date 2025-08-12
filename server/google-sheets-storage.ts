@@ -111,10 +111,10 @@ export class GoogleSheetsStorage {
       
       const values = [
         ['المعرف', 'LINE ITEM', 'PART NO', 'الوصف', 'وحدة القياس', 'العلامة التجارية', 'السعر', 'تاريخ الإنشاء'],
-        ...items.map((item, index) => [
+        ...items.map(item => [
           item.id,
           item.lineItem || '',
-          `P-${(index + 1).toString().padStart(6, '0')}`,
+          item.partNumber || '',
           item.description || '',
           item.uom || '',
           item.brand || '',
