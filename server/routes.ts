@@ -3112,18 +3112,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   const syncRouter = await import('./routes/sync');
   app.use('/api', syncRouter.default);
 
-  // استيراد البيانات الصحيحة النهائية
-  app.post('/api/import/final-correct', requireAuth, async (req, res) => {
+  // تحميل البيانات النهائية إلى Google Sheets
+  app.post('/api/upload/final-to-sheets', requireAuth, async (req, res) => {
     try {
-      const { importFinalCorrect } = await import('./import-final-correct');
-      const result = importFinalCorrect();
+      const { uploadFinalToSheets } = await import('./upload-final-to-sheets');
+      const result = await uploadFinalToSheets();
       
       res.json(result);
     } catch (error) {
-      console.error('خطأ في الاستيراد:', error);
+      console.error('خطأ في التحميل:', error);
       res.status(500).json({
         success: false,
-        message: 'خطأ في استيراد البيانات النهائية',
+        message: 'خطأ في تحميل البيانات إلى Google Sheets',
         error: (error as Error).message
       });
     }
