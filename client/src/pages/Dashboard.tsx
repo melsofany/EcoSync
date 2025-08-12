@@ -33,6 +33,12 @@ export default function Dashboard() {
     queryKey: ["/api/statistics"],
   });
 
+  // إضافة استعلام لبيانات Google Sheets
+  const { data: googleSheetsData, isLoading: googleSheetsLoading } = useQuery({
+    queryKey: ["/api/google-sheets-data"],
+    refetchInterval: 5000, // تحديث كل 5 ثوانٍ
+  });
+
   const { data: activities } = useQuery({
     queryKey: ["/api/activity"],
   });

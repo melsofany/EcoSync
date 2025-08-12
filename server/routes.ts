@@ -3313,5 +3313,82 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // إضافة endpoint لقراءة البيانات من Google Sheets مباشرة مع حساب القيمة الصحيحة
+  app.get("/api/google-sheets-data", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { GoogleAuth } = await import('google-auth-library');
+      const { google } = await import('googleapis');
+      
+      const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
+      
+      // تهيئة Google Sheets
+      const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+      if (!serviceAccountKey) {
+        return res.status(500).json({ message: 'Google Service Account Key not configured' });
+      }
+
+      const credentials = JSON.parse(serviceAccountKey);
+      const auth = new GoogleAuth({
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets']
+      });
+
+      const sheets = google.sheets({ version: 'v4', auth });
+
+      // قراءة البيانات من صفحة DATA بدءاً من الصف 2
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: 'DATA!A2:N10000'
+      });
+
+      const rows = response.data.values || [];
+      let totalValue = 0;
+
+      // حساب مجموع العمود N (العمود رقم 13)
+      for (const row of rows) {
+        if (row.length > 13 && row[13]) {
+          const value = parseFloat(row[13].toString().replace(/[^\d.-]/g, ''));
+          if (!isNaN(value)) {
+            totalValue += value;
+          }
+        }
+      }
+
+      // استخراج الإحصائيات
+      const uniqueRFQs = new Set();
+      const uniquePOs = new Set();
+      
+      for (const row of rows) {
+        if (row[4]) uniqueRFQs.add(row[4]); // العمود E - RFQ NUMBER
+        if (row[9]) uniquePOs.add(row[9]); // العمود J - PO NUMBER
+      }
+
+      const stats = {
+        totalRows: rows.length,
+        totalItems: rows.length,
+        totalQuotations: uniqueRFQs.size,
+        totalPurchaseOrders: uniquePOs.size,
+        totalValue: totalValue,
+        targetValue: 14006975,
+        accuracyPercentage: totalValue === 14006975 ? 100 : 
+          ((totalValue / 14006975) * 100).toFixed(2),
+        formula: 'SUM(N2:N∞)',
+        lastUpdated: new Date().toISOString()
+      };
+
+      console.log(`💰 إجمالي القيمة من Google Sheets: ${totalValue.toLocaleString()} ج.م`);
+      console.log(`🎯 القيمة المستهدفة: ${(14006975).toLocaleString()} ج.م`);
+      console.log(`📊 دقة المطابقة: ${stats.accuracyPercentage}%`);
+
+      res.json(stats);
+    } catch (error) {
+      console.error('❌ خطأ في قراءة Google Sheets:', (error as Error).message);
+      res.status(500).json({ 
+        message: 'خطأ في قراءة البيانات من Google Sheets',
+        error: (error as Error).message 
+      });
+    }
+  });
+
   return httpServer;
 }

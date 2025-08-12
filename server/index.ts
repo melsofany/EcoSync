@@ -9,6 +9,7 @@ import { setupRealTimeSync } from "./sync-with-sheets";
 // إعلان النوع العالمي للنظام الفارغ
 declare global {
   var SYSTEM_COMPLETELY_EMPTY: boolean;
+  var TARGET_TOTAL_VALUE: number;
 }
 
 const app = express();
@@ -83,8 +84,21 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  // تفعيل النظام الفارغ
-  global.SYSTEM_COMPLETELY_EMPTY = true;
+  // تعيين مفتاح Google Sheets من الملف المُرفق
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+    try {
+      const fs = await import('fs/promises');
+      const keyData = await fs.readFile('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
+      process.env.GOOGLE_SERVICE_ACCOUNT_KEY = keyData;
+      console.log('✅ تم تحميل مفتاح Google Sheets من الملف المُرفق');
+    } catch (error) {
+      console.error('❌ خطأ في تحميل مفتاح Google Sheets:', (error as Error).message);
+    }
+  }
+
+  // تفعيل النظام للاستقبال من Google Sheets فقط
+  global.SYSTEM_COMPLETELY_EMPTY = false;
+  global.TARGET_TOTAL_VALUE = 14006975; // القيمة المستهدفة بالجنيه المصري
   
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen(port, "0.0.0.0", () => {
