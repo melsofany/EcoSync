@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,13 +19,15 @@ import {
   Plus,
   Download,
   Database,
-  Upload
+  Upload,
+  Trash2
 } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [exportingTable, setExportingTable] = useState<string | null>(null);
   const [showImporter, setShowImporter] = useState(false);
 
@@ -68,6 +70,27 @@ export default function Dashboard() {
     if (action.includes('login')) return 'bg-green-100';
     return 'bg-gray-100';
   };
+
+  const clearDataMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/clear-data", {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "تم المسح بنجاح",
+        description: "تم مسح كافة البيانات من النظام"
+      });
+      queryClient.invalidateQueries();
+      window.location.reload();
+    },
+    onError: () => {
+      toast({
+        title: "خطأ",
+        description: "لم يتم مسح البيانات",
+        variant: "destructive"
+      });
+    }
+  });
 
   const exportMutation = useMutation({
     mutationFn: async (table: string) => {
@@ -429,10 +452,31 @@ export default function Dashboard() {
           </CardHeader>
           {showImporter && (
             <CardContent>
-              <QuickImporter onImportComplete={() => {
-                // Refresh data after import
-                window.location.reload();
-              }} />
+              <div className="space-y-4">
+                {/* Clear Data Button */}
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-sm font-medium text-red-800">مسح البيانات</h3>
+                      <p className="text-xs text-red-600 mt-1">سيتم مسح كافة البيانات من النظام و Google Sheets</p>
+                    </div>
+                    <Button 
+                      onClick={() => clearDataMutation.mutate()}
+                      variant="destructive"
+                      disabled={clearDataMutation.isPending}
+                      size="sm"
+                    >
+                      <Trash2 className="h-4 w-4 ml-2" />
+                      {clearDataMutation.isPending ? "جاري المسح..." : "مسح البيانات"}
+                    </Button>
+                  </div>
+                </div>
+                
+                <QuickImporter onImportComplete={() => {
+                  // Refresh data after import
+                  window.location.reload();
+                }} />
+              </div>
             </CardContent>
           )}
         </Card>
