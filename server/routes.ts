@@ -2146,45 +2146,65 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       console.log(`Found PO: ${po.poNumber}, Total: ${po.totalAmount}`);
       
-      // إنشاء أصناف أمر الشراء فعلية من البيانات
-      const items = [
-        {
-          id: `item-${poId}-1`,
+      // جلب الأصناف الحقيقية من البيانات المتزامنة
+      const fs = require('fs');
+      let realItems = [];
+      
+      try {
+        const syncedDataPath = './attached_assets/synced_data_from_sheets.json';
+        const syncedData = JSON.parse(fs.readFileSync(syncedDataPath, 'utf8'));
+        
+        // البحث عن الأصناف المرتبطة بأمر الشراء
+        const poItems = syncedData.items.filter(item => item.poNumber === po.poNumber);
+        
+        console.log(`Found ${poItems.length} real items for PO: ${po.poNumber}`);
+        
+        realItems = poItems.map((item, index) => ({
+          id: `item-${poId}-${index + 1}`,
           poId: poId,
-          itemNumber: po.poNumber.replace('P25E', 'P-000'),
-          lineItem: '1',
-          description: `كابل كهربائي - أمر الشراء ${po.poNumber}`,
-          partNo: po.poNumber.replace('P25E', 'CABLE-'),
-          quantity: 10,
-          unitPrice: Math.round(po.totalAmount * 0.3),
-          totalPrice: Math.round(po.totalAmount * 0.3),
-          currency: 'EGP'
-        },
-        {
-          id: `item-${poId}-2`,
-          poId: poId,
-          itemNumber: po.poNumber.replace('P25E', 'P-001'),
-          lineItem: '2',
-          description: `مفاتيح كهربائية - أمر الشراء ${po.poNumber}`,
-          partNo: po.poNumber.replace('P25E', 'SWITCH-'),
-          quantity: 5,
-          unitPrice: Math.round(po.totalAmount * 0.4),
-          totalPrice: Math.round(po.totalAmount * 0.4),
-          currency: 'EGP'
-        },
-        {
-          id: `item-${poId}-3`,
-          poId: poId,
-          itemNumber: po.poNumber.replace('P25E', 'P-002'),
-          lineItem: '3',
-          description: `مقاومات كهربائية - أمر الشراء ${po.poNumber}`,
-          partNo: po.poNumber.replace('P25E', 'RES-'),
-          quantity: 20,
-          unitPrice: Math.round(po.totalAmount * 0.3),
-          totalPrice: Math.round(po.totalAmount * 0.3),
-          currency: 'EGP'
+          itemNumber: item.id || `P-${String(index + 1).padStart(7, '0')}`,
+          lineItem: item.lineItem || `${index + 1}`,
+          description: item.description || 'بدون وصف',
+          partNo: item.partNumber || 'غير محدد',
+          quantity: item.poQuantity || 0,
+          unitPrice: item.poPrice || 0,
+          totalPrice: item.totalPOValue || (item.poPrice * item.poQuantity) || 0,
+          currency: 'EGP',
+          uom: item.uom || 'EACH'
+        }));
+        
+        if (realItems.length === 0) {
+          console.log(`No items found for PO ${po.poNumber}, creating placeholder`);
+          realItems = [{
+            id: `item-${poId}-placeholder`,
+            poId: poId,
+            itemNumber: 'غير محدد',
+            lineItem: 'غير محدد', 
+            description: `لا توجد أصناف محددة لأمر الشراء ${po.poNumber}`,
+            partNo: 'غير محدد',
+            quantity: 0,
+            unitPrice: 0,
+            totalPrice: 0,
+            currency: 'EGP'
+          }];
         }
-      ];
+      } catch (error) {
+        console.error('Error loading real items:', error);
+        realItems = [{
+          id: `item-${poId}-error`,
+          poId: poId,
+          itemNumber: 'خطأ',
+          lineItem: 'خطأ',
+          description: 'حدث خطأ في تحميل الأصناف',
+          partNo: 'خطأ',
+          quantity: 0,
+          unitPrice: 0,
+          totalPrice: 0,
+          currency: 'EGP'
+        }];
+      }
+      
+      const items = realItems;
       
       res.json(items);
     } catch (error) {
