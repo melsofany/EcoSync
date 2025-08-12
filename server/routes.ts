@@ -11,6 +11,7 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { randomBytes } from "crypto";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
+import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 
 // نظام توحيد الأصناف الذكي باستخدام AI
 async function aiUnifyItems(items: any[]): Promise<any[]> {
@@ -209,8 +210,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
-
-
   // Role-based access control
   const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
@@ -379,6 +378,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // API endpoint لكتابة المعرفات مباشرة في Google Sheets
+  app.post("/api/write-ids-to-sheets", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('🚀 طلب كتابة المعرفات في Google Sheets...');
+      
+      const result = await writeIdsDirectlyToSheets();
+      
+      if (result.success) {
+        console.log(`✅ تم كتابة ${result.totalIds} معرف فريد في Google Sheets`);
+        res.json({
+          success: true,
+          message: `تم كتابة ${result.totalIds} معرف فريد بنجاح في Google Sheets`,
+          totalIds: result.totalIds,
+          firstId: result.firstId,
+          lastId: result.lastId
+        });
+      } else {
+        console.error('❌ فشل كتابة المعرفات:', result.error);
+        res.status(500).json({
+          success: false,
+          message: "فشل في كتابة المعرفات",
+          error: result.error
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في API endpoint:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ داخلي في الخادم"
+      });
     }
   });
 

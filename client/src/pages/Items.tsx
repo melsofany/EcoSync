@@ -201,9 +201,44 @@ export default function Items() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/me"],
+  });
+
   const { data: items, isLoading } = useQuery({
     queryKey: ["/api/items"],
   });
+
+  const [isWritingIds, setIsWritingIds] = useState(false);
+
+  const handleWriteIdsToSheets = async () => {
+    setIsWritingIds(true);
+    try {
+      const response = await apiRequest("POST", "/api/write-ids-to-sheets", {});
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "تم بنجاح!",
+          description: `تم كتابة ${result.totalIds} معرف فريد في Google Sheets (${result.firstId} إلى ${result.lastId})`,
+        });
+      } else {
+        toast({
+          title: "فشل في كتابة المعرفات",
+          description: result.message || "حدث خطأ غير متوقع",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "خطأ في الاتصال",
+        description: "فشل في الاتصال بالخادم",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWritingIds(false);
+    }
+  };
 
   const getAIStatusBadge = (status: string) => {
     const statusConfig = {
@@ -360,6 +395,27 @@ export default function Items() {
             <DollarSign className="h-4 w-4 ml-2" />
             عرض طلبات التسعير (مثال)
           </Button>
+
+          {(user?.role === 'manager' || user?.role === 'it_admin') && (
+            <Button
+              variant="outline"
+              onClick={handleWriteIdsToSheets}
+              disabled={isWritingIds}
+              className="text-purple-600 border-purple-600 hover:bg-purple-50"
+            >
+              {isWritingIds ? (
+                <>
+                  <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+                  جاري الكتابة...
+                </>
+              ) : (
+                <>
+                  <FileText className="h-4 w-4 ml-2" />
+                  📝 كتابة المعرفات في Google Sheets
+                </>
+              )}
+            </Button>
+          )}
 
           <Button onClick={() => setIsNewItemModalOpen(true)}>
             <Plus className="h-4 w-4 ml-2" />
