@@ -21,7 +21,8 @@ import {
   Bot,
   Merge,
   Download,
-  Database
+  Database,
+  Mic
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -126,6 +127,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: "/telegram-bot",
       icon: Bot,
       section: "admin",
+    },
+    {
+      title: "الأوامر الصوتية",
+      href: "/voice-control",
+      icon: Mic,
+      section: "voice_control",
     },
     {
       title: "استرداد البيانات",

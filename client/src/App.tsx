@@ -27,6 +27,7 @@ import NotFound from "@/pages/not-found";
 import TelegramBot from "@/pages/TelegramBot";
 import DataRecoveryPage from "@/pages/DataRecoveryPage";
 import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
+import { VoiceControlPage } from "@/pages/VoiceControlPage";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -73,6 +74,7 @@ function Router() {
         <Route path="/telegram-bot" component={TelegramBot} />
         <Route path="/data-recovery" component={DataRecoveryPage} />
         <Route path="/database-storage" component={DatabaseStoragePage} />
+        <Route path="/voice-control" component={VoiceControlPage} />
 
         <Route path="/change-password" component={ChangePassword} />
         <Route component={NotFound} />

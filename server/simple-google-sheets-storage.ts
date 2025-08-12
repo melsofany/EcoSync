@@ -51,11 +51,11 @@ export class SimpleGoogleSheetsStorage {
     // قراءة البيانات من Google Sheets (37 أمر شراء)
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/corrected_im2_data.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/exact_data_final.json', 'utf8'));
       
-      console.log(`🛒 تحميل ${sheetsData.allPurchaseOrders.length} أمر شراء (${sheetsData.uniquePurchaseOrders.length} فريد) من ملف im2`);
+      console.log(`🛒 تحميل ${sheetsData.purchaseOrders.length} أمر شراء فريد من البيانات الصحيحة`);
       
-      return sheetsData.allPurchaseOrders.map((po, index) => ({
+      return sheetsData.purchaseOrders.map((po, index) => ({
         id: `po-sheets-${index}`,
         poNumber: po.poNumber,
         quotationNumber: po.quotationNumber,
@@ -79,7 +79,7 @@ export class SimpleGoogleSheetsStorage {
   async getAllQuotationRequests() {
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/corrected_im2_data.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/exact_data_final.json', 'utf8'));
       
       console.log(`📋 تحميل ${sheetsData.quotations.length} طلب تسعير من ملف im2`);
       
@@ -106,7 +106,7 @@ export class SimpleGoogleSheetsStorage {
   async getAllItems() {
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/corrected_im2_data.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/exact_data_final.json', 'utf8'));
       
       console.log(`📦 تحميل ${sheetsData.items.length} صنف من ملف im2`);
       
