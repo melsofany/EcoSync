@@ -116,12 +116,14 @@ export class GoogleSheetsRealtimeData {
           createdAt: new Date().toISOString()
         };
 
-        // طباعة عينة من البيانات للتشخيص (أول 3 صفوف فقط)
-        if (i < 3) {
+        // طباعة عينة من البيانات للتشخيص (أول 10 صفوف فقط)
+        if (i < 10) {
           console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
             rfqNumber: row[5],
             clientName: row[15] || 'فارغ',
-            responsibleEmployee: row[16] || 'فارغ',
+            responsibleEmployee: `"${row[16] || ''}"`, // عرض النص الدقيق
+            responsibleEmployeeLength: row[16] ? row[16].length : 0,
+            allDataQ: row[16], // عرض البيانات الخام
             totalColumns: row.length
           });
         }
