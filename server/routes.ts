@@ -595,41 +595,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.json([]);
         }
         
-        // استخراج بيانات العمود C (LINE ITEM) تحديداً
+        // استخراج البيانات من الأعمدة المحددة:
+        // A: RFQ Number, B: Unit, C: LINE ITEM, D: PART NO, E: Description
         const items = [];
         
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i] || [];
           
-          if (row.length >= 3 && row[2]) { // العمود C هو المؤشر 2
-            const lineItem = row[2] ? row[2].toString().trim() : '';
-            const partNumber = row.length > 3 && row[3] ? row[3].toString().trim() : '';
-            const description = row.length > 4 && row[4] ? row[4].toString().trim() : '';
-            const quantity = row.length > 5 && row[5] ? row[5].toString().trim() : '';
-            const unit = row.length > 6 && row[6] ? row[6].toString().trim() : 'Each';
-            const rfqNumber = row.length > 0 && row[0] ? row[0].toString().trim() : '';
+          if (row.length >= 3) {
+            const rfqNumber = row[0] ? row[0].toString().trim() : ''; // العمود A
+            const unit = row[1] ? row[1].toString().trim() : 'Each'; // العمود B - الوحدة
+            const lineItem = row[2] ? row[2].toString().trim() : ''; // العمود C - LINE ITEM
+            const partNumber = row[3] ? row[3].toString().trim() : ''; // العمود D - PART NO
+            const description = row[4] ? row[4].toString().trim() : ''; // العمود E - الوصف
+            const quantity = row[5] ? row[5].toString().trim() : ''; // العمود F - الكمية
             
+            // تخطي الصفوف الفارغة تماماً
             if (!lineItem && !partNumber && !description) continue;
             
             items.push({
-              id: `line-item-${i}`,
+              id: `sheet-item-${i}`,
               itemNumber: `P-${i.toString().padStart(7, '0')}`,
               lineItem: lineItem, // العمود C - LINE ITEM
-              partNumber: partNumber,
-              description: description,
+              partNumber: partNumber, // العمود D - PART NO
+              description: description, // العمود E - الوصف
+              unit: unit, // العمود B - الوحدة
               quantity: quantity,
-              unit: unit,
               category: 'general',
               brand: '',
-              rfqNumber: rfqNumber,
-              source: 'column_c_line_item',
+              rfqNumber: rfqNumber, // العمود A
+              source: 'google_sheets_columns',
               createdAt: new Date().toISOString(),
               isActive: true
             });
           }
         }
         
-        console.log(`✅ استخراج ${items.length} عنصر LINE ITEM من العمود C`);
+        console.log(`✅ استخراج ${items.length} صنف من Google Sheets:`);
+        console.log(`   📋 العمود B: الوحدة (Unit)`);
+        console.log(`   📦 العمود C: LINE ITEM`);
+        console.log(`   🔧 العمود D: PART NO`);
+        console.log(`   📝 العمود E: الوصف`);
         res.json(items);
         
       } catch (sheetsError) {
