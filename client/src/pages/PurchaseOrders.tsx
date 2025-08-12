@@ -395,10 +395,57 @@ export default function PurchaseOrders() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {!purchaseOrders || purchaseOrders.length === 0 ? (
+                {/* عرض البيانات الحقيقية من Google Sheets إذا كانت متوفرة */}
+                {googleSheetsData?.purchaseOrders && googleSheetsData.purchaseOrders.length > 0 ? (
+                  googleSheetsData.purchaseOrders.map((po: any, index: number) => (
+                    <TableRow key={`gs-${index}`} className="hover:bg-gray-50">
+                      <TableCell className="font-medium text-blue-600">{po.poNumber}</TableCell>
+                      <TableCell className="text-blue-600 font-mono">
+                        {po.quotationNumber || 'غير محدد'}
+                      </TableCell>
+                      <TableCell>{po.orderDate || 'غير محدد'}</TableCell>
+                      {isManager && (
+                        <TableCell className="font-medium text-green-600">
+                          {po.totalAmount ? `${po.totalAmount.toLocaleString()} ج.م` : 'غير محدد'}
+                        </TableCell>
+                      )}
+                      <TableCell>
+                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
+                          مؤكد
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2 space-x-reverse">
+                          <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+                          <span className="text-sm">قيد المعالجة</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2 space-x-reverse">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="عرض التفاصيل"
+                            disabled
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            title="طباعة"
+                            disabled
+                          >
+                            <Printer className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : !purchaseOrders || purchaseOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={isManager ? 7 : 6} className="text-center py-8 text-gray-500">
-                      لا توجد أوامر شراء
+                      {googleSheetsLoading ? "جاري تحميل البيانات من Google Sheets..." : "لا توجد أوامر شراء"}
                     </TableCell>
                   </TableRow>
                 ) : (

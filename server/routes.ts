@@ -3405,12 +3405,29 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         }
       }
 
+      // تحضير بيانات أوامر الشراء الفريدة
+      const uniquePOArray = Array.from(uniqueConfirmedPOs);
+      const purchaseOrdersData = uniquePOArray.map(poNumber => {
+        // البحث عن أول سجل يحتوي على هذا الرقم
+        const firstRecord = rows.find(row => row[10] && row[10].toString().trim() === poNumber);
+        
+        return {
+          poNumber: poNumber,
+          quotationNumber: firstRecord?.[4] || '', // RFQ NUMBER
+          orderDate: firstRecord?.[10] || '', // PO DATE (K column)
+          totalAmount: firstRecord?.[13] ? parseFloat(firstRecord[13]) || 0 : 0, // العمود N
+          status: 'confirmed',
+          deliveryStatus: 'pending'
+        };
+      });
+
       const stats = {
         totalRows: rows.length,
         totalItems: rows.length,
         totalQuotations: uniqueRFQs.size,
         totalPurchaseOrders: uniquePOs.size,
         confirmedPOs: uniqueConfirmedPOs.size, // استخدام القيم الفريدة
+        purchaseOrders: purchaseOrdersData, // البيانات الفعلية
         totalValue: totalValue,
         targetValue: 14006975,
         accuracyPercentage: totalValue === 14006975 ? 100 : 
