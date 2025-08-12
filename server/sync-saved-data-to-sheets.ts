@@ -47,7 +47,7 @@ async function syncSavedDataToSheets() {
 
     // تحويل البيانات إلى صيغة مناسبة لـ Google Sheets
     const itemsData = savedData.map((record, index) => ({
-      id: record.id || `item-${index}`,
+      id: `P-${(index + 1).toString().padStart(7, '0')}`, // P-0000001, P-0000002, etc.
       itemNumber: `P-${(index + 1).toString().padStart(6, '0')}`,
       lineItem: record.lineItem || '',
       partNumber: record.partNumber || '', // استخدام partNumber الحقيقي من الملف
