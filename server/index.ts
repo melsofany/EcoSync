@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import "./telegram-bot"; // Initialize Telegram bot
 import GoogleSheetsSync from "./google-sheets-sync";
+import { realTimeSync } from "./real-time-google-sheets-sync";
 import { storage } from "./storage";
 
 const app = express();
@@ -96,15 +97,14 @@ app.use((req, res, next) => {
       }
     }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
 
-    // تفعيل مزامنة البيانات
+    // تفعيل مزامنة البيانات الجديدة
     setTimeout(async () => {
       try {
-        const googleSheetsSync = new GoogleSheetsSync(storage);
-        googleSheetsSync.startRealTimeSync();
-        console.log('🔄 تم تفعيل المزامنة التلقائية للبيانات');
+        await realTimeSync.startRealTimeSync();
+        console.log('🔄 تم تفعيل المزامنة الحقيقية الجديدة');
       } catch (error) {
-        console.log('⚠️ المزامنة التلقائية غير متاحة:', (error as Error).message);
+        console.log('⚠️ المزامنة الحقيقية غير متاحة:', (error as Error).message);
       }
-    }, 5000); // بدء المزامنة بعد 5 ثوان
+    }, 3000); // بدء المزامنة بعد 3 ثوان
   });
 })();

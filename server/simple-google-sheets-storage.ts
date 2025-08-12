@@ -3,6 +3,7 @@
 import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
 import { readFileSync } from 'fs';
+import { unifiedStorage } from './unified-storage';
 
 export class SimpleGoogleSheetsStorage {
   private auth: any;
@@ -37,14 +38,8 @@ export class SimpleGoogleSheetsStorage {
   }
 
   async getAllPurchaseOrders() {
-    if (!this.isConnected) {
-      // إرجاع 37 أمر شراء كما هو موجود في Google Sheets
-      console.log('🛒 عرض 37 أمر شراء من المصدر الأساسي');
-      return this.getGoogleSheetsPurchaseOrders();
-    }
-    
-    // هنا سيكون الكود للقراءة من Google Sheets الفعلي
-    return [];
+    // استخدام النظام الموحد للحصول على البيانات الفعلية مع مزامنة Google Sheets
+    return await unifiedStorage.getAllPurchaseOrders();
   }
 
   private getGoogleSheetsPurchaseOrders() {

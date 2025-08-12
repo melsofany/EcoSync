@@ -3108,5 +3108,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // تضمين routes المزامنة
+  const syncRouter = await import('./routes/sync');
+  app.use('/api', syncRouter.default);
+
   return httpServer;
 }
