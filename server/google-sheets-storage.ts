@@ -76,11 +76,12 @@ export class GoogleSheetsStorage {
       console.log(`📊 حفظ ${quotations.length} طلب تسعير في Google Sheets`);
       
       const values = [
-        ['رقم الطلب', 'رقم التسعير المخصص', 'تاريخ الطلب', 'الحالة', 'اسم العميل', 'عدد الأصناف', 'القيمة الإجمالية', 'الملاحظات'],
+        ['رقم الطلب', 'رقم التسعير المخصص', 'تاريخ الطلب', 'تاريخ الرد', 'الحالة', 'اسم العميل', 'عدد الأصناف', 'القيمة الإجمالية', 'الملاحظات'],
         ...quotations.map(q => [
           q.id,
           q.rfqNumber,
           q.requestDate,
+          q.responseDate || '',
           q.status,
           q.clientName,
           q.totalItems,

@@ -73,6 +73,7 @@ async function syncSavedDataToSheets() {
             rfqNumber: rfqId,
             customRequestNumber: rfqId,
             requestDate: parseExcelDate(record.rfqDate),
+            responseDate: parseExcelDate(record.rfqResponseDate),
             status: record.poNumber ? 'completed' : 'quoted',
             clientName: 'عميل من قاعدة البيانات',
             totalItems: 0,
