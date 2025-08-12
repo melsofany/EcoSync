@@ -48,12 +48,12 @@ export class SimpleGoogleSheetsStorage {
   }
 
   private getGoogleSheetsPurchaseOrders() {
-    // قراءة البيانات الأصلية (5,449 صف مع 273 أمر شراء بدون تكرار)
+    // قراءة البيانات من Google Sheets (37 أمر شراء)
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/sheets_formatted_5449.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
       
-      console.log(`🛒 تحميل ${sheetsData.purchaseOrders.length} أمر شراء من البيانات الأصلية`);
+      console.log(`🛒 تحميل ${sheetsData.purchaseOrders.length} أمر شراء من Google Sheets`);
       
       return sheetsData.purchaseOrders.map((po, index) => ({
         id: `po-sheets-${index}`,
@@ -79,9 +79,9 @@ export class SimpleGoogleSheetsStorage {
   async getAllQuotationRequests() {
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/sheets_formatted_5449.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
       
-      console.log(`📋 تحميل ${sheetsData.quotations.length} طلب تسعير من البيانات الأصلية`);
+      console.log(`📋 تحميل ${sheetsData.quotations.length} طلب تسعير من Google Sheets`);
       
       return sheetsData.quotations.map((rfq, index) => ({
         id: `rfq-sheets-${index}`,
@@ -106,9 +106,9 @@ export class SimpleGoogleSheetsStorage {
   async getAllItems() {
     try {
       // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/sheets_formatted_5449.json', 'utf8'));
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
       
-      console.log(`📦 تحميل ${sheetsData.items.length} صنف من البيانات الأصلية`);
+      console.log(`📦 تحميل ${sheetsData.items.length} صنف من Google Sheets`);
       
       return sheetsData.items.map((item, index) => ({
         id: `item-sheets-${index}`,
