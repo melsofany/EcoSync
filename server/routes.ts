@@ -11,6 +11,141 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { randomBytes } from "crypto";
 
+// نظام توحيد الأصناف الذكي باستخدام AI
+async function aiUnifyItems(items: any[]): Promise<any[]> {
+  console.log(`🤖 بدء التوحيد الذكي باستخدام AI لـ ${items.length} صنف...`);
+  
+  const unifiedItems: any[] = [];
+  const processedItems = new Set<string>();
+  
+  for (let i = 0; i < items.length; i++) {
+    const currentItem = items[i];
+    
+    // تخطي البنود المعالجة مسبقاً
+    if (processedItems.has(currentItem.id)) continue;
+    
+    // البحث عن البنود المشابهة
+    const similarItems = [currentItem];
+    processedItems.add(currentItem.id);
+    
+    for (let j = i + 1; j < items.length; j++) {
+      const compareItem = items[j];
+      
+      if (processedItems.has(compareItem.id)) continue;
+      
+      // استخدام AI للمقارنة
+      const similarity = await checkAISimilarity(currentItem, compareItem);
+      
+      if (similarity >= 0.8) { // نسبة تشابه 80% أو أكثر
+        similarItems.push(compareItem);
+        processedItems.add(compareItem.id);
+      }
+    }
+    
+    // إنشاء صنف موحد
+    const unifiedItem = createUnifiedItem(similarItems, unifiedItems.length + 1);
+    unifiedItems.push(unifiedItem);
+    
+    if (similarItems.length > 1) {
+      console.log(`✅ تم دمج ${similarItems.length} بند مشابه: ${currentItem.partNumber || currentItem.lineItem}`);
+    }
+  }
+  
+  console.log(`🎯 نتائج التوحيد الذكي: ${items.length} → ${unifiedItems.length} (توفير ${items.length - unifiedItems.length} بند)`);
+  console.log(`📈 معدل التوفير: ${((items.length - unifiedItems.length) / items.length * 100).toFixed(1)}%`);
+  
+  return unifiedItems;
+}
+
+// فحص التشابه باستخدام DeepSeek AI
+async function checkAISimilarity(item1: any, item2: any): Promise<number> {
+  try {
+    // التحقق من التطابق المباشر في PART NO
+    if (item1.partNumber && item2.partNumber) {
+      const normalized1 = item1.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
+      const normalized2 = item2.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
+      
+      if (normalized1 === normalized2) {
+        return 1.0; // تطابق كامل
+      }
+    }
+    
+    // استخدام AI للمقارنة الذكية
+    const prompt = `قارن بين هذين الصنفين وحدد مدى التشابه (0-1):
+
+الصنف الأول:
+- رقم القطعة: ${item1.partNumber || 'غير محدد'}
+- التوصيف: ${item1.description || 'غير محدد'}
+- LINE ITEM: ${item1.lineItem || 'غير محدد'}
+
+الصنف الثاني:
+- رقم القطعة: ${item2.partNumber || 'غير محدد'}
+- التوصيف: ${item2.description || 'غير محدد'}
+- LINE ITEM: ${item2.lineItem || 'غير محدد'}
+
+أرجع رقماً فقط بين 0 و 1 (مثل 0.85) يمثل نسبة التشابه.`;
+
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 100,
+        temperature: 0.1
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const similarity = parseFloat(data.choices[0].message.content.trim());
+      return isNaN(similarity) ? 0 : Math.min(Math.max(similarity, 0), 1);
+    }
+    
+    return 0;
+  } catch (error) {
+    console.error('خطأ في AI similarity check:', error);
+    return 0;
+  }
+}
+
+// إنشاء صنف موحد من مجموعة بنود متشابهة
+function createUnifiedItem(items: any[], index: number): any {
+  // اختيار أفضل البيانات من البنود المتشابهة
+  const bestPartNumber = items.find(item => item.partNumber && item.partNumber.trim())?.partNumber || '';
+  const bestDescription = items.find(item => item.description && item.description.trim())?.description || '';
+  const bestLineItem = items.find(item => item.lineItem && item.lineItem.trim())?.lineItem || '';
+  const bestUnit = items.find(item => item.unit && item.unit.trim())?.unit || 'Each';
+  
+  // جمع جميع أرقام طلبات التسعير
+  const allRfqNumbers = [...new Set(items.map(item => item.rfqNumber).filter(Boolean))];
+  
+  return {
+    id: `ai-unified-${index}`,
+    itemNumber: `P-${index.toString().padStart(7, '0')}`,
+    partNumber: bestPartNumber,
+    description: bestDescription,
+    lineItem: bestLineItem,
+    unit: bestUnit,
+    category: 'unified',
+    brand: '',
+    rfqNumbers: allRfqNumbers,
+    duplicateCount: items.length,
+    originalIds: items.map(item => item.id),
+    source: 'ai_unified_google_sheets',
+    createdAt: new Date().toISOString(),
+    isActive: true
+  };
+}
+
 // Extend the Express Request type to include session data
 declare module "express-session" {
   interface SessionData {
@@ -637,7 +772,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`   🔧 العمود D: PART NO`);
         console.log(`   📝 العمود E: الوصف`);
         
-        res.json(items);
+        // تطبيق التوحيد الذكي باستخدام AI
+        console.log(`🤖 بدء التوحيد الذكي باستخدام DeepSeek AI...`);
+        const unifiedItems = await aiUnifyItems(items);
+        
+        res.json(unifiedItems);
         
       } catch (sheetsError) {
         console.error('❌ خطأ في الوصول لـ Google Sheets:', sheetsError.message);
