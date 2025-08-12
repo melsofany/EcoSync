@@ -104,7 +104,6 @@ export class GoogleSheetsRealtimeData {
           requestDate: row[6] || '', // العمود G - REQUEST DATE
           quantity: row[7] || '', // العمود H - QUANTITY
           price: row[8] || '', // العمود I - PRICE
-          responseDate: row[9] || '', // العمود J - RESPONSE DATE
           responseDate: row[9] || '', // العمود J - تاريخ الانتهاء/الاستجابة
           poNumber: row[10] || '', // العمود K - PO NUMBER
           poDate: row[11] || '', // العمود L - PO DATE
@@ -112,6 +111,7 @@ export class GoogleSheetsRealtimeData {
           poPrice: row[13] || '', // العمود N - PO PRICE
           totalValue: row[14] || '', // العمود O - القيمة الإجمالية
           clientName: row[15] || '', // العمود P - اسم العميل
+          responsibleEmployee: row[16] || '', // العمود Q - الموظف المسؤول
           isActive: true,
           createdAt: new Date().toISOString()
         };
@@ -153,8 +153,8 @@ export class GoogleSheetsRealtimeData {
             clientName: item.clientName && item.clientName.trim() ? item.clientName.trim() : 'غير محدد', // اسم العميل من العمود P
             requestDate: item.requestDate, // التاريخ من العمود G
             expiryDate: item.responseDate || null, // تاريخ الانتهاء من العمود J
+            responsibleEmployee: item.responsibleEmployee && item.responsibleEmployee.trim() ? item.responsibleEmployee.trim() : 'نظام المزامنة', // الموظف المسؤول من العمود Q
             status: 'completed',
-            responsibleEmployee: 'نظام المزامنة',
             notes: `طلب مستورد من Google Sheets`,
             totalItems: 0,
             totalValue: 0,
