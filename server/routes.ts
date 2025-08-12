@@ -2832,12 +2832,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Get synced data for POTotalAmount component
-  app.get('/api/synced-data', (req, res) => {
+  // Get synced data for POTotalAmount component  
+  app.get('/api/synced-data', async (req, res) => {
     try {
-      const fs = require('fs');
+      const { readFileSync } = await import('fs');
       const syncedDataPath = './attached_assets/synced_data_from_sheets.json';
-      const syncedData = JSON.parse(fs.readFileSync(syncedDataPath, 'utf8'));
+      const syncedData = JSON.parse(readFileSync(syncedDataPath, 'utf8'));
       
       // معادلة الحساب: جمع العمود N بداية من الصف 2 = 14,006,975 ج.م
       const correctedData = {
