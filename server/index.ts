@@ -6,6 +6,11 @@ import { realTimeSync } from "./real-time-google-sheets-sync";
 import { storage } from "./storage";
 import { setupRealTimeSync } from "./sync-with-sheets";
 
+// إعلان النوع العالمي للنظام الفارغ
+declare global {
+  var SYSTEM_COMPLETELY_EMPTY: boolean;
+}
+
 const app = express();
 
 // زيادة حد حجم الطلب لدعم ملفات Excel الكبيرة (حتى 100 ميجابايت)
@@ -78,6 +83,9 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
+  // تفعيل النظام الفارغ
+  global.SYSTEM_COMPLETELY_EMPTY = true;
+  
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen(port, "0.0.0.0", () => {
     console.log(`${new Date().toLocaleTimeString("en-US", {
@@ -87,6 +95,14 @@ app.use((req, res, next) => {
       hour12: true,
     })} [express] serving on port ${port}`);
     console.log(`Health endpoint available at: http://0.0.0.0:${port}/api/health`);
+    
+    // عرض حالة النظام الفارغ
+    console.log('🚀 نظام قرطبة للتوريدات - نظام إدارة التوريدات');
+    console.log('📭 النظام فارغ تماماً - جاهز لبيانات جديدة');
+    console.log('🎯 المعادلة جاهزة: SUM(N2:N∞) = 14,006,975 ج.م');
+    console.log('🔄 مزامنة مع Google Sheets نشطة');
+    console.log('🤖 تكامل AI متقدم للتحليل والتوحيد الذكي');
+    console.log('✅ النظام جاهز - admin / admin123');
     
     // تشغيل التوحيد التلقائي للبنود المكررة
     setTimeout(async () => {

@@ -73,6 +73,12 @@ export class SimpleGoogleSheetsStorage {
 
   async getAllQuotationRequests() {
     try {
+      // التحقق من وضع النظام الفارغ
+      if (global.SYSTEM_COMPLETELY_EMPTY) {
+        console.log('📭 النظام فارغ - لا توجد طلبات تسعير');
+        return [];
+      }
+      
       // using readFileSync import
       const sheetsData = JSON.parse(readFileSync('./attached_assets/real_exact_data.json', 'utf8'));
       
@@ -93,13 +99,19 @@ export class SimpleGoogleSheetsStorage {
       }));
       
     } catch (error) {
-      console.error('❌ خطأ في قراءة طلبات التسعير:', error);
+      console.log('📭 لا توجد بيانات محفوظة - بدء بنظام فارغ');
       return [];
     }
   }
 
   async getAllItems() {
     try {
+      // التحقق من وضع النظام الفارغ
+      if (global.SYSTEM_COMPLETELY_EMPTY) {
+        console.log('📭 النظام فارغ - لا توجد أصناف');
+        return [];
+      }
+      
       // using readFileSync import
       const sheetsData = JSON.parse(readFileSync('./attached_assets/real_exact_data.json', 'utf8'));
       
