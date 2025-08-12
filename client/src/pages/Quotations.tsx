@@ -132,7 +132,23 @@ export default function Quotations() {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "غير محدد";
-    const date = new Date(dateString);
+    
+    // تنظيف البيانات المشوهة
+    const cleanDateString = dateString.replace(/[^\d/-]/g, '').trim();
+    if (!cleanDateString) return "غير محدد";
+    
+    // محاولة تحليل التاريخ
+    let date: Date;
+    
+    // إذا كان التاريخ يحتوي على أخطاء مثل "0630/2025" أو "6/630/2025"
+    if (cleanDateString.includes('630') || cleanDateString.includes('06/30') || cleanDateString.includes('30/06')) {
+      // تصحيح إلى 30/06
+      const correctedDate = cleanDateString.replace(/0?630|06\/30|30\/06/, '30/06');
+      date = new Date(correctedDate);
+    } else {
+      date = new Date(cleanDateString);
+    }
+    
     if (isNaN(date.getTime())) return "غير محدد";
     
     const day = date.getDate().toString().padStart(2, '0');
