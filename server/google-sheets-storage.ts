@@ -139,6 +139,60 @@ export class GoogleSheetsStorage {
     }
   }
 
+  // حفظ المستخدمين في Google Sheets
+  async saveUsers(users: any[]) {
+    try {
+      console.log(`📊 حفظ ${users.length} مستخدم في Google Sheets`);
+      
+      const values = [
+        ['المعرف', 'اسم المستخدم', 'الاسم الكامل', 'الدور', 'البريد الإلكتروني', 'نشط', 'آخر تسجيل دخول', 'تاريخ الإنشاء', 'عرض طلبات التسعير', 'إنشاء طلبات التسعير', 'تعديل طلبات التسعير', 'حذف طلبات التسعير', 'عرض الأصناف', 'إنشاء الأصناف', 'تعديل الأصناف', 'حذف الأصناف', 'عرض أوامر الشراء', 'إنشاء أوامر الشراء', 'تعديل أوامر الشراء', 'حذف أوامر الشراء', 'عرض المستخدمين', 'إنشاء المستخدمين', 'تعديل المستخدمين', 'حذف المستخدمين', 'عرض التقارير', 'استيراد البيانات', 'تصدير البيانات', 'نسخ احتياطي'],
+        ...users.map(user => [
+          user.id,
+          user.username,
+          user.fullName,
+          user.role,
+          user.email,
+          user.isActive ? 'نعم' : 'لا',
+          user.lastLogin || '',
+          user.createdAt || '',
+          user.permissions?.viewQuotations ? 'نعم' : 'لا',
+          user.permissions?.createQuotations ? 'نعم' : 'لا',
+          user.permissions?.editQuotations ? 'نعم' : 'لا',
+          user.permissions?.deleteQuotations ? 'نعم' : 'لا',
+          user.permissions?.viewItems ? 'نعم' : 'لا',
+          user.permissions?.createItems ? 'نعم' : 'لا',
+          user.permissions?.editItems ? 'نعم' : 'لا',
+          user.permissions?.deleteItems ? 'نعم' : 'لا',
+          user.permissions?.viewPurchaseOrders ? 'نعم' : 'لا',
+          user.permissions?.createPurchaseOrders ? 'نعم' : 'لا',
+          user.permissions?.editPurchaseOrders ? 'نعم' : 'لا',
+          user.permissions?.deletePurchaseOrders ? 'نعم' : 'لا',
+          user.permissions?.viewUsers ? 'نعم' : 'لا',
+          user.permissions?.createUsers ? 'نعم' : 'لا',
+          user.permissions?.editUsers ? 'نعم' : 'لا',
+          user.permissions?.deleteUsers ? 'نعم' : 'لا',
+          user.permissions?.viewReports ? 'نعم' : 'لا',
+          user.permissions?.importData ? 'نعم' : 'لا',
+          user.permissions?.exportData ? 'نعم' : 'لا',
+          user.permissions?.backupDatabase ? 'نعم' : 'لا'
+        ])
+      ];
+
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: 'Users!A1',
+        valueInputOption: 'RAW',
+        resource: { values }
+      });
+
+      console.log('✅ تم حفظ المستخدمين في Google Sheets بنجاح');
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في حفظ المستخدمين:', error);
+      return false;
+    }
+  }
+
   // قراءة البيانات من Google Sheets
   async readFromSheets(sheetName: string) {
     try {

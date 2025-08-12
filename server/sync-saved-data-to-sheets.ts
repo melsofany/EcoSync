@@ -146,6 +146,17 @@ async function syncSavedDataToSheets() {
       console.log(`✅ تم رفع ${purchaseOrders.length} أمر شراء`);
     }
 
+    // رفع المستخدمين
+    try {
+      const usersData = JSON.parse(readFileSync('./attached_assets/users_data.json', 'utf8'));
+      if (usersData && usersData.length > 0) {
+        await googleSheetsStorage.saveUsers(usersData);
+        console.log(`✅ تم رفع ${usersData.length} مستخدم`);
+      }
+    } catch (error) {
+      console.log('ℹ️ لم يتم العثور على بيانات المستخدمين، سيتم تخطي هذه الخطوة');
+    }
+
     console.log('🎉 اكتملت مزامنة جميع البيانات إلى Google Sheets');
     console.log('📊 يمكنك الآن مراجعة البيانات في Google Sheets');
     
