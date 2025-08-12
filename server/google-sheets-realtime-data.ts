@@ -65,8 +65,16 @@ export class GoogleSheetsRealtimeData {
   // دالة لحساب القيمة الإجمالية للصف مع معالجة أخطاء #VALUE!
   calculateRowTotal(quantity: string, price: string, totalValue: string): string {
     try {
-      // إذا كانت القيمة الإجمالية صحيحة، استخدمها
-      if (totalValue && !totalValue.includes('#VALUE!') && !totalValue.includes('#ERROR!') && totalValue !== '0') {
+      // التحقق من وجود أخطاء #VALUE! أو #ERROR!
+      const hasError = totalValue && (
+        totalValue.includes('#VALUE!') || 
+        totalValue.includes('#ERROR!') || 
+        totalValue.includes('#NAME?') ||
+        totalValue.includes('#REF!')
+      );
+
+      // إذا كانت القيمة الإجمالية صحيحة وبدون أخطاء، استخدمها
+      if (totalValue && !hasError && totalValue !== '0' && totalValue !== '') {
         const numValue = parseFloat(totalValue.toString().replace(/[^\d.-]/g, ''));
         if (!isNaN(numValue) && numValue > 0) {
           return totalValue;
@@ -74,21 +82,26 @@ export class GoogleSheetsRealtimeData {
       }
 
       // إذا كانت القيمة الإجمالية خاطئة أو فارغة، احسبها من M × N
-      if (quantity && price) {
-        const qtyNum = parseFloat(quantity.toString().replace(/[^\d.-]/g, ''));
-        const priceNum = parseFloat(price.toString().replace(/[^\d.-]/g, ''));
+      if (quantity && price && quantity !== '' && price !== '') {
+        const qtyStr = quantity.toString().replace(/[^\d.-]/g, '');
+        const priceStr = price.toString().replace(/[^\d.-]/g, '');
         
-        if (!isNaN(qtyNum) && !isNaN(priceNum)) {
+        const qtyNum = parseFloat(qtyStr);
+        const priceNum = parseFloat(priceStr);
+        
+        if (!isNaN(qtyNum) && !isNaN(priceNum) && qtyNum > 0 && priceNum > 0) {
           const calculated = qtyNum * priceNum;
-          console.log(`🔧 تم إصلاح القيمة: ${quantity} × ${price} = ${calculated}`);
+          if (hasError) {
+            console.log(`🔧 تم إصلاح خطأ #VALUE!: ${quantity} × ${price} = ${calculated}`);
+          }
           return calculated.toString();
         }
       }
 
-      return totalValue || '';
+      return totalValue || '0';
     } catch (error) {
       console.log(`❌ خطأ في حساب القيمة: ${error}`);
-      return totalValue || '';
+      return totalValue || '0';
     }
   }
 
@@ -98,15 +111,31 @@ export class GoogleSheetsRealtimeData {
       let totalValue = 0;
 
       // حساب مجموع العمود O مع معالجة #VALUE! errors
+      let correctedCount = 0;
+      let errorCount = 0;
+      
       for (const row of rows) {
         if (row.length > 14) {
+          const originalValue = row[14] || '';
           const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
+          
+          // تسجيل الإصلاحات
+          if (originalValue.includes('#VALUE!') || originalValue.includes('#ERROR!')) {
+            errorCount++;
+          }
+          if (correctedTotal !== originalValue) {
+            correctedCount++;
+          }
+          
           const value = parseFloat(correctedTotal.toString().replace(/[^\d.-]/g, ''));
           if (!isNaN(value)) {
             totalValue += value;
           }
         }
       }
+      
+      console.log(`🔧 تم إصلاح ${correctedCount} قيمة من أصل ${rows.length} صف`);
+      console.log(`❌ تم العثور على ${errorCount} خطأ #VALUE!`);
 
       console.log(`💰 إجمالي القيمة المحسوبة: ${totalValue.toLocaleString()} ج.م`);
       return totalValue;
@@ -147,17 +176,19 @@ export class GoogleSheetsRealtimeData {
           createdAt: new Date().toISOString()
         };
 
-        // طباعة عينة من البيانات للتشخيص (أول 10 صفوف فقط)
-        if (i < 10) {
+        // طباعة عينة من البيانات للتشخيص (أول 5 صفوف فقط)
+        if (i < 5) {
+          const originalTotal = row[14] || '';
+          const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
           console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
             rfqNumber: row[5],
-            clientName: row[15] || 'فارغ',
-            columnQ16: `"${row[16] || ''}"`, // العمود 16 (Q)
-            columnR17: `"${row[17] || ''}"`, // العمود 17 (R) - ربما هنا البيانات؟
-            columnS18: `"${row[18] || ''}"`, // العمود 18 (S)
-            columnT19: `"${row[19] || ''}"`, // العمود 19 (T)
-            totalColumns: row.length,
-            allRow: row.slice(15, 20) // عرض الأعمدة P-T
+            quantity_M: row[12] || 'فارغ',
+            price_N: row[13] || 'فارغ',
+            original_O: originalTotal,
+            corrected_O: correctedTotal,
+            responsibleEmployee_Q: `"${row[16] || ''}"`,
+            isValueError: originalTotal.includes('#VALUE!') || originalTotal.includes('#ERROR!'),
+            totalColumns: row.length
           });
         }
 
