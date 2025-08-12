@@ -4,7 +4,7 @@ import path from 'path';
 // نظام التخزين المربوط للأصناف وطلبات التسعير وأوامر الشراء
 class LinkedStorage {
   private linkedData: any = null;
-  private dataPath = './attached_assets/linked_system_data_corrected.json';
+  private dataPath = './attached_assets/linked_system_original_complete.json';
 
   constructor() {
     this.loadLinkedData();
