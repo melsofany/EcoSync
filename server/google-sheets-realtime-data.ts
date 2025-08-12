@@ -111,7 +111,7 @@ export class GoogleSheetsRealtimeData {
           poPrice: row[13] || '', // العمود N - PO PRICE
           totalValue: row[14] || '', // العمود O - القيمة الإجمالية
           clientName: row[15] || '', // العمود P - اسم العميل
-          responsibleEmployee: row[16] || '', // العمود Q - الموظف المسؤول
+          responsibleEmployee: row[16] || row[17] || row[18] || row[19] || '', // جرب عدة أعمدة للعثور على الموظف المسؤول
           isActive: true,
           createdAt: new Date().toISOString()
         };
@@ -121,10 +121,12 @@ export class GoogleSheetsRealtimeData {
           console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
             rfqNumber: row[5],
             clientName: row[15] || 'فارغ',
-            responsibleEmployee: `"${row[16] || ''}"`, // عرض النص الدقيق
-            responsibleEmployeeLength: row[16] ? row[16].length : 0,
-            allDataQ: row[16], // عرض البيانات الخام
-            totalColumns: row.length
+            columnQ16: `"${row[16] || ''}"`, // العمود 16 (Q)
+            columnR17: `"${row[17] || ''}"`, // العمود 17 (R) - ربما هنا البيانات؟
+            columnS18: `"${row[18] || ''}"`, // العمود 18 (S)
+            columnT19: `"${row[19] || ''}"`, // العمود 19 (T)
+            totalColumns: row.length,
+            allRow: row.slice(15, 20) // عرض الأعمدة P-T
           });
         }
 
