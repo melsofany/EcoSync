@@ -40,8 +40,8 @@ import {
   type ActivityLog,
   type InsertActivityLog,
 } from "@shared/schema";
-// وضع Google Sheets فقط - بدون قواعد بيانات
-import { simpleGoogleSheetsStorage } from "./simple-google-sheets-storage.js";
+// نظام البيانات الحقيقية
+import { realDataStorage } from "./real-data-storage.js";
 // البيانات المربوطة والموحدة
 import { readFileSync } from 'fs';
 
@@ -1907,19 +1907,19 @@ export class DatabaseStorage implements IStorage {
 // استخدام نظام بيانات Excel فقط
 import { ExcelOnlyStorage } from './excel-only-storage';
 
-// استخدام نظام Google Sheets البسيط (37 أمر شراء كما في الشيت)
-export const storage = simpleGoogleSheetsStorage;
+// استخدام نظام البيانات الحقيقية
+export const storage = realDataStorage;
 
 // تهيئة النظام الهجين مع البيانات الحقيقية
 export async function initializeDatabase() {
   try {
-    console.log("🚀 نظام قرطبة للتوريدات - النظام الحقيقي الكامل");
-    console.log("📊 5,449 سجل حقيقي من بيانات Excel الفعلية");
+    console.log("🚀 نظام قرطبة للتوريدات - نظام إدارة التوريدات");
+    console.log("📊 بيانات شاملة من ملفات Excel المستوردة");
     console.log("🔗 معدل ربط 12.8% بين طلبات التسعير وأوامر الشراء");
-    console.log("📋 1,532 طلب تسعير + 276 أمر شراء حقيقي");
+    console.log("📋 إدارة كاملة للطلبات والأوامر");
     console.log("🏗️ أوامر شراء: P25E02726 (مكتمل) + P25E03288 (قيد التنفيذ)");
     console.log("🤖 تكامل AI متقدم للتحليل والتوحيد الذكي");
-    console.log("✅ النظام الحقيقي جاهز - admin / admin123");
+    console.log("✅ النظام جاهز - admin / admin123");
   } catch (error) {
     console.error("❌ خطأ في تهيئة النظام:", error);
   }

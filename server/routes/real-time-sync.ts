@@ -10,7 +10,7 @@ router.post('/sync/items', async (req, res) => {
     await googleSheetsSync.syncFromSheets();
     res.json({ 
       success: true, 
-      message: 'تم تحديث الأصناف من Google Sheets' 
+      message: 'تم تحديث الأصناف من المصدر الأساسي' 
     });
   } catch (error) {
     res.status(500).json({ 
@@ -27,7 +27,7 @@ router.post('/sync/quotations', async (req, res) => {
     await googleSheetsSync.syncFromSheets();
     res.json({ 
       success: true, 
-      message: 'تم تحديث طلبات التسعير من Google Sheets' 
+      message: 'تم تحديث طلبات التسعير من المصدر الأساسي' 
     });
   } catch (error) {
     res.status(500).json({ 
@@ -44,7 +44,7 @@ router.post('/sync/purchase-orders', async (req, res) => {
     await googleSheetsSync.syncFromSheets();
     res.json({ 
       success: true, 
-      message: 'تم تحديث أوامر الشراء من Google Sheets' 
+      message: 'تم تحديث أوامر الشراء من المصدر الأساسي' 
     });
   } catch (error) {
     res.status(500).json({ 
@@ -61,7 +61,7 @@ router.post('/sync/all', async (req, res) => {
     await googleSheetsSync.syncFromSheets();
     res.json({ 
       success: true, 
-      message: 'تم تحديث جميع البيانات من Google Sheets' 
+      message: 'تم تحديث جميع البيانات من المصدر الأساسي' 
     });
   } catch (error) {
     res.status(500).json({ 

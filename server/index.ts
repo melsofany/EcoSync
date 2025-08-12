@@ -96,14 +96,14 @@ app.use((req, res, next) => {
       }
     }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
 
-    // تفعيل المزامنة الفورية مع Google Sheets
+    // تفعيل مزامنة البيانات
     setTimeout(async () => {
       try {
         const googleSheetsSync = new GoogleSheetsSync(storage);
         googleSheetsSync.startRealTimeSync();
-        console.log('🔄 تم تفعيل المزامنة الفورية مع Google Sheets');
+        console.log('🔄 تم تفعيل المزامنة التلقائية للبيانات');
       } catch (error) {
-        console.log('⚠️ المزامنة الفورية غير متاحة:', (error as Error).message);
+        console.log('⚠️ المزامنة التلقائية غير متاحة:', (error as Error).message);
       }
     }, 5000); // بدء المزامنة بعد 5 ثوان
   });

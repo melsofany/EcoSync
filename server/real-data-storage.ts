@@ -13,7 +13,7 @@ export class RealDataStorage {
 
   private initializeData() {
     try {
-      console.log('📊 تحميل البيانات الحقيقية...');
+      console.log('📊 تحميل البيانات من المصدر الأساسي...');
       
       // قراءة البيانات المعدة
       const sheetsData = JSON.parse(readFileSync('./attached_assets/sheets_upload_data.json', 'utf8'));
@@ -182,7 +182,7 @@ export class RealDataStorage {
       quotedRFQs: quotations.filter(rfq => rfq.status === 'quoted').length
     };
 
-    console.log('📊 الإحصائيات:');
+    console.log('📊 إحصائيات النظام:');
     console.log(`   🛒 أوامر الشراء: ${stats.totalPurchaseOrders}`);
     console.log(`   📋 طلبات التسعير: ${stats.totalQuotations}`);
     console.log(`   📦 الأصناف: ${stats.totalItems}`);

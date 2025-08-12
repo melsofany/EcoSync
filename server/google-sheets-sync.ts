@@ -24,7 +24,7 @@ class GoogleSheetsSync {
       });
       
       this.sheets = google.sheets({ version: 'v4', auth: auth });
-      console.log('🔗 تم تهيئة المزامنة مع Google Sheets');
+      console.log('🔗 تم تهيئة المزامنة مع المصدر الأساسي');
     } catch (error) {
       console.error('❌ خطأ في تهيئة Google Sheets:', error.message);
     }
@@ -32,7 +32,7 @@ class GoogleSheetsSync {
 
   // بدء المزامنة الفورية كل 10 ثوانٍ
   startRealTimeSync() {
-    console.log('🔄 بدء المزامنة الفورية مع Google Sheets (كل 10 ثوانٍ)...');
+    console.log('🔄 بدء المزامنة التلقائية للبيانات (كل 10 ثوانٍ)...');
     
     this.syncInterval = setInterval(async () => {
       await this.syncFromSheets();
