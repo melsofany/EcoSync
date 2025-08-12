@@ -164,19 +164,30 @@ class SimpleAIUnifier {
     if (updates.length === 0) return;
 
     try {
-      const batchRequest = {
-        spreadsheetId: this.spreadsheetId,
-        resource: {
-          valueInputOption: 'RAW',
-          data: updates
+      // كتابة كل تحديث بشكل منفصل لضمان الدقة
+      let successCount = 0;
+      for (const update of updates) {
+        try {
+          await this.sheets.spreadsheets.values.update({
+            spreadsheetId: this.spreadsheetId,
+            range: update.range,
+            valueInputOption: 'RAW',
+            resource: {
+              values: update.values
+            }
+          });
+          successCount++;
+        } catch (updateError: any) {
+          this.addLog(`❌ خطأ في كتابة ${update.range}: ${updateError.message}`, 'error');
         }
-      };
-
-      await this.sheets.spreadsheets.values.batchUpdate(batchRequest);
-      this.addLog(`✅ تم كتابة ${updates.length} تحديث إلى Google Sheets`);
+      }
+      
+      if (successCount > 0) {
+        this.addLog(`✅ تم كتابة ${successCount} من ${updates.length} تحديث إلى Google Sheets`);
+      }
       
     } catch (error: any) {
-      this.addLog(`❌ خطأ في كتابة التحديثات: ${error.message}`, 'error');
+      this.addLog(`❌ خطأ عام في كتابة التحديثات: ${error.message}`, 'error');
     }
   }
 
