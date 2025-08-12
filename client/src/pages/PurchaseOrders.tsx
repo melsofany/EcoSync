@@ -253,7 +253,7 @@ export default function PurchaseOrders() {
   const confirmedPOs = purchaseOrders?.filter((po: any) => po.status === "confirmed").length || 0;
   
   // Use API statistics for total value to match Dashboard
-  const totalValue = (stats as any)?.totalPOValue || 14006975;
+  const totalValue = (stats as any)?.totalPOValue || 0;
   const totalPOs = purchaseOrders?.length || 0;
   
   // Check if current user is manager
@@ -346,10 +346,10 @@ export default function PurchaseOrders() {
                 <div>
                   <p className="text-sm font-medium text-gray-600">إجمالي القيمة</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    14,006,975 ج.م
+                    0 ج.م
                   </p>
-                  <div className="text-xs text-green-600 mt-1">
-                    قيمة مؤكدة من البيانات الأصلية
+                  <div className="text-xs text-gray-600 mt-1">
+                    انتظار البيانات
                   </div>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
