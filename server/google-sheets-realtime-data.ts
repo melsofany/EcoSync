@@ -115,6 +115,16 @@ export class GoogleSheetsRealtimeData {
           createdAt: new Date().toISOString()
         };
 
+        // طباعة عينة من البيانات للتشخيص
+        if (i < 3) {
+          console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
+            rfqNumber: row[5],
+            clientName: row[15],
+            totalColumns: row.length,
+            allColumns: row
+          });
+        }
+
         items.push(item);
       }
 
