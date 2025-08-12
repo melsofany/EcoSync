@@ -3408,15 +3408,22 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       // تحضير بيانات أوامر الشراء الفريدة
       const uniquePOArray = Array.from(uniqueConfirmedPOs);
       const purchaseOrdersData = uniquePOArray.map(poNumber => {
-        // البحث عن أول سجل يحتوي على هذا الرقم للحصول على البيانات الأساسية
-        const firstRecord = rows.find(row => row[10] && row[10].toString().trim() === poNumber);
-        
-        // حساب مجموع جميع القيم في العمود O للأوامر التي تطابق هذا الرقم
-        let totalAmountForPO = 0;
+        // البحث عن جميع السجلات المطابقة لهذا الرقم
         const matchingRows = rows.filter(row => row[10] && row[10].toString().trim() === poNumber);
+        const firstRecord = matchingRows[0];
+        
+        // جمع جميع أرقام طلبات التسعير الفريدة من العمود F
+        const uniqueQuotationNumbers = new Set();
+        let totalAmountForPO = 0;
         
         for (const row of matchingRows) {
-          if (row[14]) { // العمود O
+          // جمع أرقام التسعير الفريدة من العمود F
+          if (row[5] && row[5].toString().trim()) {
+            uniqueQuotationNumbers.add(row[5].toString().trim());
+          }
+          
+          // حساب مجموع القيم من العمود O
+          if (row[14]) {
             const value = parseFloat(row[14].toString().replace(/[^\d.-]/g, ''));
             if (!isNaN(value)) {
               totalAmountForPO += value;
@@ -3424,13 +3431,16 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           }
         }
         
+        // تحويل أرقام التسعير إلى نص مفصول بفواصل
+        const quotationNumbersText = Array.from(uniqueQuotationNumbers).join(', ');
+        
         if (firstRecord) {
-          console.log(`📅 الأمر ${poNumber}: التاريخ = ${firstRecord[11]}, المجموع = ${totalAmountForPO.toLocaleString()}`);
+          console.log(`📅 الأمر ${poNumber}: التاريخ = ${firstRecord[11]}, المجموع = ${totalAmountForPO.toLocaleString()}, طلبات التسعير = ${quotationNumbersText}`);
         }
         
         return {
           poNumber: poNumber,
-          quotationNumber: firstRecord?.[5] || '', // RFQ NUMBER من العمود F
+          quotationNumber: quotationNumbersText, // جميع أرقام التسعير من العمود F
           orderDate: firstRecord?.[11] || '', // PO DATE من العمود L
           totalAmount: totalAmountForPO, // مجموع العمود O لهذا الرقم
           status: 'confirmed',
