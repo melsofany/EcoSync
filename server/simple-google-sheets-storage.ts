@@ -47,75 +47,89 @@ export class SimpleGoogleSheetsStorage {
   }
 
   private getGoogleSheetsPurchaseOrders() {
-    // محاكاة البيانات الموجودة في Google Sheets (37 أمر)
-    const purchaseOrders = [];
-    
-    for (let i = 1; i <= 37; i++) {
-      purchaseOrders.push({
-        id: `po-sheets-${i}`,
-        poNumber: `P25E${String(i + 1000).padStart(5, '0')}`,
-        quotationNumber: `25R${String(i).padStart(6, '0')}`,
-        orderDate: `2025-01-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
-        totalAmount: Math.floor(Math.random() * 50000) + 5000,
-        status: ['pending', 'confirmed', 'completed', 'delivered'][Math.floor(Math.random() * 4)],
-        supplierName: this.getRandomSupplier(),
-        currency: 'EGP',
-        deliveryStatus: ['pending', 'processing', 'shipped', 'delivered'][Math.floor(Math.random() * 4)],
-        itemsCount: Math.floor(Math.random() * 5) + 1,
-        notes: `أمر شراء رقم ${i} من Google Sheets`
-      });
+    // قراءة البيانات الصحيحة من الملف المعد
+    try {
+      const fs = require('fs');
+      const sheetsData = JSON.parse(fs.readFileSync('./attached_assets/sheets_upload_data.json', 'utf8'));
+      
+      console.log(`🛒 تحميل ${sheetsData.purchaseOrders.length} أمر شراء من البيانات الأصلية`);
+      
+      return sheetsData.purchaseOrders.map((po, index) => ({
+        id: `po-sheets-${index}`,
+        poNumber: po.poNumber,
+        quotationNumber: po.quotationNumber,
+        orderDate: po.orderDate,
+        totalAmount: po.totalAmount,
+        status: po.status,
+        supplierName: po.supplierName,
+        currency: po.currency,
+        deliveryStatus: po.deliveryStatus,
+        itemsCount: po.itemsCount,
+        notes: po.notes
+      }));
+      
+    } catch (error) {
+      console.error('❌ خطأ في قراءة البيانات الأصلية:', error);
+      // إرجاع بيانات احتياطية
+      return [];
     }
-    
-    return purchaseOrders;
   }
 
   async getAllQuotationRequests() {
-    console.log('📋 عرض طلبات التسعير من Google Sheets');
-    const quotations = [];
-    
-    for (let i = 1; i <= 100; i++) {
-      quotations.push({
-        id: `rfq-sheets-${i}`,
-        rfqNumber: `25R${String(i).padStart(6, '0')}`,
-        customRequestNumber: `REQ-2025-${String(i).padStart(4, '0')}`,
-        requestDate: `2025-01-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
-        status: ['pending', 'quoted', 'pricing_received', 'completed'][Math.floor(Math.random() * 4)],
-        clientName: 'عميل قرطبة للتوريدات',
-        totalItems: Math.floor(Math.random() * 10) + 1,
-        totalValue: Math.floor(Math.random() * 100000) + 10000,
-        responseDate: '',
-        notes: `طلب تسعير رقم ${i} من Google Sheets`,
+    try {
+      const fs = require('fs');
+      const sheetsData = JSON.parse(fs.readFileSync('./attached_assets/sheets_upload_data.json', 'utf8'));
+      
+      console.log(`📋 تحميل ${sheetsData.quotations.length} طلب تسعير من البيانات الأصلية`);
+      
+      return sheetsData.quotations.map((rfq, index) => ({
+        id: `rfq-sheets-${index}`,
+        rfqNumber: rfq.rfqNumber,
+        customRequestNumber: rfq.customRequestNumber,
+        requestDate: rfq.requestDate,
+        status: rfq.status,
+        clientName: rfq.clientName,
+        totalItems: rfq.totalItems,
+        totalValue: rfq.totalValue,
+        responseDate: rfq.responseDate,
+        notes: rfq.notes,
         createdAt: new Date().toISOString()
-      });
+      }));
+      
+    } catch (error) {
+      console.error('❌ خطأ في قراءة طلبات التسعير:', error);
+      return [];
     }
-    
-    return quotations;
   }
 
   async getAllItems() {
-    console.log('📦 عرض الأصناف من Google Sheets');
-    const items = [];
-    
-    for (let i = 1; i <= 500; i++) {
-      items.push({
-        id: `item-sheets-${i}`,
-        itemNumber: `P-${String(i).padStart(6, '0')}`,
-        lineItem: `${i}.000.GENERAL.${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`,
-        partNumber: `PART-${String(i).padStart(4, '0')}`,
-        description: `وصف الصنف رقم ${i} من Google Sheets`,
-        uom: ['EACH', 'SET', 'METER', 'KG', 'BOX'][Math.floor(Math.random() * 5)],
-        category: 'أصناف Google Sheets',
-        brand: this.getRandomBrand(),
-        rfqNumber: `25R${String(Math.floor(Math.random() * 100) + 1).padStart(6, '0')}`,
-        poNumber: Math.random() > 0.5 ? `P25E${String(Math.floor(Math.random() * 37) + 1001).padStart(5, '0')}` : '',
-        rfqPrice: Math.floor(Math.random() * 5000) + 100,
-        poPrice: Math.floor(Math.random() * 5000) + 100,
+    try {
+      const fs = require('fs');
+      const sheetsData = JSON.parse(fs.readFileSync('./attached_assets/sheets_upload_data.json', 'utf8'));
+      
+      console.log(`📦 تحميل ${sheetsData.items.length} صنف من البيانات الأصلية`);
+      
+      return sheetsData.items.map((item, index) => ({
+        id: `item-sheets-${index}`,
+        itemNumber: item.itemNumber,
+        lineItem: item.lineItem,
+        partNumber: item.partNumber,
+        description: item.description,
+        uom: item.uom,
+        category: item.category,
+        brand: item.brand,
+        rfqNumber: item.rfqNumber,
+        poNumber: item.poNumber,
+        rfqPrice: item.rfqPrice,
+        poPrice: item.poPrice,
         createdAt: new Date().toISOString(),
         isActive: true
-      });
+      }));
+      
+    } catch (error) {
+      console.error('❌ خطأ في قراءة الأصناف:', error);
+      return [];
     }
-    
-    return items;
   }
 
   private getRandomSupplier() {

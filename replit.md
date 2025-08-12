@@ -5,6 +5,7 @@ A comprehensive web application for قرطبة للتوريدات (Qurtoba Suppl
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
+Data source: Google Sheets ONLY - no database storage, all data must come from Google Sheets exclusively.
 
 ## System Architecture
 
