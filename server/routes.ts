@@ -3410,11 +3410,14 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const purchaseOrdersData = uniquePOArray.map(poNumber => {
         // البحث عن أول سجل يحتوي على هذا الرقم
         const firstRecord = rows.find(row => row[10] && row[10].toString().trim() === poNumber);
+        if (firstRecord) {
+          console.log(`📅 الأمر ${poNumber}: التاريخ في العمود L = ${firstRecord[11]}`);
+        }
         
         return {
           poNumber: poNumber,
           quotationNumber: firstRecord?.[4] || '', // RFQ NUMBER
-          orderDate: firstRecord?.[10] || '', // PO DATE (K column)
+          orderDate: firstRecord?.[11] || '', // PO DATE من العمود L
           totalAmount: firstRecord?.[13] ? parseFloat(firstRecord[13]) || 0 : 0, // العمود N
           status: 'confirmed',
           deliveryStatus: 'pending'
