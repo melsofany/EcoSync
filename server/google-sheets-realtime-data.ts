@@ -55,20 +55,28 @@ export class GoogleSheetsRealtimeData {
       const rows = response.data.values || [];
       console.log(`📊 تم قراءة ${rows.length} صف من Google Sheets`);
       
-      // فحص العمود O للبحث عن أخطاء #VALUE!
+      // فحص العمود O للبحث عن أخطاء #VALUE! - التركيز على الصف 1001 وما حوله
       let valueErrorCount = 0;
-      for (let i = 0; i < Math.min(rows.length, 20); i++) {
+      for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         if (row.length > 14) {
           const totalValue = row[14] || '';
-          if (totalValue.includes('#VALUE!') || totalValue.includes('#ERROR!') || 
-              totalValue.includes('#NAME?') || totalValue.includes('#REF!')) {
+          const hasError = totalValue.includes('#VALUE!') || totalValue.includes('#ERROR!') || 
+              totalValue.includes('#NAME?') || totalValue.includes('#REF!');
+          
+          if (hasError) {
             valueErrorCount++;
-            console.log(`❌ خطأ في الصف ${i + 2}: العمود O = "${totalValue}", M = "${row[12]}", N = "${row[13]}"`);
+            const actualRowNumber = i + 2; // +2 لأن البيانات تبدأ من A2
+            console.log(`❌ خطأ #VALUE! في الصف ${actualRowNumber}: العمود O = "${totalValue}", M = "${row[12]}", N = "${row[13]}"`);
+          }
+          
+          // طباعة عينة خاصة حول الصف 1001
+          if (i >= 999 && i <= 1002) { // الصفوف 1001-1004 في الشيت
+            console.log(`🔍 فحص الصف ${i + 2}: O="${totalValue}", M="${row[12]}", N="${row[13]}", hasError=${hasError}`);
           }
         }
       }
-      console.log(`🔍 تم العثور على ${valueErrorCount} خطأ في أول 20 صف`);
+      console.log(`🔍 إجمالي أخطاء #VALUE! في العمود O: ${valueErrorCount}`);
 
       return rows;
     } catch (error) {
@@ -191,25 +199,25 @@ export class GoogleSheetsRealtimeData {
           createdAt: new Date().toISOString()
         };
 
-        // طباعة عينة من البيانات للتشخيص - التركيز على الأخطاء
-        if (i < 10) {
-          const originalTotal = row[14] || '';
-          const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
-          const hasError = originalTotal.includes('#VALUE!') || originalTotal.includes('#ERROR!') || 
-                          originalTotal.includes('#NAME?') || originalTotal.includes('#REF!');
-          
-          if (hasError || i < 3) {
-            console.log(`📋 ${hasError ? '❌ خطأ' : '✅ صحيح'} - الصف ${i + 1}:`, {
-              rfqNumber: row[5],
-              quantity_M: `"${row[12] || 'فارغ'}"`,
-              price_N: `"${row[13] || 'فارغ'}"`,
-              original_O: `"${originalTotal}"`,
-              corrected_O: `"${correctedTotal}"`,
-              responsibleEmployee_Q: `"${row[16] || ''}"`,
-              hasValueError: hasError,
-              totalColumns: row.length
-            });
-          }
+        // طباعة عينة من البيانات للتشخيص - التركيز على الأخطاء وحول الصف 1001
+        const originalTotal = row[14] || '';
+        const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
+        const hasError = originalTotal.includes('#VALUE!') || originalTotal.includes('#ERROR!') || 
+                        originalTotal.includes('#NAME?') || originalTotal.includes('#REF!');
+        const actualRowNumber = i + 2; // +2 لأن البيانات تبدأ من A2
+        
+        // طباعة الأخطاء أو الصفوف حول 1001
+        if (hasError || (actualRowNumber >= 1000 && actualRowNumber <= 1005)) {
+          console.log(`📋 ${hasError ? '❌ خطأ' : '✅ صحيح'} - الصف ${actualRowNumber}:`, {
+            rfqNumber: row[5],
+            quantity_M: `"${row[12] || 'فارغ'}"`,
+            price_N: `"${row[13] || 'فارغ'}"`,
+            original_O: `"${originalTotal}"`,
+            corrected_O: `"${correctedTotal}"`,
+            responsibleEmployee_Q: `"${row[16] || ''}"`,
+            hasValueError: hasError,
+            wasFixed: originalTotal !== correctedTotal
+          });
         }
 
         items.push(item);
