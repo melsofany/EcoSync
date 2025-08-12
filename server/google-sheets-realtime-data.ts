@@ -49,7 +49,7 @@ export class GoogleSheetsRealtimeData {
       // قراءة البيانات من صفحة DATA بدءاً من الصف 2
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:O10000', // قراءة من A2 إلى O مع حد أقصى 10000 صف
+        range: 'DATA!A2:P10000', // قراءة من A2 إلى P مع حد أقصى 10000 صف
       });
 
       const rows = response.data.values || [];
@@ -110,6 +110,7 @@ export class GoogleSheetsRealtimeData {
           poQuantity: row[12] || '', // العمود M - PO QUANTITY
           poPrice: row[13] || '', // العمود N - PO PRICE
           totalValue: row[14] || '', // العمود O - القيمة الإجمالية
+          clientName: row[15] || '', // العمود P - اسم العميل
           isActive: true,
           createdAt: new Date().toISOString()
         };
@@ -139,7 +140,7 @@ export class GoogleSheetsRealtimeData {
             id: `rfq-sheets-${item.rfqNumber}`,
             requestNumber: item.rfqNumber, // رقم الطلب من العمود F
             customRequestNumber: item.rfqNumber, // رقم الطلب من العمود F
-            clientName: 'قرطبة للتوريدات',
+            clientName: item.clientName || 'غير محدد', // اسم العميل من العمود P
             requestDate: item.requestDate, // التاريخ من العمود G
             expiryDate: null,
             status: 'completed',
@@ -189,7 +190,7 @@ export class GoogleSheetsRealtimeData {
             quotationNumber: item.rfqNumber,
             orderDate: item.poDate,
             status: 'confirmed',
-            supplierName: 'الموردين المعتمدين',
+            supplierName: item.clientName || 'الموردين المعتمدين', // اسم العميل من العمود P
             currency: 'EGP',
             totalAmount: 0,
             deliveryStatus: 'delivered',
