@@ -342,7 +342,7 @@ export default function PurchaseOrders() {
                 </p>
                 <div className="text-xs text-gray-600 mt-1">
                   {googleSheetsData?.confirmedPOs !== undefined ? 
-                   `القيم الفريدة في العمود K` : "البيانات المحلية"}
+                   `بيانات حقيقية` : "البيانات المحلية"}
                 </div>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
