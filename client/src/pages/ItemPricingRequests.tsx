@@ -59,11 +59,15 @@ export default function ItemPricingRequests() {
   });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    if (!dateString) return "غير محدد";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "غير محدد";
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`;
   };
 
   const formatCurrency = (amount: number) => {

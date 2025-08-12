@@ -131,7 +131,15 @@ export default function Quotations() {
   }) : [];
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-EG');
+    if (!dateString) return "غير محدد";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "غير محدد";
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`;
   };
 
   const getClientName = (clientId: string) => {

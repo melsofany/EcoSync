@@ -92,7 +92,15 @@ export default function PurchaseOrders() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-EG');
+    if (!dateString) return "غير محدد";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "غير محدد";
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year}`;
   };
 
   const formatCurrency = (amount: string | number) => {
@@ -191,7 +199,7 @@ export default function PurchaseOrders() {
         </div>
         <div style="margin-top: 30px; text-align: center; color: #666;">
           <p>قرطبة للتوريدات</p>
-          <p>تم الطباعة في: ${new Date().toLocaleDateString('ar-EG')}</p>
+          <p>تم الطباعة في: ${formatDate(new Date().toISOString())}</p>
         </div>
       </div>
     `;
