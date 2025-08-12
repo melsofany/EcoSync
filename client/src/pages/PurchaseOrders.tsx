@@ -306,16 +306,8 @@ export default function PurchaseOrders() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">رقم الأمر</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {googleSheetsLoading ? "..." : 
-                   googleSheetsData?.confirmedPOs !== undefined ? 
-                   googleSheetsData.confirmedPOs : pendingPOs}
-                </p>
-                <div className="text-xs text-gray-600 mt-1">
-                  {googleSheetsData?.confirmedPOs !== undefined ? 
-                   `بيانات حقيقية` : "البيانات المحلية"}
-                </div>
+                <p className="text-sm font-medium text-gray-600">أوامر في الانتظار</p>
+                <p className="text-2xl font-bold text-yellow-600">{pendingPOs}</p>
               </div>
               <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                 <Clock className="h-6 w-6 text-yellow-600" />
