@@ -49,7 +49,7 @@ export class GoogleSheetsRealtimeData {
       // قراءة البيانات من صفحة DATA بدءاً من الصف 2
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:P10000', // قراءة من A2 إلى P مع حد أقصى 10000 صف
+        range: 'DATA!A2:Z10000', // قراءة من A2 إلى Z مع حد أقصى 10000 صف (يشمل العمود Q)
       });
 
       const rows = response.data.values || [];
@@ -111,7 +111,7 @@ export class GoogleSheetsRealtimeData {
           poPrice: row[13] || '', // العمود N - PO PRICE
           totalValue: row[14] || '', // العمود O - القيمة الإجمالية
           clientName: row[15] || '', // العمود P - اسم العميل
-          responsibleEmployee: row[16] || row[17] || row[18] || row[19] || '', // جرب عدة أعمدة للعثور على الموظف المسؤول
+          responsibleEmployee: row[16] || '', // العمود Q (فهرس 16) - الموظف المسؤول
           isActive: true,
           createdAt: new Date().toISOString()
         };
