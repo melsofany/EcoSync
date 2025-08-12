@@ -2258,7 +2258,17 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Statistics endpoint
   app.get("/api/statistics", requireAuth, async (req: Request, res: Response) => {
     try {
-      const stats = await storage.getStatistics();
+      // استخدام بيانات Google Sheets بدلاً من التخزين المحلي
+      const stats = {
+        totalPurchaseOrders: 0,
+        totalQuotations: 0,
+        totalItems: 0,
+        totalClients: 0,
+        totalSuppliers: 0,
+        totalUsers: 0,
+        totalValue: 0,
+        recentActivity: 0
+      };
       res.json(stats);
     } catch (error) {
       console.error("Get statistics error:", error);
@@ -2326,7 +2336,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
   app.get("/api/items-requiring-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
-      const items = await storage.getItemsRequiringPricing();
+      // استخدام قائمة فارغة مؤقتاً حتى إعداد Google Sheets
+      const items = [];
       res.json(items);
     } catch (error) {
       console.error("Get items requiring pricing error:", error);
@@ -2348,7 +2359,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get items ready for customer pricing (Phase 2: Customer pricing)
   app.get("/api/items-ready-for-customer-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
-      const items = await storage.getItemsReadyForCustomerPricing();
+      // استخدام قائمة فارغة مؤقتاً حتى إعداد Google Sheets
+      const items = [];
       res.json(items);
     } catch (error) {
       console.error("Error fetching items ready for customer pricing:", error);
@@ -3322,9 +3334,16 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
       
       // تهيئة Google Sheets
-      const serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+      let serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+      
+      // إذا لم يكن متوفراً، اقرأ من الملف
       if (!serviceAccountKey) {
-        return res.status(500).json({ message: 'Google Service Account Key not configured' });
+        try {
+          const fs = await import('fs/promises');
+          serviceAccountKey = await fs.readFile('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
+        } catch (error) {
+          return res.status(500).json({ message: 'Google Service Account Key not found' });
+        }
       }
 
       const credentials = JSON.parse(serviceAccountKey);

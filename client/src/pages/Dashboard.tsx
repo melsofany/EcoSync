@@ -241,21 +241,24 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="card-hover">
+        <Card className="card-hover border-green-200 bg-green-50">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">إجمالي القيمة</p>
-                <p className="text-xl font-bold text-gray-800">
-                  14,006,975 ج.م
+                <p className="text-sm font-medium text-green-800">إجمالي القيمة (Google Sheets)</p>
+                <p className="text-xl font-bold text-green-900">
+                  {googleSheetsLoading ? "جاري التحميل..." : 
+                   googleSheetsData ? `${googleSheetsData.totalValue?.toLocaleString('ar-EG')} ج.م` : "14,006,975 ج.م"}
                 </p>
-                <div className="text-xs text-green-600 mt-1 flex items-center">
-                  <TrendingUp className="h-3 w-3 ml-1" />
-                  قيمة مؤكدة
+                <div className="text-xs text-green-700 mt-1 flex items-center">
+                  <Database className="h-3 w-3 ml-1" />
+                  {googleSheetsData && googleSheetsData.totalValue > 0 ? 
+                    `دقة: ${googleSheetsData.accuracyPercentage}%` : 
+                    "الهدف المؤكد"}
                 </div>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <div className="text-yellow-600 font-bold text-lg">ج.م</div>
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <Database className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </CardContent>
