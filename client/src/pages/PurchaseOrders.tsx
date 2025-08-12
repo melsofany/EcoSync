@@ -247,6 +247,12 @@ export default function PurchaseOrders() {
     queryKey: ["/api/statistics"],
   });
 
+  // إضافة استعلام للبيانات من Google Sheets
+  const { data: googleSheetsData, isLoading: googleSheetsLoading } = useQuery({
+    queryKey: ["/api/google-sheets-data"],
+    refetchInterval: 5000, // تحديث كل 5 ثوانٍ
+  });
+
   // Calculate local statistics for status counts
   const pendingPOs = purchaseOrders?.filter((po: any) => po.status === "pending").length || 0;
   const completedPOs = purchaseOrders?.filter((po: any) => po.status === "completed").length || 0;
@@ -346,10 +352,13 @@ export default function PurchaseOrders() {
                 <div>
                   <p className="text-sm font-medium text-gray-600">إجمالي القيمة</p>
                   <p className="text-2xl font-bold text-blue-600">
-                    0 ج.م
+                    {googleSheetsLoading ? "جاري التحميل..." : 
+                     googleSheetsData && googleSheetsData.totalValue > 0 ? 
+                     `${googleSheetsData.totalValue?.toLocaleString('ar-EG')} ج.م` : "0 ج.م"}
                   </p>
                   <div className="text-xs text-gray-600 mt-1">
-                    انتظار البيانات
+                    {googleSheetsData && googleSheetsData.totalValue > 0 ? 
+                     `مجموع العمود N من صف 2` : "انتظار البيانات"}
                   </div>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">

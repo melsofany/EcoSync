@@ -3372,12 +3372,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const rows = response.data.values || [];
       let totalValue = 0;
 
-      // حساب مجموع العمود N (العمود رقم 13)
-      for (const row of rows) {
+      console.log(`📊 معالجة ${rows.length} صف لحساب مجموع العمود N`);
+      
+      // حساب مجموع العمود N (العمود رقم 13) بدءاً من الصف 2
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
         if (row.length > 13 && row[13]) {
-          const value = parseFloat(row[13].toString().replace(/[^\d.-]/g, ''));
-          if (!isNaN(value)) {
+          const rawValue = row[13].toString().trim();
+          const value = parseFloat(rawValue.replace(/[^\d.-]/g, ''));
+          
+          if (!isNaN(value) && value > 0) {
             totalValue += value;
+            console.log(`📈 الصف ${i + 2}: ${rawValue} -> ${value}`);
           }
         }
       }
