@@ -4281,8 +4281,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // إضافة API التوحيد الذكي
-  const aiMonitorRouter = await import('./ai-monitor-api.js');
+  // إضافة API التوحيد الذكي المحسن
+  const aiMonitorRouter = await import('./new-ai-monitor-api.js');
   app.use('/api/ai-monitor', aiMonitorRouter.default);
 
   // إضافة route مباشر لشاشة التوحيد الذكي
