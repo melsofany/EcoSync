@@ -54,6 +54,21 @@ export class GoogleSheetsRealtimeData {
 
       const rows = response.data.values || [];
       console.log(`📊 تم قراءة ${rows.length} صف من Google Sheets`);
+      
+      // فحص العمود O للبحث عن أخطاء #VALUE!
+      let valueErrorCount = 0;
+      for (let i = 0; i < Math.min(rows.length, 20); i++) {
+        const row = rows[i];
+        if (row.length > 14) {
+          const totalValue = row[14] || '';
+          if (totalValue.includes('#VALUE!') || totalValue.includes('#ERROR!') || 
+              totalValue.includes('#NAME?') || totalValue.includes('#REF!')) {
+            valueErrorCount++;
+            console.log(`❌ خطأ في الصف ${i + 2}: العمود O = "${totalValue}", M = "${row[12]}", N = "${row[13]}"`);
+          }
+        }
+      }
+      console.log(`🔍 تم العثور على ${valueErrorCount} خطأ في أول 20 صف`);
 
       return rows;
     } catch (error) {
@@ -176,20 +191,25 @@ export class GoogleSheetsRealtimeData {
           createdAt: new Date().toISOString()
         };
 
-        // طباعة عينة من البيانات للتشخيص (أول 5 صفوف فقط)
-        if (i < 5) {
+        // طباعة عينة من البيانات للتشخيص - التركيز على الأخطاء
+        if (i < 10) {
           const originalTotal = row[14] || '';
           const correctedTotal = this.calculateRowTotal(row[12], row[13], row[14]);
-          console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
-            rfqNumber: row[5],
-            quantity_M: row[12] || 'فارغ',
-            price_N: row[13] || 'فارغ',
-            original_O: originalTotal,
-            corrected_O: correctedTotal,
-            responsibleEmployee_Q: `"${row[16] || ''}"`,
-            isValueError: originalTotal.includes('#VALUE!') || originalTotal.includes('#ERROR!'),
-            totalColumns: row.length
-          });
+          const hasError = originalTotal.includes('#VALUE!') || originalTotal.includes('#ERROR!') || 
+                          originalTotal.includes('#NAME?') || originalTotal.includes('#REF!');
+          
+          if (hasError || i < 3) {
+            console.log(`📋 ${hasError ? '❌ خطأ' : '✅ صحيح'} - الصف ${i + 1}:`, {
+              rfqNumber: row[5],
+              quantity_M: `"${row[12] || 'فارغ'}"`,
+              price_N: `"${row[13] || 'فارغ'}"`,
+              original_O: `"${originalTotal}"`,
+              corrected_O: `"${correctedTotal}"`,
+              responsibleEmployee_Q: `"${row[16] || ''}"`,
+              hasValueError: hasError,
+              totalColumns: row.length
+            });
+          }
         }
 
         items.push(item);
