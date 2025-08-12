@@ -715,6 +715,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk import items from sheet
+  app.post("/api/items/bulk-import-from-sheet", requireAuth, requireRole(["manager", "data_entry"]), async (req: Request, res: Response) => {
+    try {
+      const userId = req.session?.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      console.log('🚀 بدء استيراد البنود من الشيت...');
+      
+      // استخدام دالة الاستيراد الموجودة
+      const { importCorrectExcel } = await import('./import-correct-excel.js');
+      const excelData = importCorrectExcel();
+      
+      if (!excelData || !excelData.items || !Array.isArray(excelData.items)) {
+        return res.status(400).json({ 
+          message: "لا توجد بيانات صالحة في الشيت", 
+          error: "Invalid Excel data structure" 
+        });
+      }
+
+      console.log(`📊 تم العثور على ${excelData.items.length} بند في الشيت`);
+
+      let itemsImported = 0;
+      let duplicatesSkipped = 0;
+      const importedItems = [];
+
+      // معالجة كل بند
+      for (const excelItem of excelData.items) {
+        try {
+          // التحقق من وجود البند مسبقاً
+          const existingItems = await storage.findSimilarItems(
+            excelItem.description, 
+            excelItem.partNumber
+          );
+
+          // تحقق من التكرار الدقيق
+          const exactMatch = existingItems.find(item => {
+            if (!item.partNumber || !excelItem.partNumber) return false;
+            const cleanExisting = item.partNumber.replace(/[\s\-_]/g, '').toUpperCase();
+            const cleanNew = excelItem.partNumber.replace(/[\s\-_]/g, '').toUpperCase();
+            return cleanExisting === cleanNew;
+          });
+
+          if (exactMatch) {
+            duplicatesSkipped++;
+            console.log(`⏭️ تم تجاهل بند مكرر: ${excelItem.partNumber}`);
+            continue;
+          }
+
+          // إعداد بيانات البند للإنشاء
+          const itemCount = await storage.getItemCount();
+          const itemData = {
+            partNumber: excelItem.partNumber || '',
+            lineItem: excelItem.lineItem || '',
+            description: excelItem.description || '',
+            unit: excelItem.uom || 'Each',
+            category: 'general',
+            brand: '',
+            specifications: '',
+            notes: `مستورد من الشيت - RFQ: ${excelItem.rfqNumber || 'غير محدد'}`,
+            kItemId: `K${(itemCount + itemsImported + 1).toString().padStart(8, '0')}`,
+            createdBy: userId,
+            aiStatus: 'processed'
+          };
+
+          // إنشاء البند
+          const newItem = await storage.createItem(itemData);
+          importedItems.push(newItem);
+          itemsImported++;
+
+          console.log(`✅ تم إنشاء بند: ${newItem.itemNumber} - ${excelItem.description.substring(0, 50)}`);
+
+        } catch (itemError) {
+          console.error(`❌ خطأ في إنشاء البند:`, itemError);
+          // متابعة العملية مع البنود الأخرى
+        }
+      }
+
+      await logActivity(req, "bulk_import_items", "item", undefined, 
+        `Bulk imported ${itemsImported} items from sheet, skipped ${duplicatesSkipped} duplicates`);
+
+      console.log(`🎉 اكتمل الاستيراد: ${itemsImported} بند جديد، ${duplicatesSkipped} بند مكرر`);
+
+      res.json({
+        success: true,
+        itemsImported,
+        duplicatesSkipped,
+        totalProcessed: excelData.items.length,
+        message: `تم استيراد ${itemsImported} صنف بنجاح`
+      });
+
+    } catch (error) {
+      console.error("Bulk import error:", error);
+      res.status(500).json({ 
+        message: "خطأ في استيراد البنود من الشيت",
+        error: error.message
+      });
+    }
+  });
+
   // AI item comparison endpoint
   app.post("/api/items/ai-compare", requireAuth, async (req: Request, res: Response) => {
     try {
