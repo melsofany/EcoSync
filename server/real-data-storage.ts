@@ -12,15 +12,29 @@ export class RealDataStorage {
   }
 
   private initializeData() {
+    // التحقق من وضع المسح
+    if (global.DISABLE_DATA_LOADING) {
+      console.log('🚫 تم تعطيل تحميل البيانات - النظام فارغ');
+      this.createEmptyData();
+      return;
+    }
+    
     try {
       console.log('📊 تحميل البيانات من المصدر الأساسي...');
       
-      // قراءة البيانات المعدة
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/sheets_upload_data.json', 'utf8'));
+      // التحقق من وجود البيانات المزامنة أولاً
+      const syncedData = JSON.parse(readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8'));
       
-      this.purchaseOrders = sheetsData.purchaseOrders || [];
-      this.quotations = sheetsData.quotations || [];
-      this.items = sheetsData.items || [];
+      // إذا كانت البيانات فارغة، استخدم بيانات فارغة
+      if (!syncedData.items || syncedData.items.length === 0) {
+        console.log('📭 لا توجد بيانات مزامنة - النظام فارغ');
+        this.createEmptyData();
+        return;
+      }
+      
+      this.purchaseOrders = syncedData.purchaseOrders || [];
+      this.quotations = syncedData.quotations || [];
+      this.items = syncedData.items || [];
       
       console.log(`✅ تم تحميل ${this.purchaseOrders.length} أمر شراء`);
       console.log(`✅ تم تحميل ${this.quotations.length} طلب تسعير`);
@@ -29,15 +43,7 @@ export class RealDataStorage {
       this.isInitialized = true;
     } catch (error) {
       console.error('❌ خطأ في تحميل البيانات:', error);
-      
-      // استخدام البيانات الاحتياطية من الملف الأصلي
-      try {
-        const originalData = JSON.parse(readFileSync('./attached_assets/database_records.json', 'utf8'));
-        this.processOriginalData(originalData);
-      } catch (fallbackError) {
-        console.error('❌ فشل في تحميل البيانات الاحتياطية:', fallbackError);
-        this.createEmptyData();
-      }
+      this.createEmptyData();
     }
   }
 
