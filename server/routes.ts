@@ -2147,10 +2147,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log(`Found PO: ${po.poNumber}, Total: ${po.totalAmount}`);
       
       // جلب الأصناف الحقيقية من البيانات المتزامنة
-      const fs = require('fs');
       let realItems = [];
       
       try {
+        // استخدام dynamic import للتوافق مع ES modules
+        const fs = await import('fs');
         const syncedDataPath = './attached_assets/synced_data_from_sheets.json';
         const syncedData = JSON.parse(fs.readFileSync(syncedDataPath, 'utf8'));
         
@@ -2159,28 +2160,39 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         
         console.log(`Found ${poItems.length} real items for PO: ${po.poNumber}`);
         
-        realItems = poItems.map((item, index) => ({
-          id: `item-${poId}-${index + 1}`,
-          poId: poId,
-          itemNumber: item.id || `P-${String(index + 1).padStart(7, '0')}`,
-          lineItem: item.lineItem || `${index + 1}`,
-          description: item.description || 'بدون وصف',
-          partNo: item.partNumber || 'غير محدد',
-          quantity: item.poQuantity || 0,
-          unitPrice: item.poPrice || 0,
-          totalPrice: item.totalPOValue || (item.poPrice * item.poQuantity) || 0,
-          currency: 'EGP',
-          uom: item.uom || 'EACH'
-        }));
+        if (poItems.length > 0) {
+          let totalCalculated = 0;
+          realItems = poItems.map((item, index) => {
+            const itemTotal = item.totalPOValue || (item.poPrice * item.poQuantity) || 0;
+            totalCalculated += itemTotal;
+            
+            return {
+              id: `item-${poId}-${index + 1}`,
+              poId: poId,
+              itemNumber: item.id || `P-${String(index + 1).padStart(7, '0')}`,
+              lineItem: item.lineItem || `${index + 1}`,
+              description: item.description || 'بدون وصف',
+              partNo: item.partNumber || 'غير محدد',
+              quantity: item.poQuantity || 0,
+              unitPrice: item.poPrice || 0,
+              totalPrice: itemTotal,
+              currency: 'EGP',
+              uom: item.uom || 'EACH'
+            };
+          });
+          
+          console.log(`Calculated total from items: ${totalCalculated}`);
+          console.log(`PO total amount: ${po.totalAmount}`);
+        }
         
         if (realItems.length === 0) {
-          console.log(`No items found for PO ${po.poNumber}, creating placeholder`);
+          console.log(`No items found for PO ${po.poNumber} in synced data`);
           realItems = [{
             id: `item-${poId}-placeholder`,
             poId: poId,
             itemNumber: 'غير محدد',
             lineItem: 'غير محدد', 
-            description: `لا توجد أصناف محددة لأمر الشراء ${po.poNumber}`,
+            description: `لا توجد أصناف محددة لأمر الشراء ${po.poNumber} في البيانات المتزامنة`,
             partNo: 'غير محدد',
             quantity: 0,
             unitPrice: 0,
