@@ -485,7 +485,12 @@ export default function PurchaseOrders() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">القيمة الإجمالية</label>
-                  <p className="font-bold text-green-600">{formatCurrency(selectedPO.totalAmount)}</p>
+                  <p className="font-bold text-green-600">
+                    {poItems && poItems.length > 0 
+                      ? formatCurrency(poItems.reduce((sum, item) => sum + (item.totalPrice || 0), 0))
+                      : formatCurrency(selectedPO.totalAmount)
+                    }
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">الحالة</label>
@@ -562,7 +567,10 @@ export default function PurchaseOrders() {
                       <div className="flex justify-between items-center">
                         <span className="font-semibold">إجمالي أمر الشراء:</span>
                         <span className="font-bold text-xl text-green-600">
-                          {formatCurrency(selectedPO.totalAmount)}
+                          {poItems && poItems.length > 0 
+                            ? formatCurrency(poItems.reduce((sum, item) => sum + (item.totalPrice || 0), 0))
+                            : formatCurrency(selectedPO.totalAmount)
+                          }
                         </span>
                       </div>
                     </div>
