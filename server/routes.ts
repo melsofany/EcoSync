@@ -3337,16 +3337,25 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       let serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
       
       // إذا لم يكن متوفراً، اقرأ من الملف
-      if (!serviceAccountKey) {
+      if (!serviceAccountKey || serviceAccountKey.includes('cortoba-sy')) {
         try {
-          const fs = await import('fs/promises');
-          serviceAccountKey = await fs.readFile('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
+          const fs = await import('fs');
+          serviceAccountKey = fs.readFileSync('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
         } catch (error) {
           return res.status(500).json({ message: 'Google Service Account Key not found' });
         }
       }
 
-      const credentials = JSON.parse(serviceAccountKey);
+      let credentials;
+      try {
+        credentials = JSON.parse(serviceAccountKey);
+      } catch (error) {
+        console.error('❌ خطأ في تحليل مفتاح Google Sheets:', (error as Error).message);
+        return res.status(500).json({ 
+          message: 'خطأ في تحليل مفتاح Google Sheets',
+          error: 'Invalid JSON format' 
+        });
+      }
       const auth = new GoogleAuth({
         credentials,
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
