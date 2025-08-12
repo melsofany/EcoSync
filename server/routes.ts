@@ -125,22 +125,23 @@ function createUnifiedItem(items: any[], index: number): any {
   const bestLineItem = items.find(item => item.lineItem && item.lineItem.trim())?.lineItem || '';
   const bestUnit = items.find(item => item.unit && item.unit.trim())?.unit || 'Each';
   
-  // جمع جميع أرقام طلبات التسعير
-  const allRfqNumbers = [...new Set(items.map(item => item.rfqNumber).filter(Boolean))];
+  // جمع جميع المعرفات الفريدة من العمود A
+  const allUniqueIds = [...new Set(items.map(item => item.uniqueSheetId).filter(Boolean))];
   
   return {
     id: `ai-unified-${index}`,
     itemNumber: `P-${index.toString().padStart(7, '0')}`,
+    uniqueSheetId: allUniqueIds[0] || '', // المعرف الفريد الأول
+    allUniqueSheetIds: allUniqueIds, // جميع المعرفات الفريدة
     partNumber: bestPartNumber,
     description: bestDescription,
     lineItem: bestLineItem,
     unit: bestUnit,
     category: 'unified',
     brand: '',
-    rfqNumbers: allRfqNumbers,
     duplicateCount: items.length,
     originalIds: items.map(item => item.id),
-    source: 'ai_unified_google_sheets',
+    source: 'ai_unified_with_sheet_ids',
     createdAt: new Date().toISOString(),
     isActive: true
   };
@@ -731,18 +732,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // استخراج البيانات من الأعمدة المحددة:
-        // A: RFQ Number, B: Unit, C: LINE ITEM, D: PART NO, E: Description
+        // A: المعرف الفريد, B: الوحدة, C: LINE ITEM, D: PART NO, E: التوصيف
         const items = [];
         
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i] || [];
           
           if (row.length >= 3) {
-            const rfqNumber = row[0] ? row[0].toString().trim() : ''; // العمود A
+            const uniqueId = row[0] ? row[0].toString().trim() : ''; // العمود A - المعرف الفريد
             const unit = row[1] ? row[1].toString().trim() : 'Each'; // العمود B - الوحدة
             const lineItem = row[2] ? row[2].toString().trim() : ''; // العمود C - LINE ITEM
             const partNumber = row[3] ? row[3].toString().trim() : ''; // العمود D - PART NO
-            const description = row[4] ? row[4].toString().trim() : ''; // العمود E - الوصف
+            const description = row[4] ? row[4].toString().trim() : ''; // العمود E - التوصيف
             const quantity = row[5] ? row[5].toString().trim() : ''; // العمود F - الكمية
             
             // تخطي الصفوف الفارغة تماماً
@@ -751,15 +752,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             items.push({
               id: `sheet-item-${i}`,
               itemNumber: `P-${i.toString().padStart(7, '0')}`,
+              uniqueSheetId: uniqueId, // المعرف الفريد من العمود A
               lineItem: lineItem, // العمود C - LINE ITEM
               partNumber: partNumber, // العمود D - PART NO
-              description: description, // العمود E - الوصف
+              description: description, // العمود E - التوصيف
               unit: unit, // العمود B - الوحدة
               quantity: quantity,
               category: 'general',
               brand: '',
-              rfqNumber: rfqNumber, // العمود A
-              source: 'google_sheets_columns',
+              source: 'google_sheets_with_unique_id',
               createdAt: new Date().toISOString(),
               isActive: true
             });
@@ -767,10 +768,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         console.log(`✅ استخراج ${items.length} صنف من Google Sheets:`);
+        console.log(`   🆔 العمود A: المعرف الفريد`);
         console.log(`   📋 العمود B: الوحدة (Unit)`);
         console.log(`   📦 العمود C: LINE ITEM`);
         console.log(`   🔧 العمود D: PART NO`);
-        console.log(`   📝 العمود E: الوصف`);
+        console.log(`   📝 العمود E: التوصيف`);
         
         // تطبيق التوحيد الذكي باستخدام AI
         console.log(`🤖 بدء التوحيد الذكي باستخدام DeepSeek AI...`);
