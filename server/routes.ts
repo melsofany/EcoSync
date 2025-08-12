@@ -3394,7 +3394,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const uniqueConfirmedPOs = new Set(); // للقيم الفريدة في العمود K
       
       for (const row of rows) {
-        if (row[4]) uniqueRFQs.add(row[4]); // العمود E - RFQ NUMBER
+        if (row[5]) uniqueRFQs.add(row[5]); // العمود F - RFQ NUMBER
         if (row[9]) uniquePOs.add(row[9]); // العمود J - PO NUMBER
         
         // عد القيم الفريدة في العمود K (PO DATE) - العمود رقم 10
@@ -3430,7 +3430,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         
         return {
           poNumber: poNumber,
-          quotationNumber: firstRecord?.[4] || '', // RFQ NUMBER
+          quotationNumber: firstRecord?.[5] || '', // RFQ NUMBER من العمود F
           orderDate: firstRecord?.[11] || '', // PO DATE من العمود L
           totalAmount: totalAmountForPO, // مجموع العمود O لهذا الرقم
           status: 'confirmed',
