@@ -40,8 +40,8 @@ import {
   type ActivityLog,
   type InsertActivityLog,
 } from "@shared/schema";
-// وضع العرض التوضيحي لعرض البيانات المستخرجة
-import { DemoStorage } from "./demo-mode.js";
+// وضع Google Sheets فقط - بدون قواعد بيانات
+import { simpleGoogleSheetsStorage } from "./simple-google-sheets-storage.js";
 // البيانات المربوطة والموحدة
 import { readFileSync } from 'fs';
 
@@ -1907,7 +1907,8 @@ export class DatabaseStorage implements IStorage {
 // استخدام نظام بيانات Excel فقط
 import { ExcelOnlyStorage } from './excel-only-storage';
 
-export const storage = new ExcelOnlyStorage();
+// استخدام نظام Google Sheets البسيط (37 أمر شراء كما في الشيت)
+export const storage = simpleGoogleSheetsStorage;
 
 // تهيئة النظام الهجين مع البيانات الحقيقية
 export async function initializeDatabase() {
