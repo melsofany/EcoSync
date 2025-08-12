@@ -3112,18 +3112,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   const syncRouter = await import('./routes/sync');
   app.use('/api', syncRouter.default);
 
-  // تحميل البيانات النهائية إلى Google Sheets
-  app.post('/api/upload/final-to-sheets', requireAuth, async (req, res) => {
+  // إنشاء صفحة DATA مع معرف البند
+  app.post('/api/create/data-sheet', requireAuth, async (req, res) => {
     try {
-      const { uploadFinalToSheets } = await import('./upload-final-to-sheets');
-      const result = await uploadFinalToSheets();
+      const { createDataSheet } = await import('./create-data-sheet');
+      const result = await createDataSheet();
       
       res.json(result);
     } catch (error) {
-      console.error('خطأ في التحميل:', error);
+      console.error('خطأ في إنشاء صفحة DATA:', error);
       res.status(500).json({
         success: false,
-        message: 'خطأ في تحميل البيانات إلى Google Sheets',
+        message: 'خطأ في إنشاء صفحة DATA',
         error: (error as Error).message
       });
     }
