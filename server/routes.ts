@@ -777,33 +777,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        // كتابة المعرفات الفريدة في العمود A في Google Sheets
-        try {
-          console.log(`📝 كتابة ${items.length} معرف فريد في العمود A...`);
-          
-          // تحضير البيانات للكتابة (العمود A فقط)
-          const columnAData = updatedRows.map((row, index) => {
-            if (index === 0) return ['معرف الصنف']; // عنوان العمود
-            return [row[0] || '']; // المعرف الفريد أو فارغ
-          });
-          
-          // كتابة البيانات في العمود A
-          await sheets.spreadsheets.values.update({
-            spreadsheetId: process.env.GOOGLE_SHEET_ID,
-            range: 'DATA!A:A',
-            valueInputOption: 'RAW',
-            requestBody: {
-              values: columnAData
-            }
-          });
-          
-          console.log(`✅ تم كتابة المعرفات الفريدة في العمود A بنجاح`);
-        } catch (writeError) {
-          console.error('❌ خطأ في كتابة المعرفات الفريدة:', writeError);
-        }
+        // تم إنشاء المعرفات الفريدة محلياً وستعرض في النظام
+        console.log(`✅ تم إنشاء ${items.length} معرف فريد مسلسل محلياً`);
+        console.log(`📝 المعرفات من P-0000001 إلى P-${items.length.toString().padStart(7, '0')}`);
         
         console.log(`✅ استخراج ${items.length} صنف من Google Sheets:`);
-        console.log(`   🆔 العمود A: معرف فريد مسلسل (P-0000001)`);
+        console.log(`   🆔 معرفات فريدة مسلسلة: P-0000001 → P-${items.length.toString().padStart(7, '0')}`);
         console.log(`   📋 العمود B: الوحدة (Unit)`);
         console.log(`   📦 العمود C: LINE ITEM`);
         console.log(`   🔧 العمود D: PART NO`);

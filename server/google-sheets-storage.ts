@@ -29,7 +29,7 @@ export class GoogleSheetsStorage {
     });
     
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });
-    this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '';
+    this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1TuNmhUQSLCIJjyPKRGEX5WwCIlwgePdN5kBLkPSNGqg';
     
     console.log(`🔗 محاولة الاتصال بـ Google Sheets: ${this.spreadsheetId}`);
   }
