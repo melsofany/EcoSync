@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Eye, Edit, Trash2, Check, Clock, DollarSign, FileText, Upload } from "lucide-react";
+import { Plus, Eye, Edit, Trash2, Check, Clock, DollarSign, FileText } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { Textarea } from "@/components/ui/textarea";
 import NewItemModal from "@/components/modals/NewItemModal";
@@ -293,33 +293,6 @@ export default function Items() {
     }
   };
 
-  const bulkImportMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/items/bulk-import-from-sheet");
-      return response.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/items"] });
-      toast({
-        title: "تم استيراد البنود بنجاح",
-        description: `تم استيراد ${data.itemsImported} صنف من الشيت. تم تجاهل ${data.duplicatesSkipped || 0} بند مكرر.`,
-        duration: 5000,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "خطأ في استيراد البنود",
-        description: error.message || "حدث خطأ أثناء استيراد البنود من الشيت",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleBulkImport = () => {
-    if (window.confirm("هل تريد استيراد جميع البنود من الشيت؟ سيتم تجاهل البنود المكررة تلقائياً.")) {
-      bulkImportMutation.mutate();
-    }
-  };
 
   const deleteItemMutation = useMutation({
     mutationFn: async (itemId: string) => {
@@ -380,15 +353,7 @@ export default function Items() {
             <DollarSign className="h-4 w-4 ml-2" />
             عرض طلبات التسعير (مثال)
           </Button>
-          <Button 
-            variant="outline"
-            onClick={handleBulkImport}
-            disabled={bulkImportMutation.isPending}
-            className="text-blue-600 border-blue-600 hover:bg-blue-50"
-          >
-            <Upload className="h-4 w-4 ml-2" />
-            {bulkImportMutation.isPending ? "جاري الاستيراد..." : "استيراد جميع البنود من الشيت"}
-          </Button>
+
           <Button onClick={() => setIsNewItemModalOpen(true)}>
             <Plus className="h-4 w-4 ml-2" />
             إضافة صنف جديد
