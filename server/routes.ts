@@ -414,7 +414,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // API endpoint لتوحيد المعرفات باستخدام AI
+  // API endpoint لتوحيد المعرفات باستخدام النظام التدريجي
+  app.post("/api/unify-items-gradual", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('🔄 طلب توحيد تدريجي محدود...');
+      
+      const { smartUnifyGradual } = await import('./smart-unify-gradual.js');
+      const result = await smartUnifyGradual.performLimitedUnification();
+      
+      if (result.success) {
+        console.log(`✅ تم توحيد ${result.processedMatches} مجموعة بنجاح`);
+        res.json({
+          success: true,
+          message: result.message,
+          processedMatches: result.processedMatches
+        });
+      } else {
+        console.error('❌ فشل التوحيد التدريجي:', result.error);
+        res.status(500).json({
+          success: false,
+          message: result.message,
+          error: result.error
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في API endpoint التوحيد التدريجي:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
+  // API endpoint لتوحيد المعرفات باستخدام AI (النسخة المتقدمة)
   app.post("/api/unify-items-ai", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
       console.log('🤖 طلب توحيد المعرفات باستخدام الذكاء الاصطناعي...');

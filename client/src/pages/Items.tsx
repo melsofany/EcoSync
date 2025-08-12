@@ -244,13 +244,13 @@ export default function Items() {
   const handleUnifyItemsWithAI = async () => {
     setIsUnifyingItems(true);
     try {
-      const response = await apiRequest("POST", "/api/unify-items-ai", {});
+      const response = await apiRequest("POST", "/api/unify-items-gradual", {});
       const result = await response.json();
       
       if (result.success) {
         toast({
-          title: "تم التوحيد بنجاح! 🤖",
-          description: `تم توحيد ${result.unifiedGroups} مجموعة من ${result.totalItems} صنف، وحذف ${result.duplicatesRemoved} صنف مكرر`,
+          title: "تم التوحيد التدريجي بنجاح! 🎯",
+          description: `تم توحيد ${result.processedMatches} مجموعة بنجاح`,
         });
       } else {
         toast({
@@ -456,12 +456,12 @@ export default function Items() {
                 {isUnifyingItems ? (
                   <>
                     <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                    جاري التوحيد...
+                    جاري التوحيد التدريجي...
                   </>
                 ) : (
                   <>
                     <Bot className="h-4 w-4 ml-2" />
-                    🤖 توحيد المعرفات بالذكاء الاصطناعي
+                    🎯 توحيد تدريجي محدود
                   </>
                 )}
               </Button>

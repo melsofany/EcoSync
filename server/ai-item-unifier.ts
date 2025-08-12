@@ -310,11 +310,11 @@ export class AIItemUnifier {
     
     let duplicatesRemoved = 0;
     let operationCount = 0;
-    const maxOperationsPerBatch = 30; // حد أقصى للعمليات قبل التوقف المؤقت
-    const delayBetweenBatches = 60000; // دقيقة واحدة
+    const maxOperationsPerBatch = 15; // حد أقصى للعمليات قبل التوقف المؤقت
+    const delayBetweenBatches = 120000; // دقيقتان
 
-    // معالجة أول 50 مطابقة فقط لتجنب تجاوز الحدود
-    const limitedMatches = matches.slice(0, 50);
+    // معالجة أول 20 مطابقة فقط لتجنب تجاوز الحدود
+    const limitedMatches = matches.slice(0, 20);
     console.log(`🔧 معالجة ${limitedMatches.length} مجموعة من ${matches.length} مجموعة مطابقة`);
 
     for (const match of limitedMatches) {
@@ -339,8 +339,8 @@ export class AIItemUnifier {
           duplicatesRemoved++;
           operationCount++;
           
-          // تأخير قصير بين العمليات
-          await this.delay(500);
+          // تأخير أطول بين العمليات
+          await this.delay(2000);
         }
         
         unifiedItems.push({
