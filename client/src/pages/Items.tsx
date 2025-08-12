@@ -191,6 +191,7 @@ export default function Items() {
   const [showItemDetails, setShowItemDetails] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [filters, setFilters] = useState({
+    uniqueSheetId: "",
     itemNumber: "",
     partNumber: "",
     lineItem: "",
@@ -241,7 +242,13 @@ export default function Items() {
   console.log(`🔍 Items processing: ${Array.isArray(items) ? items.length : 0} total items, ${uniqueItems.length} unique items`);
 
   const filteredItems = uniqueItems.filter((item: any) => {
+    // البحث في المعرف الفريد (في حالة الأصناف الموحدة، البحث في جميع المعرفات)
+    const matchesUniqueId = !filters.uniqueSheetId || 
+      item.uniqueSheetId?.includes(filters.uniqueSheetId) ||
+      (item.allUniqueSheetIds && item.allUniqueSheetIds.some((id: string) => id.includes(filters.uniqueSheetId)));
+
     return (
+      matchesUniqueId &&
       (!filters.itemNumber || item.itemNumber?.includes(filters.itemNumber)) &&
       (!filters.partNumber || item.partNumber?.includes(filters.partNumber)) &&
       (!filters.lineItem || item.lineItem?.includes(filters.lineItem)) &&
@@ -397,7 +404,18 @@ export default function Items() {
           <CardTitle>البحث والتصفية</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div>
+              <Label htmlFor="uniqueSheetId">معرف الشيت</Label>
+              <Input
+                id="uniqueSheetId"
+                dir="ltr"
+                placeholder="25R007691"
+                value={filters.uniqueSheetId || ''}
+                onChange={(e) => setFilters({ ...filters, uniqueSheetId: e.target.value })}
+                className="font-mono text-purple-600"
+              />
+            </div>
             <div>
               <Label htmlFor="itemNumber">رقم الصنف</Label>
               <Input
@@ -462,6 +480,7 @@ export default function Items() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-right">معرف الشيت</TableHead>
                   <TableHead className="text-right">رقم الصنف</TableHead>
                   <TableHead className="text-right">LINE ITEM</TableHead>
                   <TableHead className="text-right">رقم القطعة</TableHead>
@@ -476,13 +495,25 @@ export default function Items() {
               <TableBody>
                 {filteredItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={10} className="text-center py-8 text-gray-500">
                       لا توجد أصناف
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredItems.map((item: any) => (
                     <TableRow key={item.id} className="hover:bg-gray-50">
+                      <TableCell className="font-mono text-purple-600 text-sm font-bold" dir="ltr">
+                        <div className="flex flex-col">
+                          <span>
+                            {item.uniqueSheetId || (item.allUniqueSheetIds && item.allUniqueSheetIds.length > 0 ? item.allUniqueSheetIds[0] : "غير محدد")}
+                          </span>
+                          {item.allUniqueSheetIds && item.allUniqueSheetIds.length > 1 && (
+                            <span className="text-xs text-orange-600 bg-orange-100 px-1 rounded mt-1">
+                              +{item.allUniqueSheetIds.length - 1} موحد
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="font-medium">{item.itemNumber}</TableCell>
                       <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
                         {item.lineItem || "غير محدد"}
