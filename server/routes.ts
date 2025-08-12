@@ -3363,27 +3363,27 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
       const sheets = google.sheets({ version: 'v4', auth });
 
-      // قراءة البيانات من صفحة DATA بدءاً من الصف 2
+      // قراءة البيانات من صفحة DATA بدءاً من الصف 2 - تمديد النطاق للعمود O
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: 'DATA!A2:N10000'
+        range: 'DATA!A2:O10000'
       });
 
       const rows = response.data.values || [];
       let totalValue = 0;
 
-      console.log(`📊 معالجة ${rows.length} صف لحساب مجموع العمود N`);
+      console.log(`📊 معالجة ${rows.length} صف لحساب مجموع العمود O`);
       
-      // حساب مجموع العمود N (العمود رقم 13) بدءاً من الصف 2
+      // حساب مجموع العمود O (العمود رقم 14) بدءاً من الصف 2
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        if (row.length > 13 && row[13]) {
-          const rawValue = row[13].toString().trim();
+        if (row.length > 14 && row[14]) {
+          const rawValue = row[14].toString().trim();
           const value = parseFloat(rawValue.replace(/[^\d.-]/g, ''));
           
           if (!isNaN(value) && value > 0) {
             totalValue += value;
-            console.log(`📈 الصف ${i + 2}: ${rawValue} -> ${value}`);
+            console.log(`💰 الصف ${i + 2}: العمود O = ${rawValue} -> ${value}`);
           }
         }
       }
@@ -3418,7 +3418,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           poNumber: poNumber,
           quotationNumber: firstRecord?.[4] || '', // RFQ NUMBER
           orderDate: firstRecord?.[11] || '', // PO DATE من العمود L
-          totalAmount: firstRecord?.[13] ? parseFloat(firstRecord[13]) || 0 : 0, // العمود N
+          totalAmount: firstRecord?.[14] ? parseFloat(firstRecord[14]) || 0 : 0, // العمود O
           status: 'confirmed',
           deliveryStatus: 'pending'
         };
@@ -3435,7 +3435,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         targetValue: 14006975,
         accuracyPercentage: totalValue === 14006975 ? 100 : 
           ((totalValue / 14006975) * 100).toFixed(2),
-        formula: 'SUM(N2:N∞)',
+        formula: 'SUM(O2:O∞)',
         lastUpdated: new Date().toISOString()
       };
 
