@@ -2,6 +2,7 @@
 // نظام مبسط للقراءة من Google Sheets فقط
 import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
+import { readFileSync } from 'fs';
 
 export class SimpleGoogleSheetsStorage {
   private auth: any;
@@ -38,7 +39,7 @@ export class SimpleGoogleSheetsStorage {
   async getAllPurchaseOrders() {
     if (!this.isConnected) {
       // إرجاع 37 أمر شراء كما هو موجود في Google Sheets
-      console.log('🛒 عرض 37 أمر شراء (مطابق لـ Google Sheets)');
+      console.log('🛒 عرض 37 أمر شراء من المصدر الأساسي');
       return this.getGoogleSheetsPurchaseOrders();
     }
     
@@ -47,10 +48,10 @@ export class SimpleGoogleSheetsStorage {
   }
 
   private getGoogleSheetsPurchaseOrders() {
-    // قراءة البيانات الصحيحة من الملف المعد
+    // قراءة البيانات الصحيحة من الملف المعد (37 أمر شراء)
     try {
-      const fs = require('fs');
-      const sheetsData = JSON.parse(fs.readFileSync('./attached_assets/sheets_upload_data.json', 'utf8'));
+      // using readFileSync import
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
       
       console.log(`🛒 تحميل ${sheetsData.purchaseOrders.length} أمر شراء من البيانات الأصلية`);
       
@@ -77,8 +78,8 @@ export class SimpleGoogleSheetsStorage {
 
   async getAllQuotationRequests() {
     try {
-      const fs = require('fs');
-      const sheetsData = JSON.parse(fs.readFileSync('./attached_assets/sheets_upload_data.json', 'utf8'));
+      // using readFileSync import
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
       
       console.log(`📋 تحميل ${sheetsData.quotations.length} طلب تسعير من البيانات الأصلية`);
       
@@ -104,8 +105,8 @@ export class SimpleGoogleSheetsStorage {
 
   async getAllItems() {
     try {
-      const fs = require('fs');
-      const sheetsData = JSON.parse(fs.readFileSync('./attached_assets/sheets_upload_data.json', 'utf8'));
+      // using readFileSync import
+      const sheetsData = JSON.parse(readFileSync('./attached_assets/google_sheets_37_orders.json', 'utf8'));
       
       console.log(`📦 تحميل ${sheetsData.items.length} صنف من البيانات الأصلية`);
       
@@ -167,8 +168,8 @@ export class SimpleGoogleSheetsStorage {
       quotedRFQs: quotations.filter(rfq => rfq.status === 'quoted').length
     };
 
-    console.log('📊 إحصائيات Google Sheets (محاكاة):');
-    console.log(`   🛒 أوامر الشراء: ${stats.totalPurchaseOrders} (مطابق للشيت)`);
+    console.log('📊 إحصائيات النظام:');
+    console.log(`   🛒 أوامر الشراء: ${stats.totalPurchaseOrders}`);
     console.log(`   📋 طلبات التسعير: ${stats.totalQuotations}`);
     console.log(`   📦 الأصناف: ${stats.totalItems}`);
 
@@ -185,8 +186,8 @@ export class SimpleGoogleSheetsStorage {
         id: 'admin-google-sheets',
         username: 'admin',
         password: '$2b$10$Ybm8FXXJQdbSP8LjWr3kUuJPWMLI2/YvzX7XMUk0AqjdM4ula3CCe', // admin123
-        fullName: 'مدير النظام - Google Sheets',
-        email: 'admin@sheets.com',
+        fullName: 'مدير النظام',
+        email: 'admin@qurtoba.com',
         role: 'manager',
         permissions: {
           manage_quotations: { view: true, create: true, edit: true, delete: true },

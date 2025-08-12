@@ -1907,8 +1907,9 @@ export class DatabaseStorage implements IStorage {
 // استخدام نظام بيانات Excel فقط
 import { ExcelOnlyStorage } from './excel-only-storage';
 
-// استخدام نظام البيانات الحقيقية
-export const storage = realDataStorage;
+// استخدام نظام البيانات المطابق لـ Google Sheets (37 أمر شراء)
+import { simpleGoogleSheetsStorage } from "./simple-google-sheets-storage.js";
+export const storage = simpleGoogleSheetsStorage;
 
 // تهيئة النظام الهجين مع البيانات الحقيقية
 export async function initializeDatabase() {
