@@ -562,14 +562,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Item routes
+  // Item routes - قراءة مباشرة من Google Sheets العمود C (LINE ITEM)
   app.get("/api/items", requireAuth, async (req: Request, res: Response) => {
     try {
-      const items = await storage.getAllItems();
-      res.json(items);
+      // الوصول لبيانات Google Sheets مباشرة للعمود C
+      const { GoogleAuth } = await import('google-auth-library');
+      const { google } = await import('googleapis');
+      const { readFileSync } = await import('fs');
+      
+      try {
+        const serviceAccountKey = readFileSync('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
+        const credentials = JSON.parse(serviceAccountKey);
+        
+        const auth = new GoogleAuth({
+          credentials: credentials,
+          scopes: ['https://www.googleapis.com/auth/spreadsheets']
+        });
+        
+        const sheets = google.sheets({ version: 'v4', auth: auth });
+        const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
+        
+        // قراءة بيانات من العمود C (LINE ITEM) مباشرة
+        const response = await sheets.spreadsheets.values.get({
+          spreadsheetId: spreadsheetId,
+          range: 'DATA!A1:O12000'
+        });
+        
+        const rows = response.data.values || [];
+        console.log(`📊 تم قراءة ${rows.length} صف من Google Sheets للعمود C (LINE ITEM)`);
+        
+        if (rows.length === 0) {
+          return res.json([]);
+        }
+        
+        // استخراج بيانات العمود C (LINE ITEM) تحديداً
+        const items = [];
+        
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i] || [];
+          
+          if (row.length >= 3 && row[2]) { // العمود C هو المؤشر 2
+            const lineItem = row[2] ? row[2].toString().trim() : '';
+            const partNumber = row.length > 3 && row[3] ? row[3].toString().trim() : '';
+            const description = row.length > 4 && row[4] ? row[4].toString().trim() : '';
+            const quantity = row.length > 5 && row[5] ? row[5].toString().trim() : '';
+            const unit = row.length > 6 && row[6] ? row[6].toString().trim() : 'Each';
+            const rfqNumber = row.length > 0 && row[0] ? row[0].toString().trim() : '';
+            
+            if (!lineItem && !partNumber && !description) continue;
+            
+            items.push({
+              id: `line-item-${i}`,
+              itemNumber: `P-${i.toString().padStart(7, '0')}`,
+              lineItem: lineItem, // العمود C - LINE ITEM
+              partNumber: partNumber,
+              description: description,
+              quantity: quantity,
+              unit: unit,
+              category: 'general',
+              brand: '',
+              rfqNumber: rfqNumber,
+              source: 'column_c_line_item',
+              createdAt: new Date().toISOString(),
+              isActive: true
+            });
+          }
+        }
+        
+        console.log(`✅ استخراج ${items.length} عنصر LINE ITEM من العمود C`);
+        res.json(items);
+        
+      } catch (sheetsError) {
+        console.error('❌ خطأ في الوصول لـ Google Sheets:', sheetsError.message);
+        res.status(500).json({ message: "خطأ في الوصول لبيانات Google Sheets" });
+      }
+      
     } catch (error) {
-      console.error("Get items error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("خطأ في قراءة أصناف LINE ITEM:", error);
+      res.status(500).json({ message: "خطأ داخلي في الخادم" });
     }
   });
 
