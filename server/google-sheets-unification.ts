@@ -260,8 +260,8 @@ export class GoogleSheetsUnification {
     // البحث في الصفوف السابقة فقط
     for (let i = 1; i < currentRowIndex; i++) {
       const row = sheetsData[i];
-      const rowPartNumber = row[2]?.trim();
-      const rowDescription = row[3]?.trim();
+      const rowPartNumber = row[3]?.trim(); // العمود D (رقم القطعة)
+      const rowDescription = row[4]?.trim(); // العمود E (التوصيف)
 
       // مطابقة رقم القطعة (إذا وجد)
       if (partNumber && rowPartNumber) {
@@ -515,14 +515,14 @@ export class GoogleSheetsUnification {
         processedRows++;
         this.processedItems = processedRows;
 
-        // تخطي الصفوف التي لها معرّف بند بالفعل في العمود A
+        // لا تتخطى الصفوف - إعادة توحيد شامل لجميع البنود
+        // تفريغ العمود A للصفوف التي سيتم إعادة توحيدها
         if (currentRow[0] && currentRow[0].trim()) {
-          console.log(`⏭️ تخطي الصف ${currentRowIndex + 1}: له معرّف بند بالفعل (${currentRow[0]})`);
-          continue;
+          console.log(`🔄 إعادة توحيد الصف ${currentRowIndex + 1}: المعرّف الحالي (${currentRow[0]})`);
         }
 
-        const partNumber = currentRow[2]?.trim(); // العمود C (رقم القطعة)
-        const description = currentRow[3]?.trim(); // العمود D (التوصيف)
+        const partNumber = currentRow[3]?.trim(); // العمود D (رقم القطعة)
+        const description = currentRow[4]?.trim(); // العمود E (التوصيف)
 
         if (!partNumber && !description) {
           continue; // تخطي الصفوف الفارغة
