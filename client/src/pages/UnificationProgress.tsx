@@ -222,7 +222,7 @@ export default function UnificationProgress() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 text-center">
           <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-            {stats.totalItems.toLocaleString()}
+            {stats.totalItems?.toLocaleString() || 0}
           </div>
           <div className="text-gray-600 dark:text-gray-400 font-medium">
             إجمالي البنود
@@ -234,7 +234,7 @@ export default function UnificationProgress() {
         
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 text-center">
           <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-            {stats.duplicateItems.toLocaleString()}
+            {stats.duplicateItems?.toLocaleString() || 0}
           </div>
           <div className="text-gray-600 dark:text-gray-400 font-medium">
             بنود مكررة
