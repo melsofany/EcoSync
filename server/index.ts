@@ -2,7 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import "./telegram-bot"; // Initialize Telegram bot
 import GoogleSheetsSync from "./google-sheets-sync";
-import { realTimeSync } from "./real-time-google-sheets-sync";
+// import { realTimeSync } from "./real-time-google-sheets-sync"; // معطل - النظام يعتمد على Google Sheets فقط
 import { storage } from "./storage";
 import { setupRealTimeSync } from "./sync-with-sheets";
 
@@ -142,11 +142,11 @@ app.use((req, res, next) => {
       }
     }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
 
-    // تفعيل مزامنة البيانات الجديدة
+    // تفعيل مزامنة البيانات من Google Sheets فقط
     setTimeout(async () => {
       try {
-        await realTimeSync.startRealTimeSync();
-        console.log('🔄 تم تفعيل المزامنة الحقيقية الجديدة');
+        // تم تعطيل المزامنة التي تحتاج ملفات محلية - النظام يعتمد على Google Sheets فقط
+        console.log('🔄 النظام يعتمد على Google Sheets كمصدر البيانات الوحيد');
       } catch (error) {
         console.log('⚠️ المزامنة الحقيقية غير متاحة:', (error as Error).message);
       }

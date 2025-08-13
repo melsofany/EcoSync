@@ -38,34 +38,24 @@ class RealTimeGoogleSheetsSync {
   }
 
   async performFullSync(): Promise<SyncResult> {
-    console.log('🔄 بدء المزامنة الكاملة...');
+    console.log('🔄 بدء المزامنة الكاملة من Google Sheets...');
     
     try {
-      // قراءة البيانات المحلية الفعلية
-      const localData = JSON.parse(readFileSync('./attached_assets/real_exact_data.json', 'utf8'));
-      
-      // قراءة البيانات من Google Sheets
+      // قراءة البيانات من Google Sheets فقط (مصدر الحقيقة الوحيد)
       const sheetsData = await this.readFromSheets();
       
-      // مقارنة البيانات
-      const differences = this.compareData(localData, sheetsData);
-      
-      // إذا كانت هناك اختلافات، قم بالمزامنة
-      if (differences.length > 0) {
-        console.log('⚠️ تم العثور على اختلافات:', differences.length);
-        await this.syncToSheets(localData);
-      }
-      
-      // تحديث النظام المحلي بالبيانات المزامنة
-      await this.updateLocalSystem(localData);
+      // تحديث النظام بالبيانات من Google Sheets
+      await this.updateLocalSystem(sheetsData);
       
       this.lastSyncTime = Date.now();
+      
+      console.log('✅ تمت المزامنة من Google Sheets بنجاح');
       
       return {
         success: true,
         sheetsData,
-        localData,
-        differences
+        localData: sheetsData, // البيانات من Google Sheets هي المصدر الوحيد
+        differences: []
       };
       
     } catch (error) {
