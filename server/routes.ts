@@ -4393,30 +4393,40 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const user = await googleSheetsUsersManager.authenticateUser(username, password);
       
       if (user) {
-        // تخزين بيانات المستخدم في الجلسة
-        (req.session as any).user = {
+        // تخزين بيانات المستخدم في الجلسة بنفس التنسيق المتوقع
+        req.session.user = {
           id: user.username,
           username: user.username,
           fullName: user.fullName,
-          email: user.email,
+          email: user.email || '',
           role: user.role,
-          department: user.department,
-          isOnline: true
+          department: user.department || '',
+          isOnline: true,
+          isActive: true
         };
 
         console.log(`✅ تسجيل دخول ناجح للمستخدم ${user.fullName} من Google Sheets`);
+        console.log(`📝 تم حفظ الجلسة للمستخدم:`, req.session.user);
 
-        res.json({
-          message: "تم تسجيل الدخول بنجاح",
-          user: {
-            id: user.username,
-            username: user.username,
-            fullName: user.fullName,
-            email: user.email,
-            role: user.role,
-            department: user.department,
-            isOnline: true
+        // حفظ الجلسة بشكل صريح
+        req.session.save((err) => {
+          if (err) {
+            console.error('❌ خطأ في حفظ الجلسة:', err);
+            return res.status(500).json({ message: "خطأ في حفظ الجلسة" });
           }
+
+          res.json({
+            message: "تم تسجيل الدخول بنجاح",
+            user: {
+              id: user.username,
+              username: user.username,
+              fullName: user.fullName,
+              email: user.email,
+              role: user.role,
+              department: user.department,
+              isOnline: true
+            }
+          });
         });
       } else {
         res.status(401).json({ message: "اسم المستخدم أو كلمة المرور غير صحيحة" });
