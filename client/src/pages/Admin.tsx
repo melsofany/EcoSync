@@ -17,6 +17,7 @@ import EditUserModal from "@/components/modals/EditUserModal";
 import { UserDisplayName } from "@/components/UserDisplayName";
 import { UserAvatar } from "@/components/UserAvatar";
 import PermissionsManager from "@/components/PermissionsManager";
+import GoogleSheetsUsersManager from "@/components/GoogleSheetsUsersManager";
 import { 
   Users, 
   Shield, 
@@ -52,6 +53,7 @@ export default function Admin() {
   const queryClient = useQueryClient();
   
   const [activeSection, setActiveSection] = useState<string>("");
+  const [activeSubSection, setActiveSubSection] = useState<string>("");
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [passwordResetUser, setPasswordResetUser] = useState<any>(null);
@@ -414,22 +416,60 @@ export default function Admin() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h4 className="font-semibold">إضافة مستخدم جديد</h4>
-                <Button 
-                  size="sm" 
-                  className="bg-blue-500 hover:bg-blue-600"
-                  onClick={() => setIsNewUserModalOpen(true)}
-                >
-                  <Plus className="h-4 w-4 ml-2" />
-                  إضافة مستخدم
-                </Button>
+            <div className="space-y-6">
+              {/* Google Sheets Users Management */}
+              <div className="p-6 border border-green-200 rounded-lg bg-green-50">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                      <Users className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-green-800">مستخدمو Google Sheets</h4>
+                      <p className="text-sm text-green-700">إدارة المستخدمين المحفوظين في Google Sheets</p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
+                    onClick={() => setActiveSubSection(activeSubSection === "google-sheets-users" ? "" : "google-sheets-users")}
+                  >
+                    {activeSubSection === "google-sheets-users" ? "إخفاء" : "عرض"} المستخدمين
+                    <ArrowRight className={`h-4 w-4 mr-2 transition-transform ${activeSubSection === "google-sheets-users" ? "rotate-90" : ""}`} />
+                  </Button>
+                </div>
+
+                {activeSubSection === "google-sheets-users" && (
+                  <GoogleSheetsUsersManager />
+                )}
               </div>
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-700">
-                  يمكن لمدير تقنية المعلومات إضافة مستخدمين جدد وتعديل بياناتهم وحظرهم عند الحاجة.
-                </p>
+
+              {/* Database Users Management */}
+              <div className="p-6 border border-blue-200 rounded-lg bg-blue-50">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Database className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">مستخدمو قاعدة البيانات المحلية</h4>
+                      <p className="text-sm text-blue-700">إدارة المستخدمين في قاعدة البيانات المحلية</p>
+                    </div>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={() => setIsNewUserModalOpen(true)}
+                  >
+                    <Plus className="h-4 w-4 ml-2" />
+                    إضافة مستخدم محلي
+                  </Button>
+                </div>
+                <div className="p-4 bg-blue-100 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    يمكن لمدير تقنية المعلومات إضافة مستخدمين جدد وتعديل بياناتهم وحظرهم عند الحاجة.
+                  </p>
+                </div>
               </div>
             </div>
           </CardContent>

@@ -13,6 +13,7 @@ import { randomBytes } from "crypto";
 import path from "path";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
+import { googleSheetsUsersManager, type GoogleSheetsUser } from "./google-sheets-users";
 
 // نظام توحيد الأصناف الذكي باستخدام AI
 async function aiUnifyItems(items: any[]): Promise<any[]> {
@@ -4278,6 +4279,132 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         message: 'خطأ في قراءة البيانات من Google Sheets',
         error: (error as Error).message 
       });
+    }
+  });
+
+  // === نقاط API لإدارة المستخدمين من Google Sheets ===
+  
+  // قراءة جميع المستخدمين من Google Sheets
+  app.get("/api/users/google-sheets", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const users = await googleSheetsUsersManager.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("خطأ في قراءة المستخدمين:", error);
+      res.status(500).json({ message: "خطأ في الخادم" });
+    }
+  });
+
+  // إضافة مستخدم جديد إلى Google Sheets
+  app.post("/api/users/google-sheets", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      const userData = req.body;
+      const success = await googleSheetsUsersManager.addUser(userData);
+      
+      if (success) {
+        await logActivity(req, "add_google_sheets_user", "user", userData.username, `Added user ${userData.username} to Google Sheets`);
+        res.json({ message: "تم إضافة المستخدم بنجاح", success: true });
+      } else {
+        res.status(400).json({ message: "فشل في إضافة المستخدم", success: false });
+      }
+    } catch (error) {
+      console.error("خطأ في إضافة المستخدم:", error);
+      res.status(500).json({ message: "خطأ في الخادم" });
+    }
+  });
+
+  // تحديث مستخدم في Google Sheets
+  app.put("/api/users/google-sheets/:username", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const userData = req.body;
+      const success = await googleSheetsUsersManager.updateUser(username, userData);
+      
+      if (success) {
+        await logActivity(req, "update_google_sheets_user", "user", username, `Updated user ${username} in Google Sheets`);
+        res.json({ message: "تم تحديث المستخدم بنجاح", success: true });
+      } else {
+        res.status(400).json({ message: "فشل في تحديث المستخدم", success: false });
+      }
+    } catch (error) {
+      console.error("خطأ في تحديث المستخدم:", error);
+      res.status(500).json({ message: "خطأ في الخادم" });
+    }
+  });
+
+  // حذف مستخدم من Google Sheets
+  app.delete("/api/users/google-sheets/:username", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const success = await googleSheetsUsersManager.deleteUser(username);
+      
+      if (success) {
+        await logActivity(req, "delete_google_sheets_user", "user", username, `Deleted user ${username} from Google Sheets`);
+        res.json({ message: "تم حذف المستخدم بنجاح", success: true });
+      } else {
+        res.status(400).json({ message: "فشل في حذف المستخدم", success: false });
+      }
+    } catch (error) {
+      console.error("خطأ في حذف المستخدم:", error);
+      res.status(500).json({ message: "خطأ في الخادم" });
+    }
+  });
+
+  // مزامنة المستخدمين مع قاعدة البيانات
+  app.post("/api/users/sync-google-sheets", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      await googleSheetsUsersManager.syncWithDatabase();
+      await logActivity(req, "sync_google_sheets_users", "system", "", "Synced users from Google Sheets");
+      res.json({ message: "تم مزامنة المستخدمين بنجاح", success: true });
+    } catch (error) {
+      console.error("خطأ في مزامنة المستخدمين:", error);
+      res.status(500).json({ message: "خطأ في المزامنة" });
+    }
+  });
+
+  // التحقق من صحة بيانات المستخدم من Google Sheets
+  app.post("/api/auth/google-sheets-login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "اسم المستخدم وكلمة المرور مطلوبان" });
+      }
+
+      const user = await googleSheetsUsersManager.authenticateUser(username, password);
+      
+      if (user) {
+        // تخزين بيانات المستخدم في الجلسة
+        (req.session as any).user = {
+          id: user.username,
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          department: user.department,
+          isOnline: true
+        };
+
+        console.log(`✅ تسجيل دخول ناجح للمستخدم ${user.fullName} من Google Sheets`);
+
+        res.json({
+          message: "تم تسجيل الدخول بنجاح",
+          user: {
+            id: user.username,
+            username: user.username,
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            department: user.department,
+            isOnline: true
+          }
+        });
+      } else {
+        res.status(401).json({ message: "اسم المستخدم أو كلمة المرور غير صحيحة" });
+      }
+    } catch (error) {
+      console.error("خطأ في تسجيل الدخول:", error);
+      res.status(500).json({ message: "خطأ في الخادم" });
     }
   });
 
