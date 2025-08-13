@@ -112,13 +112,12 @@ export class SimpleGoogleSheetsStorage {
         return [];
       }
       
-      // using readFileSync import
-      const sheetsData = JSON.parse(readFileSync('./attached_assets/real_exact_data.json', 'utf8'));
+      // استخدام realDataStorage للحصول على البيانات الحقيقية
+      const allItems = await realDataStorage.getAllItems();
+      console.log(`📦 تحميل ${allItems.length} صنف من النظام الحقيقي`);
       
-      console.log(`📦 تحميل ${sheetsData.items.length} صنف من ملف im2`);
-      
-      return sheetsData.items.map((item, index) => ({
-        id: `item-sheets-${index}`,
+      return allItems.map((item, index) => ({
+        id: item.id || `item-real-${index}`,
         itemNumber: item.itemNumber,
         lineItem: item.lineItem,
         partNumber: item.partNumber,
@@ -130,13 +129,25 @@ export class SimpleGoogleSheetsStorage {
         poNumber: item.poNumber,
         rfqPrice: item.rfqPrice,
         poPrice: item.poPrice,
-        createdAt: new Date().toISOString(),
-        isActive: true
+        createdAt: item.createdAt || new Date().toISOString(),
+        isActive: item.isActive !== false
       }));
       
     } catch (error) {
-      console.error('❌ خطأ في قراءة الأصناف:', error);
-      return [];
+      console.error('❌ خطأ في قراءة الأصناف من النظام الحقيقي:', error);
+      console.log('🔄 محاولة استخدام البيانات المحفوظة...');
+      
+      // استخدام البيانات من قاعدة البيانات كبديل
+      try {
+        const { db } = await import('./db.js');
+        const { items } = await import('../shared/schema.js');
+        const dbItems = await db.select().from(items);
+        console.log(`📦 تحميل ${dbItems.length} صنف من قاعدة البيانات`);
+        return dbItems;
+      } catch (dbError) {
+        console.error('❌ خطأ في قراءة قاعدة البيانات أيضاً:', dbError);
+        return [];
+      }
     }
   }
 
