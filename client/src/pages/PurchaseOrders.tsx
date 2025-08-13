@@ -156,10 +156,10 @@ export default function PurchaseOrders() {
     return 'غير محدد';
   };
 
-  // Get purchase order items
+  // Get purchase order items from Google Sheets
   const { data: poItems } = useQuery({
-    queryKey: ["/api/purchase-orders", selectedPO?.id, "items"],
-    enabled: !!selectedPO?.id,
+    queryKey: ["/api/sheets/purchase-orders", selectedPO?.poNumber, "items"],
+    enabled: !!selectedPO?.poNumber,
   });
 
   // Delete purchase order mutation

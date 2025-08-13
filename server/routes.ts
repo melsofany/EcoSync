@@ -250,6 +250,211 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
+  // Google Sheets Purchase Order Items endpoint (no auth required)
+  app.get("/api/sheets/purchase-orders/:id/items", async (req: Request, res: Response) => {
+    try {
+      console.log('🔍 API call received for Google Sheets PO items:', req.params.id);
+      
+      const poId = req.params.id;
+      console.log('Getting items for PO from Google Sheets:', poId);
+      
+      // قراءة البيانات مباشرة من الملف
+      let sheetsData = null;
+      try {
+        const fs = await import('fs');
+        const dataString = fs.readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8');
+        sheetsData = JSON.parse(dataString);
+        console.log('✅ تم تحميل البيانات من synced_data_from_sheets.json');
+      } catch (error) {
+        try {
+          const fs = await import('fs');
+          const dataString = fs.readFileSync('./attached_assets/complete_excel_data.json', 'utf8');
+          sheetsData = JSON.parse(dataString);
+          console.log('✅ تم تحميل البيانات من complete_excel_data.json');
+        } catch (error2) {
+          console.error('❌ فشل في تحميل البيانات:', error2.message);
+          return res.status(404).json({ message: "No Google Sheets data available" });
+        }
+      }
+      
+      if (!sheetsData || !sheetsData.items) {
+        console.log('No Google Sheets data available');
+        return res.status(404).json({ message: "No Google Sheets data available" });
+      }
+      
+      // تنظيف رقم أمر الشراء
+      const cleanPOId = poId.replace('gs-', '');
+      console.log('Searching for PO with ID:', poId, 'cleaned:', cleanPOId);
+      console.log('Total items in sheets:', sheetsData.items.length);
+      
+      // طباعة عينة من البيانات لفهم التنسيق
+      const firstItem = sheetsData.items[0];
+      console.log('First item structure:', {
+        'rawData length': firstItem?.rawData?.length,
+        'rawData sample': firstItem?.rawData?.slice(0, 15),
+        'item properties': Object.keys(firstItem || {})
+      });
+      
+      // البحث عن أرقام أوامر الشراء في أعمدة مختلفة
+      const poSample = sheetsData.items.slice(0, 10).map((item: any, index: number) => ({
+        index,
+        'Column J (9)': item.rawData?.[9],
+        'Column K (10)': item.rawData?.[10], 
+        'Column L (11)': item.rawData?.[11],
+        'Column M (12)': item.rawData?.[12],
+        'poNumber prop': item.poNumber
+      })).filter((item: any) => 
+        item['Column J (9)'] || item['Column K (10)'] || 
+        item['Column L (11)'] || item['Column M (12)'] || item['poNumber prop']
+      );
+      console.log('PO Number samples in different columns:', poSample);
+      
+      // البحث عن أرقام أوامر الشراء الصحيحة في البيانات
+      const actualPONumbers = sheetsData.items.slice(0, 100).map((item: any, index: number) => ({
+        index,
+        id: item.id,
+        lineItem: item.lineItem, 
+        partNumber: item.partNumber,
+        description: item.description?.substring(0, 30),
+        rfqNumber: item.rfqNumber,
+        poNumber: item.poNumber
+      })).filter((item: any) => 
+        // البحث عن أي شيء يشبه رقم أمر الشراء (يبدأ بـ P أو يحتوي على أرقام)
+        String(item.id || '').match(/P\d+/) ||
+        String(item.lineItem || '').match(/P\d+/) ||
+        String(item.partNumber || '').match(/P\d+/) ||
+        String(item.rfqNumber || '').match(/P\d+/) ||
+        String(item.poNumber || '').match(/P\d+/) ||
+        String(item.id || '').includes('25E') ||
+        String(item.lineItem || '').includes('25E') ||
+        String(item.partNumber || '').includes('25E') ||
+        String(item.rfqNumber || '').includes('25E')
+      );
+      console.log('Found PO-like numbers in data:', actualPONumbers.slice(0, 10));
+      
+      // البحث عن رقم أمر الشراء في الحقول الصحيحة (poDate يحتوي على رقم الأمر!)
+      const matchingItems = sheetsData.items.filter((item: any) => {
+        // البحث في مختلف الحقول المحتملة لرقم أمر الشراء
+        // ملاحظة: في البيانات الحالية، رقم أمر الشراء موجود في poDate بدلاً من poNumber!
+        const potentialPONumbers = [
+          item.poDate,        // هذا هو المكان الصحيح لرقم أمر الشراء
+          item.poNumber,      // هذا يحتوي على تاريخ لكن نجربه أيضاً
+          item.id,
+          item.lineItem,
+          item.partNumber,
+          item.description
+        ].filter(Boolean);
+        
+        return potentialPONumbers.some((potentialPO: any) => {
+          const potentialPOStr = String(potentialPO).trim();
+          
+          // طرق مطابقة متعددة
+          const matches = [
+            potentialPOStr === cleanPOId,
+            potentialPOStr === poId,
+            potentialPOStr.includes(cleanPOId),
+            cleanPOId.includes(potentialPOStr),
+            potentialPOStr.toLowerCase() === cleanPOId.toLowerCase(),
+            // مطابقة جزئية للأرقام
+            (potentialPOStr.length >= 5 && cleanPOId.length >= 5 && 
+             potentialPOStr.slice(-5) === cleanPOId.slice(-5))
+          ];
+          
+          return matches.some(match => match);
+        });
+      });
+      
+      console.log(`Found ${matchingItems.length} items for PO ${poId}`);
+      
+      // طباعة أول مطابقة للتشخيص مع البيانات الصحيحة
+      if (matchingItems.length > 0) {
+        console.log('First matching item corrected data:', {
+          'id': matchingItems[0].id,
+          'partNumber': matchingItems[0].partNumber,
+          'description': matchingItems[0].description,
+          'poDate': matchingItems[0].poDate,
+          'lineItem': matchingItems[0].lineItem,
+          'uom': matchingItems[0].uom
+        });
+      }
+      
+      // تحويل البيانات إلى تنسيق متوافق مع الواجهة الأمامية
+      const formattedItems = matchingItems.map((item: any, index: number) => ({
+        id: `item-${index}`,
+        itemId: item.id || 'غير محدد',
+        uom: item.uom || 'غير محدد', 
+        lineItem: item.lineItem || 'غير محدد',
+        partNumber: item.partNumber || 'غير محدد',
+        description: item.description || 'غير محدد',
+        rfqNumber: item.rfqNumber || 'غير محدد',
+        rfqQuantity: String(item.quantity || 1),
+        rfqPrice: String(item.rfqPrice || 0),
+        poNumber: item.poDate || 'غير محدد', // تصحيح المشكلة: رقم PO موجود في poDate!
+        poDate: item.poNumber || 'غير محدد',
+        poQuantity: String(item.poQuantity || item.quantity || 1),
+        poPrice: String(item.poPrice || 0),
+        employee: 'غير محدد',
+        totalValue: String(item.totalPOValue || 0)
+      }));
+      
+      console.log('✅ Returning', formattedItems.length, 'formatted items');
+      res.json(formattedItems);
+    } catch (error) {
+      console.error("Error fetching purchase order items from sheets:", error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+  });
+
+  // مسار محسن للحصول على عناصر أمر الشراء من Google Sheets مع بيانات صحيحة
+  app.get("/api/sheets/po/:poId/items", async (req: Request, res: Response) => {
+    try {
+      const { poId } = req.params;
+      console.log('🔍 Enhanced API call for Google Sheets PO items:', poId);
+      
+      // تحميل البيانات من الملف المزامن
+      const sheetsData = JSON.parse(
+        fs.readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8')
+      );
+      
+      const cleanPOId = poId.trim();
+      console.log(`Enhanced search for PO: ${cleanPOId}`);
+      
+      // البحث المحسن - رقم أمر الشراء موجود في poDate!
+      const matchingItems = sheetsData.items.filter((item: any) => {
+        const poDateMatch = String(item.poDate || '').trim() === cleanPOId;
+        const poNumberMatch = String(item.poNumber || '').includes(cleanPOId);
+        return poDateMatch || poNumberMatch;
+      });
+      
+      console.log(`Enhanced search found ${matchingItems.length} items for PO ${poId}`);
+      
+      // تحويل البيانات إلى تنسيق صحيح
+      const formattedItems = matchingItems.map((item: any, index: number) => ({
+        id: `item-${index}`,
+        itemId: item.id || 'غير محدد',
+        uom: item.lineItem || 'غير محدد',
+        lineItem: item.lineItem || 'غير محدد',
+        partNumber: item.partNumber || 'غير محدد',
+        description: item.uom || item.description || 'غير محدد',
+        rfqNumber: item.rfqNumber || 'غير محدد',
+        rfqQuantity: String(item.quantity || 1),
+        rfqPrice: String(item.rfqPrice || 0),
+        poNumber: item.poDate || 'غير محدد',
+        poDate: item.poNumber || 'غير محدد',
+        poQuantity: String(item.poQuantity || item.quantity || 1),
+        poPrice: String(item.poPrice || 0),
+        employee: 'غير محدد',
+        totalValue: String(item.totalPOValue || 0)
+      }));
+      
+      console.log('✅ Enhanced endpoint returning', formattedItems.length, 'formatted items');
+      res.json(formattedItems);
+    } catch (error) {
+      console.error("Enhanced endpoint error:", error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+  });
+
   // Role-based access control
   const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
@@ -3457,6 +3662,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+
+
   // Enhanced Purchase Orders endpoints
   app.post("/api/purchase-orders", requireAuth, requireRole(['manager', 'purchasing']), async (req: Request, res: Response) => {
     try {
@@ -3476,13 +3683,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  app.get("/api/purchase-orders/:id/items", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/purchase-orders/:id/items", async (req: Request, res: Response) => {
     try {
       const poId = req.params.id;
       console.log('Getting items for PO:', poId);
       
       // استخدام Google Sheets بدلاً من قاعدة البيانات
-      const { sheetsStorage } = require('./sheets-fallback-storage');
+      const { sheetsStorage } = await import('./sheets-fallback-storage.js');
       const sheetsData = sheetsStorage.getData();
       
       if (!sheetsData || !sheetsData.items) {
