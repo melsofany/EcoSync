@@ -475,10 +475,10 @@ export default function QuotationDetail() {
                         {quotationItem.itemNumber || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
-                        {quotationItem.lineItem || "غير محدد"}
+                        {quotationItem.lineItem || quotationItem.partNumber || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-mono text-purple-600 text-sm">
-                        {quotationItem.unit || quotationItem.lineItem || "غير محدد"}
+                        {quotationItem.unit || "EACH"}
                       </TableCell>
                       <TableCell>
                         <div className="max-w-md">
