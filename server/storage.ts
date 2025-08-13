@@ -1960,7 +1960,10 @@ import { ExcelOnlyStorage } from './excel-only-storage';
 
 // استخدام نظام البيانات المطابق لـ Google Sheets (37 أمر شراء)
 import { simpleGoogleSheetsStorage } from "./simple-google-sheets-storage.js";
-export const storage = simpleGoogleSheetsStorage;
+// export const storage = simpleGoogleSheetsStorage;
+
+// Use the main DatabaseStorage which has all the required methods  
+export const storage = new DatabaseStorage();
 
 // تهيئة النظام الهجين مع البيانات الحقيقية
 export async function initializeDatabase() {
