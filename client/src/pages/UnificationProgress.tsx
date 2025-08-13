@@ -51,12 +51,27 @@ export default function UnificationProgress() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/unification/status', {
+        const response = await fetch('/api/monitor/stats', {
           credentials: 'include'
         });
         if (response.ok) {
           const data = await response.json();
-          setStats(data);
+          // تحويل البيانات من تنسيق monitor إلى تنسيق unification progress
+          const convertedStats = {
+            totalItems: data.total || 0,
+            duplicateGroups: Math.floor((data.total - data.unified) / 2) || 0,
+            duplicateItems: (data.total - data.unified) || 0,
+            status: data.endTime ? 'completed' : (data.startTime ? 'running' : 'idle'),
+            isRunning: !!data.startTime && !data.endTime,
+            progress: data.total > 0 ? Math.round((data.processed / data.total) * 100) : 0,
+            currentRow: data.processed || 0,
+            processedItems: data.processed || 0,
+            unifiedItems: data.unified || 0,
+            remainingRows: Math.max(0, (data.total || 0) - (data.processed || 0)),
+            startTime: data.startTime,
+            estimatedTimeRemaining: data.estimatedTimeRemaining || 'حساب...'
+          };
+          setStats(convertedStats);
         }
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -71,7 +86,7 @@ export default function UnificationProgress() {
   const handleStartUnification = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/unification/start', {
+      const response = await fetch('/api/monitor/start', {
         method: 'POST',
         credentials: 'include'
       });
@@ -89,6 +104,34 @@ export default function UnificationProgress() {
       toast({
         title: "خطأ",
         description: error.message || "حدث خطأ في بدء العملية",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStopUnification = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/monitor/stop', {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast({
+          title: "تم إيقاف التوحيد",
+          description: data.message || "تم إيقاف عملية التوحيد",
+        });
+      } else {
+        throw new Error('فشل في إيقاف التوحيد');
+      }
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ في إيقاف العملية",
         variant: "destructive",
       });
     } finally {
@@ -303,6 +346,17 @@ export default function UnificationProgress() {
             <Play className="h-4 w-4" />
             {stats.isRunning ? 'جاري التوحيد...' : 'بدء التوحيد الذكي'}
           </button>
+          
+          {stats.isRunning && (
+            <button
+              onClick={handleStopUnification}
+              disabled={isLoading}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 transition-colors"
+            >
+              <Square className="h-4 w-4" />
+              إيقاف التوحيد
+            </button>
+          )}
         </div>
         
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
