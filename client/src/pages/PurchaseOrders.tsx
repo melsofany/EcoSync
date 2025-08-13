@@ -246,33 +246,47 @@ export default function PurchaseOrders() {
     // البحث عن أمثلة من العمود K
     console.log('🔍 عينة من أرقام أوامر الشراء في العمود K:');
     const poSample = syncedData.items.slice(0, 10).map(item => item.rawData?.[10]).filter(Boolean);
-    console.log(poSample);
+    console.log('أمثلة من العمود K:', poSample);
+    console.log('رقم أمر الشراء المطلوب:', poNumber, 'بعد التنظيف:', poNumber.replace('gs-', ''));
     
     // البحث في العمود K (رقم أمر الشراء المؤكد) - فهرس 10
-    let poItems = syncedData.items.filter((item: any) => {
+    let matchCount = 0;
+    let poItems = syncedData.items.filter((item: any, index: number) => {
       const columnK = item.rawData?.[10]; // العمود K - فهرس 10
       
       // تنظيف رقم أمر الشراء (إزالة البادئة gs-)
       const cleanPONumber = poNumber.replace('gs-', '');
+      
+      // طباعة للتشخيص (أول 5 صفوف فقط)
+      if (index < 5) { 
+        console.log(`صف ${index}: العمود K = "${columnK}", البحث عن "${cleanPONumber}"`);
+      }
+      
       const match = columnK === cleanPONumber || 
                    columnK === poNumber ||
                    item.confirmedPONumber === cleanPONumber ||
                    item.confirmedPONumber === poNumber ||
                    item.columnK === cleanPONumber ||
-                   item.columnK === poNumber;
+                   item.columnK === poNumber ||
+                   String(columnK).trim() === String(cleanPONumber).trim();
       
       // طباعة البيانات المطابقة للتحقق
       if (match) {
-        console.log('✅ Found matching item:', {
-          'رقم الصنف (A)': item.rawData?.[0],
+        matchCount++;
+        console.log(`✅ Found matching item ${matchCount}:`, {
+          'معرف البند (A)': item.rawData?.[0],
+          'UOM (B)': item.rawData?.[1],
+          'Line Item (C)': item.rawData?.[2],
+          'Part No (D)': item.rawData?.[3],
           'الوصف (E)': item.rawData?.[4], 
-          'رقم أمر الشراء (K)': item.rawData?.[10],
-          'البحث عن': cleanPONumber
+          'رقم أمر الشراء (K)': item.rawData?.[10]
         });
       }
       
       return match;
     });
+    
+    console.log(`🎯 عدد البنود المطابقة لأمر الشراء ${poNumber}: ${poItems.length}`);
     
     console.log('Found PO items:', poItems.length);
     
