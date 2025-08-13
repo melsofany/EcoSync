@@ -36,7 +36,7 @@ class GoogleSheetsUsersManager {
       this.sheets = google.sheets({ version: 'v4', auth });
       console.log('✅ تم تهيئة مدير المستخدمين مع Google Sheets');
     } catch (error) {
-      console.error('❌ خطأ في تهيئة Google Sheets للمستخدمين:', error.message);
+      console.error('❌ خطأ في تهيئة Google Sheets للمستخدمين:', (error as Error).message);
     }
   }
 
@@ -63,7 +63,7 @@ class GoogleSheetsUsersManager {
         permissions: row[10] || ''
       }));
     } catch (error) {
-      console.error('❌ خطأ في قراءة المستخدمين من Google Sheets:', error.message);
+      console.error('❌ خطأ في قراءة المستخدمين من Google Sheets:', (error as Error).message);
       return [];
     }
   }
@@ -103,7 +103,7 @@ class GoogleSheetsUsersManager {
       console.log(`✅ تم إضافة المستخدم ${userData.username} إلى Google Sheets`);
       return true;
     } catch (error) {
-      console.error('❌ خطأ في إضافة المستخدم:', error.message);
+      console.error('❌ خطأ في إضافة المستخدم:', (error as Error).message);
       return false;
     }
   }
@@ -148,7 +148,7 @@ class GoogleSheetsUsersManager {
       console.log(`✅ تم تحديث المستخدم ${username} في Google Sheets`);
       return true;
     } catch (error) {
-      console.error('❌ خطأ في تحديث المستخدم:', error.message);
+      console.error('❌ خطأ في تحديث المستخدم:', (error as Error).message);
       return false;
     }
   }
@@ -186,7 +186,7 @@ class GoogleSheetsUsersManager {
       console.log(`✅ تم حذف المستخدم ${username} من Google Sheets`);
       return true;
     } catch (error) {
-      console.error('❌ خطأ في حذف المستخدم:', error.message);
+      console.error('❌ خطأ في حذف المستخدم:', (error as Error).message);
       return false;
     }
   }
@@ -214,7 +214,7 @@ class GoogleSheetsUsersManager {
 
       return true;
     } catch (error) {
-      console.error('❌ خطأ في تحديث آخر دخول:', error.message);
+      console.error('❌ خطأ في تحديث آخر دخول:', (error as Error).message);
       return false;
     }
   }
@@ -238,7 +238,7 @@ class GoogleSheetsUsersManager {
 
       return null;
     } catch (error) {
-      console.error('❌ خطأ في التحقق من المستخدم:', error.message);
+      console.error('❌ خطأ في التحقق من المستخدم:', (error as Error).message);
       return null;
     }
   }
@@ -253,7 +253,7 @@ class GoogleSheetsUsersManager {
       const sheet = response.data.sheets.find((s: any) => s.properties.title === sheetName);
       return sheet ? sheet.properties.sheetId : 0;
     } catch (error) {
-      console.error('❌ خطأ في الحصول على ID الورقة:', error.message);
+      console.error('❌ خطأ في الحصول على ID الورقة:', (error as Error).message);
       return 0;
     }
   }
@@ -270,7 +270,7 @@ class GoogleSheetsUsersManager {
         console.log(`👤 ${user.fullName} (${user.username}) - ${user.role} - ${user.status}`);
       }
     } catch (error) {
-      console.error('❌ خطأ في مزامنة المستخدمين:', error.message);
+      console.error('❌ خطأ في مزامنة المستخدمين:', (error as Error).message);
     }
   }
 }
