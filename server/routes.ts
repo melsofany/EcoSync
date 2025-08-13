@@ -1378,7 +1378,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/quotations/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const quotation = await storage.getQuotationById(id);
+      
+      // Try both methods to get quotation data
+      let quotation = await storage.getQuotationById(id);
+      if (!quotation) {
+        quotation = await storage.getQuotationRequest(id);
+      }
+      
+      // If still not found in database, try Google Sheets data
+      if (!quotation) {
+        try {
+          const { realDataStorage } = await import('./real-data-storage.js');
+          const allQuotations = realDataStorage.getQuotationRequests();
+          quotation = allQuotations.find((q: any) => q.id === id);
+        } catch (error) {
+          console.log("Could not get quotation from Google Sheets:", error.message);
+        }
+      }
+      
       if (!quotation) {
         return res.status(404).json({ message: "Quotation not found" });
       }
@@ -2998,8 +3015,31 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   app.get("/api/quotations/:quotationId/items", requireAuth, async (req: Request, res: Response) => {
     try {
       const { quotationId } = req.params;
-      const items = await storage.getQuotationItems(quotationId);
-      res.json(items);
+      
+      // Try database first
+      let items = await storage.getQuotationItems(quotationId);
+      
+      // If no items found in database, try Google Sheets data
+      if (!items || items.length === 0) {
+        try {
+          const { realDataStorage } = await import('./real-data-storage.js');
+          const allItems = realDataStorage.getItems();
+          const quotation = realDataStorage.getQuotationRequests().find((q: any) => q.id === quotationId);
+          
+          if (quotation) {
+            // Get items related to this quotation from Google Sheets
+            items = allItems.filter((item: any) => 
+              item.quotationId === quotationId || 
+              item.rfqNumber === quotation.requestNumber ||
+              item.rfqNumber === quotation.customRequestNumber
+            );
+          }
+        } catch (error) {
+          console.log("Could not get quotation items from Google Sheets:", error.message);
+        }
+      }
+      
+      res.json(items || []);
     } catch (error) {
       console.error("Get quotation items error:", error);
       res.status(500).json({ message: "Internal server error" });
