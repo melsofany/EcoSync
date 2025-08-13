@@ -258,9 +258,11 @@ export default function QuotationDetail() {
 
   const calculateTotalAmount = () => {
     if (!quotationItems || !Array.isArray(quotationItems)) return 0;
-    return quotationItems.reduce((total: number, item: QuotationItem) => {
-      return total + (item.quantity * item.unitPrice);
-    }, 0);
+    return quotationItems
+      .filter(item => item.quantity && item.quantity > 0)
+      .reduce((total: number, item: QuotationItem) => {
+        return total + (item.quantity * (item.unitPrice || 0));
+      }, 0);
   };
 
   if (isLoading) {
@@ -407,7 +409,8 @@ export default function QuotationDetail() {
               <span>أصناف طلب التسعير</span>
             </div>
             <Badge variant="outline">
-              {quotationItems && Array.isArray(quotationItems) ? quotationItems.length : 0} صنف
+              {quotationItems && Array.isArray(quotationItems) ? 
+                quotationItems.filter(item => item.quantity && item.quantity > 0).length : 0} بند مطلوب
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -429,6 +432,21 @@ export default function QuotationDetail() {
                 </Button>
               )}
             </div>
+          ) : quotationItems.filter(item => item.quantity && item.quantity > 0).length === 0 ? (
+            <div className="text-center py-12">
+              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد بنود مطلوبة</h3>
+              <p className="text-gray-600 mb-4">جميع البنود في هذا الطلب لها كمية صفر</p>
+              <div className="text-sm text-gray-500 mb-4">
+                إجمالي البنود: {quotationItems.length} • البنود المطلوبة: 0
+              </div>
+              {hasRole(safeUser, ["manager", "data_entry"]) && (
+                <Button onClick={() => setIsAddItemModalOpen(true)} variant="outline">
+                  <Plus className="h-4 w-4 ml-2" />
+                  إضافة بند جديد
+                </Button>
+              )}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -446,7 +464,11 @@ export default function QuotationDetail() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {quotationItems.map((quotationItem: QuotationItemWithDetails) => (
+                  {quotationItems
+                    .filter((quotationItem: QuotationItemWithDetails) => 
+                      quotationItem.quantity && quotationItem.quantity > 0
+                    )
+                    .map((quotationItem: QuotationItemWithDetails) => (
                     <TableRow key={quotationItem.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">
                         {quotationItem.itemNumber || "غير محدد"}
@@ -469,14 +491,14 @@ export default function QuotationDetail() {
                       <TableCell>
                         {quotationItem.partNumber || "غير محدد"}
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-green-600">
                         {quotationItem.quantity}
                       </TableCell>
                       <TableCell>
-                        {formatEGP(quotationItem.unitPrice)}
+                        {quotationItem.unitPrice ? formatEGP(quotationItem.unitPrice) : "لم يتم التسعير"}
                       </TableCell>
                       <TableCell className="font-bold text-green-600">
-                        {formatEGP(quotationItem.quantity * quotationItem.unitPrice)}
+                        {quotationItem.unitPrice ? formatEGP(quotationItem.quantity * quotationItem.unitPrice) : "في انتظار التسعير"}
                       </TableCell>
                       <TableCell>
                         {quotationItem.notes ? (
