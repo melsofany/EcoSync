@@ -1,4 +1,6 @@
 import { storage } from './storage.js';
+import { GoogleAuth } from 'google-auth-library';
+import { google } from 'googleapis';
 
 export interface UnificationStats {
   totalItems: number;
@@ -29,17 +31,23 @@ export class GoogleSheetsUnification {
       let allItems = [];
       
       try {
-        // محاولة الحصول على البيانات من قاعدة البيانات مباشرة
-        const { db } = await import('./db.js');
-        const { items } = await import('../shared/schema.js');
-        allItems = await db.select().from(items);
-        console.log(`📊 تم تحميل ${allItems.length} صنف من قاعدة البيانات مباشرة`);
-      } catch (dbError) {
-        console.log('⚠️ تعذر الوصول لقاعدة البيانات، جاري استخدام بيانات تجريبية...');
+        // الحصول على البيانات من Google Sheets مباشرة
+        allItems = await this.getItemsFromGoogleSheets();
+        console.log(`📊 تم تحميل ${allItems.length} صنف من ورقة DATA في Google Sheets`);
+      } catch (sheetsError) {
+        console.log(`⚠️ تعذر الوصول لـ Google Sheets: ${sheetsError.message}`);
         
-        // إنشاء بيانات تجريبية للعرض
-        allItems = this.generateSampleData();
-        console.log(`📊 تم إنشاء ${allItems.length} صنف تجريبي`);
+        try {
+          // محاولة الحصول على البيانات من قاعدة البيانات كخيار احتياطي
+          const { db } = await import('./db.js');
+          const { items } = await import('../shared/schema.js');
+          allItems = await db.select().from(items);
+          console.log(`📊 تم تحميل ${allItems.length} صنف من قاعدة البيانات كخيار احتياطي`);
+        } catch (dbError) {
+          console.log('⚠️ تعذر الوصول لقاعدة البيانات أيضاً، جاري استخدام بيانات تجريبية...');
+          allItems = this.generateSampleData();
+          console.log(`📊 تم إنشاء ${allItems.length} صنف تجريبي`);
+        }
       }
 
       if (allItems.length === 0) {
@@ -81,6 +89,105 @@ export class GoogleSheetsUnification {
         progress: 0
       };
     }
+  }
+
+  private async getItemsFromGoogleSheets() {
+    try {
+      // إعداد المصادقة باستخدام نفس بيانات UserSheetsManager
+      const credentials = {
+        type: "service_account",
+        project_id: "cortoba-supp-sys",
+        private_key_id: "75c0919d127e568d06729547b79f62f3b83322bd",
+        private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDLRiY5TEiNxTqU\nSKp94TnwbJh4L+bc8WylNB7qeXqFF8+obb1ErPy8kfq21vLRZNM7bY6R8zT+R96O\n+lFgemZrCg98jI9eZo/z2sdZZ8sBowGQpOC2S/+1bnqVtR/uBr5lSZNTXdxd0NBL\nRqSUrY79C7e5xBYQ/k60sRv3cGvwu0p2yuflca5Nq8B8ONCDTKdXMZNLyf3LYc2o\nXXDH4j+RdGkS7OAj3dUMYSt4yUa923ERYaSoaUkuUxyxy40c205MFkzPQRfcU3f4\nsoDLGcXq90lj5HvMkO9iFc6rXJoLAsKYkwBOQrabOIADw8snPXOxy0Pg4DAnbFX6\nkZ28acaVAgMBAAECggEABuzMNJDYD+xeLdsOjodJFVsTE//Ib6fR5GGS2WNrZx6u\ni7W2svY/DfWIgwjDm5qXD6Pl2Cxe681q/u1MLxXnE1JzwJx77eK0mMF6n8hyGWDX\nls6R0TlkQWa9dQgx9Eaf3zd9y2NGifOpL5yn0rYu9DPyqGN5FPnKQ0xIAEqrgrdE\ncwAvDiJ9jtj/7hUtL9E/Py3awxtqGrqfqAWyDMhlwqkPpQ/Ci9UT5LPGKU6PgGDA\nzOUNh0N3zreN4zjHaKGezdW+9wVAGkuJKOu4JtOkU6SJvKyQt4wHzrglQNjkl65C\nfCZl9ci9YTr+UD24LhAiA8yyQ9IYrDWn5dCeELjaAQKBgQD4L5wDoRvkPi42e3qg\n+sOpxiErPhyHl4keYW+DMPulad8qgXF+WUc5A9youEzj6D0EiXI0OrxuKw7Bhwkl\nbuisoLWeENsf8Djsa+xtDwwm+1IEIXi8xpVYhH83OY+o06Mw3JEB2K+Ci6SG0AUf\nFtzhvk02XSNQSfTF01K0Dke3wQKBgQDRrIwkl+/aQ/DzrDm4oWexdZJwWgWJESKi\nlx0Vb8nMVNFx2JBLmAcV1B4OvmpoAFHsr5/3/3x/pRa6Zk6GZluSrE7u3bbd6Hna\nTtUW4eo/2XR+/HFlbAWZwsNQAvHZ1gsBv+GlnT5zNE2fs4zI1KQigiAtGg4mnTga\n4KHDsD6j1QKBgHnfNyd5F68u8ZaDcCZYvXhC+Mq5R102BnlKs22iwg/qO1IuGkNH\nJ/hRcyvOxMMtqbjunYwUQ699qVNTMiSVn+AVUtn5wQCf//Po00KCnx8NTqsEnLtm\ncLP07Ft8ApWOx5YY2YQkmZrrY7FnuPwZSAH6ZwQJHGwyxOXX7cbJNGKBAoGAMqh3\nq5ex8ZActSLVR1Bn1y5K1S5KzBUBwzqzYiyCGwYbHGBwbHMssw9uu60x1DLPmFnO\nUoK9t7FRTnPNYRd15HgREhErT24NkrsdLMwkZozJYqznUNPKfp3ZxokPmcvnGOMd\nR4A4SGlIn98nkpYdmeDKmVsENDwkBAplyvvYBokCgYEA9uA3IUMaZ5G5KHgA+C4F\nmU+pwnOGs60BLTgK+EUXaUQ4f0HDsqCz0UXrI146bWW1sxU4TyddNUscc4SX/60k\nU86A4nrFQk0FkIcrhFS9KYkuWzqgBuY1N8AmgfI7tRIaqsRXb0281uhHmyN1MGBT\nx78kvtrLVv33tSBmTfs2m3k=\n-----END PRIVATE KEY-----\n",
+        client_email: "cortoba-sys@cortoba-supp-sys.iam.gserviceaccount.com",
+        client_id: "108486641505877917440",
+        auth_uri: "https://accounts.google.com/o/oauth2/auth",
+        token_uri: "https://oauth2.googleapis.com/token",
+        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+        client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/cortoba-sys%40cortoba-supp-sys.iam.gserviceaccount.com",
+        universe_domain: "googleapis.com"
+      };
+      
+      const auth = new GoogleAuth({
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+      });
+
+      const sheets = google.sheets({ version: 'v4', auth });
+      const spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1TuNmhUQSLCIJjyPKRGEX5WwCIlwgePdN5kBLkPSNGqg';
+      
+      console.log('📖 قراءة البيانات من ورقة DATA...');
+      
+      // قراءة البيانات من ورقة DATA
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: 'DATA!A:N', // قراءة من العمود A إلى N
+      });
+
+      const rows = response.data.values;
+      
+      if (!rows || rows.length <= 1) {
+        throw new Error('لا توجد بيانات في ورقة DATA');
+      }
+
+      // تحويل البيانات إلى تنسيق الأصناف
+      const items = [];
+      const headers = rows[0]; // الصف الأول يحتوي على العناوين
+      
+      for (let i = 1; i < rows.length; i++) { // تخطي الصف الأول (العناوين)
+        const row = rows[i];
+        if (row && row.length >= 4) { // التأكد من وجود بيانات أساسية
+          
+          const item = {
+            id: `sheets-item-${i}`,
+            itemNumber: row[1] || `P-${i.toString().padStart(3, '0')}`, // العمود B - رقم السطر
+            partNumber: row[2] || '', // العمود C - رقم القطعة  
+            description: row[3] || '', // العمود D - الوصف
+            uom: row[0] || 'قطعة', // العمود A - وحدة القياس
+            category: this.extractCategory(row[3] || ''),
+            rfqNumber: row[4] || '', // العمود E - رقم طلب التسعير
+            rfqPrice: this.parsePrice(row[7]), // العمود H - سعر طلب التسعير
+            poNumber: row[9] || '', // العمود J - رقم أمر الشراء
+            poPrice: this.parsePrice(row[12]), // العمود M - سعر أمر الشراء
+            createdAt: new Date().toISOString(),
+            isActive: true
+          };
+          
+          // إضافة الصنف فقط إذا كان له رقم قطعة أو وصف
+          if (item.partNumber.trim() || item.description.trim()) {
+            items.push(item);
+          }
+        }
+      }
+
+      return items;
+      
+    } catch (error) {
+      console.error('❌ خطأ في قراءة Google Sheets:', error.message);
+      throw error;
+    }
+  }
+
+  private extractCategory(description: string): string {
+    if (!description) return 'غير محدد';
+    
+    const desc = description.toLowerCase();
+    if (desc.includes('مضخة') || desc.includes('pump')) return 'مضخات';
+    if (desc.includes('محرك') || desc.includes('motor')) return 'محركات';  
+    if (desc.includes('صمام') || desc.includes('valve')) return 'صمامات';
+    if (desc.includes('خزان') || desc.includes('tank')) return 'خزانات';
+    if (desc.includes('مرشح') || desc.includes('filter')) return 'مرشحات';
+    if (desc.includes('كابل') || desc.includes('cable')) return 'كوابل';
+    if (desc.includes('لوحة') || desc.includes('panel')) return 'لوحات';
+    if (desc.includes('مفتاح') || desc.includes('switch')) return 'مفاتيح';
+    
+    return 'متنوعة';
+  }
+
+  private parsePrice(priceStr: string | undefined): number {
+    if (!priceStr) return 0;
+    const numStr = priceStr.toString().replace(/[^\d.-]/g, '');
+    return parseFloat(numStr) || 0;
   }
 
   private generateSampleData() {
