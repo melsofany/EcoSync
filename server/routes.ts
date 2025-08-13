@@ -867,66 +867,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.send(monitorHTML);
   });
 
-  // API endpoints لصفحة مراقبة التوحيد
-  let monitorInstance: any = null;
+  // API endpoints للتوحيد الذكي المتقدم
+  let smartEngine: any = null;
 
   app.get("/api/monitor/stats", async (req: Request, res: Response) => {
     try {
-      if (!monitorInstance) {
-        const { UnificationMonitorAPI } = await import('./unification-monitor-api');
-        monitorInstance = new UnificationMonitorAPI();
+      if (!smartEngine) {
+        const { SmartUnificationEngine } = await import('./smart-unification-engine');
+        smartEngine = new SmartUnificationEngine();
       }
       
-      const stats = await monitorInstance.getInitialStats();
+      const stats = smartEngine.getStats();
       res.json(stats);
     } catch (error: any) {
       res.status(500).json({
         success: false,
-        message: "خطأ في قراءة الإحصائيات: " + error.message
+        message: "خطأ في قراءة إحصائيات التوحيد الذكي: " + error.message
       });
     }
   });
 
   app.post("/api/monitor/start", async (req: Request, res: Response) => {
     try {
-      if (!monitorInstance) {
-        const { UnificationMonitorAPI } = await import('./unification-monitor-api');
-        monitorInstance = new UnificationMonitorAPI();
+      if (!smartEngine) {
+        const { SmartUnificationEngine } = await import('./smart-unification-engine');
+        smartEngine = new SmartUnificationEngine();
       }
       
-      if (monitorInstance.isProcessRunning()) {
+      if (smartEngine.isProcessRunning()) {
         return res.json({
           success: false,
-          message: "العملية قيد التشغيل بالفعل"
+          message: "التوحيد الذكي قيد التشغيل بالفعل"
         });
       }
       
-      monitorInstance.startRealTimeUnification();
+      // بدء التوحيد الذكي المتقدم
+      smartEngine.startSmartUnification().catch((error: any) => {
+        console.error('خطأ في التوحيد الذكي:', error);
+      });
+      
       res.json({
         success: true,
-        message: "تم بدء عملية التوحيد"
+        message: "تم بدء التوحيد الذكي المتقدم"
       });
     } catch (error: any) {
       res.status(500).json({
         success: false,
-        message: "خطأ في بدء التوحيد: " + error.message
+        message: "خطأ في بدء التوحيد الذكي: " + error.message
       });
     }
   });
 
   app.post("/api/monitor/stop", async (req: Request, res: Response) => {
     try {
-      if (monitorInstance) {
-        monitorInstance.stopUnification();
+      if (smartEngine) {
+        smartEngine.stopUnification();
       }
       res.json({
         success: true,
-        message: "تم إيقاف عملية التوحيد"
+        message: "تم إيقاف التوحيد الذكي"
       });
     } catch (error: any) {
       res.status(500).json({
         success: false,
-        message: "خطأ في إيقاف التوحيد: " + error.message
+        message: "خطأ في إيقاف التوحيد الذكي: " + error.message
       });
     }
   });
