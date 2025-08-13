@@ -18,6 +18,7 @@ const sizeClasses = {
 
 export function UserAvatar({ user, size = "md", className = "" }: UserAvatarProps) {
   const getInitials = (name: string) => {
+    if (!name || typeof name !== 'string') return 'M';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 

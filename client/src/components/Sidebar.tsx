@@ -1,5 +1,4 @@
 import { Link, useLocation } from "wouter";
-import { useAuth, useLogout } from "@/hooks/useAuth";
 import { canAccessSection } from "@/lib/auth";
 import { 
   LayoutDashboard, 
@@ -36,8 +35,21 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
-  const { user } = useAuth();
-  const logout = useLogout();
+  
+  // Mock admin user for Google Sheets system
+  const user = {
+    id: 'admin-user',
+    username: 'admin',
+    fullName: 'مدير النظام',
+    email: 'admin@qurtoba.com',
+    role: 'manager',
+    profileImage: null
+  };
+  
+  const logout = () => {
+    // Simple logout for Google Sheets system
+    window.location.href = '/';
+  };
 
   const menuItems = [
     {
