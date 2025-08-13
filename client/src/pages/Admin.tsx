@@ -55,9 +55,10 @@ export default function Admin() {
   // دالة فتح شاشة المراقبة
   const openMonitoringScreen = () => {
     console.log('🚀 محاولة فتح شاشة مراقبة التوحيد الذكي');
-    const url = "/ai-unification-monitor/";
+    const url = "/ai-unification-monitor";
     console.log('📍 الرابط:', url);
-    window.open(url, "_blank");
+    // فتح في نفس النافذة
+    window.location.href = url;
   };
   
   const [activeSection, setActiveSection] = useState<string>("");
