@@ -16,6 +16,7 @@ import multer from "multer";
 import { promises as fs } from "fs";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
+import { GoogleSheetsRealtimeData } from "./google-sheets-realtime-data";
 
 // إعداد Multer لرفع الصور
 const storage_multer = multer.diskStorage({
@@ -258,19 +259,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const poId = req.params.id;
       console.log('Getting items for PO from Google Sheets:', poId);
       
-      // قراءة البيانات مباشرة من الملف
+      // قراءة البيانات مباشرة من Google Sheets للحصول على أحدث البيانات
       let sheetsData = null;
       try {
-        const fs = await import('fs');
-        const dataString = fs.readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8');
-        sheetsData = JSON.parse(dataString);
-        console.log('✅ تم تحميل البيانات من synced_data_from_sheets.json');
+        // محاولة قراءة البيانات مباشرة من Google Sheets
+        console.log('🔄 قراءة البيانات الحقيقية من Google Sheets...');
+        const sheets = new GoogleSheetsRealtimeData();
+        await sheets.initialize();
+        const rawData = await sheets.readDataSheet();
+        
+        // تحويل البيانات الخام إلى تنسيق مناسب
+        const items = [];
+        for (let i = 1; i < rawData.length; i++) { // تخطي الصف الأول (العناوين)
+          const row = rawData[i];
+          if (row.length < 2) continue;
+          
+          const item = {
+            id: row[0] || '', // العمود A - معرف البند
+            lineItem: row[1] || '', // العمود B - وحدة القياس
+            partNumber: row[2] || '', // العمود C - رقم القطعة
+            description: row[3] || '', // العمود D - الوصف
+            uom: row[4] || '', // العمود E - الوصف الكامل
+            rfqNumber: row[5] || '', // العمود F - رقم RFQ
+            rfqDate: row[6] || '', // العمود G - تاريخ RFQ
+            quantity: parseFloat(row[7]) || 0, // العمود H - الكمية
+            rfqPrice: parseFloat(row[8]) || 0, // العمود I - سعر RFQ
+            responseDate: row[9] || '', // العمود J - تاريخ الرد
+            poNumber: row[10] || '', // العمود K - رقم PO
+            poDate: row[11] || '', // العمود L - تاريخ PO أو رقم PO
+            poQuantity: parseFloat(row[12]) || 0, // العمود M - كمية PO الصحيحة
+            poPrice: parseFloat(row[13]) || 0, // العمود N - سعر PO الصحيح
+            totalPOValue: parseFloat(row[14]) || 0 // العمود O - إجمالي القيمة
+          };
+          items.push(item);
+        }
+        
+        sheetsData = { items };
+        console.log('✅ تم تحميل البيانات مباشرة من Google Sheets');
+        console.log(`📊 عدد العناصر المحملة: ${items.length}`);
+        
+        // طباعة عينة من البيانات لفحص كمية وسعر PO
+        if (items.length > 0) {
+          const sample = items.slice(0, 3).map(item => ({
+            id: item.id,
+            poDate: item.poDate,
+            poQuantity: item.poQuantity,
+            poPrice: item.poPrice
+          }));
+          console.log('🔍 عينة من البيانات الحقيقية:', sample);
+        }
+        
       } catch (error) {
+        console.log('⚠️ تعذر تحميل البيانات من Google Sheets، استخدام البيانات المحفوظة');
         try {
           const fs = await import('fs');
-          const dataString = fs.readFileSync('./attached_assets/complete_excel_data.json', 'utf8');
+          const dataString = fs.readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8');
           sheetsData = JSON.parse(dataString);
-          console.log('✅ تم تحميل البيانات من complete_excel_data.json');
+          console.log('✅ تم تحميل البيانات من synced_data_from_sheets.json');
         } catch (error2) {
           console.error('❌ فشل في تحميل البيانات:', error2.message);
           return res.status(404).json({ message: "No Google Sheets data available" });
