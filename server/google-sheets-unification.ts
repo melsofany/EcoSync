@@ -190,6 +190,149 @@ export class GoogleSheetsUnification {
     return parseFloat(numStr) || 0;
   }
 
+  private async getFullSheetsData() {
+    try {
+      const credentials = {
+        type: "service_account",
+        project_id: "cortoba-supp-sys",
+        private_key_id: "75c0919d127e568d06729547b79f62f3b83322bd",
+        private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDLRiY5TEiNxTqU\nSKp94TnwbJh4L+bc8WylNB7qeXqFF8+obb1ErPy8kfq21vLRZNM7bY6R8zT+R96O\n+lFgemZrCg98jI9eZo/z2sdZZ8sBowGQpOC2S/+1bnqVtR/uBr5lSZNTXdxd0NBL\nRqSUrY79C7e5xBYQ/k60sRv3cGvwu0p2yuflca5Nq8B8ONCDTKdXMZNLyf3LYc2o\nXXDH4j+RdGkS7OAj3dUMYSt4yUa923ERYaSoaUkuUxyxy40c205MFkzPQRfcU3f4\nsoDLGcXq90lj5HvMkO9iFc6rXJoLAsKYkwBOQrabOIADw8snPXOxy0Pg4DAnbFX6\nkZ28acaVAgMBAAECggEABuzMNJDYD+xeLdsOjodJFVsTE//Ib6fR5GGS2WNrZx6u\ni7W2svY/DfWIgwjDm5qXD6Pl2Cxe681q/u1MLxXnE1JzwJx77eK0mMF6n8hyGWDX\nls6R0TlkQWa9dQgx9Eaf3zd9y2NGifOpL5yn0rYu9DPyqGN5FPnKQ0xIAEqrgrdE\ncwAvDiJ9jtj/7hUtL9E/Py3awxtqGrqfqAWyDMhlwqkPpQ/Ci9UT5LPGKU6PgGDA\nzOUNh0N3zreN4zjHaKGezdW+9wVAGkuJKOu4JtOkU6SJvKyQt4wHzrglQNjkl65C\nfCZl9ci9YTr+UD24LhAiA8yyQ9IYrDWn5dCeELjaAQKBgQD4L5wDoRvkPi42e3qg\n+sOpxiErPhyHl4keYW+DMPulad8qgXF+WUc5A9youEzj6D0EiXI0OrxuKw7Bhwkl\nbuisoLWeENsf8Djsa+xtDwwm+1IEIXi8xpVYhH83OY+o06Mw3JEB2K+Ci6SG0AUf\nFtzhvk02XSNQSfTF01K0Dke3wQKBgQDRrIwkl+/aQ/DzrDm4oWexdZJwWgWJESKi\nlx0Vb8nMVNFx2JBLmAcV1B4OvmpoAFHsr5/3/3x/pRa6Zk6GZluSrE7u3bbd6Hna\nTtUW4eo/2XR+/HFlbAWZwsNQAvHZ1gsBv+GlnT5zNE2fs4zI1KQigiAtGg4mnTga\n4KHDsD6j1QKBgHnfNyd5F68u8ZaDcCZYvXhC+Mq5R102BnlKs22iwg/qO1IuGkNH\nJ/hRcyvOxMMtqbjunYwUQ699qVNTMiSVn+AVUtn5wQCf//Po00KCnx8NTqsEnLtm\ncLP07Ft8ApWOx5YY2YQkmZrrY7FnuPwZSAH6ZwQJHGwyxOXX7cbJNGKBAoGAMqh3\nq5ex8ZActSLVR1Bn1y5K1S5KzBUBwzqzYiyCGwYbHGBwbHMssw9uu60x1DLPmFnO\nUoK9t7FRTnPNYRd15HgREhErT24NkrsdLMwkZozJYqznUNPKfp3ZxokPmcvnGOMd\nR4A4SGlIn98nkpYdmeDKmVsENDwkBAplyvvYBokCgYEA9uA3IUMaZ5G5KHgA+C4F\nmU+pwnOGs60BLTgK+EUXaUQ4f0HDsqCz0UXrI146bWW1sxU4TyddNUscc4SX/60k\nU86A4nrFQk0FkIcrhFS9KYkuWzqgBuY1N8AmgfI7tRIaqsRXb0281uhHmyN1MGBT\nx78kvtrLVv33tSBmTfs2m3k=\n-----END PRIVATE KEY-----\n",
+        client_email: "cortoba-sys@cortoba-supp-sys.iam.gserviceaccount.com",
+        client_id: "108486641505877917440",
+        auth_uri: "https://accounts.google.com/o/oauth2/auth",
+        token_uri: "https://oauth2.googleapis.com/token",
+        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+        client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/cortoba-sys%40cortoba-supp-sys.iam.gserviceaccount.com",
+        universe_domain: "googleapis.com"
+      };
+      
+      const auth = new GoogleAuth({
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      });
+
+      const sheets = google.sheets({ version: 'v4', auth });
+      const spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1TuNmhUQSLCIJjyPKRGEX5WwCIlwgePdN5kBLkPSNGqg';
+      
+      // قراءة جميع البيانات من ورقة DATA
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: 'DATA!A:N',
+      });
+
+      return response.data.values || [];
+    } catch (error) {
+      console.error('❌ خطأ في قراءة Google Sheets:', error.message);
+      throw error;
+    }
+  }
+
+  private async findMatchingRow(
+    currentRowIndex: number, 
+    partNumber: string | undefined, 
+    description: string | undefined, 
+    sheetsData: any[][]
+  ): Promise<number> {
+    
+    // البحث في الصفوف السابقة فقط
+    for (let i = 1; i < currentRowIndex; i++) {
+      const row = sheetsData[i];
+      const rowPartNumber = row[2]?.trim();
+      const rowDescription = row[3]?.trim();
+
+      // مطابقة رقم القطعة (إذا وجد)
+      if (partNumber && rowPartNumber) {
+        if (this.normalizePartNumber(partNumber) === this.normalizePartNumber(rowPartNumber)) {
+          console.log(`🎯 تطابق رقم القطعة: ${partNumber} مع الصف ${i + 1}`);
+          return i;
+        }
+      }
+
+      // مطابقة التوصيف باستخدام AI (محاكاة)
+      if (description && rowDescription && description.length > 10 && rowDescription.length > 10) {
+        const similarity = await this.calculateDescriptionSimilarity(description, rowDescription);
+        if (similarity > 0.85) { // نسبة تشابه عالية
+          console.log(`🎯 تطابق التوصيف (${Math.round(similarity * 100)}%): ${description.substring(0, 30)}... مع الصف ${i + 1}`);
+          return i;
+        }
+      }
+    }
+
+    return -1; // لم يتم العثور على تطابق
+  }
+
+  private async calculateDescriptionSimilarity(desc1: string, desc2: string): Promise<number> {
+    // محاكاة تحليل AI للتوصيف - في التطبيق الحقيقي يمكن استخدام DeepSeek API
+    const words1 = this.extractKeywords(desc1);
+    const words2 = this.extractKeywords(desc2);
+    
+    const commonWords = words1.filter(word => words2.includes(word));
+    const totalWords = new Set([...words1, ...words2]).size;
+    
+    if (totalWords === 0) return 0;
+    
+    const similarity = (commonWords.length * 2) / (words1.length + words2.length);
+    
+    // إضافة تحليل متقدم للأرقام والوحدات
+    const numbers1 = desc1.match(/\d+/g) || [];
+    const numbers2 = desc2.match(/\d+/g) || [];
+    const commonNumbers = numbers1.filter(num => numbers2.includes(num));
+    
+    if (commonNumbers.length > 0 && similarity > 0.6) {
+      return Math.min(similarity + 0.2, 1); // زيادة التشابه إذا كان هناك أرقام متطابقة
+    }
+    
+    return similarity;
+  }
+
+  private extractKeywords(text: string): string[] {
+    return text
+      .toLowerCase()
+      .replace(/[^\u0600-\u06FFa-z0-9\s]/g, '') // الاحتفاظ بالعربية والإنجليزية والأرقام فقط
+      .split(/\s+/)
+      .filter(word => word.length > 2) // كلمات أطول من حرفين
+      .slice(0, 10); // أول 10 كلمات فقط
+  }
+
+  private async applyUpdatesToSheets(updates: { range: string; values: any[][] }[]) {
+    try {
+      const credentials = {
+        type: "service_account",
+        project_id: "cortoba-supp-sys",
+        private_key_id: "75c0919d127e568d06729547b79f62f3b83322bd",
+        private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDLRiY5TEiNxTqU\nSKp94TnwbJh4L+bc8WylNB7qeXqFF8+obb1ErPy8kfq21vLRZNM7bY6R8zT+R96O\n+lFgemZrCg98jI9eZo/z2sdZZ8sBowGQpOC2S/+1bnqVtR/uBr5lSZNTXdxd0NBL\nRqSUrY79C7e5xBYQ/k60sRv3cGvwu0p2yuflca5Nq8B8ONCDTKdXMZNLyf3LYc2o\nXXDH4j+RdGkS7OAj3dUMYSt4yUa923ERYaSoaUkuUxyxy40c205MFkzPQRfcU3f4\nsoDLGcXq90lj5HvMkO9iFc6rXJoLAsKYkwBOQrabOIADw8snPXOxy0Pg4DAnbFX6\nkZ28acaVAgMBAAECggEABuzMNJDYD+xeLdsOjodJFVsTE//Ib6fR5GGS2WNrZx6u\ni7W2svY/DfWIgwjDm5qXD6Pl2Cxe681q/u1MLxXnE1JzwJx77eK0mMF6n8hyGWDX\nls6R0TlkQWa9dQgx9Eaf3zd9y2NGifOpL5yn0rYu9DPyqGN5FPnKQ0xIAEqrgrdE\ncwAvDiJ9jtj/7hUtL9E/Py3awxtqGrqfqAWyDMhlwqkPpQ/Ci9UT5LPGKU6PgGDA\nzOUNh0N3zreN4zjHaKGezdW+9wVAGkuJKOu4JtOkU6SJvKyQt4wHzrglQNjkl65C\nfCZl9ci9YTr+UD24LhAiA8yyQ9IYrDWn5dCeELjaAQKBgQD4L5wDoRvkPi42e3qg\n+sOpxiErPhyHl4keYW+DMPulad8qgXF+WUc5A9youEzj6D0EiXI0OrxuKw7Bhwkl\nbuisoLWeENsf8Djsa+xtDwwm+1IEIXi8xpVYhH83OY+o06Mw3JEB2K+Ci6SG0AUf\nFtzhvk02XSNQSfTF01K0Dke3wQKBgQDRrIwkl+/aQ/DzrDm4oWexdZJwWgWJESKi\nlx0Vb8nMVNFx2JBLmAcV1B4OvmpoAFHsr5/3/3x/pRa6Zk6GZluSrE7u3bbd6Hna\nTtUW4eo/2XR+/HFlbAWZwsNQAvHZ1gsBv+GlnT5zNE2fs4zI1KQigiAtGg4mnTga\n4KHDsD6j1QKBgHnfNyd5F68u8ZaDcCZYvXhC+Mq5R102BnlKs22iwg/qO1IuGkNH\nJ/hRcyvOxMMtqbjunYwUQ699qVNTMiSVn+AVUtn5wQCf//Po00KCnx8NTqsEnLtm\ncLP07Ft8ApWOx5YY2YQkmZrrY7FnuPwZSAH6ZwQJHGwyxOXX7cbJNGKBAoGAMqh3\nq5ex8ZActSLVR1Bn1y5K1S5KzBUBwzqzYiyCGwYbHGBwbHMssw9uu60x1DLPmFnO\nUoK9t7FRTnPNYRd15HgREhErT24NkrsdLMwkZozJYqznUNPKfp3ZxokPmcvnGOMd\nR4A4SGlIn98nkpYdmeDKmVsENDwkBAplyvvYBokCgYEA9uA3IUMaZ5G5KHgA+C4F\nmU+pwnOGs60BLTgK+EUXaUQ4f0HDsqCz0UXrI146bWW1sxU4TyddNUscc4SX/60k\nU86A4nrFQk0FkIcrhFS9KYkuWzqgBuY1N8AmgfI7tRIaqsRXb0281uhHmyN1MGBT\nx78kvtrLVv33tSBmTfs2m3k=\n-----END PRIVATE KEY-----\n",
+        client_email: "cortoba-sys@cortoba-supp-sys.iam.gserviceaccount.com",
+        client_id: "108486641505877917440",
+        auth_uri: "https://accounts.google.com/o/oauth2/auth",
+        token_uri: "https://oauth2.googleapis.com/token",
+        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+        client_x509_cert_url: "https://www.googleapis.com/robot/v1/metadata/x509/cortoba-sys%40cortoba-supp-sys.iam.gserviceaccount.com",
+        universe_domain: "googleapis.com"
+      };
+      
+      const auth = new GoogleAuth({
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      });
+
+      const sheets = google.sheets({ version: 'v4', auth });
+      const spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1TuNmhUQSLCIJjyPKRGEX5WwCIlwgePdN5kBLkPSNGqg';
+
+      // تطبيق كل التحديثات في مرة واحدة
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          valueInputOption: 'RAW',
+          data: updates
+        }
+      });
+
+      console.log(`📝 تم تطبيق ${updates.length} تحديث في Google Sheets`);
+    } catch (error) {
+      console.error('❌ خطأ في تطبيق التحديثات:', error.message);
+    }
+  }
+
   private generateSampleData() {
     try {
       // قراءة البيانات التجريبية من الملف
@@ -300,43 +443,16 @@ export class GoogleSheetsUnification {
     }
 
     try {
-      console.log('🚀 بدء عملية التوحيد الذكي...');
+      console.log('🚀 بدء عملية التوحيد الذكي مع Google Sheets...');
       this.isRunning = true;
       this.currentProgress = 0;
 
-      // محاكاة عملية التوحيد التدريجية
-      setTimeout(async () => {
-        try {
-          const allItems = await storage.getAllItems();
-          const totalSteps = 5;
-          
-          for (let step = 1; step <= totalSteps; step++) {
-            this.currentProgress = (step / totalSteps) * 100;
-            console.log(`📊 خطوة ${step}/${totalSteps}: ${this.currentProgress}%`);
-            
-            // تأخير لمحاكاة المعالجة
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-
-          this.currentProgress = 100;
-          console.log('✅ تم انتهاء عملية التوحيد بنجاح');
-          
-          // إنهاء العملية
-          setTimeout(() => {
-            this.isRunning = false;
-            this.currentProgress = 0;
-          }, 2000);
-
-        } catch (error) {
-          console.error('❌ خطأ أثناء التوحيد:', error);
-          this.isRunning = false;
-          this.currentProgress = 0;
-        }
-      }, 500);
+      // تشغيل عملية التوحيد الحقيقية
+      this.performAIUnification();
 
       return {
         success: true,
-        message: 'تم بدء عملية التوحيد بنجاح'
+        message: 'تم بدء عملية التوحيد الذكي بنجاح'
       };
 
     } catch (error) {
@@ -346,6 +462,112 @@ export class GoogleSheetsUnification {
         success: false,
         message: 'فشل في بدء عملية التوحيد'
       };
+    }
+  }
+
+  private async performAIUnification() {
+    try {
+      // الحصول على البيانات من Google Sheets
+      const sheetsData = await this.getFullSheetsData();
+      console.log(`🔍 بدء معالجة ${sheetsData.length} صف من ورقة DATA...`);
+      
+      let processedRows = 0;
+      let unifiedCount = 0;
+      const updates = [];
+
+      // معالجة كل صف بدءًا من الصف الثاني (index 1)
+      for (let currentRowIndex = 1; currentRowIndex < sheetsData.length; currentRowIndex++) {
+        const currentRow = sheetsData[currentRowIndex];
+        
+        // تحديث التقدم
+        this.currentProgress = (processedRows / (sheetsData.length - 1)) * 100;
+        processedRows++;
+
+        // تخطي الصفوف التي لها معرّف بند بالفعل في العمود A
+        if (currentRow[0] && currentRow[0].trim()) {
+          console.log(`⏭️ تخطي الصف ${currentRowIndex + 1}: له معرّف بند بالفعل (${currentRow[0]})`);
+          continue;
+        }
+
+        const partNumber = currentRow[2]?.trim(); // العمود C (رقم القطعة)
+        const description = currentRow[3]?.trim(); // العمود D (التوصيف)
+
+        if (!partNumber && !description) {
+          continue; // تخطي الصفوف الفارغة
+        }
+
+        console.log(`🔎 معالجة الصف ${currentRowIndex + 1}: ${partNumber || 'بلا رقم قطعة'} - ${description?.substring(0, 50) || 'بلا توصيف'}...`);
+
+        // البحث عن تطابق في الصفوف السابقة
+        const matchingRowIndex = await this.findMatchingRow(
+          currentRowIndex,
+          partNumber,
+          description,
+          sheetsData
+        );
+
+        if (matchingRowIndex !== -1) {
+          const matchingRow = sheetsData[matchingRowIndex];
+          let itemId = matchingRow[0];
+
+          // إذا لم يكن للصف المطابق معرّف بند، أنشئ واحداً جديداً
+          if (!itemId || !itemId.trim()) {
+            itemId = `ITEM-${Date.now()}-${matchingRowIndex}`;
+            console.log(`🆕 إنشاء معرّف بند جديد: ${itemId} للصف ${matchingRowIndex + 1}`);
+            
+            // إضافة تحديث للصف المطابق
+            updates.push({
+              range: `DATA!A${matchingRowIndex + 1}`,
+              values: [[itemId]]
+            });
+          }
+
+          // إضافة نفس المعرّف للصف الحالي
+          updates.push({
+            range: `DATA!A${currentRowIndex + 1}`,
+            values: [[itemId]]
+          });
+
+          unifiedCount++;
+          console.log(`✅ تم توحيد الصف ${currentRowIndex + 1} مع الصف ${matchingRowIndex + 1} بالمعرّف: ${itemId}`);
+        } else {
+          // لم يتم العثور على تطابق، أنشئ معرّف جديد
+          const newItemId = `ITEM-${Date.now()}-${currentRowIndex}`;
+          updates.push({
+            range: `DATA!A${currentRowIndex + 1}`,
+            values: [[newItemId]]
+          });
+          console.log(`🆕 صف فريد ${currentRowIndex + 1}: معرّف جديد ${newItemId}`);
+        }
+
+        // كل 10 صفوف، طبّق التحديثات
+        if (updates.length >= 20) {
+          await this.applyUpdatesToSheets(updates);
+          updates.length = 0; // مسح المصفوفة
+        }
+
+        // تأخير بسيط لتجنب تجاوز حدود API
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      // تطبيق التحديثات المتبقية
+      if (updates.length > 0) {
+        await this.applyUpdatesToSheets(updates);
+      }
+
+      this.currentProgress = 100;
+      console.log(`✅ اكتملت عملية التوحيد: ${unifiedCount} بند تم توحيده من ${processedRows} صف`);
+
+      // إنهاء العملية بعد ثانيتين
+      setTimeout(() => {
+        this.isRunning = false;
+        this.currentProgress = 0;
+      }, 2000);
+
+    } catch (error) {
+      console.error('❌ خطأ في عملية التوحيد:', error);
+      this.isRunning = false;
+      this.currentProgress = 0;
     }
   }
 
