@@ -256,8 +256,8 @@ export default function Login() {
             <div className="text-blue-800 font-medium mb-2">معلومات تسجيل الدخول:</div>
             <div className="space-y-1 text-blue-700">
               <div>• النظام المحلي: admin / admin123</div>
+              <div>• Google Sheets: admin / admin123</div>
               <div>• Google Sheets: it_admin / it123456</div>
-              <div>• Google Sheets: manager_user / mgr789</div>
             </div>
           </div>
 
