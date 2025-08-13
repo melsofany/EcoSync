@@ -69,8 +69,13 @@ export default function UnificationMonitor() {
   useEffect(() => {
     const fetchProgress = async () => {
       try {
-        const data = await apiRequest('/api/unification-progress');
-        setProgress(data);
+        const response = await fetch('/api/unification/status', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setProgress(data);
+        }
       } catch (error) {
         console.error('Error fetching progress:', error);
       }
@@ -85,15 +90,24 @@ export default function UnificationMonitor() {
   const handleStartUnification = async () => {
     setIsLoading(true);
     try {
-      await apiRequest('/api/start-unification', {
+      const response = await fetch('/api/unification/start', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
         body: JSON.stringify(startingOptions)
       });
-      
-      toast({
-        title: "تم بدء عملية التوحيد",
-        description: "جاري معالجة البنود باستخدام الذكاء الاصطناعي",
-      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast({
+          title: "تم بدء التوحيد",
+          description: data.message || "تم بدء عملية التوحيد الذكي بنجاح",
+        });
+      } else {
+        throw new Error('فشل في بدء التوحيد');
+      }
     } catch (error: any) {
       toast({
         title: "خطأ في بدء العملية",

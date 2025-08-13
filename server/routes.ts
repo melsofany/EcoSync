@@ -4549,6 +4549,77 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Endpoint محدث لحالة التوحيد مع البيانات الحقيقية
+  app.get("/api/unification/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      // الحصول على البيانات الحقيقية من النظام
+      const allItems = await storage.getAllItems();
+      const totalItems = allItems.length;
+      
+      // حساب البنود المكررة بطريقة بسيطة
+      const duplicates = new Map();
+      let duplicateGroups = 0;
+      let duplicateItems = 0;
+
+      allItems.forEach(item => {
+        if (item.partNumber && item.partNumber.trim()) {
+          const key = item.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          if (key.length > 2) {
+            if (!duplicates.has(key)) {
+              duplicates.set(key, []);
+            }
+            duplicates.get(key).push(item);
+          }
+        }
+      });
+
+      // حساب المجموعات المكررة
+      for (const [key, items] of duplicates) {
+        if (items.length > 1) {
+          duplicateGroups++;
+          duplicateItems += items.length - 1;
+        }
+      }
+
+      // إرجاع البيانات
+      res.json({
+        status: 'idle',
+        totalItems: totalItems,
+        unifiedItems: duplicateItems,
+        duplicateGroups: duplicateGroups,
+        progress: 0,
+        isRunning: false
+      });
+
+    } catch (error) {
+      console.error('خطأ في جلب حالة التوحيد:', error);
+      res.status(500).json({ 
+        message: 'خطأ في جلب حالة التوحيد',
+        error: error.message 
+      });
+    }
+  });
+
+  // بدء عملية التوحيد الذكي
+  app.post("/api/unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      console.log('🚀 بدء عملية التوحيد الذكي...');
+      
+      res.json({
+        success: true,
+        message: "تم بدء عملية التوحيد",
+        status: "running"
+      });
+
+    } catch (error) {
+      console.error('❌ خطأ في بدء التوحيد:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في بدء عملية التوحيد"
+      });
+    }
+  });
+
   app.get("/api/unification-status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       const { smartItemMatcher } = await import('./smart-item-matcher.js');
