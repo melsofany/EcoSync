@@ -279,15 +279,24 @@ export default function PurchaseOrders() {
       
       return {
         ...item,
-        // رقم الصنف من العمود A (فهرس 0)
-        partNumber: item.rawData?.[0] || item.columnA || item.itemNumber || item.partNumber || 'غير محدد',
+        // معرف البند من العمود A (فهرس 0)
+        itemId: item.rawData?.[0] || item.columnA || item.itemNumber || 'غير محدد',
+        // UOM من العمود B (فهرس 1)
+        uom: item.rawData?.[1] || item.columnB || item.uom || 'غير محدد',
+        // Line Item من العمود C (فهرس 2)
+        lineItem: item.rawData?.[2] || item.columnC || item.lineItem || 'غير محدد',
+        // Part No من العمود D (فهرس 3)
+        partNumber: item.rawData?.[3] || item.columnD || item.partNumber || 'غير محدد',
         // الوصف من العمود E (فهرس 4) 
         description: item.rawData?.[4] || item.columnE || item.description || 'غير محدد',
-        quantity: item.quantity || item.columnG || item.rawData?.[6] || '1',
-        rfqPrice: item.rfqPrice || item.columnH || item.rawData?.[7] || '0',
-        totalPOValue: item.poPrice || item.totalPOValue || item.columnM || item.rawData?.[12] || '0',
-        // تاريخ أمر الشراء من العمود L (فهرس 11)
-        poDate: item.rawData?.[11] || item.columnL || item.poDate || '',
+        // كمية RFQ من العمود G (فهرس 6)
+        rfqQuantity: item.rawData?.[6] || item.columnG || item.quantity || '1',
+        // سعر RFQ من العمود H (فهرس 7)
+        rfqPrice: item.rawData?.[7] || item.columnH || item.rfqPrice || '0',
+        // كمية PO من العمود L (فهرس 11) - قد تحتاج تعديل حسب البيانات
+        poQuantity: item.rawData?.[11] || item.columnL || item.poQuantity || item.rfqQuantity || '1',
+        // سعر PO من العمود M (فهرس 12)
+        poPrice: item.rawData?.[12] || item.columnM || item.totalPOValue || item.poPrice || '0',
       };
     });
   };
@@ -859,14 +868,15 @@ export default function PurchaseOrders() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="text-right">رقم الصنف</TableHead>
+                            <TableHead className="text-right">معرف البند</TableHead>
+                            <TableHead className="text-right">UOM</TableHead>
+                            <TableHead className="text-right">Line Item</TableHead>
+                            <TableHead className="text-right">Part No</TableHead>
                             <TableHead className="text-right">الوصف</TableHead>
-                            <TableHead className="text-right">الكمية</TableHead>
+                            <TableHead className="text-center">كمية RFQ</TableHead>
                             <TableHead className="text-right">سعر RFQ</TableHead>
-                            <TableHead className="text-right">إجمالي RFQ</TableHead>
+                            <TableHead className="text-center">كمية PO</TableHead>
                             <TableHead className="text-right">سعر PO</TableHead>
-                            <TableHead className="text-right">إجمالي PO</TableHead>
-                            <TableHead className="text-right">الفرق</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -884,29 +894,31 @@ export default function PurchaseOrders() {
                             
                             return (
                               <TableRow key={index} className="hover:bg-gray-50">
-                                <TableCell className="font-medium text-blue-600">{item.partNumber}</TableCell>
+                                {/* معرف البند */}
+                                <TableCell className="font-medium text-blue-600">{item.itemId}</TableCell>
+                                {/* UOM */}
+                                <TableCell className="text-center">{item.uom}</TableCell>
+                                {/* Line Item */}
+                                <TableCell className="text-center">{item.lineItem}</TableCell>
+                                {/* Part No */}
+                                <TableCell className="font-medium">{item.partNumber}</TableCell>
+                                {/* الوصف */}
                                 <TableCell className="max-w-xs">
                                   <div className="break-words" title={item.description}>
                                     {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}
                                   </div>
                                 </TableCell>
-                                <TableCell className="text-center font-medium">{item.quantity}</TableCell>
+                                {/* كمية RFQ */}
+                                <TableCell className="text-center font-medium">{item.rfqQuantity}</TableCell>
+                                {/* سعر RFQ */}
                                 <TableCell className="text-right">
                                   {(parseFloat(item.rfqPrice) || 0).toLocaleString('ar-EG')} ج.م
                                 </TableCell>
-                                <TableCell className="text-right font-medium">
-                                  {rfqTotal.toLocaleString('ar-EG')} ج.م
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {poPrice.toLocaleString('ar-EG')} ج.م
-                                </TableCell>
+                                {/* كمية PO */}
+                                <TableCell className="text-center font-medium">{item.poQuantity}</TableCell>
+                                {/* سعر PO */}
                                 <TableCell className="text-right font-bold text-green-600">
-                                  {poTotal.toLocaleString('ar-EG')} ج.م
-                                </TableCell>
-                                <TableCell className={`text-right font-medium ${
-                                  difference > 0 ? 'text-red-600' : difference < 0 ? 'text-green-600' : 'text-gray-600'
-                                }`}>
-                                  {difference !== 0 ? `${difference > 0 ? '+' : ''}${difference.toLocaleString('ar-EG')} ج.م` : '-'}
+                                  {(parseFloat(item.poPrice) || 0).toLocaleString('ar-EG')} ج.م
                                 </TableCell>
                               </TableRow>
                             );
