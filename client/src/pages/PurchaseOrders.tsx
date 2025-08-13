@@ -13,6 +13,86 @@ import NewPurchaseOrderModal from "@/components/modals/NewPurchaseOrderModal";
 import EditPurchaseOrderModal from "@/components/modals/EditPurchaseOrderModal";
 import EditPOItemsModal from "@/components/modals/EditPOItemsModal";
 
+// مكون لعرض عدد البنود
+function POItemsBadge({ poNumber }: { poNumber: string }) {
+  const { data: poItems, isLoading } = useQuery({
+    queryKey: [`/api/sheets/purchase-orders/${poNumber}/items`],
+    enabled: !!poNumber
+  });
+
+  if (isLoading) return <Badge variant="outline">...</Badge>;
+  
+  const itemCount = poItems?.length || 0;
+  return <Badge variant="outline">{itemCount} صنف</Badge>;
+}
+
+// مكون لعرض جدول البنود
+function POItemsTable({ poNumber }: { poNumber: string }) {
+  const { data: poItems, isLoading } = useQuery({
+    queryKey: [`/api/sheets/purchase-orders/${poNumber}/items`],
+    enabled: !!poNumber
+  });
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        جاري تحميل البنود...
+      </div>
+    );
+  }
+
+  if (!poItems || poItems.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        لا توجد بنود مرتبطة بهذا الأمر
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-right">معرف البند</TableHead>
+            <TableHead className="text-right">UOM</TableHead>
+            <TableHead className="text-right">Line Item</TableHead>
+            <TableHead className="text-right">Part No</TableHead>
+            <TableHead className="text-right">الوصف</TableHead>
+            <TableHead className="text-center">كمية RFQ</TableHead>
+            <TableHead className="text-right">سعر RFQ</TableHead>
+            <TableHead className="text-center">كمية PO</TableHead>
+            <TableHead className="text-right">سعر PO</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {poItems.map((item: any, index: number) => (
+            <TableRow key={index} className="hover:bg-gray-50">
+              <TableCell className="font-medium text-blue-600">{item.itemId}</TableCell>
+              <TableCell className="text-center">{item.uom}</TableCell>
+              <TableCell className="text-center">{item.lineItem}</TableCell>
+              <TableCell className="font-medium">{item.partNumber}</TableCell>
+              <TableCell className="max-w-xs">
+                <div className="break-words" title={item.description}>
+                  {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}
+                </div>
+              </TableCell>
+              <TableCell className="text-center font-medium">{item.rfqQuantity}</TableCell>
+              <TableCell className="text-right">
+                {(parseFloat(item.rfqPrice) || 0).toLocaleString('ar-EG')} ج.م
+              </TableCell>
+              <TableCell className="text-center font-medium">{item.poQuantity}</TableCell>
+              <TableCell className="text-right font-bold text-green-600">
+                {(parseFloat(item.poPrice) || 0).toLocaleString('ar-EG')} ج.م
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
 // مكون لحساب الإجمالي الصحيح لكل أمر شراء من العمود N
 function POTotalAmount({ poNumber, fallbackAmount }: { poNumber: string; fallbackAmount: number }) {
   const { data: syncedData } = useQuery({
@@ -942,78 +1022,11 @@ export default function PurchaseOrders() {
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center justify-between">
                     <span>بنود أمر الشراء</span>
-                    <Badge variant="outline">{getPOItems(selectedPO.poNumber).length} صنف</Badge>
+                    <POItemsBadge poNumber={selectedPO.poNumber} />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {getPOItems(selectedPO.poNumber).length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="text-right">معرف البند</TableHead>
-                            <TableHead className="text-right">UOM</TableHead>
-                            <TableHead className="text-right">Line Item</TableHead>
-                            <TableHead className="text-right">Part No</TableHead>
-                            <TableHead className="text-right">الوصف</TableHead>
-                            <TableHead className="text-center">كمية RFQ</TableHead>
-                            <TableHead className="text-right">سعر RFQ</TableHead>
-                            <TableHead className="text-center">كمية PO</TableHead>
-                            <TableHead className="text-right">سعر PO</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {getPOItems(selectedPO.poNumber).map((item: any, index: number) => {
-                            const rfqTotal = (parseFloat(item.rfqPrice) || 0) * (parseInt(item.quantity) || 0);
-                            const poTotal = parseFloat(item.totalPOValue) || 0;
-                            const difference = poTotal - rfqTotal;
-                            const poPrice = poTotal / (parseInt(item.quantity) || 1);
-                            
-                            console.log('Displaying item:', {
-                              partNumber: item.partNumber,
-                              description: item.description,
-                              rawData: item.rawData?.slice(0, 5) // First 5 columns for debugging
-                            });
-                            
-                            return (
-                              <TableRow key={index} className="hover:bg-gray-50">
-                                {/* معرف البند */}
-                                <TableCell className="font-medium text-blue-600">{item.itemId}</TableCell>
-                                {/* UOM */}
-                                <TableCell className="text-center">{item.uom}</TableCell>
-                                {/* Line Item */}
-                                <TableCell className="text-center">{item.lineItem}</TableCell>
-                                {/* Part No */}
-                                <TableCell className="font-medium">{item.partNumber}</TableCell>
-                                {/* الوصف */}
-                                <TableCell className="max-w-xs">
-                                  <div className="break-words" title={item.description}>
-                                    {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}
-                                  </div>
-                                </TableCell>
-                                {/* كمية RFQ */}
-                                <TableCell className="text-center font-medium">{item.rfqQuantity}</TableCell>
-                                {/* سعر RFQ */}
-                                <TableCell className="text-right">
-                                  {(parseFloat(item.rfqPrice) || 0).toLocaleString('ar-EG')} ج.م
-                                </TableCell>
-                                {/* كمية PO */}
-                                <TableCell className="text-center font-medium">{item.poQuantity}</TableCell>
-                                {/* سعر PO */}
-                                <TableCell className="text-right font-bold text-green-600">
-                                  {(parseFloat(item.poPrice) || 0).toLocaleString('ar-EG')} ج.م
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      لا توجد بنود مرتبطة بهذا الأمر
-                    </div>
-                  )}
+                  <POItemsTable poNumber={selectedPO.poNumber} />
                 </CardContent>
               </Card>
 
