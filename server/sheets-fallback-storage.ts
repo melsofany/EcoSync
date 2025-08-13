@@ -156,8 +156,8 @@ export class SheetsFallbackStorage {
       // Item details
       itemNumber: item.itemNumber || item.kItemId || item.id,
       kItemId: item.kItemId || item.id,
-      partNumber: item.partNumber,
-      lineItem: item.partNumber, // Use partNumber as LINE ITEM (from column C)
+      partNumber: item.partNumber, // Part number from column D
+      lineItem: item.lineItem, // LINE ITEM from original lineItem column
       description: item.description || item.uom, // Use UOM as description if description is empty
       unit: item.lineItem, // Use original lineItem as UOM
       category: item.category,
