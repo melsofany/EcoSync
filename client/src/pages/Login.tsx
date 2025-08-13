@@ -7,7 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building, User, Lock, ArrowLeft, Mail } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Building, User, Lock, ArrowLeft, Mail, Sheet } from "lucide-react";
 import qortobaLogo from "@/assets/qortoba-logo.png";
 import logisticsBackground from "@/assets/logistics-background.jpg";
 
@@ -20,10 +23,12 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const login = useLogin();
+  const { toast } = useToast();
 
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetMessage, setResetMessage] = useState("");
+  const [loginMethod, setLoginMethod] = useState<"local" | "google-sheets">("local");
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -33,8 +38,29 @@ export default function Login() {
     },
   });
 
+  const googleSheetsLogin = useMutation({
+    mutationFn: async (data: LoginForm) => {
+      const response = await apiRequest("POST", "/api/auth/google-sheets-login", data);
+      return response;
+    },
+    onSuccess: () => {
+      window.location.href = "/";
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في تسجيل الدخول",
+        description: error.message || "فشل في تسجيل الدخول بـ Google Sheets",
+        variant: "destructive"
+      });
+    }
+  });
+
   const onSubmit = (data: LoginForm) => {
-    login.mutate(data);
+    if (loginMethod === "google-sheets") {
+      googleSheetsLogin.mutate(data);
+    } else {
+      login.mutate(data);
+    }
   };
 
   const handleResetPassword = async () => {
@@ -93,6 +119,31 @@ export default function Login() {
             <p className="text-gray-700 drop-shadow-sm">للتوريدات</p>
           </div>
 
+          {/* Method Selection */}
+          <div className="mb-6 space-y-4">
+            <div className="text-center text-sm font-medium text-gray-700">طريقة تسجيل الدخول</div>
+            <div className="flex space-x-2 space-x-reverse bg-gray-100 p-1 rounded-lg">
+              <Button
+                type="button"
+                variant={loginMethod === "local" ? "default" : "ghost"}
+                className={`flex-1 text-sm ${loginMethod === "local" ? "bg-white shadow-sm" : ""}`}
+                onClick={() => setLoginMethod("local")}
+              >
+                <Building className="h-4 w-4 ml-2" />
+                النظام المحلي
+              </Button>
+              <Button
+                type="button"
+                variant={loginMethod === "google-sheets" ? "default" : "ghost"}
+                className={`flex-1 text-sm ${loginMethod === "google-sheets" ? "bg-white shadow-sm" : ""}`}
+                onClick={() => setLoginMethod("google-sheets")}
+              >
+                <Sheet className="h-4 w-4 ml-2" />
+                Google Sheets
+              </Button>
+            </div>
+          </div>
+
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="username">اسم المستخدم</Label>
@@ -131,16 +182,16 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full h-12 text-lg"
-              disabled={login.isPending}
+              disabled={login.isPending || googleSheetsLogin.isPending}
             >
-              {login.isPending ? (
+              {(login.isPending || googleSheetsLogin.isPending) ? (
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner"></div>
                   <span>جاري تسجيل الدخول...</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <span>تسجيل الدخول</span>
+                  <span>تسجيل الدخول {loginMethod === "google-sheets" ? "بـ Google Sheets" : "بالنظام المحلي"}</span>
                   <ArrowLeft className="h-5 w-5 rtl-flip" />
                 </div>
               )}
@@ -200,7 +251,17 @@ export default function Login() {
 
 
 
-          <div className="mt-6 text-center text-sm text-gray-500">
+          {/* Login Instructions */}
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
+            <div className="text-blue-800 font-medium mb-2">معلومات تسجيل الدخول:</div>
+            <div className="space-y-1 text-blue-700">
+              <div>• النظام المحلي: admin / admin123</div>
+              <div>• Google Sheets: it_admin / it123456</div>
+              <div>• Google Sheets: manager_user / mgr789</div>
+            </div>
+          </div>
+
+          <div className="mt-4 text-center text-sm text-gray-500">
             النسخة 1.0 - جميع الحقوق محفوظة لقرطبة للتوريدات © 2025
           </div>
         </CardContent>
