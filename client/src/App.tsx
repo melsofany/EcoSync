@@ -30,6 +30,7 @@ import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
 import { VoiceControlPage } from "@/pages/VoiceControlPage";
 import DataUnification from "@/pages/DataUnification";
 import UnificationMonitor from "@/pages/UnificationMonitor";
+import UnificationProgress from "@/pages/UnificationProgress";
 import UserManagement from "@/pages/UserManagement";
 import GeneralAdmin from "@/pages/GeneralAdmin";
 
@@ -81,6 +82,7 @@ function Router() {
         <Route path="/voice-control" component={VoiceControlPage} />
         <Route path="/data-unification" component={DataUnification} />
         <Route path="/unification-monitor" component={UnificationMonitor} />
+        <Route path="/unification-progress" component={UnificationProgress} />
         <Route path="/user-management" component={UserManagement} />
 
         <Route path="/change-password" component={ChangePassword} />

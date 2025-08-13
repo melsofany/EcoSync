@@ -7,6 +7,7 @@ import {
   Package, 
   ShoppingCart, 
   BarChart3, 
+  BarChart,
   Settings,
   Building,
   LogOut,
@@ -139,6 +140,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       title: "مراقب التوحيد الذكي",
       href: "/unification-monitor",
       icon: Merge,
+      section: "admin",
+    },
+    {
+      title: "شاشة التوحيد المتقدمة",
+      href: "/unification-progress",
+      icon: BarChart,
       section: "admin",
     },
     {

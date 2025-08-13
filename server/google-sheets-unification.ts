@@ -9,12 +9,25 @@ export interface UnificationStats {
   status: 'idle' | 'running' | 'completed';
   isRunning: boolean;
   progress: number;
+  currentRow?: number;
+  currentItemName?: string;
+  remainingRows?: number;
+  estimatedTimeRemaining?: string;
+  processedItems?: number;
+  unifiedItems?: number;
+  startTime?: string;
 }
 
 export class GoogleSheetsUnification {
   private static instance: GoogleSheetsUnification;
   private isRunning = false;
   private currentProgress = 0;
+  private currentRow = 0;
+  private currentItemName = '';
+  private processedItems = 0;
+  private unifiedItems = 0;
+  private startTime = '';
+  private totalRows = 0;
 
   static getInstance(): GoogleSheetsUnification {
     if (!GoogleSheetsUnification.instance) {
@@ -64,13 +77,23 @@ export class GoogleSheetsUnification {
       // تحليل البنود المكررة
       const duplicateAnalysis = this.analyzeDuplicates(allItems);
       
+      const estimatedTimeRemaining = this.calculateEstimatedTime();
+      const remainingRows = this.totalRows - this.currentRow;
+
       return {
         totalItems: allItems.length,
         duplicateGroups: duplicateAnalysis.groups,
         duplicateItems: duplicateAnalysis.items,
         status: this.isRunning ? 'running' : 'idle',
         isRunning: this.isRunning,
-        progress: this.currentProgress
+        progress: this.currentProgress,
+        currentRow: this.currentRow,
+        currentItemName: this.currentItemName,
+        remainingRows: remainingRows,
+        estimatedTimeRemaining: estimatedTimeRemaining,
+        processedItems: this.processedItems,
+        unifiedItems: this.unifiedItems,
+        startTime: this.startTime
       };
 
     } catch (error) {
@@ -467,8 +490,15 @@ export class GoogleSheetsUnification {
 
   private async performAIUnification() {
     try {
+      // إعداد متغيرات المراقبة
+      this.startTime = new Date().toLocaleTimeString('ar-EG');
+      this.processedItems = 0;
+      this.unifiedItems = 0;
+      this.currentRow = 1; // البدء من الصف الثاني
+
       // الحصول على البيانات من Google Sheets
       const sheetsData = await this.getFullSheetsData();
+      this.totalRows = sheetsData.length;
       console.log(`🔍 بدء معالجة ${sheetsData.length} صف من ورقة DATA...`);
       
       let processedRows = 0;
@@ -479,9 +509,11 @@ export class GoogleSheetsUnification {
       for (let currentRowIndex = 1; currentRowIndex < sheetsData.length; currentRowIndex++) {
         const currentRow = sheetsData[currentRowIndex];
         
-        // تحديث التقدم
+        // تحديث متغيرات المراقبة
+        this.currentRow = currentRowIndex + 1;
         this.currentProgress = (processedRows / (sheetsData.length - 1)) * 100;
         processedRows++;
+        this.processedItems = processedRows;
 
         // تخطي الصفوف التي لها معرّف بند بالفعل في العمود A
         if (currentRow[0] && currentRow[0].trim()) {
@@ -496,7 +528,10 @@ export class GoogleSheetsUnification {
           continue; // تخطي الصفوف الفارغة
         }
 
-        console.log(`🔎 معالجة الصف ${currentRowIndex + 1}: ${partNumber || 'بلا رقم قطعة'} - ${description?.substring(0, 50) || 'بلا توصيف'}...`);
+        // تحديث اسم البند الحالي
+        this.currentItemName = `${partNumber || 'غير محدد'} - ${description?.substring(0, 30) || 'بلا توصيف'}...`;
+        
+        console.log(`🔎 معالجة الصف ${currentRowIndex + 1}: ${this.currentItemName}`);
 
         // البحث عن تطابق في الصفوف السابقة
         const matchingRowIndex = await this.findMatchingRow(
@@ -529,6 +564,7 @@ export class GoogleSheetsUnification {
           });
 
           unifiedCount++;
+          this.unifiedItems = unifiedCount;
           console.log(`✅ تم توحيد الصف ${currentRowIndex + 1} مع الصف ${matchingRowIndex + 1} بالمعرّف: ${itemId}`);
         } else {
           // لم يتم العثور على تطابق، أنشئ معرّف جديد
@@ -562,13 +598,65 @@ export class GoogleSheetsUnification {
       setTimeout(() => {
         this.isRunning = false;
         this.currentProgress = 0;
+        this.currentRow = 0;
+        this.currentItemName = '';
+        this.processedItems = 0;
+        this.unifiedItems = 0;
+        this.startTime = '';
+        this.totalRows = 0;
       }, 2000);
 
     } catch (error) {
       console.error('❌ خطأ في عملية التوحيد:', error);
       this.isRunning = false;
       this.currentProgress = 0;
+      this.currentRow = 0;
+      this.currentItemName = '';
+      this.processedItems = 0;
+      this.unifiedItems = 0;
+      this.startTime = '';
+      this.totalRows = 0;
     }
+  }
+
+  private calculateEstimatedTime(): string {
+    if (!this.isRunning || this.currentProgress === 0) {
+      return '';
+    }
+
+    const currentTime = new Date().getTime();
+    const startTimeMs = this.convertTimeToMs(this.startTime);
+    const elapsedTime = (currentTime - startTimeMs) / 1000; // بالثواني
+    
+    if (elapsedTime < 1 || this.currentProgress < 1) {
+      return 'جاري الحساب...';
+    }
+
+    const estimatedTotalTime = (elapsedTime / this.currentProgress) * 100;
+    const remainingTime = estimatedTotalTime - elapsedTime;
+
+    if (remainingTime < 60) {
+      return `${Math.round(remainingTime)} ثانية`;
+    } else if (remainingTime < 3600) {
+      return `${Math.round(remainingTime / 60)} دقيقة`;
+    } else {
+      const hours = Math.floor(remainingTime / 3600);
+      const minutes = Math.round((remainingTime % 3600) / 60);
+      return `${hours} ساعة و ${minutes} دقيقة`;
+    }
+  }
+
+  private convertTimeToMs(timeString: string): number {
+    const now = new Date();
+    const [time, period] = timeString.split(' ');
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    
+    let hour24 = hours;
+    if (period === 'م' && hour24 !== 12) hour24 += 12;
+    if (period === 'ص' && hour24 === 12) hour24 = 0;
+    
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour24, minutes, seconds).getTime();
+  }
   }
 
   pauseUnification(): { success: boolean; message: string } {
