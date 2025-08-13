@@ -153,11 +153,12 @@ export class SheetsFallbackStorage {
       unitPrice: item.unitPrice || item.price || item.rfqPrice,
       totalPrice: item.totalPrice || (parseFloat(item.quantity || 0) * parseFloat(item.unitPrice || item.price || item.rfqPrice || 0)),
       currency: item.currency || 'EGP',
-      // Item details - Fixed mapping based on actual data structure
+      // Item details - CORRECTED mapping based on your requirements
       itemNumber: item.itemNumber || item.kItemId || item.id,
       kItemId: item.kItemId || item.id,
-      partNumber: item.partNumber, // Part No (رقم القطعة) from column D - this is correct
-      lineItem: item.description && item.description.trim() !== '' ? item.description : (item.partNumber ? item.partNumber.split('.')[0] : 'P'), // LINE ITEM from column C, fallback to first part of Part No
+      // FIXED: Switch the mapping as per your request
+      partNumber: item.description && item.description.trim() !== '' ? item.description : item.partNumber, // Part No (رقم القطعة) from column C 
+      lineItem: item.partNumber, // LINE ITEM from column D (currently in partNumber field)
       description: item.uom, // Description from column E (stored in uom field)
       unit: item.lineItem, // UOM (وحدة القياس) - EACH, etc.
       category: item.category,
