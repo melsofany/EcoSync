@@ -63,15 +63,15 @@ export default function PurchaseOrders() {
     queryKey: ["/api/quotations"],
   });
 
-  // Temporarily bypass auth to test buttons
+  // Completely disable auth for Google Sheets system - always show admin
   const { data: currentUser, isLoading: authLoading } = useQuery({
     queryKey: ["/api/auth/me"],
     retry: 0,
-    enabled: false, // Disable for now
+    enabled: false, // Completely disabled
   });
   
-  // Mock user to test functionality
-  const mockCurrentUser = {
+  // Always use admin user for Google Sheets system
+  const adminUser = {
     id: 'admin-user',
     username: 'admin',
     fullName: 'مدير النظام',
@@ -336,8 +336,8 @@ export default function PurchaseOrders() {
   const totalValue = (stats as any)?.totalPOValue || 0;
   const totalPOs = purchaseOrders?.length || 0;
   
-  // Use mock user temporarily to test buttons
-  const effectiveUser = currentUser || mockCurrentUser;
+  // Always use admin user for Google Sheets system
+  const effectiveUser = adminUser;
   const isManager = effectiveUser?.role === 'manager';
 
   if (isLoading) {
