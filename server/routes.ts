@@ -388,7 +388,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           poNumber: item.poDate || 'غير محدد', // رقم PO موجود في poDate
           poDate: item.poNumber || 'غير محدد', // التاريخ موجود في poNumber
           poQuantity: String(specificPOQuantity || item.poQuantity || item.quantity || 1), // العمود M - كمية PO محددة
-          poPrice: String(item.poPrice || 0),
+          poPrice: String(item.poPrice || 0), // العمود N - سعر PO
           employee: 'غير محدد',
           totalValue: String(item.totalPOValue || 0)
         };
@@ -450,7 +450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           poNumber: item.poDate || 'غير محدد',
           poDate: item.poNumber || 'غير محدد',
           poQuantity: String(specificQuantity || item.poQuantity || item.quantity || 1), // العمود M - كمية PO محددة
-          poPrice: String(item.poPrice || 0),
+          poPrice: String(item.poPrice || 0), // العمود N - سعر PO
           employee: 'غير محدد',
           totalValue: String(item.totalPOValue || 0)
         };
