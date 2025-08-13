@@ -240,17 +240,23 @@ export default function PurchaseOrders() {
     // البحث في العمود K (رقم أمر الشراء المؤكد) - فهرس 10
     let poItems = syncedData.items.filter((item: any) => {
       const columnK = item.rawData?.[10]; // العمود K - فهرس 10
-      const match = columnK === poNumber ||
-             item.confirmedPONumber === poNumber ||
-             item.columnK === poNumber;
+      
+      // تنظيف رقم أمر الشراء (إزالة البادئة gs-)
+      const cleanPONumber = poNumber.replace('gs-', '');
+      const match = columnK === cleanPONumber || 
+                   columnK === poNumber ||
+                   item.confirmedPONumber === cleanPONumber ||
+                   item.confirmedPONumber === poNumber ||
+                   item.columnK === cleanPONumber ||
+                   item.columnK === poNumber;
       
       // طباعة البيانات المطابقة للتحقق
       if (match) {
         console.log('✅ Found matching item:', {
-          columnA: item.rawData?.[0],
-          columnE: item.rawData?.[4],
-          columnK: item.rawData?.[10],
-          poNumber: poNumber
+          'رقم الصنف (A)': item.rawData?.[0],
+          'الوصف (E)': item.rawData?.[4], 
+          'رقم أمر الشراء (K)': item.rawData?.[10],
+          'البحث عن': cleanPONumber
         });
       }
       
