@@ -201,6 +201,7 @@ export default function PurchaseOrders() {
 
   // Handle viewing purchase order details
   const handleViewDetails = (po: any) => {
+    console.log("View details clicked for PO:", po);
     setSelectedPO(po);
     setIsDetailsModalOpen(true);
   };
