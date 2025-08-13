@@ -153,13 +153,13 @@ export class SheetsFallbackStorage {
       unitPrice: item.unitPrice || item.price || item.rfqPrice,
       totalPrice: item.totalPrice || (parseFloat(item.quantity || 0) * parseFloat(item.unitPrice || item.price || item.rfqPrice || 0)),
       currency: item.currency || 'EGP',
-      // Item details - New mapping: UOM(B), LINE ITEM(C), Part No(D), Description(E)
+      // Item details - CORRECTED based on Google Sheets image: UOM(B), LINE ITEM(C), Part No(D), Description(E)
       itemNumber: item.itemNumber || item.kItemId || item.id,
       kItemId: item.kItemId || item.id,
-      partNumber: item.partNumber, // Part No (رقم القطعة) - Column D
-      lineItem: item.description || 'غير محدد', // LINE ITEM - Column C (stored in description field)
-      description: item.uom, // Description (الوصف) - Column E (stored in uom field)
-      unit: item.lineItem, // UOM (وحدة القياس) - Column B (stored in lineItem field)
+      partNumber: item.partNumber, // Part No (رقم القطعة) - Column D - CORRECT
+      lineItem: item.description && item.description.trim() !== '' ? item.description : (item.partNumber ? item.partNumber.split('.')[0] : item.id.replace('P-0000', '')), // LINE ITEM - Column C - use part number prefix or item number as fallback
+      description: item.uom, // Description (الوصف) - Column E - CORRECT
+      unit: item.lineItem, // UOM (وحدة القياس) - Column B - CORRECT (EACH)
       category: item.category,
       brand: item.brand,
       // Supplier details
