@@ -13,6 +13,7 @@ import {
   pricingHistory,
   activityLog,
   passwordResetTokens,
+  unificationProgress,
   type User,
   type InsertUser,
   type Client,
@@ -39,6 +40,8 @@ import {
   type InsertPricingHistory,
   type ActivityLog,
   type InsertActivityLog,
+  type UnificationProgress,
+  type InsertUnificationProgress,
 } from "@shared/schema";
 // نظام البيانات الحقيقية
 import { realDataStorage } from "./real-data-storage.js";
@@ -156,6 +159,13 @@ export interface IStorage {
   updateSupplierPricing(id: string, updates: Partial<SupplierPricing>): Promise<SupplierPricing | undefined>;
   getItemsRequiringPricing(): Promise<Item[]>;
   getPricingHistoryForItem(itemId: string): Promise<SupplierPricing[]>;
+
+  // Unification progress operations
+  createUnificationProgress(progress: InsertUnificationProgress): Promise<UnificationProgress>;
+  getUnificationProgressBySession(sessionId: string): Promise<UnificationProgress | undefined>;
+  getLatestUnificationProgress(): Promise<UnificationProgress | undefined>;
+  updateUnificationProgress(sessionId: string, updates: Partial<UnificationProgress>): Promise<UnificationProgress | undefined>;
+  deleteUnificationProgress(sessionId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1900,6 +1910,47 @@ export class DatabaseStorage implements IStorage {
       console.error('Error getting related purchase orders:', error);
       return [];
     }
+  }
+
+  // Unification progress operations implementation
+  async createUnificationProgress(progressData: InsertUnificationProgress): Promise<UnificationProgress> {
+    const [progress] = await db
+      .insert(unificationProgress)
+      .values(progressData)
+      .returning();
+    return progress;
+  }
+
+  async getUnificationProgressBySession(sessionId: string): Promise<UnificationProgress | undefined> {
+    const [progress] = await db
+      .select()
+      .from(unificationProgress)
+      .where(eq(unificationProgress.sessionId, sessionId));
+    return progress || undefined;
+  }
+
+  async getLatestUnificationProgress(): Promise<UnificationProgress | undefined> {
+    const [progress] = await db
+      .select()
+      .from(unificationProgress)
+      .orderBy(desc(unificationProgress.lastUpdateAt))
+      .limit(1);
+    return progress || undefined;
+  }
+
+  async updateUnificationProgress(sessionId: string, updates: Partial<UnificationProgress>): Promise<UnificationProgress | undefined> {
+    const [progress] = await db
+      .update(unificationProgress)
+      .set({ ...updates, lastUpdateAt: new Date() })
+      .where(eq(unificationProgress.sessionId, sessionId))
+      .returning();
+    return progress || undefined;
+  }
+
+  async deleteUnificationProgress(sessionId: string): Promise<void> {
+    await db
+      .delete(unificationProgress)
+      .where(eq(unificationProgress.sessionId, sessionId));
   }
 
 }

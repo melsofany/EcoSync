@@ -129,6 +129,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "admin",
     },
     {
+      title: "مراقب التوحيد الذكي",
+      href: "/unification-monitor",
+      icon: Merge,
+      section: "admin",
+    },
+    {
       title: "الأوامر الصوتية",
       href: "/voice-control",
       icon: Mic,

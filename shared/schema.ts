@@ -397,5 +397,53 @@ export const insertRecoveredDataSchema = createInsertSchema(recoveredData).omit(
   importedAt: true,
 });
 
+// Data unification progress tracking table
+export const unificationProgress = pgTable("unification_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().unique(),
+  status: text("status").notNull().default("idle"), // "idle", "running", "paused", "completed", "error"
+  
+  // Progress metrics
+  totalRows: integer("total_rows").default(0),
+  currentRow: integer("current_row").default(0),
+  processedRows: integer("processed_rows").default(0),
+  unifiedItems: integer("unified_items").default(0),
+  
+  // Current processing details
+  currentItemName: text("current_item_name"),
+  currentPartNumber: text("current_part_number"),
+  
+  // Time tracking
+  startedAt: timestamp("started_at"),
+  estimatedEndTime: timestamp("estimated_end_time"),
+  lastUpdateAt: timestamp("last_update_at").defaultNow(),
+  
+  // Performance metrics
+  itemsPerSecond: decimal("items_per_second", { precision: 8, scale: 3 }).default("0"),
+  averageProcessingTime: decimal("average_processing_time", { precision: 8, scale: 3 }).default("0"),
+  
+  // Error tracking
+  errorCount: integer("error_count").default(0),
+  lastError: text("last_error"),
+  
+  // AI Processing details
+  aiRequestCount: integer("ai_request_count").default(0),
+  aiSuccessCount: integer("ai_success_count").default(0),
+  confidenceScore: decimal("confidence_score", { precision: 5, scale: 2 }).default("0"),
+  
+  // Created by
+  createdBy: varchar("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUnificationProgressSchema = createInsertSchema(unificationProgress).omit({
+  id: true,
+  createdAt: true,
+  lastUpdateAt: true,
+});
+
+export type UnificationProgress = typeof unificationProgress.$inferSelect;
+export type InsertUnificationProgress = z.infer<typeof insertUnificationProgressSchema>;
+
 // Add the self-reference relation for items after the table is defined
 // This avoids the circular reference issue during table definition
