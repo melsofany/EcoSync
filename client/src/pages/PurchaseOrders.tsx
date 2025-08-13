@@ -327,6 +327,24 @@ export default function PurchaseOrders() {
   // Check if current user is manager
   const isManager = currentUser?.role === 'manager';
 
+  // If user is not logged in, show login message
+  if (!currentUser && !isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">تسجيل الدخول مطلوب</h3>
+          <p className="text-gray-600 mb-4">يرجى تسجيل الدخول أولاً لعرض أوامر الشراء</p>
+          <button 
+            onClick={() => window.location.href = '/login'} 
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            تسجيل الدخول
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -544,7 +562,12 @@ export default function PurchaseOrders() {
                             variant="ghost" 
                             size="sm" 
                             title="عرض التفاصيل"
-                            onClick={() => handleViewDetails(po)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              console.log("Button clicked for PO:", po.poNumber);
+                              handleViewDetails(po);
+                            }}
+                            className="hover:bg-gray-100 cursor-pointer"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
