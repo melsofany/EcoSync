@@ -3478,8 +3478,61 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
   app.get("/api/purchase-orders/:id/items", requireAuth, async (req: Request, res: Response) => {
     try {
-      const items = await storage.getPurchaseOrderItems(req.params.id);
-      res.json(items);
+      const poId = req.params.id;
+      console.log('Getting items for PO:', poId);
+      
+      // استخدام Google Sheets بدلاً من قاعدة البيانات
+      const { sheetsStorage } = require('./sheets-fallback-storage');
+      const sheetsData = sheetsStorage.getData();
+      
+      if (!sheetsData || !sheetsData.items) {
+        return res.status(404).json({ message: "No Google Sheets data available" });
+      }
+      
+      // تنظيف رقم أمر الشراء
+      const cleanPOId = poId.replace('gs-', '');
+      console.log('Searching for PO with ID:', poId, 'cleaned:', cleanPOId);
+      
+      // البحث في العمود K (فهرس 10) عن رقم أمر الشراء
+      const matchingItems = sheetsData.items.filter((item: any) => {
+        const columnK = item.rawData?.[10]; // العمود K - رقم أمر الشراء
+        if (!columnK) return false;
+        
+        const columnKStr = String(columnK).trim();
+        
+        // طرق مطابقة متعددة
+        return columnKStr === cleanPOId ||
+               columnKStr === poId ||
+               columnKStr.includes(cleanPOId) ||
+               cleanPOId.includes(columnKStr) ||
+               columnKStr.toLowerCase() === cleanPOId.toLowerCase() ||
+               // مطابقة جزئية للأرقام
+               (columnKStr.length >= 5 && cleanPOId.length >= 5 && 
+                columnKStr.slice(-5) === cleanPOId.slice(-5));
+      });
+      
+      console.log(`Found ${matchingItems.length} items for PO ${poId}`);
+      
+      // تحويل البيانات إلى تنسيق متوافق مع الواجهة الأمامية
+      const formattedItems = matchingItems.map((item: any, index: number) => ({
+        id: `item-${index}`,
+        itemId: item.rawData?.[0] || 'غير محدد', // العمود A - معرف البند
+        uom: item.rawData?.[1] || 'غير محدد', // العمود B - UOM
+        lineItem: item.rawData?.[2] || 'غير محدد', // العمود C - Line Item
+        partNumber: item.rawData?.[3] || 'غير محدد', // العمود D - Part No
+        description: item.rawData?.[4] || 'غير محدد', // العمود E - الوصف
+        rfqNumber: item.rawData?.[5] || 'غير محدد', // العمود F - رقم RFQ
+        rfqQuantity: item.rawData?.[6] || '1', // العمود G - كمية RFQ
+        rfqPrice: item.rawData?.[7] || '0', // العمود H - سعر RFQ
+        poNumber: item.rawData?.[10] || 'غير محدد', // العمود K - رقم أمر الشراء
+        poDate: item.rawData?.[11] || 'غير محدد', // العمود L - تاريخ أمر الشراء
+        poQuantity: item.rawData?.[11] || item.rawData?.[6] || '1', // قد نحتاج لتعديل هذا
+        poPrice: item.rawData?.[12] || '0', // العمود M - سعر PO
+        employee: item.rawData?.[16] || 'غير محدد', // العمود Q - الموظف
+        rawData: item.rawData // للتشخيص
+      }));
+      
+      res.json(formattedItems);
     } catch (error) {
       console.error("Error fetching purchase order items:", error);
       res.status(500).json({ message: "Internal server error" });

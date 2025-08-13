@@ -249,6 +249,20 @@ export default function PurchaseOrders() {
     console.log('أمثلة من العمود K:', poSample);
     console.log('رقم أمر الشراء المطلوب:', poNumber, 'بعد التنظيف:', poNumber.replace('gs-', ''));
     
+    // تشخيص إضافي: البحث عن أي رقم يحتوي على جزء من رقم أمر الشراء
+    const partialMatches = syncedData.items.filter(item => {
+      const columnK = item.rawData?.[10];
+      if (!columnK) return false;
+      const searchNum = poNumber.replace('gs-', '').replace('P25E', '');
+      return String(columnK).includes(searchNum) || String(columnK).includes(poNumber.replace('gs-', ''));
+    }).slice(0, 5);
+    
+    console.log('🔍 مطابقات جزئية محتملة:', partialMatches.map(item => ({
+      'رقم في العمود K': item.rawData?.[10],
+      'معرف البند A': item.rawData?.[0],
+      'وصف E': item.rawData?.[4]?.substring(0, 30)
+    })));
+    
     // البحث في العمود K (رقم أمر الشراء المؤكد) - فهرس 10
     let matchCount = 0;
     let poItems = syncedData.items.filter((item: any, index: number) => {
@@ -262,13 +276,25 @@ export default function PurchaseOrders() {
         console.log(`صف ${index}: العمود K = "${columnK}", البحث عن "${cleanPONumber}"`);
       }
       
-      const match = columnK === cleanPONumber || 
-                   columnK === poNumber ||
-                   item.confirmedPONumber === cleanPONumber ||
-                   item.confirmedPONumber === poNumber ||
-                   item.columnK === cleanPONumber ||
-                   item.columnK === poNumber ||
-                   String(columnK).trim() === String(cleanPONumber).trim();
+      // محاولات مطابقة متنوعة
+      const columnKStr = String(columnK || '').trim();
+      const cleanPOStr = String(cleanPONumber || '').trim();
+      const poStr = String(poNumber || '').trim();
+      
+      const match = columnKStr === cleanPOStr || 
+                   columnKStr === poStr ||
+                   columnKStr === cleanPOStr.replace('P25E', '') ||
+                   cleanPOStr === columnKStr ||
+                   // مطابقة جزئية - آخر 5 أرقام
+                   (columnKStr.length >= 5 && cleanPOStr.length >= 5 && 
+                    columnKStr.slice(-5) === cleanPOStr.slice(-5)) ||
+                   // مطابقة مع تجاهل الحالة
+                   columnKStr.toLowerCase() === cleanPOStr.toLowerCase() ||
+                   // مطابقة من خصائص أخرى في البيانات
+                   item.confirmedPONumber === cleanPOStr ||
+                   item.confirmedPONumber === poStr ||
+                   item.columnK === cleanPOStr ||
+                   item.columnK === poStr;
       
       // طباعة البيانات المطابقة للتحقق
       if (match) {
