@@ -358,9 +358,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const formattedItems = matchingItems.map((item: any, index: number) => ({
         id: `item-${index}`,
         itemId: item.id || 'غير محدد',
-        uom: item.lineItem || 'غير محدد', 
-        lineItem: item.lineItem || 'غير محدد',
-        partNumber: item.partNumber || 'غير محدد',
+        uom: item.lineItem || 'غير محدد', // العمود B
+        lineItem: item.partNumber || 'غير محدد', // العمود C - حسب طلب المستخدم
+        partNumber: item.description || 'غير محدد', // العمود D 
         description: (item.uom && item.uom.trim()) || (item.description && item.description.trim()) || item.partNumber || 'غير محدد', // استخدام UOM كوصف أو part number
         rfqNumber: item.rfqNumber || 'غير محدد',
         rfqQuantity: String(item.quantity || 1),
@@ -408,9 +408,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const formattedItems = matchingItems.map((item: any, index: number) => ({
         id: `item-${index}`,
         itemId: item.id || 'غير محدد',
-        uom: item.lineItem || 'غير محدد',
-        lineItem: item.lineItem || 'غير محدد',
-        partNumber: item.partNumber || 'غير محدد',
+        uom: item.lineItem || 'غير محدد', // العمود B
+        lineItem: item.partNumber || 'غير محدد', // العمود C - حسب طلب المستخدم
+        partNumber: item.description || 'غير محدد', // العمود D
         description: item.uom || item.description || 'غير محدد',
         rfqNumber: item.rfqNumber || 'غير محدد',
         rfqQuantity: String(item.quantity || 1),
