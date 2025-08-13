@@ -28,6 +28,7 @@ import TelegramBot from "@/pages/TelegramBot";
 import DataRecoveryPage from "@/pages/DataRecoveryPage";
 import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
 import { VoiceControlPage } from "@/pages/VoiceControlPage";
+import Demo from "@/pages/Demo";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -73,6 +74,7 @@ function Router() {
         <Route path="/admin" component={Admin} />
         <Route path="/telegram-bot" component={TelegramBot} />
         <Route path="/data-recovery" component={DataRecoveryPage} />
+        <Route path="/demo" component={Demo} />
         <Route path="/database-storage" component={DatabaseStoragePage} />
         <Route path="/voice-control" component={VoiceControlPage} />
 
