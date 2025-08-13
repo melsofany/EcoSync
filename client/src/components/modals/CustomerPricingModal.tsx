@@ -154,7 +154,13 @@ export default function CustomerPricingModal({
               <div>
                 <label className="font-medium">تاريخ ورود السعر:</label>
                 <p>{item.supplierPricing?.priceReceivedDate ? 
-                  new Date(item.supplierPricing.priceReceivedDate).toLocaleDateString('ar-EG')
+                  (() => {
+                    const date = new Date(item.supplierPricing.priceReceivedDate);
+                    const year = date.getFullYear();
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    return `${year}/${day}/${month}`;
+                  })()
                   : "غير محدد"}</p>
               </div>
             </div>

@@ -118,13 +118,25 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <div>
             <label className="text-sm font-medium">تاريخ الطلب:</label>
             <p className="text-sm">
-              {item.requestDate ? new Date(item.requestDate).toLocaleDateString('en-CA') : "غير محدد"}
+              {item.requestDate ? (() => {
+                const date = new Date(item.requestDate);
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                return `${year}/${day}/${month}`;
+              })() : "غير محدد"}
             </p>
           </div>
           <div>
             <label className="text-sm font-medium">تاريخ انتهاء العرض:</label>
             <p className="text-sm">
-              {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString('en-CA') : "غير محدد"}
+              {item.expiryDate ? (() => {
+                const date = new Date(item.expiryDate);
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const day = date.getDate().toString().padStart(2, '0');
+                return `${year}/${day}/${month}`;
+              })() : "غير محدد"}
             </p>
           </div>
           <div>
@@ -178,13 +190,31 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     <td className="border border-gray-300 p-2 text-right">{record.po_total || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.po_price ? formatCurrency(parseFloat(record.po_price)) : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.po_quantity || '-'}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.po_date ? new Date(record.po_date).toLocaleDateString('en-CA') : '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.po_date ? (() => {
+                      const date = new Date(record.po_date);
+                      const year = date.getFullYear();
+                      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                      const day = date.getDate().toString().padStart(2, '0');
+                      return `${year}/${day}/${month}`;
+                    })() : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.po_number || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.category}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.res_date ? new Date(record.res_date).toLocaleDateString('en-CA') : '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.res_date ? (() => {
+                      const date = new Date(record.res_date);
+                      const year = date.getFullYear();
+                      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                      const day = date.getDate().toString().padStart(2, '0');
+                      return `${year}/${day}/${month}`;
+                    })() : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.rfq_price ? formatCurrency(parseFloat(record.rfq_price)) : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.rfq_quantity || '-'}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.rfq_date ? new Date(record.rfq_date).toLocaleDateString('en-CA') : '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.rfq_date ? (() => {
+                      const date = new Date(record.rfq_date);
+                      const year = date.getFullYear();
+                      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                      const day = date.getDate().toString().padStart(2, '0');
+                      return `${year}/${day}/${month}`;
+                    })() : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.rfq_number || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right break-words" style={{wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: '1.4'}}>
                       <div className="max-w-[400px]" title={record.description}>

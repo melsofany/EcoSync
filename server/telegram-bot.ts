@@ -133,7 +133,13 @@ class QortobaAnalysisBot {
       
       for (const req of latestQuotations) {
         message += `🔹 رقم الطلب: ${req.rfqNumber}\n`;
-        message += `📅 التاريخ: ${new Date(req.requestDate).toLocaleDateString('en-CA')}\n`;
+        message += `📅 التاريخ: ${(() => {
+          const date = new Date(req.requestDate);
+          const year = date.getFullYear();
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          const day = date.getDate().toString().padStart(2, '0');
+          return `${year}/${day}/${month}`;
+        })()}\n`;
         message += `👤 العميل: ${req.clientName || 'غير محدد'}\n`;
         message += `\n`;
       }
@@ -166,7 +172,13 @@ class QortobaAnalysisBot {
         message += `🔧 رقم القطعة: ${item.partNumber}\n`;
         message += `📝 الوصف: ${item.description}\n`;
         message += `📋 RFQ: ${item.rfqNumber}\n`;
-        message += `📅 ${new Date(item.requestDate).toLocaleDateString('en-CA')}\n\n`;
+        message += `📅 ${(() => {
+          const date = new Date(item.requestDate);
+          const year = date.getFullYear();
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          const day = date.getDate().toString().padStart(2, '0');
+          return `${year}/${day}/${month}`;
+        })()}\n\n`;
       }
       
       this.bot.sendMessage(chatId, message || '✅ لا توجد بنود معلقة');

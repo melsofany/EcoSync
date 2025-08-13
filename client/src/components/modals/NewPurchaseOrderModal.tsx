@@ -94,7 +94,11 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-EG');
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}/${day}/${month}`;
   };
 
   // Filter completed quotations for purchase orders
@@ -138,7 +142,13 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
               <div className="flex items-center space-x-2 space-x-reverse p-2 border rounded-lg bg-gray-50">
                 <Calendar className="h-4 w-4 text-gray-400" />
                 <span className="text-sm text-gray-600">
-                  {new Date().toLocaleDateString('ar-EG')}
+                  {(() => {
+                    const date = new Date();
+                    const year = date.getFullYear();
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    return `${year}/${day}/${month}`;
+                  })()}
                 </span>
               </div>
             </div>
