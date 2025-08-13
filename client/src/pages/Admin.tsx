@@ -337,6 +337,32 @@ export default function Admin() {
         <p className="text-gray-600">إعدادات وإدارة المستخدمين والصلاحيات</p>
       </div>
 
+      {/* AI Monitoring Card - FIRST AND PROMINENT */}
+      <div className="mb-8">
+        <Card className="border-4 border-orange-400 bg-gradient-to-r from-orange-50 to-yellow-50 shadow-2xl">
+          <CardContent className="p-8">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                <Brain className="h-12 w-12 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-orange-800 mb-4">🤖 شاشة مراقبة التوحيد الذكي</h2>
+              <p className="text-orange-700 text-xl mb-6">تتبع ومراقبة عمليات التوحيد بالذكاء الاصطناعي في الوقت الفعلي</p>
+              <Button 
+                size="lg"
+                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 px-12 text-2xl shadow-xl rounded-xl"
+                onClick={() => {
+                  console.log('🚀 فتح شاشة مراقبة التوحيد الذكي');
+                  window.open("/ai-unification-monitor/", "_blank");
+                }}
+              >
+                <Monitor className="h-8 w-8 ml-4" />
+                🤖 فتح شاشة المراقبة الآن
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Admin Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="card-hover">
@@ -402,41 +428,7 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* AI Monitoring Card - Always show for testing */}
-        <Card className="card-hover border-orange-200 bg-orange-50">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-4 space-x-reverse mb-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Brain className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">🤖 شاشة مراقبة التوحيد الذكي</h3>
-                <p className="text-sm text-gray-600">تتبع ومراقبة عمليات التوحيد بالذكاء الاصطناعي</p>
-              </div>
-            </div>
-            <Button 
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3"
-              onClick={() => window.open("/ai-unification-monitor/", "_blank")}
-            >
-              <Monitor className="h-4 w-4 ml-2" />
-              🤖 فتح شاشة مراقبة التوحيد الذكي
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Debug Card for troubleshooting */}
-        <Card className="card-hover border-red-200 bg-red-50">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-red-800 mb-2">🔍 معلومات التشخيص</h3>
-            <div className="text-sm text-red-700 space-y-1">
-              <p>المستخدم: {user?.fullName || 'غير محدد'}</p>
-              <p>اسم المستخدم: {user?.username || 'غير محدد'}</p>
-              <p>الدور: {user?.role || 'غير محدد'}</p>
-              <p>مطابقة الصلاحية: {hasRole(user, ['it_admin', 'manager']) ? '✅ نعم' : '❌ لا'}</p>
-              <p>حالة المستخدم: {user ? '✅ مسجل الدخول' : '❌ غير مسجل'}</p>
-            </div>
-          </CardContent>
-        </Card>
+
       </div>
 
       {/* User Management Section */}
