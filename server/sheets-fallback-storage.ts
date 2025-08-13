@@ -83,8 +83,8 @@ export class SheetsFallbackStorage {
         customRequestNumber: rfqNumber,
         clientId: 'edc-client',
         clientName: 'EDC',
-        requestDate: firstItem.rfqDate || new Date().toISOString(),
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        requestDate: firstItem.rfqDate || new Date().toISOString(), // From column G (rfqDate)
+        expiryDate: firstItem.poNumber || firstItem.poDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // From column J (using poNumber as it contains date)
         status: 'pending',
         responsibleEmployee: 'موظف EDC',
         notes: `طلب تسعير ${rfqNumber} - ${relatedItems.length} أصناف`,
@@ -100,8 +100,8 @@ export class SheetsFallbackStorage {
       customRequestNumber: q.customRequestNumber || q.customNumber,
       clientId: q.clientId || 'default-client',
       clientName: q.clientName || 'عميل افتراضي',
-      requestDate: q.requestDate || new Date().toISOString(),
-      expiryDate: q.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      requestDate: q.rfqDate || q.requestDate || new Date().toISOString(), // From column G
+      expiryDate: q.poNumber || q.poDate || q.expiryDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // From column J (using poNumber as it contains expiry date)
       status: q.status || 'pending',
       responsibleEmployee: q.responsibleEmployee || 'الموظف المسؤول',
       notes: q.notes || '',
