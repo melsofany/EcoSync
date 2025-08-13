@@ -15,6 +15,7 @@ import Items from "@/pages/Items";
 import PurchaseOrders from "@/pages/PurchaseOrders";
 import Reports from "@/pages/Reports";
 import Admin from "@/pages/Admin";
+import AIMonitor from "@/pages/AIMonitor";
 import Clients from "@/pages/Clients";
 import Suppliers from "@/pages/Suppliers";
 import SupplierPricing from "@/pages/SupplierPricing";
@@ -73,6 +74,7 @@ function Router() {
         <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
         <Route path="/reports" component={Reports} />
         <Route path="/admin" component={Admin} />
+        <Route path="/ai-unification-monitor" component={AIMonitor} />
         <Route path="/telegram-bot" component={TelegramBot} />
         <Route path="/data-recovery" component={DataRecoveryPage} />
         <Route path="/demo" component={Demo} />

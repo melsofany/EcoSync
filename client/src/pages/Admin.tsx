@@ -51,6 +51,14 @@ export default function Admin() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // دالة فتح شاشة المراقبة
+  const openMonitoringScreen = () => {
+    console.log('🚀 محاولة فتح شاشة مراقبة التوحيد الذكي');
+    const url = "/ai-unification-monitor/";
+    console.log('📍 الرابط:', url);
+    window.open(url, "_blank");
+  };
   
   const [activeSection, setActiveSection] = useState<string>("");
   const [activeSubSection, setActiveSubSection] = useState<string>("");
@@ -331,6 +339,22 @@ export default function Admin() {
 
   return (
     <div className="space-y-8">
+      {/* URGENT AI MONITORING BUTTON - ALWAYS VISIBLE */}
+      <div className="w-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 p-2 rounded-xl shadow-2xl mb-8">
+        <div className="bg-white rounded-lg p-6 text-center">
+          <div className="text-6xl mb-4">🤖</div>
+          <h1 className="text-4xl font-bold text-orange-800 mb-4">شاشة مراقبة التوحيد الذكي</h1>
+          <Button 
+            size="lg"
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 px-12 text-2xl shadow-xl rounded-xl"
+            onClick={openMonitoringScreen}
+          >
+            <Monitor className="h-8 w-8 ml-4" />
+            🚀 فتح الشاشة الآن
+          </Button>
+        </div>
+      </div>
+
       {/* Header */}
       <div>
         <h2 className="text-3xl font-bold text-gray-800 mb-2">إدارة النظام</h2>
@@ -350,10 +374,7 @@ export default function Admin() {
               <Button 
                 size="lg"
                 className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 px-12 text-2xl shadow-xl rounded-xl"
-                onClick={() => {
-                  console.log('🚀 فتح شاشة مراقبة التوحيد الذكي');
-                  window.open("/ai-unification-monitor/", "_blank");
-                }}
+                onClick={openMonitoringScreen}
               >
                 <Monitor className="h-8 w-8 ml-4" />
                 🤖 فتح شاشة المراقبة الآن
