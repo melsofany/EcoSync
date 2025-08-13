@@ -264,7 +264,7 @@ export default function Items() {
   });
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-EG');
+    return new Date(dateString).toLocaleDateString('en-CA');
   };
 
   // Handler functions for button actions

@@ -112,11 +112,12 @@ export default function PurchaseOrders() {
     
     if (isNaN(date.getTime())) return "غير محدد";
     
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
     
-    return `${month}/${day}/${year}`;
+    // تغيير التنسيق إلى YYYY/MM/DD
+    return `${year}/${month}/${day}`;
   };
 
   const formatCurrency = (amount: string | number) => {

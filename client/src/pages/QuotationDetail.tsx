@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { hasRole } from "@/lib/auth";
 import { formatEGP } from "@/lib/currency";
+import { formatDateToEnglish } from "@/lib/dateUtils";
 import { 
   ArrowLeft, 
   Plus, 
@@ -214,9 +215,7 @@ export default function QuotationDetail() {
     },
   });
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-EG');
-  };
+  const formatDate = formatDateToEnglish;
 
   const getClientName = (clientId: string) => {
     if (!clients || !Array.isArray(clients)) return "غير محدد";

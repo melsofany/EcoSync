@@ -133,7 +133,7 @@ class QortobaAnalysisBot {
       
       for (const req of latestQuotations) {
         message += `🔹 رقم الطلب: ${req.rfqNumber}\n`;
-        message += `📅 التاريخ: ${new Date(req.requestDate).toLocaleDateString('ar-EG')}\n`;
+        message += `📅 التاريخ: ${new Date(req.requestDate).toLocaleDateString('en-CA')}\n`;
         message += `👤 العميل: ${req.clientName || 'غير محدد'}\n`;
         message += `\n`;
       }
@@ -166,7 +166,7 @@ class QortobaAnalysisBot {
         message += `🔧 رقم القطعة: ${item.partNumber}\n`;
         message += `📝 الوصف: ${item.description}\n`;
         message += `📋 RFQ: ${item.rfqNumber}\n`;
-        message += `📅 ${new Date(item.requestDate).toLocaleDateString('ar-EG')}\n\n`;
+        message += `📅 ${new Date(item.requestDate).toLocaleDateString('en-CA')}\n\n`;
       }
       
       this.bot.sendMessage(chatId, message || '✅ لا توجد بنود معلقة');
