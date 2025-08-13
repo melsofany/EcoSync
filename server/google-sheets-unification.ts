@@ -285,7 +285,58 @@ export class GoogleSheetsUnification {
   }
 
   private async calculateDescriptionSimilarity(desc1: string, desc2: string): Promise<number> {
-    // استخدام المطابقة المحلية السريعة بدلاً من DeepSeek لتحسين السرعة
+    try {
+      // تحقق سريع محلي أولاً لتوفير استدعاءات AI
+      const localSimilarity = this.calculateLocalSimilarity(desc1, desc2);
+      
+      // إذا كان التشابه المحلي عالي جداً، لا نحتاج AI
+      if (localSimilarity > 0.9) {
+        console.log(`⚡ تطابق محلي عالي: ${Math.round(localSimilarity * 100)}%`);
+        return localSimilarity;
+      }
+      
+      // إذا كان التشابه المحلي منخفض جداً، لا نحتاج AI
+      if (localSimilarity < 0.3) {
+        return localSimilarity;
+      }
+      
+      // استخدام DeepSeek AI للحالات المتوسطة فقط
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            {
+              role: 'system',
+              content: 'أنت خبير في مقارنة أوصاف قطع الغيار. أعط درجة تشابه من 0 إلى 1 كرقم فقط.'
+            },
+            {
+              role: 'user',
+              content: `"${desc1}" vs "${desc2}"`
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 5
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiResult = parseFloat(data.choices[0]?.message?.content?.trim() || '0');
+        
+        if (!isNaN(aiResult) && aiResult >= 0 && aiResult <= 1) {
+          console.log(`🤖 DeepSeek AI: ${Math.round(aiResult * 100)}%`);
+          return aiResult;
+        }
+      }
+    } catch (error) {
+      console.log(`⚠️ AI خطأ، مطابقة محلية`);
+    }
+
     return this.calculateLocalSimilarity(desc1, desc2);
   }
 
@@ -509,8 +560,8 @@ export class GoogleSheetsUnification {
       let unifiedCount = 0;
       const updates = [];
 
-      // معالجة كل صف بدءًا من الصف الثاني (index 1) - أول 50 صف فقط للاختبار
-      for (let currentRowIndex = 1; currentRowIndex < Math.min(sheetsData.length, 50); currentRowIndex++) {
+      // معالجة كل صف بدءًا من الصف الثاني (index 1) - أول 200 صف للاختبار المحسن
+      for (let currentRowIndex = 1; currentRowIndex < Math.min(sheetsData.length, 200); currentRowIndex++) {
         const currentRow = sheetsData[currentRowIndex];
         
         // تحديث متغيرات المراقبة
