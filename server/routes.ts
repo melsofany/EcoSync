@@ -1230,8 +1230,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Client management routes
   app.get("/api/clients", requireAuth, async (req: Request, res: Response) => {
     try {
-      const clients = await storage.getAllClients();
-      res.json(clients);
+      let clients;
+      
+      try {
+        clients = await storage.getAllClients();
+      } catch (dbError: any) {
+        console.log("Database access failed for clients, using fallback:", dbError.message);
+        // Use fallback storage for clients
+        const { sheetsFallbackStorage } = await import('./sheets-fallback-storage.js');
+        clients = sheetsFallbackStorage.getAllClients();
+      }
+      
+      res.json(clients || []);
     } catch (error) {
       console.error("Get clients error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -1378,26 +1388,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/quotations/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      let quotation;
       
-      // Try both methods to get quotation data
-      let quotation = await storage.getQuotationById(id);
-      if (!quotation) {
-        quotation = await storage.getQuotationRequest(id);
+      try {
+        // Try both methods to get quotation data from database
+        quotation = await storage.getQuotationById(id);
+        if (!quotation) {
+          quotation = await storage.getQuotationRequest(id);
+        }
+      } catch (dbError: any) {
+        console.log("Database access failed, using Google Sheets:", dbError.message);
       }
       
-      // If still not found in database, try Google Sheets data
+      // If still not found in database, try Google Sheets fallback data
       if (!quotation) {
         try {
-          const { realDataStorage } = await import('./real-data-storage.js');
-          const allQuotations = realDataStorage.getQuotationRequests();
-          quotation = allQuotations.find((q: any) => q.id === id);
+          const { sheetsFallbackStorage } = await import('./sheets-fallback-storage.js');
+          quotation = sheetsFallbackStorage.getQuotationById(id);
         } catch (error) {
-          console.log("Could not get quotation from Google Sheets:", error.message);
+          console.log("Could not get quotation from fallback storage:", error.message);
         }
       }
       
       if (!quotation) {
-        return res.status(404).json({ message: "Quotation not found" });
+        return res.status(404).json({ message: "طلب التسعير غير موجود" });
       }
       res.json(quotation);
     } catch (error) {
@@ -3015,27 +3029,22 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   app.get("/api/quotations/:quotationId/items", requireAuth, async (req: Request, res: Response) => {
     try {
       const { quotationId } = req.params;
+      let items = [];
       
-      // Try database first
-      let items = await storage.getQuotationItems(quotationId);
+      try {
+        // Try database first
+        items = await storage.getQuotationItems(quotationId);
+      } catch (dbError: any) {
+        console.log("Database access failed for items, using Google Sheets:", dbError.message);
+      }
       
-      // If no items found in database, try Google Sheets data
+      // If no items found in database, try Google Sheets fallback data
       if (!items || items.length === 0) {
         try {
-          const { realDataStorage } = await import('./real-data-storage.js');
-          const allItems = realDataStorage.getItems();
-          const quotation = realDataStorage.getQuotationRequests().find((q: any) => q.id === quotationId);
-          
-          if (quotation) {
-            // Get items related to this quotation from Google Sheets
-            items = allItems.filter((item: any) => 
-              item.quotationId === quotationId || 
-              item.rfqNumber === quotation.requestNumber ||
-              item.rfqNumber === quotation.customRequestNumber
-            );
-          }
+          const { sheetsFallbackStorage } = await import('./sheets-fallback-storage.js');
+          items = sheetsFallbackStorage.getQuotationItems(quotationId);
         } catch (error) {
-          console.log("Could not get quotation items from Google Sheets:", error.message);
+          console.log("Could not get quotation items from fallback storage:", error.message);
         }
       }
       
