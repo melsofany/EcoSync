@@ -467,7 +467,7 @@ export default function QuotationDetail() {
                 <TableBody>
                   {quotationItems
                     .filter((quotationItem: QuotationItemWithDetails) => 
-                      quotationItem.quantity && quotationItem.quantity > 0
+                      quotationItem.quantity && parseFloat(quotationItem.quantity.toString()) > 0
                     )
                     .map((quotationItem: QuotationItemWithDetails) => (
                     <TableRow key={quotationItem.id} className="hover:bg-gray-50">
@@ -502,16 +502,10 @@ export default function QuotationDetail() {
                         {quotationItem.unitPrice ? formatEGP(quotationItem.unitPrice) : "لم يتم التسعير"}
                       </TableCell>
                       <TableCell className="font-bold text-green-600">
-                        {quotationItem.unitPrice ? formatEGP(quotationItem.quantity * quotationItem.unitPrice) : "في انتظار التسعير"}
+                        {quotationItem.unitPrice ? formatEGP(parseFloat(quotationItem.quantity.toString()) * parseFloat(quotationItem.unitPrice.toString())) : "في انتظار التسعير"}
                       </TableCell>
                       <TableCell>
-                        {quotationItem.notes ? (
-                          <div className="max-w-xs truncate text-sm text-gray-600">
-                            {quotationItem.notes}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                        <span className="text-gray-400">-</span>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2 space-x-reverse">
