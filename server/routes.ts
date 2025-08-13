@@ -332,6 +332,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       console.log('Found PO-like numbers in data:', actualPONumbers.slice(0, 10));
       
+      // دالة مساعدة للبحث عن كمية PO من العمود M بناءً على معرف البند ورقم أمر الشراء
+      function findPOQuantityFromColumnM(itemId: string, poId: string, items: any[]): number | null {
+        // البحث عن السجل المطابق تماماً لمعرف البند ورقم أمر الشراء
+        const exactMatch = items.find((item: any) => 
+          item.id === itemId && String(item.poDate || '').trim() === poId
+        );
+        
+        if (exactMatch && exactMatch.poQuantity !== undefined && exactMatch.poQuantity !== null) {
+          console.log(`🎯 تم العثور على كمية PO محددة للبند ${itemId} في الأمر ${poId}: ${exactMatch.poQuantity}`);
+          return exactMatch.poQuantity;
+        }
+        
+        console.log(`⚠️ لم يتم العثور على كمية PO محددة للبند ${itemId} في الأمر ${poId}`);
+        return null;
+      }
+      
       // البحث المبسط - رقم أمر الشراء موجود في poDate
       const matchingItems = sheetsData.items.filter((item: any) => {
         return String(item.poDate || '').trim() === cleanPOId;
@@ -354,24 +370,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // تحويل البيانات إلى تنسيق متوافق مع الواجهة الأمامية مع معالجة الوصف
-      const formattedItems = matchingItems.map((item: any, index: number) => ({
-        id: `item-${index}`,
-        itemId: item.id || 'غير محدد',
-        uom: item.lineItem || 'غير محدد', // العمود B
-        lineItem: item.partNumber || 'غير محدد', // العمود C - حسب طلب المستخدم
-        partNumber: item.description || 'غير محدد', // العمود D 
-        description: (item.uom && item.uom.trim()) || (item.description && item.description.trim()) || item.partNumber || 'غير محدد', // استخدام UOM كوصف أو part number
-        rfqNumber: item.rfqNumber || 'غير محدد',
-        rfqQuantity: String(item.quantity || 1),
-        rfqPrice: String(item.rfqPrice || 0),
-        poNumber: item.poDate || 'غير محدد', // رقم PO موجود في poDate
-        poDate: item.poNumber || 'غير محدد', // التاريخ موجود في poNumber
-        poQuantity: String(item.poQuantity || item.quantity || 1), // العمود M - كمية PO
-        poPrice: String(item.poPrice || 0),
-        employee: 'غير محدد',
-        totalValue: String(item.totalPOValue || 0)
-      }));
+      // تحويل البيانات إلى تنسيق متوافق مع الواجهة الأمامية مع معالجة الوصف والكمية المحددة
+      const formattedItems = matchingItems.map((item: any, index: number) => {
+        // البحث عن كمية PO المحددة من العمود M بناءً على معرف البند ورقم أمر الشراء
+        const specificPOQuantity = findPOQuantityFromColumnM(item.id, cleanPOId, sheetsData.items);
+        
+        return {
+          id: `item-${index}`,
+          itemId: item.id || 'غير محدد',
+          uom: item.lineItem || 'غير محدد', // العمود B
+          lineItem: item.partNumber || 'غير محدد', // العمود C - حسب طلب المستخدم
+          partNumber: item.description || 'غير محدد', // العمود D 
+          description: (item.uom && item.uom.trim()) || (item.description && item.description.trim()) || item.partNumber || 'غير محدد', // استخدام UOM كوصف أو part number
+          rfqNumber: item.rfqNumber || 'غير محدد',
+          rfqQuantity: String(item.quantity || 1),
+          rfqPrice: String(item.rfqPrice || 0),
+          poNumber: item.poDate || 'غير محدد', // رقم PO موجود في poDate
+          poDate: item.poNumber || 'غير محدد', // التاريخ موجود في poNumber
+          poQuantity: String(specificPOQuantity || item.poQuantity || item.quantity || 1), // العمود M - كمية PO محددة
+          poPrice: String(item.poPrice || 0),
+          employee: 'غير محدد',
+          totalValue: String(item.totalPOValue || 0)
+        };
+      });
       
       console.log('✅ Returning', formattedItems.length, 'formatted items');
       res.json(formattedItems);
@@ -404,24 +425,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Enhanced search found ${matchingItems.length} items for PO ${poId}`);
       
+      // دالة محلية للبحث عن كمية PO
+      function findSpecificPOQuantity(itemId: string, poId: string, items: any[]): number | null {
+        const exactMatch = items.find((item: any) => 
+          item.id === itemId && String(item.poDate || '').trim() === poId
+        );
+        return exactMatch ? exactMatch.poQuantity : null;
+      }
+      
       // تحويل البيانات إلى تنسيق صحيح
-      const formattedItems = matchingItems.map((item: any, index: number) => ({
-        id: `item-${index}`,
-        itemId: item.id || 'غير محدد',
-        uom: item.lineItem || 'غير محدد', // العمود B
-        lineItem: item.partNumber || 'غير محدد', // العمود C - حسب طلب المستخدم
-        partNumber: item.description || 'غير محدد', // العمود D
-        description: item.uom || item.description || 'غير محدد',
-        rfqNumber: item.rfqNumber || 'غير محدد',
-        rfqQuantity: String(item.quantity || 1),
-        rfqPrice: String(item.rfqPrice || 0),
-        poNumber: item.poDate || 'غير محدد',
-        poDate: item.poNumber || 'غير محدد',
-        poQuantity: String(item.poQuantity || item.quantity || 1), // العمود M - كمية PO
-        poPrice: String(item.poPrice || 0),
-        employee: 'غير محدد',
-        totalValue: String(item.totalPOValue || 0)
-      }));
+      const formattedItems = matchingItems.map((item: any, index: number) => {
+        const specificQuantity = findSpecificPOQuantity(item.id, cleanPOId, sheetsData.items);
+        
+        return {
+          id: `item-${index}`,
+          itemId: item.id || 'غير محدد',
+          uom: item.lineItem || 'غير محدد', // العمود B
+          lineItem: item.partNumber || 'غير محدد', // العمود C - حسب طلب المستخدم
+          partNumber: item.description || 'غير محدد', // العمود D
+          description: item.uom || item.description || 'غير محدد',
+          rfqNumber: item.rfqNumber || 'غير محدد',
+          rfqQuantity: String(item.quantity || 1),
+          rfqPrice: String(item.rfqPrice || 0),
+          poNumber: item.poDate || 'غير محدد',
+          poDate: item.poNumber || 'غير محدد',
+          poQuantity: String(specificQuantity || item.poQuantity || item.quantity || 1), // العمود M - كمية PO محددة
+          poPrice: String(item.poPrice || 0),
+          employee: 'غير محدد',
+          totalValue: String(item.totalPOValue || 0)
+        };
+      });
       
       console.log('✅ Enhanced endpoint returning', formattedItems.length, 'formatted items');
       res.json(formattedItems);
