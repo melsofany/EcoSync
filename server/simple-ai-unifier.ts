@@ -164,38 +164,32 @@ class SimpleAIUnifier {
     if (updates.length === 0) return;
 
     try {
-      // كتابة كل تحديث بشكل منفصل لضمان الدقة
-      let successCount = 0;
-      for (const update of updates) {
-        try {
-          this.addLog(`🔄 كتابة ${update.range} = ${update.values[0][0]}`);
-          
-          const result = await this.sheets.spreadsheets.values.update({
-            spreadsheetId: this.spreadsheetId,
-            range: update.range,
-            valueInputOption: 'RAW',
-            resource: {
-              values: update.values
-            }
-          });
-          
-          this.addLog(`✅ نجحت كتابة ${update.range} - خلايا محدثة: ${result.data.updatedCells}`);
-          successCount++;
-          
-          // انتظار قصير بين التحديثات
-          await new Promise(resolve => setTimeout(resolve, 50));
-          
-        } catch (updateError: any) {
-          this.addLog(`❌ خطأ في كتابة ${update.range}: ${updateError.message}`, 'error');
-        }
-      }
+      this.addLog(`🔄 كتابة مجمعة لـ ${updates.length} تحديث...`);
       
-      if (successCount > 0) {
-        this.addLog(`🎯 تم كتابة ${successCount} من ${updates.length} تحديث بنجاح`);
-      }
+      // تحويل التحديثات لتنسيق batch update
+      const batchData = updates.map(update => ({
+        range: update.range,
+        values: update.values
+      }));
+
+      const batchUpdateRequest = {
+        spreadsheetId: this.spreadsheetId,
+        resource: {
+          valueInputOption: 'RAW',
+          data: batchData
+        }
+      };
+
+      const result = await this.sheets.spreadsheets.values.batchUpdate(batchUpdateRequest);
+      
+      this.addLog(`✅ نجحت الكتابة المجمعة - خلايا محدثة: ${result.data.totalUpdatedCells}`);
+      this.addLog(`📊 صفوف محدثة: ${result.data.totalUpdatedRows}`);
       
     } catch (error: any) {
-      this.addLog(`❌ خطأ عام في كتابة التحديثات: ${error.message}`, 'error');
+      this.addLog(`❌ خطأ في الكتابة المجمعة: ${error.message}`, 'error');
+      
+      // لا نحاول الكتابة المنفردة لتجنب quota issues
+      this.addLog(`⚠️ تم تخطي ${updates.length} تحديث بسبب مشكلة في API`);
     }
   }
 
@@ -246,14 +240,13 @@ class SimpleAIUnifier {
         
         this.addLog(`🔍 معالجة الصف ${i + 1}: ${masterItem.description.substring(0, 40)}...`);
 
-        // تعيين المعرف الرئيسي إذا لم يكن موجوداً
-        if (!masterItem.currentId || !masterItem.currentId.startsWith('P-')) {
-          updates.push({
-            range: `DATA!A${masterItem.rowIndex}`,
-            values: [[masterId]]
-          });
-          masterItem.currentId = masterId;
-        }
+        // تعيين المعرف الرئيسي بالقوة (إجبار الكتابة)
+        updates.push({
+          range: `DATA!A${masterItem.rowIndex}`,
+          values: [[masterId]]
+        });
+        masterItem.currentId = masterId;
+        this.addLog(`📝 تحديد معرف ${masterId} للصف ${masterItem.rowIndex}`);
 
         processedItems.add(i);
 
@@ -263,11 +256,6 @@ class SimpleAIUnifier {
           if (processedItems.has(j)) continue;
 
           const compareItem = items[j];
-          
-          // تخطي البنود التي لديها معرف بالفعل
-          if (compareItem.currentId && compareItem.currentId.startsWith('P-')) {
-            continue;
-          }
           
           const isMatch = await this.quickCompare(masterItem, compareItem);
           
@@ -291,8 +279,8 @@ class SimpleAIUnifier {
         currentIdCounter++;
         this.status.processed = processedItems.size;
 
-        // كتابة التحديثات كل 5 عناصر لمراقبة أفضل
-        if (updates.length >= 5) {
+        // كتابة التحديثات كل 50 عنصر للكتابة المجمعة الفعالة
+        if (updates.length >= 50) {
           await this.writeUpdatesToSheets(updates);
           updates.length = 0; // مسح المصفوفة
         }
