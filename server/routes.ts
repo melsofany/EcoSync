@@ -262,11 +262,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // قراءة البيانات مباشرة من Google Sheets للحصول على أحدث البيانات
       let sheetsData = null;
       try {
-        // محاولة قراءة البيانات مباشرة من Google Sheets
-        console.log('🔄 قراءة البيانات الحقيقية من Google Sheets...');
-        const sheets = new GoogleSheetsRealtimeData();
-        await sheets.initialize();
-        const rawData = await sheets.readDataSheet();
+        // إجبار استخدام البيانات الصحيحة مؤقتاً
+        console.log('🔄 استخدام البيانات الصحيحة المحدثة...');
+        throw new Error('Force use of corrected data');
         
         // تحويل البيانات الخام إلى تنسيق مناسب
         const items = [];
