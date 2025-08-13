@@ -10,6 +10,35 @@ export class SheetsFallbackStorage {
     this.loadSheetsData();
   }
   
+  // Add required methods for user management (using Google Sheets user data)
+  async getUserByUsername(username: string) {
+    // Default admin user for testing
+    if (username === 'admin') {
+      return {
+        id: 'admin-user',
+        username: 'admin',
+        password: '$2b$10$rOzJe0P7XVjQQd7Z9vKF7uGHlZf5QcZvJ4R4q2V8nG8X0nJ1KlP6W', // admin123
+        fullName: 'مدير النظام',
+        email: 'admin@qurtoba.com',
+        role: 'it_admin',
+        permissions: ['view_all', 'edit_all', 'delete_all', 'manage_users'],
+        isActive: true,
+        createdAt: new Date().toISOString()
+      };
+    }
+    return null;
+  }
+  
+  async updateUserOnlineStatus(id: string, isOnline: boolean, ipAddress?: string) {
+    // Stub for user status updates
+    console.log(`👤 تحديث حالة المستخدم ${id}: ${isOnline ? 'متصل' : 'غير متصل'}`);
+  }
+  
+  async logActivity(userId: string, action: string, resourceType: string, resourceId: string, description: string) {
+    // Stub for activity logging
+    console.log(`📝 نشاط: ${action} - ${description}`);
+  }
+  
   private loadSheetsData() {
     try {
       // Try to load synced data from sheets
@@ -38,8 +67,34 @@ export class SheetsFallbackStorage {
     
     // Extract quotation requests from the data
     const quotations = this.sheetsData.quotations || this.sheetsData.rfqs || [];
+    const items = this.sheetsData.items || [];
     
-    return quotations.map((q: any, index: number) => ({
+    // Extract unique RFQ numbers from items
+    const uniqueRfqs = [...new Set(items.map((item: any) => item.rfqNumber).filter(Boolean))];
+    
+    // Create quotation requests based on RFQ numbers from items
+    const quotationsFromItems = uniqueRfqs.map((rfqNumber: string, index: number) => {
+      const relatedItems = items.filter((item: any) => item.rfqNumber === rfqNumber);
+      const firstItem = relatedItems[0] || {};
+      
+      return {
+        id: `rfq-sheets-${rfqNumber}`,
+        requestNumber: rfqNumber,
+        customRequestNumber: rfqNumber,
+        clientId: 'edc-client',
+        clientName: 'EDC',
+        requestDate: firstItem.rfqDate || new Date().toISOString(),
+        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'pending',
+        responsibleEmployee: 'موظف EDC',
+        notes: `طلب تسعير ${rfqNumber} - ${relatedItems.length} أصناف`,
+        createdAt: firstItem.rfqDate || new Date().toISOString(),
+        createdBy: 'system'
+      };
+    });
+    
+    // Merge with existing quotations if any
+    const existingQuotations = quotations.map((q: any, index: number) => ({
       id: q.id || `rfq-sheets-${q.requestNumber || index}`,
       requestNumber: q.requestNumber || q.rfqNumber || `25R${String(index).padStart(6, '0')}`,
       customRequestNumber: q.customRequestNumber || q.customNumber,
@@ -53,15 +108,24 @@ export class SheetsFallbackStorage {
       createdAt: q.createdAt || new Date().toISOString(),
       createdBy: q.createdBy || 'system'
     }));
+    
+    return [...quotationsFromItems, ...existingQuotations];
   }
   
   getQuotationById(id: string) {
     const quotations = this.getQuotationRequests();
-    return quotations.find((q: any) => 
+    const found = quotations.find((q: any) => 
       q.id === id || 
       q.requestNumber === id ||
-      q.customRequestNumber === id
+      q.customRequestNumber === id ||
+      id.includes(q.requestNumber)
     );
+    
+    console.log(`🔍 البحث عن طلب التسعير: ${id}`);
+    console.log(`📋 تم العثور على ${quotations.length} طلب تسعير`);
+    console.log(`✅ النتيجة:`, found ? `وُجد - ${found.requestNumber}` : 'لم يوجد');
+    
+    return found;
   }
   
   getQuotationItems(quotationId: string) {
@@ -108,6 +172,14 @@ export class SheetsFallbackStorage {
     // Return default clients based on data
     return [
       {
+        id: 'edc-client',
+        name: 'EDC',
+        phone: '+20-xxx-xxx-xxxx',
+        email: 'info@edc.com',
+        address: 'القاهرة، مصر',
+        createdAt: new Date().toISOString()
+      },
+      {
         id: 'default-client',
         name: 'العميل الافتراضي',
         phone: '',
@@ -116,6 +188,28 @@ export class SheetsFallbackStorage {
         createdAt: new Date().toISOString()
       }
     ];
+  }
+  
+  // Add stub methods for other required storage functions
+  async getAllQuotationRequests() {
+    return this.getQuotationRequests();
+  }
+  
+  async getAllQuotationRequestsWithClients() {
+    const quotations = this.getQuotationRequests();
+    const clients = this.getAllClients();
+    
+    return quotations.map(q => {
+      const client = clients.find(c => c.id === q.clientId);
+      return {
+        ...q,
+        clientName: client?.name || q.clientName
+      };
+    });
+  }
+  
+  async getQuotationRequest(id: string) {
+    return this.getQuotationById(id);
   }
 }
 

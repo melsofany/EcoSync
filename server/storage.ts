@@ -1960,10 +1960,11 @@ import { ExcelOnlyStorage } from './excel-only-storage';
 
 // استخدام نظام البيانات المطابق لـ Google Sheets (37 أمر شراء)
 import { simpleGoogleSheetsStorage } from "./simple-google-sheets-storage.js";
-// export const storage = simpleGoogleSheetsStorage;
+import { sheetsFallbackStorage } from "./sheets-fallback-storage.js";
 
-// Use the main DatabaseStorage which has all the required methods  
-export const storage = new DatabaseStorage();
+// Use Google Sheets storage directly instead of PostgreSQL
+console.log("🔄 تحويل النظام لاستخدام Google Sheets بدلاً من PostgreSQL");
+export const storage = sheetsFallbackStorage;
 
 // تهيئة النظام الهجين مع البيانات الحقيقية
 export async function initializeDatabase() {
