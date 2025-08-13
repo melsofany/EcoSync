@@ -22,7 +22,8 @@ import {
   Merge,
   Download,
   Database,
-  Mic
+  Mic,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -105,8 +106,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "settings",
     },
     {
-      title: "إدارة المستخدمين",
+      title: "الإدارة العامة",
       href: "/admin",
+      icon: Shield,
+      section: "admin",
+    },
+    {
+      title: "إدارة المستخدمين",
+      href: "/user-management",
       icon: Users,
       section: "admin",
     },

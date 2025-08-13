@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage, initializeDatabase } from "./storage";
 import { linkedStorage } from "./linked-storage";
+import { userSheetsManager } from "./user-sheets-manager";
 import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
 import { autoMapExcelColumns, processExcelRowForQuotation } from "./simpleExcelImport";
 import { sendEmail, generatePasswordResetEmail } from "./emailService";
@@ -226,21 +227,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = req.body;
       
-      const user = await storage.getUserByUsername(username);
+      console.log(`🔐 محاولة تسجيل دخول للمستخدم: ${username}`);
+      
+      const user = await userSheetsManager.getUserByUsername(username);
       if (!user || !user.isActive) {
-        await logActivity(req, "login_failed", "user", undefined, `Failed login attempt for username: ${username}`);
-        return res.status(401).json({ message: "Invalid credentials" });
+        console.log(`❌ المستخدم غير موجود أو غير نشط: ${username}`);
+        return res.status(401).json({ message: "بيانات الدخول غير صحيحة" });
       }
 
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
-        await logActivity(req, "login_failed", "user", user.id, "Invalid password");
-        return res.status(401).json({ message: "Invalid credentials" });
+        console.log(`❌ كلمة مرور خاطئة للمستخدم: ${username}`);
+        return res.status(401).json({ message: "بيانات الدخول غير صحيحة" });
       }
 
       // Update user online status
       const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
-      await storage.updateUserOnlineStatus(user.id, true, ipAddress);
+      await userSheetsManager.updateUserOnlineStatus(user.id, true, ipAddress);
 
       req.session.user = {
         id: user.id,
@@ -249,33 +252,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: user.role,
       };
 
-      await logActivity(req, "login_success", "user", user.id, `${user.fullName} قام بتسجيل الدخول بنجاح`);
+      console.log(`✅ تم تسجيل دخول المستخدم بنجاح: ${user.fullName}`);
 
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
-      console.error("Login error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("خطأ في تسجيل الدخول:", error);
+      res.status(500).json({ message: "خطأ داخلي في الخادم" });
     }
   });
 
   app.post("/api/auth/logout", requireAuth, async (req: Request, res: Response) => {
     try {
       if (req.session.user) {
-        await storage.updateUserOnlineStatus(req.session.user.id, false);
-        await logActivity(req, "logout", "user", req.session.user.id, `${req.session.user.fullName} قام بتسجيل الخروج`);
+        await userSheetsManager.updateUserOnlineStatus(req.session.user.id, false);
+        console.log(`👋 ${req.session.user.fullName} قام بتسجيل الخروج`);
       }
 
       req.session.destroy((err) => {
         if (err) {
-          console.error("Session destroy error:", err);
-          return res.status(500).json({ message: "Could not log out" });
+          console.error("خطأ في إنهاء الجلسة:", err);
+          return res.status(500).json({ message: "فشل في تسجيل الخروج" });
         }
-        res.json({ message: "Logged out successfully" });
+        res.json({ message: "تم تسجيل الخروج بنجاح" });
       });
     } catch (error) {
-      console.error("Logout error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("خطأ في تسجيل الخروج:", error);
+      res.status(500).json({ message: "خطأ داخلي في الخادم" });
     }
   });
 
@@ -369,16 +372,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", requireAuth, async (req: Request, res: Response) => {
     try {
-      const user = await storage.getUser(req.session.user!.id);
+      const user = await userSheetsManager.getUserById(req.session.user!.id);
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: "المستخدم غير موجود" });
       }
 
       const { password: _, ...userWithoutPassword } = user;
       res.json(userWithoutPassword);
     } catch (error) {
-      console.error("Get user error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("خطأ في جلب بيانات المستخدم:", error);
+      res.status(500).json({ message: "خطأ داخلي في الخادم" });
+    }
+  });
+
+  // إنشاء ورقة المستخدمين في Google Sheets
+  app.post("/api/users/create-sheet", async (req: Request, res: Response) => {
+    try {
+      console.log('🔧 طلب إنشاء ورقة المستخدمين...');
+      
+      const result = await userSheetsManager.createUserSheet();
+      
+      if (result) {
+        console.log('✅ تم إنشاء ورقة المستخدمين بنجاح');
+        res.json({
+          success: true,
+          message: "تم إنشاء ورقة المستخدمين بنجاح مع مستخدم المدير الافتراضي"
+        });
+      } else {
+        console.error('❌ فشل في إنشاء ورقة المستخدمين');
+        res.status(500).json({
+          success: false,
+          message: "فشل في إنشاء ورقة المستخدمين"
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في إنشاء ورقة المستخدمين:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
+  // إضافة مستخدم جديد
+  app.post("/api/users/create", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { username, password, fullName, email, phone, role, permissions } = req.body;
+      
+      if (!username || !password || !fullName || !role) {
+        return res.status(400).json({
+          success: false,
+          message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
+        });
+      }
+
+      console.log(`👤 إنشاء مستخدم جديد: ${username}`);
+      
+      const newUser = await userSheetsManager.createUser({
+        username,
+        password,
+        fullName,
+        email,
+        phone,
+        role,
+        permissions
+      });
+      
+      if (newUser) {
+        console.log(`✅ تم إنشاء المستخدم: ${newUser.username}`);
+        const { password: _, ...userWithoutPassword } = newUser;
+        res.json({
+          success: true,
+          message: `تم إنشاء المستخدم ${newUser.username} بنجاح`,
+          user: userWithoutPassword
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "فشل في إنشاء المستخدم"
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ خطأ في إنشاء المستخدم:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
+  // جلب جميع المستخدمين
+  app.get("/api/users", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('📋 جلب قائمة المستخدمين...');
+      
+      const users = await userSheetsManager.getAllUsers();
+      
+      // إزالة كلمات المرور من الاستجابة
+      const usersWithoutPasswords = users.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      res.json({
+        success: true,
+        users: usersWithoutPasswords
+      });
+    } catch (error) {
+      console.error('❌ خطأ في جلب المستخدمين:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ داخلي في الخادم"
+      });
     }
   });
 

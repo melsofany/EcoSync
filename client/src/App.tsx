@@ -30,6 +30,7 @@ import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
 import { VoiceControlPage } from "@/pages/VoiceControlPage";
 import DataUnification from "@/pages/DataUnification";
 import UnificationMonitor from "@/pages/UnificationMonitor";
+import UserManagement from "@/pages/UserManagement";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -79,6 +80,7 @@ function Router() {
         <Route path="/voice-control" component={VoiceControlPage} />
         <Route path="/data-unification" component={DataUnification} />
         <Route path="/unification-monitor" component={UnificationMonitor} />
+        <Route path="/user-management" component={UserManagement} />
 
         <Route path="/change-password" component={ChangePassword} />
         <Route component={NotFound} />
