@@ -246,11 +246,15 @@ export default function PurchaseOrders() {
     
     return poItems.map((item: any) => ({
       ...item,
-      partNumber: item.partNumber || item.itemNumber || item.columnC || item.rawData?.[2] || 'غير محدد',
-      description: item.description || item.columnD || item.rawData?.[3] || 'غير محدد',
+      // رقم الصنف من العمود A (فهرس 0)
+      partNumber: item.rawData?.[0] || item.columnA || item.itemNumber || 'غير محدد',
+      // الوصف من العمود E (فهرس 4) 
+      description: item.rawData?.[4] || item.columnE || item.description || 'غير محدد',
       quantity: item.quantity || item.columnG || item.rawData?.[6] || '1',
       rfqPrice: item.rfqPrice || item.columnH || item.rawData?.[7] || '0',
       totalPOValue: item.poPrice || item.totalPOValue || item.columnM || item.rawData?.[12] || '0',
+      // تاريخ أمر الشراء من العمود L (فهرس 11)
+      poDate: item.rawData?.[11] || item.columnL || item.poDate || '',
     }));
   };
 
@@ -834,6 +838,12 @@ export default function PurchaseOrders() {
                             const poTotal = parseFloat(item.totalPOValue) || 0;
                             const difference = poTotal - rfqTotal;
                             const poPrice = poTotal / (parseInt(item.quantity) || 1);
+                            
+                            console.log('Displaying item:', {
+                              partNumber: item.partNumber,
+                              description: item.description,
+                              rawData: item.rawData?.slice(0, 5) // First 5 columns for debugging
+                            });
                             
                             return (
                               <TableRow key={index} className="hover:bg-gray-50">
