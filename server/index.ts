@@ -14,12 +14,26 @@ declare global {
 
 const app = express();
 
-// زيادة حد حجم الطلب لدعم ملفات Excel الكبيرة (حتى 100 ميجابايت)
-app.use(express.json({ limit: '100mb' }));
+// إعدادات الإنتاج
+const isProduction = process.env.NODE_ENV === 'production';
+const uploadLimit = isProduction ? '50mb' : '100mb';
+
+if (isProduction) {
+  console.log('🏭 تشغيل في وضع الإنتاج');
+  console.log('🔒 تفعيل إعدادات الأمان المتقدمة');
+  
+  // إعدادات trust proxy للإنتاج
+  app.set('trust proxy', 1);
+} else {
+  console.log('🛠️ تشغيل في وضع التطوير');
+}
+
+// تكوين حجم الطلبات حسب البيئة
+app.use(express.json({ limit: uploadLimit }));
 app.use(express.urlencoded({ 
-  limit: '100mb',
+  limit: uploadLimit,
   extended: false,
-  parameterLimit: 50000 // زيادة حد المعاملات أيضاً
+  parameterLimit: isProduction ? 20000 : 50000
 }));
 
 app.use((req, res, next) => {

@@ -9,6 +9,7 @@ import { ObjectStorageService } from "./objectStorage";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
 import { randomBytes } from "crypto";
 import path from "path";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
@@ -167,21 +168,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database with default data
   await initializeDatabase();
   
-  // استخدام Memory Store للعرض التوضيحي
-  const MemStore = MemoryStore(session);
+  // إعداد المتجر المناسب حسب البيئة
+  const isProduction = process.env.NODE_ENV === 'production';
+  let sessionStore;
   
-  // إعداد جلسات العرض التوضيحي
-  app.use(session({
-    store: new MemStore({
+  if (isProduction) {
+    // استخدام PostgreSQL store للإنتاج
+    const pgSession = connectPgSimple(session);
+    sessionStore = new pgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: 'user_sessions',
+      createTableIfMissing: true
+    });
+    console.log('📊 استخدام PostgreSQL session store للإنتاج');
+  } else {
+    // استخدام Memory Store للتطوير
+    const MemStore = MemoryStore(session);
+    sessionStore = new MemStore({
       checkPeriod: 86400000
-    }),
+    });
+    console.log('🧠 استخدام Memory session store للتطوير');
+  }
+  
+  // إعداد جلسات الإنتاج
+  app.use(session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // Set to true in production with HTTPS
+      secure: isProduction, // HTTPS في الإنتاج
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours (extended for better UX)
+      maxAge: isProduction ? 8 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000, // 8 ساعات للإنتاج، 24 للتطوير
+      sameSite: isProduction ? 'strict' : 'lax'
     },
   }));
 
