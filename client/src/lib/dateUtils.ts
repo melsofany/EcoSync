@@ -27,8 +27,8 @@ export function formatDateToEnglish(dateString: string | Date): string {
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
   
-  // تنسيق YYYY/MM/DD
-  return `${year}/${month}/${day}`;
+  // تنسيق YYYY/DD/MM (اليوم ثم الشهر)
+  return `${year}/${day}/${month}`;
 }
 
 export function formatDateToArabic(dateString: string | Date): string {

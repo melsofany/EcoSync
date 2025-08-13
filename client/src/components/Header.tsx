@@ -33,7 +33,7 @@ export default function Header({ onMenuClick }: HeaderProps = {}) {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
-    return `${year}/${month}/${day}`;
+    return `${year}/${day}/${month}`;
   };
 
   return (
