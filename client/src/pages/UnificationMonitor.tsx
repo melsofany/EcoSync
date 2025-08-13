@@ -229,7 +229,7 @@ export default function UnificationMonitor() {
     });
   };
 
-  const progressPercentage = progress ? (progress.processedRows / progress.totalItems) * 100 : 0;
+  const progressPercentage = progress ? ((progress.processedRows || 0) / (progress.totalItems || 1)) * 100 : 0;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">
@@ -361,7 +361,7 @@ export default function UnificationMonitor() {
                   <Target className="w-4 h-4 mr-2 text-blue-500" />
                   <div>
                     <div className="font-medium">البنود الموحدة</div>
-                    <div className="text-gray-600">{progress.unifiedItems}</div>
+                    <div className="text-gray-600">{progress.unifiedItems || 0}</div>
                   </div>
                 </div>
                 
@@ -370,9 +370,9 @@ export default function UnificationMonitor() {
                   <div>
                     <div className="font-medium">الوقت المتبقي</div>
                     <div className="text-gray-600">
-                      {progress.estimatedTimeRemaining > 0 
+                      {progress.status === 'running' && progress.estimatedTimeRemaining > 0 
                         ? formatTime(progress.estimatedTimeRemaining)
-                        : "غير محدد"
+                        : progress.status === 'idle' ? "في الانتظار" : "غير محدد"
                       }
                     </div>
                   </div>
