@@ -58,7 +58,7 @@ function AddUserForm({ onSuccess }: { onSuccess: () => void }) {
 
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      const response = await apiRequest("POST", "/api/users", userData);
+      const response = await apiRequest("POST", "/api/users/create", userData);
       return await response.json();
     },
     onSuccess: () => {
