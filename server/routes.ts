@@ -12,8 +12,43 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import { randomBytes } from "crypto";
 import path from "path";
+import multer from "multer";
+import { promises as fs } from "fs";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
+
+// إعداد Multer لرفع الصور
+const storage_multer = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    const uploadDir = './public/uploads/profiles';
+    try {
+      await fs.mkdir(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+    } catch (error) {
+      cb(error, uploadDir);
+    }
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const extension = path.extname(file.originalname);
+    cb(null, `profile-${uniqueSuffix}${extension}`);
+  }
+});
+
+const upload = multer({
+  storage: storage_multer,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB حد أقصى
+  },
+  fileFilter: (req, file, cb) => {
+    // السماح فقط بأنواع الصور المحددة
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('نوع الملف غير مدعوم. يُسمح فقط بملفات الصور.'));
+    }
+  }
+});
 
 // نظام توحيد الأصناف الذكي باستخدام AI
 async function aiUnifyItems(items: any[]): Promise<any[]> {
@@ -460,6 +495,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: error.message || "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
+  // رفع صورة المستخدم
+  app.post("/api/upload/profile-image", requireAuth, upload.single('image'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "لم يتم العثور على ملف صورة"
+        });
+      }
+
+      // إنشاء رابط الصورة
+      const imageUrl = `/uploads/profiles/${req.file.filename}`;
+      
+      console.log(`📸 تم رفع صورة المستخدم: ${req.file.filename}`);
+      
+      res.json({
+        success: true,
+        message: "تم رفع الصورة بنجاح",
+        imageUrl: imageUrl
+      });
+    } catch (error: any) {
+      console.error('❌ خطأ في رفع صورة المستخدم:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "خطأ في رفع الصورة"
       });
     }
   });

@@ -14,6 +14,9 @@ declare global {
 
 const app = express();
 
+// خدمة الملفات الثابتة (الصور المرفوعة)
+app.use('/uploads', express.static('public/uploads'));
+
 // زيادة حد حجم الطلب لدعم ملفات Excel الكبيرة (حتى 100 ميجابايت)
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ 
