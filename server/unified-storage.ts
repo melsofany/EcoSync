@@ -17,10 +17,7 @@ class UnifiedStorage {
 
   constructor() {
     this.initializeGoogleSheets();
-    // تحميل البيانات بشكل غير متزامن
-    this.loadLocalData().then(() => {
-      console.log('✅ تم تهيئة النظام الموحد بالكامل');
-    });
+    this.loadLocalData();
   }
 
   private async initializeGoogleSheets() {
@@ -38,90 +35,16 @@ class UnifiedStorage {
     }
   }
 
-  private async loadLocalData() {
+  private loadLocalData() {
     try {
-      // النظام يعتمد على Google Sheets كمصدر البيانات الوحيد
-      console.log('🔗 محاولة الاتصال بـ Google Sheets...');
-      this.localData = await this.loadFromGoogleSheets();
-      if (this.localData) {
-        console.log('✅ تم تحميل البيانات من Google Sheets بنجاح');
-      } else {
-        console.log('📁 استخدام البيانات المحلية مؤقتاً حتى إصلاح مشكلة Google Sheets');
-        this.localData = { purchaseOrders: [], quotations: [], items: [], statistics: {} };
-      }
+      this.localData = JSON.parse(readFileSync('./attached_assets/real_exact_data.json', 'utf8'));
+      console.log('📁 تم تحميل البيانات المحلية الفعلية');
     } catch (error) {
-      console.log('🚫 البيانات المربوطة فارغة');
-      this.localData = { purchaseOrders: [], quotations: [], items: [], statistics: {} };
+      console.error('❌ خطأ في تحميل البيانات المحلية:', (error as Error).message);
     }
   }
 
   // دمج العمليات مع Google Sheets
-  async loadFromGoogleSheets(): Promise<UnifiedData | null> {
-    try {
-      if (!this.sheets) return null;
-      
-      // قراءة البيانات من DATA sheet 
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:N15000'
-      });
-      
-      const rows = response.data.values || [];
-      const items: any[] = [];
-      const quotations: any[] = [];
-      const purchaseOrders: any[] = [];
-      
-      rows.forEach((row: any[], index: number) => {
-        if (row.length >= 10) {
-          // استخراج الأصناف
-          if (row[2]) { // PART_NO موجود
-            items.push({
-              partNumber: row[2],
-              description: row[3] || '',
-              rfqNumber: row[4] || '',
-              requestDate: row[5] || '',
-              quantity: parseFloat(row[6]) || 0,
-              price: parseFloat(row[7]) || 0
-            });
-          }
-          
-          // استخراج طلبات التسعير
-          if (row[4]) { // RFQ_NUMBER موجود
-            quotations.push({
-              rfqNumber: row[4],
-              requestDate: row[5] || '',
-              totalAmount: parseFloat(row[7]) || 0
-            });
-          }
-          
-          // استخراج أوامر الشراء
-          if (row[9] && row[10]) { // PO_NUMBER و PO_DATE موجودان
-            purchaseOrders.push({
-              poNumber: row[9],
-              orderDate: row[10],
-              totalAmount: parseFloat(row[12]) || 0,
-              status: 'active'
-            });
-          }
-        }
-      });
-      
-      return {
-        items,
-        quotations,
-        purchaseOrders,
-        statistics: {
-          totalItems: items.length,
-          totalQuotations: quotations.length,
-          totalPurchaseOrders: purchaseOrders.length
-        }
-      };
-    } catch (error) {
-      console.error('❌ خطأ في قراءة Google Sheets:', (error as Error).message);
-      return null;
-    }
-  }
-
   async getAllPurchaseOrders() {
     if (!this.localData) return [];
     

@@ -2,14 +2,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useLogin } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { User, Lock, ArrowLeft, Sheet } from "lucide-react";
+import { Building, User, Lock, ArrowLeft, Mail } from "lucide-react";
 import qortobaLogo from "@/assets/qortoba-logo.png";
 import logisticsBackground from "@/assets/logistics-background.jpg";
 
@@ -21,7 +19,11 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
-  const { toast } = useToast();
+  const login = useLogin();
+
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -31,25 +33,33 @@ export default function Login() {
     },
   });
 
-  const googleSheetsLogin = useMutation({
-    mutationFn: async (data: LoginForm) => {
-      const response = await apiRequest("POST", "/api/auth/google-sheets-login", data);
-      return response;
-    },
-    onSuccess: () => {
-      window.location.href = "/";
-    },
-    onError: (error: any) => {
-      toast({
-        title: "خطأ في تسجيل الدخول",
-        description: error.message || "فشل في تسجيل الدخول",
-        variant: "destructive"
-      });
-    }
-  });
-
   const onSubmit = (data: LoginForm) => {
-    googleSheetsLogin.mutate(data);
+    login.mutate(data);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetEmail) {
+      setResetMessage("يرجى إدخال البريد الإلكتروني");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/reset-password-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        setResetMessage("تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني");
+      } else {
+        setResetMessage(result.message || "حدث خطأ، يرجى المحاولة مرة أخرى");
+      }
+    } catch (error) {
+      setResetMessage("حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى");
+    }
   };
 
   return (
@@ -81,17 +91,6 @@ export default function Login() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2 drop-shadow-sm">نظام قرطبة</h1>
             <p className="text-gray-700 drop-shadow-sm">للتوريدات</p>
-          </div>
-
-          {/* Google Sheets Info */}
-          <div className="mb-6 text-center">
-            <div className="flex items-center justify-center mb-3">
-              <Sheet className="h-5 w-5 text-green-600 ml-2" />
-              <span className="text-sm font-medium text-green-700">تسجيل الدخول عبر Google Sheets</span>
-            </div>
-            <div className="text-xs text-gray-500">
-              استخدام قاعدة بيانات Google Sheets حصرياً
-            </div>
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -132,37 +131,77 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full h-12 text-lg"
-              disabled={googleSheetsLogin.isPending}
+              disabled={login.isPending}
             >
-              {googleSheetsLogin.isPending ? (
+              {login.isPending ? (
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full loading-spinner"></div>
                   <span>جاري تسجيل الدخول...</span>
                 </div>
               ) : (
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <Sheet className="h-5 w-5 ml-2" />
-                  <span>تسجيل الدخول بـ Google Sheets</span>
+                  <span>تسجيل الدخول</span>
                   <ArrowLeft className="h-5 w-5 rtl-flip" />
                 </div>
               )}
             </Button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-center text-sm text-blue-800">
-              <p className="font-semibold mb-2">بيانات تجريبية:</p>
-              <p><strong>المدير:</strong> admin / admin123</p>
-              <p><strong>مدخل البيانات:</strong> data_entry / data123</p>
-              <p><strong>محاسب:</strong> accountant / acc123</p>
-            </div>
+          {/* Password Reset Section */}
+          <div className="mt-4 text-center">
+            <Button
+              variant="link"
+              onClick={() => setShowResetPassword(!showResetPassword)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              نسيت كلمة المرور؟
+            </Button>
           </div>
 
-          {/* Footer */}
-          <div className="text-center mt-6 text-xs text-gray-500">
-            <p>© 2025 قرطبة للتوريدات - جميع الحقوق محفوظة</p>
-            <p className="mt-1">مدعوم بـ Google Sheets</p>
+          {showResetPassword && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
+              <div className="text-center">
+                <h3 className="font-semibold text-blue-800 mb-2">استعادة كلمة المرور</h3>
+                <p className="text-sm text-blue-700">أدخل بريدك الإلكتروني لإرسال رابط الاستعادة</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="relative">
+                  <Input
+                    type="email"
+                    placeholder="البريد الإلكتروني"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    className="pl-12"
+                  />
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                </div>
+                
+                <Button
+                  onClick={handleResetPassword}
+                  className="w-full"
+                  variant="outline"
+                >
+                  إرسال رابط الاستعادة
+                </Button>
+                
+                {resetMessage && (
+                  <div className={`text-sm text-center p-2 rounded ${
+                    resetMessage.includes("تم إرسال") 
+                      ? "text-green-700 bg-green-100" 
+                      : "text-red-700 bg-red-100"
+                  }`}>
+                    {resetMessage}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+
+
+          <div className="mt-6 text-center text-sm text-gray-500">
+            النسخة 1.0 - جميع الحقوق محفوظة لقرطبة للتوريدات © 2025
           </div>
         </CardContent>
       </Card>

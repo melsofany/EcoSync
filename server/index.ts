@@ -2,7 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import "./telegram-bot"; // Initialize Telegram bot
 import GoogleSheetsSync from "./google-sheets-sync";
-// import { realTimeSync } from "./real-time-google-sheets-sync"; // معطل - النظام يعتمد على Google Sheets فقط
+import { realTimeSync } from "./real-time-google-sheets-sync";
 import { storage } from "./storage";
 import { setupRealTimeSync } from "./sync-with-sheets";
 
@@ -14,26 +14,12 @@ declare global {
 
 const app = express();
 
-// إعدادات الإنتاج
-const isProduction = process.env.NODE_ENV === 'production';
-const uploadLimit = isProduction ? '50mb' : '100mb';
-
-if (isProduction) {
-  console.log('🏭 تشغيل في وضع الإنتاج');
-  console.log('🔒 تفعيل إعدادات الأمان المتقدمة');
-  
-  // إعدادات trust proxy للإنتاج
-  app.set('trust proxy', 1);
-} else {
-  console.log('🛠️ تشغيل في وضع التطوير');
-}
-
-// تكوين حجم الطلبات حسب البيئة
-app.use(express.json({ limit: uploadLimit }));
+// زيادة حد حجم الطلب لدعم ملفات Excel الكبيرة (حتى 100 ميجابايت)
+app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ 
-  limit: uploadLimit,
+  limit: '100mb',
   extended: false,
-  parameterLimit: isProduction ? 20000 : 50000
+  parameterLimit: 50000 // زيادة حد المعاملات أيضاً
 }));
 
 app.use((req, res, next) => {
@@ -142,11 +128,11 @@ app.use((req, res, next) => {
       }
     }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
 
-    // تفعيل مزامنة البيانات من Google Sheets فقط
+    // تفعيل مزامنة البيانات الجديدة
     setTimeout(async () => {
       try {
-        // تم تعطيل المزامنة التي تحتاج ملفات محلية - النظام يعتمد على Google Sheets فقط
-        console.log('🔄 النظام يعتمد على Google Sheets كمصدر البيانات الوحيد');
+        await realTimeSync.startRealTimeSync();
+        console.log('🔄 تم تفعيل المزامنة الحقيقية الجديدة');
       } catch (error) {
         console.log('⚠️ المزامنة الحقيقية غير متاحة:', (error as Error).message);
       }

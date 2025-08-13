@@ -9,12 +9,10 @@ import { ObjectStorageService } from "./objectStorage";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import MemoryStore from "memorystore";
-import connectPgSimple from "connect-pg-simple";
 import { randomBytes } from "crypto";
 import path from "path";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
-import { googleSheetsUsersManager, type GoogleSheetsUser } from "./google-sheets-users";
 
 // نظام توحيد الأصناف الذكي باستخدام AI
 async function aiUnifyItems(items: any[]): Promise<any[]> {
@@ -168,39 +166,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database with default data
   await initializeDatabase();
   
-  // إعداد المتجر المناسب حسب البيئة
-  const isProduction = process.env.NODE_ENV === 'production';
-  let sessionStore;
+  // استخدام Memory Store للعرض التوضيحي
+  const MemStore = MemoryStore(session);
   
-  if (isProduction) {
-    // استخدام PostgreSQL store للإنتاج
-    const pgSession = connectPgSimple(session);
-    sessionStore = new pgSession({
-      conString: process.env.DATABASE_URL,
-      tableName: 'user_sessions',
-      createTableIfMissing: true
-    });
-    console.log('📊 استخدام PostgreSQL session store للإنتاج');
-  } else {
-    // استخدام Memory Store للتطوير
-    const MemStore = MemoryStore(session);
-    sessionStore = new MemStore({
-      checkPeriod: 86400000
-    });
-    console.log('🧠 استخدام Memory session store للتطوير');
-  }
-  
-  // إعداد جلسات الإنتاج
+  // إعداد جلسات العرض التوضيحي
   app.use(session({
-    store: sessionStore,
+    store: new MemStore({
+      checkPeriod: 86400000
+    }),
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // false للتطوير
-      httpOnly: false, // false للسماح بالوصول من JavaScript
-      maxAge: 24 * 60 * 60 * 1000, // 24 ساعة
-      sameSite: 'lax'
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours (extended for better UX)
     },
   }));
 
@@ -241,7 +221,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   };
 
-  // تم حذف نظام الدخول المحلي - يستخدم Google Sheets فقط
+  // Auth routes
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      
+      const user = await storage.getUserByUsername(username);
+      if (!user || !user.isActive) {
+        await logActivity(req, "login_failed", "user", undefined, `Failed login attempt for username: ${username}`);
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        await logActivity(req, "login_failed", "user", user.id, "Invalid password");
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Update user online status
+      const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+      await storage.updateUserOnlineStatus(user.id, true, ipAddress);
+
+      req.session.user = {
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName,
+        role: user.role,
+      };
+
+      await logActivity(req, "login_success", "user", user.id, `${user.fullName} قام بتسجيل الدخول بنجاح`);
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   app.post("/api/auth/logout", requireAuth, async (req: Request, res: Response) => {
     try {
@@ -353,24 +369,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", requireAuth, async (req: Request, res: Response) => {
     try {
-      // إرجاع بيانات المستخدم مباشرة من الجلسة (تدعم Google Sheets وقاعدة البيانات المحلية)
-      if (req.session.user) {
-        const userResponse = {
-          id: req.session.user.id,
-          username: req.session.user.username,
-          fullName: req.session.user.fullName,
-          email: req.session.user.email || '',
-          role: req.session.user.role,
-          department: req.session.user.department || '',
-          isOnline: req.session.user.isOnline || true,
-          isActive: req.session.user.isActive !== false
-        };
-        
-        console.log(`✅ إرجاع بيانات المستخدم من الجلسة: ${req.session.user.fullName}`);
-        return res.json(userResponse);
-      }
-
-      // محاولة الحصول على المستخدم من قاعدة البيانات المحلية كنسخة احتياطية
       const user = await storage.getUser(req.session.user!.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -885,88 +883,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: "خطأ في توحيد المعرفات: " + error.message
-      });
-    }
-  });
-
-  // API endpoint لبدء التوحيد الذكي
-  app.post("/api/ai/start-unification", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
-    try {
-      console.log('🚀 بدء عملية التوحيد الذكي...');
-      
-      // إنشاء معرف فريد لهذه المهمة
-      const taskId = `unification_${Date.now()}`;
-      
-      // تشغيل التوحيد في الخلفية
-      setTimeout(async () => {
-        try {
-          const { aiItemUnifier } = await import('./ai-item-unifier.js');
-          const result = await aiItemUnifier.unifyItemsInSheets();
-          
-          if (result.success) {
-            console.log(`✅ مهمة ${taskId}: تم توحيد ${result.unifiedGroups} مجموعة، حذف ${result.duplicatesRemoved} صنف مكرر`);
-          } else {
-            console.error(`❌ مهمة ${taskId}: فشل التوحيد -`, result.error);
-          }
-        } catch (error) {
-          console.error(`❌ مهمة ${taskId}: خطأ في التوحيد -`, error.message);
-        }
-      }, 1000); // بدء بعد ثانية واحدة
-      
-      res.json({
-        success: true,
-        message: "تم بدء عملية التوحيد الذكي",
-        taskId: taskId,
-        status: "running"
-      });
-      
-    } catch (error) {
-      console.error('❌ خطأ في بدء التوحيد:', error);
-      res.status(500).json({
-        success: false,
-        message: "خطأ في بدء عملية التوحيد",
-        error: error.message
-      });
-    }
-  });
-
-  // API endpoint لإيقاف التوحيد الذكي
-  app.post("/api/ai/stop-unification", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
-    try {
-      console.log('⏸️ إيقاف عملية التوحيد الذكي...');
-      
-      res.json({
-        success: true,
-        message: "تم إيقاف عملية التوحيد الذكي",
-        status: "stopped"
-      });
-      
-    } catch (error) {
-      console.error('❌ خطأ في إيقاف التوحيد:', error);
-      res.status(500).json({
-        success: false,
-        message: "خطأ في إيقاف عملية التوحيد",
-        error: error.message
-      });
-    }
-  });
-
-  // API endpoint للحصول على حالة التوحيد
-  app.get("/api/ai/unification-status", requireAuth, async (req: Request, res: Response) => {
-    try {
-      res.json({
-        success: true,
-        status: "ready",
-        totalItems: 5449,
-        processedItems: 1832,
-        duplicatesFound: 287,
-        accuracy: 98.7
-      });
-    } catch (error) {
-      console.error('❌ خطأ في استعلام حالة التوحيد:', error);
-      res.status(500).json({
-        success: false,
-        message: "خطأ في استعلام حالة التوحيد"
       });
     }
   });
@@ -4362,142 +4278,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         message: 'خطأ في قراءة البيانات من Google Sheets',
         error: (error as Error).message 
       });
-    }
-  });
-
-  // === نقاط API لإدارة المستخدمين من Google Sheets ===
-  
-  // قراءة جميع المستخدمين من Google Sheets
-  app.get("/api/users/google-sheets", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
-    try {
-      const users = await googleSheetsUsersManager.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      console.error("خطأ في قراءة المستخدمين:", error);
-      res.status(500).json({ message: "خطأ في الخادم" });
-    }
-  });
-
-  // إضافة مستخدم جديد إلى Google Sheets
-  app.post("/api/users/google-sheets", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
-    try {
-      const userData = req.body;
-      const success = await googleSheetsUsersManager.addUser(userData);
-      
-      if (success) {
-        await logActivity(req, "add_google_sheets_user", "user", userData.username, `Added user ${userData.username} to Google Sheets`);
-        res.json({ message: "تم إضافة المستخدم بنجاح", success: true });
-      } else {
-        res.status(400).json({ message: "فشل في إضافة المستخدم", success: false });
-      }
-    } catch (error) {
-      console.error("خطأ في إضافة المستخدم:", error);
-      res.status(500).json({ message: "خطأ في الخادم" });
-    }
-  });
-
-  // تحديث مستخدم في Google Sheets
-  app.put("/api/users/google-sheets/:username", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
-    try {
-      const { username } = req.params;
-      const userData = req.body;
-      const success = await googleSheetsUsersManager.updateUser(username, userData);
-      
-      if (success) {
-        await logActivity(req, "update_google_sheets_user", "user", username, `Updated user ${username} in Google Sheets`);
-        res.json({ message: "تم تحديث المستخدم بنجاح", success: true });
-      } else {
-        res.status(400).json({ message: "فشل في تحديث المستخدم", success: false });
-      }
-    } catch (error) {
-      console.error("خطأ في تحديث المستخدم:", error);
-      res.status(500).json({ message: "خطأ في الخادم" });
-    }
-  });
-
-  // حذف مستخدم من Google Sheets
-  app.delete("/api/users/google-sheets/:username", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
-    try {
-      const { username } = req.params;
-      const success = await googleSheetsUsersManager.deleteUser(username);
-      
-      if (success) {
-        await logActivity(req, "delete_google_sheets_user", "user", username, `Deleted user ${username} from Google Sheets`);
-        res.json({ message: "تم حذف المستخدم بنجاح", success: true });
-      } else {
-        res.status(400).json({ message: "فشل في حذف المستخدم", success: false });
-      }
-    } catch (error) {
-      console.error("خطأ في حذف المستخدم:", error);
-      res.status(500).json({ message: "خطأ في الخادم" });
-    }
-  });
-
-  // مزامنة المستخدمين مع قاعدة البيانات
-  app.post("/api/users/sync-google-sheets", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
-    try {
-      await googleSheetsUsersManager.syncWithDatabase();
-      await logActivity(req, "sync_google_sheets_users", "system", "", "Synced users from Google Sheets");
-      res.json({ message: "تم مزامنة المستخدمين بنجاح", success: true });
-    } catch (error) {
-      console.error("خطأ في مزامنة المستخدمين:", error);
-      res.status(500).json({ message: "خطأ في المزامنة" });
-    }
-  });
-
-  // التحقق من صحة بيانات المستخدم من Google Sheets
-  app.post("/api/auth/google-sheets-login", async (req: Request, res: Response) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "اسم المستخدم وكلمة المرور مطلوبان" });
-      }
-
-      const user = await googleSheetsUsersManager.authenticateUser(username, password);
-      
-      if (user) {
-        // تخزين بيانات المستخدم في الجلسة بنفس التنسيق المتوقع
-        req.session.user = {
-          id: user.username,
-          username: user.username,
-          fullName: user.fullName,
-          email: user.email || '',
-          role: user.role,
-          department: user.department || '',
-          isOnline: true,
-          isActive: true
-        };
-
-        console.log(`✅ تسجيل دخول ناجح للمستخدم ${user.fullName} من Google Sheets`);
-        console.log(`📝 تم حفظ الجلسة للمستخدم:`, req.session.user);
-
-        // حفظ الجلسة بشكل صريح
-        req.session.save((err) => {
-          if (err) {
-            console.error('❌ خطأ في حفظ الجلسة:', err);
-            return res.status(500).json({ message: "خطأ في حفظ الجلسة" });
-          }
-
-          res.json({
-            message: "تم تسجيل الدخول بنجاح",
-            user: {
-              id: user.username,
-              username: user.username,
-              fullName: user.fullName,
-              email: user.email,
-              role: user.role,
-              department: user.department,
-              isOnline: true
-            }
-          });
-        });
-      } else {
-        res.status(401).json({ message: "اسم المستخدم أو كلمة المرور غير صحيحة" });
-      }
-    } catch (error) {
-      console.error("خطأ في تسجيل الدخول:", error);
-      res.status(500).json({ message: "خطأ في الخادم" });
     }
   });
 

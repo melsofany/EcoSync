@@ -17,7 +17,6 @@ import EditUserModal from "@/components/modals/EditUserModal";
 import { UserDisplayName } from "@/components/UserDisplayName";
 import { UserAvatar } from "@/components/UserAvatar";
 import PermissionsManager from "@/components/PermissionsManager";
-import GoogleSheetsUsersManager from "@/components/GoogleSheetsUsersManager";
 import { 
   Users, 
   Shield, 
@@ -35,9 +34,7 @@ import {
   Download,
   RefreshCw,
   Edit,
-  CheckCircle,
-  Monitor,
-  Brain
+  CheckCircle
 } from "lucide-react";
 
 interface SystemSettings {
@@ -51,18 +48,8 @@ export default function Admin() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // دالة فتح شاشة المراقبة
-  const openMonitoringScreen = () => {
-    console.log('🚀 محاولة فتح شاشة مراقبة التوحيد الذكي');
-    const url = "/ai-unification-monitor";
-    console.log('📍 الرابط:', url);
-    // فتح في نفس النافذة
-    window.location.href = url;
-  };
   
   const [activeSection, setActiveSection] = useState<string>("");
-  const [activeSubSection, setActiveSubSection] = useState<string>("");
   const [isNewUserModalOpen, setIsNewUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any>(null);
   const [passwordResetUser, setPasswordResetUser] = useState<any>(null);
@@ -254,28 +241,7 @@ export default function Admin() {
     },
   });
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              يرجى تسجيل الدخول
-            </h3>
-            <p className="text-gray-600">
-              يجب تسجيل الدخول للوصول إلى لوحة التحكم
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // تخطي فحص الصلاحيات مؤقتاً للتشخيص
-  const isAuthorized = true; // hasRole(user, ["manager", "it_admin"]);
-  
-  if (!isAuthorized) {
+  if (!user || !hasRole(user, ["manager", "it_admin"])) {
     return (
       <div className="flex items-center justify-center h-64">
         <Card className="w-full max-w-md">
@@ -340,49 +306,10 @@ export default function Admin() {
 
   return (
     <div className="space-y-8">
-      {/* URGENT AI MONITORING BUTTON - ALWAYS VISIBLE */}
-      <div className="w-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 p-2 rounded-xl shadow-2xl mb-8">
-        <div className="bg-white rounded-lg p-6 text-center">
-          <div className="text-6xl mb-4">🤖</div>
-          <h1 className="text-4xl font-bold text-orange-800 mb-4">شاشة مراقبة التوحيد الذكي</h1>
-          <Button 
-            size="lg"
-            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 px-12 text-2xl shadow-xl rounded-xl"
-            onClick={openMonitoringScreen}
-          >
-            <Monitor className="h-8 w-8 ml-4" />
-            🚀 فتح الشاشة الآن
-          </Button>
-        </div>
-      </div>
-
       {/* Header */}
       <div>
         <h2 className="text-3xl font-bold text-gray-800 mb-2">إدارة النظام</h2>
         <p className="text-gray-600">إعدادات وإدارة المستخدمين والصلاحيات</p>
-      </div>
-
-      {/* AI Monitoring Card - FIRST AND PROMINENT */}
-      <div className="mb-8">
-        <Card className="border-4 border-orange-400 bg-gradient-to-r from-orange-50 to-yellow-50 shadow-2xl">
-          <CardContent className="p-8">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
-                <Brain className="h-12 w-12 text-white" />
-              </div>
-              <h2 className="text-3xl font-bold text-orange-800 mb-4">🤖 شاشة مراقبة التوحيد الذكي</h2>
-              <p className="text-orange-700 text-xl mb-6">تتبع ومراقبة عمليات التوحيد بالذكاء الاصطناعي في الوقت الفعلي</p>
-              <Button 
-                size="lg"
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-6 px-12 text-2xl shadow-xl rounded-xl"
-                onClick={openMonitoringScreen}
-              >
-                <Monitor className="h-8 w-8 ml-4" />
-                🤖 فتح شاشة المراقبة الآن
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Admin Action Cards */}
@@ -449,8 +376,6 @@ export default function Admin() {
             </Button>
           </CardContent>
         </Card>
-
-
       </div>
 
       {/* User Management Section */}
@@ -463,60 +388,22 @@ export default function Admin() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {/* Google Sheets Users Management */}
-              <div className="p-6 border border-green-200 rounded-lg bg-green-50">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Users className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-green-800">مستخدمو Google Sheets</h4>
-                      <p className="text-sm text-green-700">إدارة المستخدمين المحفوظين في Google Sheets</p>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700"
-                    onClick={() => setActiveSubSection(activeSubSection === "google-sheets-users" ? "" : "google-sheets-users")}
-                  >
-                    {activeSubSection === "google-sheets-users" ? "إخفاء" : "عرض"} المستخدمين
-                    <ArrowRight className={`h-4 w-4 mr-2 transition-transform ${activeSubSection === "google-sheets-users" ? "rotate-90" : ""}`} />
-                  </Button>
-                </div>
-
-                {activeSubSection === "google-sheets-users" && (
-                  <GoogleSheetsUsersManager />
-                )}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="font-semibold">إضافة مستخدم جديد</h4>
+                <Button 
+                  size="sm" 
+                  className="bg-blue-500 hover:bg-blue-600"
+                  onClick={() => setIsNewUserModalOpen(true)}
+                >
+                  <Plus className="h-4 w-4 ml-2" />
+                  إضافة مستخدم
+                </Button>
               </div>
-
-              {/* Database Users Management */}
-              <div className="p-6 border border-blue-200 rounded-lg bg-blue-50">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Database className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-blue-800">مستخدمو قاعدة البيانات المحلية</h4>
-                      <p className="text-sm text-blue-700">إدارة المستخدمين في قاعدة البيانات المحلية</p>
-                    </div>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => setIsNewUserModalOpen(true)}
-                  >
-                    <Plus className="h-4 w-4 ml-2" />
-                    إضافة مستخدم محلي
-                  </Button>
-                </div>
-                <div className="p-4 bg-blue-100 rounded-lg">
-                  <p className="text-sm text-blue-700">
-                    يمكن لمدير تقنية المعلومات إضافة مستخدمين جدد وتعديل بياناتهم وحظرهم عند الحاجة.
-                  </p>
-                </div>
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  يمكن لمدير تقنية المعلومات إضافة مستخدمين جدد وتعديل بياناتهم وحظرهم عند الحاجة.
+                </p>
               </div>
             </div>
           </CardContent>
@@ -659,7 +546,7 @@ export default function Admin() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activities && Array.isArray(activities) && activities.length > 0 ? (
+          {activities && activities.length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {activities.slice(0, 10).map((activity: any) => (
                 <div key={activity.id} className="flex items-start space-x-3 space-x-reverse p-3 bg-gray-50 rounded-lg">

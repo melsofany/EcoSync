@@ -35,8 +35,8 @@ class DirectGoogleSheetsSync {
     }
 
     try {
-      // قراءة البيانات من Google Sheets مباشرة
-      const realData = await this.loadDataFromSheets();
+      // تحميل البيانات الفعلية
+      const realData = JSON.parse(readFileSync('./attached_assets/real_exact_data.json', 'utf8'));
       
       const headers = [
         'PO Number', 'Order Date', 'Total Amount', 'Status', 'Supplier', 'Currency', 'Delivery Status'
@@ -71,57 +71,6 @@ class DirectGoogleSheetsSync {
     } catch (error) {
       console.error('❌ خطأ في تحديث أوامر الشراء:', (error as Error).message);
       return false;
-    }
-  }
-
-  async loadDataFromSheets(): Promise<any> {
-    try {
-      if (!this.isInitialized) {
-        await this.initialize();
-      }
-      
-      // قراءة البيانات من DATA sheet
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:N15000'
-      });
-      
-      const rows = response.data.values || [];
-      const purchaseOrders: any[] = [];
-      const quotations: any[] = [];
-      
-      rows.forEach((row: any[]) => {
-        if (row.length >= 10) {
-          // استخراج أوامر الشراء
-          if (row[9] && row[10]) { // PO_NUMBER و PO_DATE
-            purchaseOrders.push({
-              poNumber: row[9],
-              orderDate: row[10],
-              totalAmount: parseFloat(row[12]) || 0,
-              status: 'active',
-              supplierName: row[1] || '',
-              currency: 'EGP',
-              deliveryStatus: 'pending'
-            });
-          }
-          
-          // استخراج طلبات التسعير  
-          if (row[4] && row[5]) { // RFQ_NUMBER و REQUEST_DATE
-            quotations.push({
-              rfqNumber: row[4],
-              requestDate: row[5],
-              totalAmount: parseFloat(row[7]) || 0,
-              clientName: row[1] || '',
-              status: 'pending'
-            });
-          }
-        }
-      });
-      
-      return { purchaseOrders, quotations };
-    } catch (error) {
-      console.error('❌ خطأ في قراءة البيانات من Google Sheets:', (error as Error).message);
-      return { purchaseOrders: [], quotations: [] };
     }
   }
 

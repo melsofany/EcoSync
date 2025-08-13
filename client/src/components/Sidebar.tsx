@@ -45,12 +45,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "dashboard",
     },
     {
-      title: "عرض النظام",
-      href: "/demo",
-      icon: Package,
-      section: "dashboard",
-    },
-    {
       title: "طلبات التسعير",
       href: "/quotations",
       icon: FileText,

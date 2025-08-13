@@ -7,17 +7,6 @@ A comprehensive web application for قرطبة للتوريدات (Qurtoba Suppl
 Preferred communication style: Simple, everyday language.
 Data source: Google Sheets ONLY - no database storage, all data must come from Google Sheets exclusively.
 UI Preferences: No unification buttons in main Items page - all unification operations should be separate/programmatic.
-Authentication: Unified login system using ONLY Google Sheets authentication - all local authentication methods removed (January 2025).
-
-## Production Setup Status
-- ✅ Production configuration implemented with enhanced security
-- ✅ PostgreSQL session store for production mode
-- ✅ Environment-specific settings (development vs production)
-- ✅ HTTPS and security headers configuration
-- ✅ Production startup scripts and documentation
-- ✅ Both authentication systems (local + Google Sheets) operational
-- ✅ Session management fixed for Google Sheets login (January 2025)
-- ✅ Demo presentation system added with live statistics display
 
 ## System Architecture
 
@@ -33,7 +22,7 @@ Authentication: Unified login system using ONLY Google Sheets authentication - a
 - **Form Handling**: React Hook Form with Zod validation.
 - **Backend Runtime**: Node.js with Express.js (TypeScript, ES modules).
 - **Database ORM**: Drizzle ORM with PostgreSQL dialect.
-- **Authentication**: Unified Google Sheets authentication system only - local authentication completely removed. Session-based with role-based access control (manager, it_admin, data_entry, purchasing, accounting).
+- **Authentication**: Session-based authentication using Express sessions and bcrypt for password hashing, with comprehensive role-based access control (manager, it_admin, data_entry, purchasing, accounting).
 - **API Design**: RESTful API with centralized error handling and activity logging.
 - **Data Validation**: Zod schemas for type-safe data validation.
 - **Database Migrations**: Drizzle Kit for schema management.

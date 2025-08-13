@@ -19,9 +19,7 @@ import {
   Plus,
   Download,
   Database,
-  Upload,
-  Monitor,
-  Brain
+  Upload
 } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 
@@ -169,31 +167,8 @@ export default function Dashboard() {
     { key: 'activity', label: 'سجل الأنشطة', icon: Clock }
   ];
 
-  // دالة فتح شاشة المراقبة
-  const openMonitoringScreen = () => {
-    console.log('🚀 فتح شاشة مراقبة التوحيد الذكي من Dashboard');
-    window.location.href = "/ai-unification-monitor";
-  };
-
   return (
     <div className="space-y-4 lg:space-y-8">
-      {/* URGENT AI MONITORING BUTTON - TOP OF DASHBOARD */}
-      <div className="w-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 p-4 rounded-xl shadow-2xl animate-pulse">
-        <div className="bg-white rounded-lg p-8 text-center">
-          <div className="text-8xl mb-6">🤖</div>
-          <h1 className="text-4xl font-bold text-orange-800 mb-6">شاشة مراقبة التوحيد الذكي</h1>
-          <p className="text-xl text-orange-700 mb-8">تتبع ومراقبة عمليات التوحيد بالذكاء الاصطناعي في الوقت الفعلي</p>
-          <Button 
-            size="lg"
-            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-8 px-16 text-3xl shadow-xl rounded-xl animate-bounce"
-            onClick={openMonitoringScreen}
-          >
-            <Monitor className="h-10 w-10 ml-4" />
-            🚀 فتح شاشة المراقبة الآن
-          </Button>
-        </div>
-      </div>
-
       {/* Welcome Header */}
       <div className="text-center sm:text-right">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
