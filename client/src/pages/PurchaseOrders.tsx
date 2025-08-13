@@ -501,7 +501,27 @@ export default function PurchaseOrders() {
                             variant="ghost" 
                             size="sm" 
                             title="عرض التفاصيل"
-                            disabled
+                            onClick={(e) => {
+                              e.preventDefault();
+                              console.log("Button clicked for Google Sheets PO:", po.poNumber);
+                              // Create a compatible object for the modal
+                              const modalData = {
+                                id: `gs-${po.poNumber}`,
+                                poNumber: po.poNumber,
+                                quotationNumber: po.quotationNumber || po.rfqNumbers || 'غير محدد',
+                                orderDate: po.orderDate,
+                                totalAmount: po.totalAmount || 0,
+                                status: 'مؤكد',
+                                deliveryStatus: 'قيد المعالجة',
+                                // Add safe defaults
+                                items: [],
+                                client: po.clientName || 'غير محدد',
+                                supplier: po.supplierName || 'غير محدد',
+                                notes: po.notes || ''
+                              };
+                              handleViewDetails(modalData);
+                            }}
+                            className="hover:bg-gray-100 cursor-pointer"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -509,7 +529,10 @@ export default function PurchaseOrders() {
                             variant="ghost" 
                             size="sm" 
                             title="طباعة"
-                            disabled
+                            onClick={() => {
+                              console.log("Print clicked for:", po.poNumber);
+                              // Can implement print functionality later
+                            }}
                           >
                             <Printer className="h-4 w-4" />
                           </Button>
