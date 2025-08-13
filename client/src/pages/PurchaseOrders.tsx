@@ -229,13 +229,24 @@ export default function PurchaseOrders() {
     console.log('📋 Sample item structure:');
     const sampleItem = syncedData.items[0];
     if (sampleItem?.rawData) {
-      console.log('العمود A (فهرس 0):', sampleItem.rawData[0]);
-      console.log('العمود E (فهرس 4):', sampleItem.rawData[4]); 
-      console.log('العمود F (فهرس 5):', sampleItem.rawData[5]);
-      console.log('العمود K (فهرس 10):', sampleItem.rawData[10]);
-      console.log('العمود L (فهرس 11):', sampleItem.rawData[11]);
-      console.log('العمود Q (فهرس 16):', sampleItem.rawData[16]);
+      console.log('العمود A (فهرس 0) - معرف البند:', sampleItem.rawData[0]);
+      console.log('العمود B (فهرس 1) - UOM:', sampleItem.rawData[1]);
+      console.log('العمود C (فهرس 2) - Line Item:', sampleItem.rawData[2]);
+      console.log('العمود D (فهرس 3) - Part No:', sampleItem.rawData[3]);
+      console.log('العمود E (فهرس 4) - الوصف:', sampleItem.rawData[4]); 
+      console.log('العمود F (فهرس 5) - RFQ:', sampleItem.rawData[5]);
+      console.log('العمود G (فهرس 6) - كمية RFQ:', sampleItem.rawData[6]);
+      console.log('العمود H (فهرس 7) - سعر RFQ:', sampleItem.rawData[7]);
+      console.log('العمود K (فهرس 10) - رقم أمر الشراء:', sampleItem.rawData[10]);
+      console.log('العمود L (فهرس 11) - تاريخ أمر الشراء:', sampleItem.rawData[11]);
+      console.log('العمود M (فهرس 12) - سعر PO:', sampleItem.rawData[12]);
+      console.log('العمود Q (فهرس 16) - الموظف:', sampleItem.rawData[16]);
     }
+    
+    // البحث عن أمثلة من العمود K
+    console.log('🔍 عينة من أرقام أوامر الشراء في العمود K:');
+    const poSample = syncedData.items.slice(0, 10).map(item => item.rawData?.[10]).filter(Boolean);
+    console.log(poSample);
     
     // البحث في العمود K (رقم أمر الشراء المؤكد) - فهرس 10
     let poItems = syncedData.items.filter((item: any) => {
