@@ -222,16 +222,39 @@ export default function PurchaseOrders() {
   const getPOItems = (poNumber: string) => {
     if (!syncedData?.items) return [];
     
-    console.log('Looking for PO items for:', poNumber);
-    console.log('Available items sample:', syncedData.items.slice(0, 3));
-    console.log('Sample rawData structure:', syncedData.items[0]?.rawData?.slice(0, 15));
+    console.log('🔍 Looking for PO items for:', poNumber);
+    console.log('📊 Total available items:', syncedData.items.length);
     
-    // البحث في العمود J (رقم أمر الشراء) أو العمود K (رقم أمر الشراء المؤكد)
+    // طباعة عينة من البيانات لفهم الهيكل
+    console.log('📋 Sample item structure:');
+    const sampleItem = syncedData.items[0];
+    if (sampleItem?.rawData) {
+      console.log('العمود A (فهرس 0):', sampleItem.rawData[0]);
+      console.log('العمود E (فهرس 4):', sampleItem.rawData[4]); 
+      console.log('العمود F (فهرس 5):', sampleItem.rawData[5]);
+      console.log('العمود K (فهرس 10):', sampleItem.rawData[10]);
+      console.log('العمود L (فهرس 11):', sampleItem.rawData[11]);
+      console.log('العمود Q (فهرس 16):', sampleItem.rawData[16]);
+    }
+    
+    // البحث في العمود K (رقم أمر الشراء المؤكد) - فهرس 10
     let poItems = syncedData.items.filter((item: any) => {
-      return item.poNumber === poNumber || 
+      const columnK = item.rawData?.[10]; // العمود K - فهرس 10
+      const match = columnK === poNumber ||
              item.confirmedPONumber === poNumber ||
-             (item.rawData && (item.rawData[9] === poNumber || item.rawData[10] === poNumber)) || // العمود J أو K
-             (item.columnJ === poNumber || item.columnK === poNumber);
+             item.columnK === poNumber;
+      
+      // طباعة البيانات المطابقة للتحقق
+      if (match) {
+        console.log('✅ Found matching item:', {
+          columnA: item.rawData?.[0],
+          columnE: item.rawData?.[4],
+          columnK: item.rawData?.[10],
+          poNumber: poNumber
+        });
+      }
+      
+      return match;
     });
     
     console.log('Found PO items:', poItems.length);
@@ -284,9 +307,10 @@ export default function PurchaseOrders() {
     if (!syncedData?.items) return 'غير محدد';
     
     const item = syncedData.items.find((item: any) => {
-      return item.poNumber === poNumber || 
+      const columnK = item.rawData?.[10]; // العمود K - فهرس 10
+      return columnK === poNumber ||
              item.confirmedPONumber === poNumber ||
-             (item.rawData && (item.rawData[9] === poNumber || item.rawData[10] === poNumber));
+             item.columnK === poNumber;
     });
     
     if (!item) return 'غير محدد';
@@ -301,9 +325,10 @@ export default function PurchaseOrders() {
     if (!syncedData?.items) return 'غير محدد';
     
     const item = syncedData.items.find((item: any) => {
-      return item.poNumber === poNumber || 
+      const columnK = item.rawData?.[10]; // العمود K - فهرس 10
+      return columnK === poNumber ||
              item.confirmedPONumber === poNumber ||
-             (item.rawData && (item.rawData[9] === poNumber || item.rawData[10] === poNumber));
+             item.columnK === poNumber;
     });
     
     if (!item) return 'غير محدد';
@@ -318,9 +343,10 @@ export default function PurchaseOrders() {
     if (!syncedData?.items) return [];
     
     const items = syncedData.items.filter((item: any) => {
-      return item.poNumber === poNumber || 
+      const columnK = item.rawData?.[10]; // العمود K - فهرس 10
+      return columnK === poNumber ||
              item.confirmedPONumber === poNumber ||
-             (item.rawData && (item.rawData[9] === poNumber || item.rawData[10] === poNumber));
+             item.columnK === poNumber;
     });
     
     const rfqNumbers = new Set();
