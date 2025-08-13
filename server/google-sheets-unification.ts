@@ -285,52 +285,7 @@ export class GoogleSheetsUnification {
   }
 
   private async calculateDescriptionSimilarity(desc1: string, desc2: string): Promise<number> {
-    try {
-      // استخدام DeepSeek AI للمطابقة الذكية
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [
-            {
-              role: 'system',
-              content: `أنت خبير في مقارنة أوصاف قطع الغيار والمعدات. قم بتحليل النصين التاليين وإعطاء درجة تشابه من 0 إلى 1:
-              - 1.0 = متطابقان تماماً أو نفس المنتج
-              - 0.8-0.9 = منتجات متشابهة جداً (نفس النوع، مواصفات قريبة)
-              - 0.6-0.7 = منتجات من نفس الفئة
-              - 0.3-0.5 = بعض التشابه
-              - 0.0-0.2 = مختلفان تماماً
-              
-              أجب برقم فقط (مثل: 0.85)`
-            },
-            {
-              role: 'user',
-              content: `النص الأول: "${desc1}"\nالنص الثاني: "${desc2}"`
-            }
-          ],
-          temperature: 0.1,
-          max_tokens: 10
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const aiResult = parseFloat(data.choices[0]?.message?.content?.trim() || '0');
-        
-        if (!isNaN(aiResult) && aiResult >= 0 && aiResult <= 1) {
-          console.log(`🤖 DeepSeek AI تشابه: ${Math.round(aiResult * 100)}% بين "${desc1.substring(0, 30)}..." و "${desc2.substring(0, 30)}..."`);
-          return aiResult;
-        }
-      }
-    } catch (error) {
-      console.log(`⚠️ خطأ في DeepSeek AI، استخدام المطابقة المحلية: ${error.message}`);
-    }
-
-    // الرجوع للمطابقة المحلية في حالة فشل API
+    // استخدام المطابقة المحلية السريعة بدلاً من DeepSeek لتحسين السرعة
     return this.calculateLocalSimilarity(desc1, desc2);
   }
 
@@ -554,13 +509,13 @@ export class GoogleSheetsUnification {
       let unifiedCount = 0;
       const updates = [];
 
-      // معالجة كل صف بدءًا من الصف الثاني (index 1)
-      for (let currentRowIndex = 1; currentRowIndex < sheetsData.length; currentRowIndex++) {
+      // معالجة كل صف بدءًا من الصف الثاني (index 1) - أول 50 صف فقط للاختبار
+      for (let currentRowIndex = 1; currentRowIndex < Math.min(sheetsData.length, 50); currentRowIndex++) {
         const currentRow = sheetsData[currentRowIndex];
         
         // تحديث متغيرات المراقبة
         this.currentRow = currentRowIndex + 1;
-        this.currentProgress = (processedRows / (sheetsData.length - 1)) * 100;
+        this.currentProgress = (processedRows / Math.min(sheetsData.length - 1, 99)) * 100;
         processedRows++;
         this.processedItems = processedRows;
 
