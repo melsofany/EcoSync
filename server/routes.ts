@@ -250,7 +250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
-  // Google Sheets Purchase Order Items endpoint (no auth required)
+  // Google Sheets Purchase Order Items endpoint (simplified and fixed)
   app.get("/api/sheets/purchase-orders/:id/items", async (req: Request, res: Response) => {
     try {
       console.log('🔍 API call received for Google Sheets PO items:', req.params.id);
@@ -332,65 +332,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       console.log('Found PO-like numbers in data:', actualPONumbers.slice(0, 10));
       
-      // البحث عن رقم أمر الشراء في الحقول الصحيحة (poDate يحتوي على رقم الأمر!)
+      // البحث المبسط - رقم أمر الشراء موجود في poDate
       const matchingItems = sheetsData.items.filter((item: any) => {
-        // البحث في مختلف الحقول المحتملة لرقم أمر الشراء
-        // ملاحظة: في البيانات الحالية، رقم أمر الشراء موجود في poDate بدلاً من poNumber!
-        const potentialPONumbers = [
-          item.poDate,        // هذا هو المكان الصحيح لرقم أمر الشراء
-          item.poNumber,      // هذا يحتوي على تاريخ لكن نجربه أيضاً
-          item.id,
-          item.lineItem,
-          item.partNumber,
-          item.description
-        ].filter(Boolean);
-        
-        return potentialPONumbers.some((potentialPO: any) => {
-          const potentialPOStr = String(potentialPO).trim();
-          
-          // طرق مطابقة متعددة
-          const matches = [
-            potentialPOStr === cleanPOId,
-            potentialPOStr === poId,
-            potentialPOStr.includes(cleanPOId),
-            cleanPOId.includes(potentialPOStr),
-            potentialPOStr.toLowerCase() === cleanPOId.toLowerCase(),
-            // مطابقة جزئية للأرقام
-            (potentialPOStr.length >= 5 && cleanPOId.length >= 5 && 
-             potentialPOStr.slice(-5) === cleanPOId.slice(-5))
-          ];
-          
-          return matches.some(match => match);
-        });
+        return String(item.poDate || '').trim() === cleanPOId;
       });
       
       console.log(`Found ${matchingItems.length} items for PO ${poId}`);
       
       // طباعة أول مطابقة للتشخيص مع البيانات الصحيحة
       if (matchingItems.length > 0) {
-        console.log('First matching item corrected data:', {
-          'id': matchingItems[0].id,
-          'partNumber': matchingItems[0].partNumber,
-          'description': matchingItems[0].description,
-          'poDate': matchingItems[0].poDate,
-          'lineItem': matchingItems[0].lineItem,
-          'uom': matchingItems[0].uom
+        const item = matchingItems[0];
+        console.log('First matching item detailed analysis:', {
+          'id': item.id,
+          'partNumber': item.partNumber,
+          'description': item.description,
+          'description length': item.description?.length,
+          'uom': item.uom,
+          'uom length': item.uom?.length,
+          'uom trimmed': item.uom?.trim(),
+          'will use for description': (item.uom && item.uom.trim()) || (item.description && item.description.trim()) || item.partNumber || 'غير محدد'
         });
       }
       
-      // تحويل البيانات إلى تنسيق متوافق مع الواجهة الأمامية
+      // تحويل البيانات إلى تنسيق متوافق مع الواجهة الأمامية مع معالجة الوصف
       const formattedItems = matchingItems.map((item: any, index: number) => ({
         id: `item-${index}`,
         itemId: item.id || 'غير محدد',
-        uom: item.uom || 'غير محدد', 
+        uom: item.lineItem || 'غير محدد', 
         lineItem: item.lineItem || 'غير محدد',
         partNumber: item.partNumber || 'غير محدد',
-        description: item.description || 'غير محدد',
+        description: (item.uom && item.uom.trim()) || (item.description && item.description.trim()) || item.partNumber || 'غير محدد', // استخدام UOM كوصف أو part number
         rfqNumber: item.rfqNumber || 'غير محدد',
         rfqQuantity: String(item.quantity || 1),
         rfqPrice: String(item.rfqPrice || 0),
-        poNumber: item.poDate || 'غير محدد', // تصحيح المشكلة: رقم PO موجود في poDate!
-        poDate: item.poNumber || 'غير محدد',
+        poNumber: item.poDate || 'غير محدد', // رقم PO موجود في poDate
+        poDate: item.poNumber || 'غير محدد', // التاريخ موجود في poNumber
         poQuantity: String(item.poQuantity || item.quantity || 1),
         poPrice: String(item.poPrice || 0),
         employee: 'غير محدد',
