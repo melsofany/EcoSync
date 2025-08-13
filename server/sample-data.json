@@ -1,0 +1,24 @@
+{
+  "items": [
+    { "id": "1", "partNumber": "ABC123", "description": "مضخة مياه 5 حصان من شنايدر", "itemNumber": "P-001", "category": "مضخات", "uom": "قطعة" },
+    { "id": "2", "partNumber": "ABC-123", "description": "مضخة مياه ٥ حصان من شنايدر", "itemNumber": "P-002", "category": "مضخات", "uom": "قطعة" },
+    { "id": "3", "partNumber": "ABC123", "description": "Schneider water pump 5HP", "itemNumber": "P-003", "category": "مضخات", "uom": "قطعة" },
+    { "id": "4", "partNumber": "DEF456", "description": "محرك كهربائي 10 حصان ABB", "itemNumber": "P-004", "category": "محركات", "uom": "قطعة" },
+    { "id": "5", "partNumber": "DEF-456", "description": "محرك كهربائي ١٠ حصان ABB", "itemNumber": "P-005", "category": "محركات", "uom": "قطعة" },
+    { "id": "6", "partNumber": "GHI789", "description": "صمام أمان حديد 2 انش", "itemNumber": "P-006", "category": "صمامات", "uom": "قطعة" },
+    { "id": "7", "partNumber": "GHI-789", "description": "صمام أمان حديد ٢ انش", "itemNumber": "P-007", "category": "صمامات", "uom": "قطعة" },
+    { "id": "8", "partNumber": "JKL101", "description": "خزان تخزين 1000 لتر فيبرجلاس", "itemNumber": "P-008", "category": "خزانات", "uom": "قطعة" },
+    { "id": "9", "partNumber": "JKL-101", "description": "خزان تخزين ١٠٠٠ لتر فيبرجلاس", "itemNumber": "P-009", "category": "خزانات", "uom": "قطعة" },
+    { "id": "10", "partNumber": "MNO202", "description": "مرشح مياه كربوني 20 انش", "itemNumber": "P-010", "category": "مرشحات", "uom": "قطعة" },
+    { "id": "11", "partNumber": "MNO-202", "description": "مرشح مياه كربوني ٢٠ انش", "itemNumber": "P-011", "category": "مرشحات", "uom": "قطعة" },
+    { "id": "12", "partNumber": "PQR303", "description": "حساس ضغط ديجيتال سيمنز", "itemNumber": "P-012", "category": "حساسات", "uom": "قطعة" },
+    { "id": "13", "partNumber": "PQR-303", "description": "حساس ضغط رقمي سيمنز", "itemNumber": "P-013", "category": "حساسات", "uom": "قطعة" },
+    { "id": "14", "partNumber": "STU404", "description": "كابل كهرباء 4x2.5 مم", "itemNumber": "P-014", "category": "كوابل", "uom": "متر" },
+    { "id": "15", "partNumber": "STU-404", "description": "سلك كهرباء ٤×٢.٥ مم", "itemNumber": "P-015", "category": "كوابل", "uom": "متر" },
+    { "id": "16", "partNumber": "VWX505", "description": "لوحة توزيع كهرباء 12 طريق", "itemNumber": "P-016", "category": "لوحات", "uom": "قطعة" },
+    { "id": "17", "partNumber": "VWX-505", "description": "لوحة توزيع كهربائية ١٢ طريق", "itemNumber": "P-017", "category": "لوحات", "uom": "قطعة" },
+    { "id": "18", "partNumber": "YZA606", "description": "مفتاح كهربائي 32 أمبير", "itemNumber": "P-018", "category": "مفاتيح", "uom": "قطعة" },
+    { "id": "19", "partNumber": "YZA-606", "description": "مفتاح كهربائي ٣٢ أمبير", "itemNumber": "P-019", "category": "مفاتيح", "uom": "قطعة" },
+    { "id": "20", "partNumber": "BCD707", "description": "ترانس كهرباء 5 كيلو وات", "itemNumber": "P-020", "category": "محولات", "uom": "قطعة" }
+  ]
+}

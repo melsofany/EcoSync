@@ -112,9 +112,11 @@ export class SimpleGoogleSheetsStorage {
         return [];
       }
       
-      // استخدام realDataStorage للحصول على البيانات الحقيقية
-      const allItems = await realDataStorage.getAllItems();
-      console.log(`📦 تحميل ${allItems.length} صنف من النظام الحقيقي`);
+      // محاولة الحصول على البيانات من قاعدة البيانات مباشرة
+      const { db } = await import('./db.js');
+      const { items } = await import('../shared/schema.js');
+      const allItems = await db.select().from(items);
+      console.log(`📦 تحميل ${allItems.length} صنف من قاعدة البيانات`);
       
       return allItems.map((item, index) => ({
         id: item.id || `item-real-${index}`,
