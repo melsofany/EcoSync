@@ -657,7 +657,6 @@ export class GoogleSheetsUnification {
     
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour24, minutes, seconds).getTime();
   }
-  }
 
   pauseUnification(): { success: boolean; message: string } {
     if (!this.isRunning) {
