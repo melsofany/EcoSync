@@ -122,14 +122,23 @@ export default function UnificationMonitor() {
   const handlePauseUnification = async () => {
     setIsLoading(true);
     try {
-      await apiRequest('/api/pause-unification', {
-        method: 'POST'
+      const response = await fetch('/api/unification/pause', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
       });
-      
-      toast({
-        title: "تم إيقاف العملية مؤقتاً",
-        description: "يمكنك استئناف العملية لاحقاً",
-      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast({
+          title: "تم إيقاف العملية",
+          description: data.message || "تم إيقاف عملية التوحيد مؤقتاً",
+        });
+      } else {
+        throw new Error('فشل في إيقاف العملية');
+      }
     } catch (error: any) {
       toast({
         title: "خطأ في إيقاف العملية",
