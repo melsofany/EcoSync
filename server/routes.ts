@@ -383,11 +383,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         
         if (exactMatch && exactMatch.poQuantity !== undefined && exactMatch.poQuantity !== null) {
-          console.log(`🎯 تم العثور على كمية PO محددة للبند ${itemId} في الأمر ${poId}: ${exactMatch.poQuantity}`);
+          console.log(`🎯 تم العثور على كمية PO محددة للبند ${itemId} في الأمر ${poId}: ${exactMatch.poQuantity} (من الملف المصحح)`);
+          console.log(`🎯 سعر PO للبند ${itemId} في الأمر ${poId}: ${exactMatch.poPrice} (من الملف المصحح)`);
           return exactMatch.poQuantity;
         }
         
         console.log(`⚠️ لم يتم العثور على كمية PO محددة للبند ${itemId} في الأمر ${poId}`);
+        return null;
+      }
+      
+      // دالة مساعدة للبحث عن سعر PO من العمود N
+      function findPOPriceFromColumnN(itemId: string, poId: string, items: any[]): number | null {
+        const exactMatch = items.find((item: any) => 
+          item.id === itemId && String(item.poDate || '').trim() === poId
+        );
+        
+        if (exactMatch && exactMatch.poPrice !== undefined && exactMatch.poPrice !== null) {
+          return exactMatch.poPrice;
+        }
+        
         return null;
       }
       
@@ -417,6 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const formattedItems = matchingItems.map((item: any, index: number) => {
         // البحث عن كمية PO المحددة من العمود M بناءً على معرف البند ورقم أمر الشراء
         const specificPOQuantity = findPOQuantityFromColumnM(item.id, cleanPOId, sheetsData.items);
+        const specificPOPrice = findPOPriceFromColumnN(item.id, cleanPOId, sheetsData.items);
         
         return {
           id: `item-${index}`,
@@ -430,8 +445,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           rfqPrice: String(item.rfqPrice || 0),
           poNumber: item.poDate || 'غير محدد', // رقم PO موجود في poDate
           poDate: item.poNumber || 'غير محدد', // التاريخ موجود في poNumber
-          poQuantity: String(specificPOQuantity || item.poQuantity || item.quantity || 1), // العمود M - كمية PO محددة
-          poPrice: String(item.poPrice || 0), // العمود N - سعر PO
+          poQuantity: String(specificPOQuantity !== null ? specificPOQuantity : (item.poQuantity || item.quantity || 1)), // العمود M - كمية PO محددة مصححة
+          poPrice: String(specificPOPrice !== null ? specificPOPrice : (item.poPrice || 0)), // العمود N - سعر PO مصحح
           employee: 'غير محدد',
           totalValue: String(item.totalPOValue || 0)
         };
