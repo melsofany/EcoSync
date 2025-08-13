@@ -204,8 +204,11 @@ export default function UserManagement() {
   // Check if response has success property or is direct data
   const users = usersData?.success ? (usersData.users || []) : (usersData || []);
   
-  // Clean up debug logging for production
-  // console.log('UserManagement Debug - usersData:', usersData);
+  // Debug logging
+  console.log('UserManagement Debug - usersData:', usersData);
+  console.log('UserManagement Debug - isLoading:', isLoading);
+  console.log('UserManagement Debug - error:', error);
+  console.log('UserManagement Debug - users length:', users.length);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
