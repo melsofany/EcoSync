@@ -204,16 +204,41 @@ export default function UserManagement() {
   // Check if response has success property or is direct data
   const users = usersData?.success ? (usersData.users || []) : (usersData || []);
   
-  // Debug logging - temporarily enabled
+  // معالجة خطأ Unauthorized
+  const isUnauthorized = error && (error as any).status === 401;
+  
+  // Debug logging عند وجود مشاكل فقط
   if (error || (!isLoading && users.length === 0)) {
     console.log('UserManagement Debug - usersData:', usersData);
     console.log('UserManagement Debug - isLoading:', isLoading);  
     console.log('UserManagement Debug - error:', error);
+    console.log('UserManagement Debug - unauthorized:', isUnauthorized);
     console.log('UserManagement Debug - users length:', users.length);
   }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* شريط إعلام للمستخدمين غير المسجلين */}
+      {isUnauthorized && (
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="mr-3">
+              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                يرجى تسجيل الدخول
+              </h3>
+              <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                <p>للوصول لإدارة المستخدمين، يرجى تسجيل الدخول باستخدام: <strong>admin</strong> / <strong>admin123</strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">إدارة المستخدمين</h1>
@@ -406,7 +431,7 @@ export default function UserManagement() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">جاري تحميل المستخدمين...</p>
             </div>
-          ) : error ? (
+          ) : isUnauthorized ? (
             <div className="text-center py-8">
               <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
                 <div className="flex items-center justify-center mb-4">
@@ -430,6 +455,28 @@ export default function UserManagement() {
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                   الذهاب لتسجيل الدخول
+                </button>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
+                <div className="flex items-center justify-center mb-4">
+                  <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                  خطأ في تحميل البيانات
+                </h3>
+                <p className="text-red-700 dark:text-red-300 mb-4">
+                  {(error as any).message || 'حدث خطأ غير متوقع'}
+                </p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  إعادة المحاولة
                 </button>
               </div>
             </div>

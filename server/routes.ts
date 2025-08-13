@@ -173,15 +173,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // إعداد جلسات العرض التوضيحي
   app.use(session({
     store: new MemStore({
-      checkPeriod: 86400000
+      checkPeriod: 86400000,
+      ttl: 86400000 // 24 ساعة
     }),
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
+    rolling: true, // تجديد الجلسة مع كل طلب
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours (extended for better UX)
+      sameSite: 'lax' // تحسين أمان الـ cookies
     },
   }));
 
