@@ -197,10 +197,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: isProduction, // HTTPS في الإنتاج
-      httpOnly: true,
-      maxAge: isProduction ? 8 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000, // 8 ساعات للإنتاج، 24 للتطوير
-      sameSite: isProduction ? 'strict' : 'lax'
+      secure: false, // false للتطوير
+      httpOnly: false, // false للسماح بالوصول من JavaScript
+      maxAge: 24 * 60 * 60 * 1000, // 24 ساعة
+      sameSite: 'lax'
     },
   }));
 

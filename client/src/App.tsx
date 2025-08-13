@@ -29,6 +29,7 @@ import DataRecoveryPage from "@/pages/DataRecoveryPage";
 import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
 import { VoiceControlPage } from "@/pages/VoiceControlPage";
 import Demo from "@/pages/Demo";
+import { AutoLogin } from "@/components/AutoLogin";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -89,6 +90,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <AutoLogin />
         <Toaster />
         <Router />
       </TooltipProvider>

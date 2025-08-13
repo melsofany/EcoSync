@@ -382,8 +382,10 @@ export default function Admin() {
         </Card>
 
         {/* AI Monitoring Card - IT Admin and Manager */}
+        {/* DEBUG: User={JSON.stringify(user)}, Role Check={hasRole(user, ['it_admin', 'manager'])} */}
+        {console.log('🔍 Debug - المستخدم:', user, 'فحص الصلاحية:', hasRole(user, ['it_admin', 'manager']))}
         {hasRole(user, ['it_admin', 'manager']) && (
-          <Card className="card-hover">
+          <Card className="card-hover border-orange-200 bg-orange-50">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4 space-x-reverse mb-4">
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -395,7 +397,7 @@ export default function Admin() {
                 </div>
               </div>
               <Button 
-                className="w-full bg-orange-500 hover:bg-orange-600"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3"
                 onClick={() => window.open("/ai-unification-monitor/", "_blank")}
               >
                 <Monitor className="h-4 w-4 ml-2" />
@@ -404,6 +406,20 @@ export default function Admin() {
             </CardContent>
           </Card>
         )}
+        
+        {/* Debug Card for troubleshooting */}
+        <Card className="card-hover border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <h3 className="font-semibold text-red-800 mb-2">🔍 معلومات التشخيص</h3>
+            <div className="text-sm text-red-700 space-y-1">
+              <p>المستخدم: {user?.fullName || 'غير محدد'}</p>
+              <p>اسم المستخدم: {user?.username || 'غير محدد'}</p>
+              <p>الدور: {user?.role || 'غير محدد'}</p>
+              <p>مطابقة الصلاحية: {hasRole(user, ['it_admin', 'manager']) ? '✅ نعم' : '❌ لا'}</p>
+              <p>حالة المستخدم: {user ? '✅ مسجل الدخول' : '❌ غير مسجل'}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* User Management Section */}
