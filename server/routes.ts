@@ -389,6 +389,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", requireAuth, async (req: Request, res: Response) => {
     try {
+      // إرجاع بيانات المستخدم مباشرة من الجلسة (تدعم Google Sheets وقاعدة البيانات المحلية)
+      if (req.session.user) {
+        const userResponse = {
+          id: req.session.user.id,
+          username: req.session.user.username,
+          fullName: req.session.user.fullName,
+          email: req.session.user.email || '',
+          role: req.session.user.role,
+          department: req.session.user.department || '',
+          isOnline: req.session.user.isOnline || true,
+          isActive: req.session.user.isActive !== false
+        };
+        
+        console.log(`✅ إرجاع بيانات المستخدم من الجلسة: ${req.session.user.fullName}`);
+        return res.json(userResponse);
+      }
+
+      // محاولة الحصول على المستخدم من قاعدة البيانات المحلية كنسخة احتياطية
       const user = await storage.getUser(req.session.user!.id);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
