@@ -367,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         rfqPrice: String(item.rfqPrice || 0),
         poNumber: item.poDate || 'غير محدد', // رقم PO موجود في poDate
         poDate: item.poNumber || 'غير محدد', // التاريخ موجود في poNumber
-        poQuantity: String(item.poQuantity || item.quantity || 1),
+        poQuantity: String(item.poQuantity || item.quantity || 1), // العمود M - كمية PO
         poPrice: String(item.poPrice || 0),
         employee: 'غير محدد',
         totalValue: String(item.totalPOValue || 0)
@@ -417,7 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         rfqPrice: String(item.rfqPrice || 0),
         poNumber: item.poDate || 'غير محدد',
         poDate: item.poNumber || 'غير محدد',
-        poQuantity: String(item.poQuantity || item.quantity || 1),
+        poQuantity: String(item.poQuantity || item.quantity || 1), // العمود M - كمية PO
         poPrice: String(item.poPrice || 0),
         employee: 'غير محدد',
         totalValue: String(item.totalPOValue || 0)
