@@ -1,8 +1,59 @@
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Brain, Monitor, Activity, TrendingUp } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Brain, Monitor, Activity, TrendingUp, Play, Pause, RotateCcw, Zap } from "lucide-react";
 
 export default function AIMonitor() {
+  const { toast } = useToast();
+  const [isUnifying, setIsUnifying] = useState(false);
+
+  // بدء عملية التوحيد الذكي
+  const startUnificationMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/ai/start-unification");
+      return response;
+    },
+    onSuccess: () => {
+      setIsUnifying(true);
+      toast({
+        title: "تم بدء التوحيد الذكي",
+        description: "بدأت عملية التوحيد الذكي للأصناف المكررة",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في بدء التوحيد",
+        description: error.message || "حدث خطأ أثناء بدء عملية التوحيد",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // إيقاف عملية التوحيد
+  const stopUnificationMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/ai/stop-unification");
+      return response;
+    },
+    onSuccess: () => {
+      setIsUnifying(false);
+      toast({
+        title: "تم إيقاف التوحيد الذكي",
+        description: "تم إيقاف عملية التوحيد الذكي",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ في إيقاف التوحيد",
+        description: error.message || "حدث خطأ أثناء إيقاف عملية التوحيد",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-100 via-yellow-50 to-orange-200 p-8">
       <div className="max-w-7xl mx-auto">
@@ -12,7 +63,52 @@ export default function AIMonitor() {
             <Brain className="h-16 w-16 text-white" />
           </div>
           <h1 className="text-5xl font-bold text-orange-900 mb-4">🤖 شاشة مراقبة التوحيد الذكي</h1>
-          <p className="text-2xl text-orange-700">نظام قرطبة للتوريدات - مراقبة حية لعمليات التوحيد بالذكاء الاصطناعي</p>
+          <p className="text-2xl text-orange-700 mb-8">نظام قرطبة للتوريدات - مراقبة حية لعمليات التوحيد بالذكاء الاصطناعي</p>
+          
+          {/* Control Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            {!isUnifying ? (
+              <Button 
+                size="lg"
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-6 px-12 text-2xl shadow-xl rounded-xl"
+                onClick={() => startUnificationMutation.mutate()}
+                disabled={startUnificationMutation.isPending}
+              >
+                <Play className="h-8 w-8 ml-4" />
+                🚀 بدء التوحيد الذكي
+              </Button>
+            ) : (
+              <Button 
+                size="lg"
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-6 px-12 text-2xl shadow-xl rounded-xl"
+                onClick={() => stopUnificationMutation.mutate()}
+                disabled={stopUnificationMutation.isPending}
+              >
+                <Pause className="h-8 w-8 ml-4" />
+                ⏸️ إيقاف التوحيد
+              </Button>
+            )}
+            
+            <Button 
+              size="lg"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-6 px-12 text-2xl shadow-xl rounded-xl"
+              onClick={() => window.location.reload()}
+            >
+              <RotateCcw className="h-8 w-8 ml-4" />
+              🔄 تحديث الشاشة
+            </Button>
+          </div>
+          
+          {/* Status Display */}
+          {isUnifying && (
+            <div className="bg-green-100 border-2 border-green-400 rounded-lg p-6 mb-8 animate-pulse">
+              <div className="flex items-center justify-center space-x-4 space-x-reverse">
+                <Zap className="h-8 w-8 text-green-600" />
+                <span className="text-2xl font-bold text-green-800">جاري تشغيل التوحيد الذكي...</span>
+                <div className="w-4 h-4 bg-green-500 rounded-full animate-ping"></div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Stats Grid */}
