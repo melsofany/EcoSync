@@ -381,8 +381,8 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* AI Monitoring Card - IT Admin Only */}
-        {user?.role === "it_admin" && (
+        {/* AI Monitoring Card - IT Admin and Manager */}
+        {hasRole(user, ['it_admin', 'manager']) && (
           <Card className="card-hover">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4 space-x-reverse mb-4">
@@ -390,8 +390,8 @@ export default function Admin() {
                   <Brain className="h-6 w-6 text-orange-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800">مراقبة AI</h3>
-                  <p className="text-sm text-gray-600">تتبع التوحيد الذكي</p>
+                  <h3 className="font-semibold text-gray-800">🤖 شاشة مراقبة التوحيد الذكي</h3>
+                  <p className="text-sm text-gray-600">تتبع ومراقبة عمليات التوحيد بالذكاء الاصطناعي</p>
                 </div>
               </div>
               <Button 
@@ -399,7 +399,7 @@ export default function Admin() {
                 onClick={() => window.open("/ai-unification-monitor/", "_blank")}
               >
                 <Monitor className="h-4 w-4 ml-2" />
-                فتح شاشة المراقبة
+                🤖 فتح شاشة مراقبة التوحيد الذكي
               </Button>
             </CardContent>
           </Card>
