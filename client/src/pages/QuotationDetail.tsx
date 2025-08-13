@@ -475,7 +475,7 @@ export default function QuotationDetail() {
                         {quotationItem.itemNumber || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
-                        {quotationItem.lineItem || quotationItem.partNumber || "غير محدد"}
+                        {quotationItem.lineItem || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-mono text-purple-600 text-sm">
                         {quotationItem.unit || "EACH"}
