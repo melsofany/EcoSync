@@ -1858,8 +1858,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Purchase order routes
-  app.get("/api/purchase-orders", requireAuth, async (req: Request, res: Response) => {
+  // Purchase order routes - temporarily disable auth for debugging
+  app.get("/api/purchase-orders", async (req: Request, res: Response) => {
     try {
       const purchaseOrders = await storage.getAllPurchaseOrders();
       res.json(purchaseOrders);

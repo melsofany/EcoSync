@@ -62,6 +62,44 @@ export class SheetsFallbackStorage {
     }
   }
   
+  // Add getAllPurchaseOrders method
+  getAllPurchaseOrders() {
+    if (!this.sheetsData) return [];
+    
+    try {
+      const purchaseOrders = this.sheetsData.purchaseOrders || [];
+      
+      // If no purchase orders from main data, extract from items
+      if (!purchaseOrders.length && this.sheetsData.items) {
+        const items = this.sheetsData.items;
+        const uniquePOs = [...new Set(items.map((item: any) => item.poNumber).filter(Boolean))];
+        
+        return uniquePOs.map((poNumber: string) => {
+          const poItems = items.filter((item: any) => item.poNumber === poNumber);
+          const firstItem = poItems[0] || {};
+          
+          return {
+            id: `po-${poNumber}`,
+            poNumber: poNumber,
+            quotationNumber: firstItem.rfqNumber || '',
+            orderDate: firstItem.orderDate || firstItem.poDate || new Date().toISOString(),
+            status: 'confirmed',
+            deliveryStatus: 'pending',
+            totalAmount: poItems.reduce((sum: number, item: any) => 
+              sum + (parseFloat(item.totalPOValue) || 0), 0),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+        });
+      }
+      
+      return purchaseOrders;
+    } catch (error) {
+      console.error('Error getting purchase orders:', error);
+      return [];
+    }
+  }
+
   getQuotationRequests() {
     if (!this.sheetsData) return [];
     
