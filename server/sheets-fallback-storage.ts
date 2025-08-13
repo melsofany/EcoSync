@@ -150,21 +150,28 @@ export class SheetsFallbackStorage {
       quotationId: quotationId,
       itemId: item.itemId || item.id,
       quantity: item.quantity,
-      unitPrice: item.unitPrice || item.price,
-      totalPrice: item.totalPrice || (parseFloat(item.quantity || 0) * parseFloat(item.unitPrice || item.price || 0)),
+      unitPrice: item.unitPrice || item.price || item.rfqPrice,
+      totalPrice: item.totalPrice || (parseFloat(item.quantity || 0) * parseFloat(item.unitPrice || item.price || item.rfqPrice || 0)),
       currency: item.currency || 'EGP',
       // Item details
-      itemNumber: item.itemNumber || item.kItemId,
-      kItemId: item.kItemId,
+      itemNumber: item.itemNumber || item.kItemId || item.id,
+      kItemId: item.kItemId || item.id,
       partNumber: item.partNumber,
       lineItem: item.lineItem,
-      description: item.description,
-      unit: item.unit || item.uom,
+      description: item.description || item.uom, // Use UOM as description if description is empty
+      unit: item.unit || item.lineItem,
       category: item.category,
       brand: item.brand,
       // Supplier details
       supplierName: item.supplierName,
-      supplierQuoteDate: item.supplierQuoteDate
+      supplierQuoteDate: item.supplierQuoteDate,
+      // Additional fields for better display
+      rfqPrice: item.rfqPrice,
+      rfqDate: item.rfqDate,
+      poNumber: item.poNumber,
+      poDate: item.poDate,
+      poQuantity: item.poQuantity,
+      poPrice: item.poPrice
     }));
   }
   
