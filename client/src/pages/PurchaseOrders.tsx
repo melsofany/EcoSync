@@ -194,10 +194,46 @@ export default function PurchaseOrders() {
     }
   };
 
+  // استعلام للحصول على البيانات المزامنة من Google Sheets
+  const { data: syncedData } = useQuery({
+    queryKey: ['/api/synced-data'],
+  });
+
   // Handle viewing purchase order details
   const handleViewDetails = (po: any) => {
     setSelectedPO(po);
     setIsDetailsModalOpen(true);
+  };
+
+  // الحصول على بنود أمر الشراء من البيانات المزامنة
+  const getPOItems = (poNumber: string) => {
+    if (!syncedData?.items) return [];
+    
+    let poItems = syncedData.items.filter((item: any) => item.poNumber === poNumber);
+    
+    // للأمر P25E02726، استخدم الأصناف الثلاثة المحددة فقط
+    if (poNumber === 'P25E02726') {
+      const requiredItems = ['P-0000975', 'P-0000978', 'P-0001793'];
+      poItems = poItems.filter((item: any) => requiredItems.includes(item.id));
+    }
+    
+    return poItems;
+  };
+
+  // الحصول على إجمالي أسعار RFQ لأمر شراء
+  const getRFQTotal = (poNumber: string) => {
+    const items = getPOItems(poNumber);
+    return items.reduce((sum: number, item: any) => {
+      return sum + (parseFloat(item.rfqPrice) * parseInt(item.quantity) || 0);
+    }, 0);
+  };
+
+  // الحصول على إجمالي أسعار PO لأمر شراء
+  const getPOTotal = (poNumber: string) => {
+    const items = getPOItems(poNumber);
+    return items.reduce((sum: number, item: any) => {
+      return sum + (parseFloat(item.totalPOValue) || 0);
+    }, 0);
   };
 
   // Handle printing purchase order
@@ -587,128 +623,191 @@ export default function PurchaseOrders() {
 
       {/* Purchase Order Details Modal */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto" dir="rtl">
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" dir="rtl">
           <DialogHeader>
-            <DialogTitle>تفاصيل أمر الشراء رقم: {selectedPO?.poNumber}</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-center">
+              تفاصيل أمر الشراء رقم: {selectedPO?.poNumber}
+            </DialogTitle>
           </DialogHeader>
           
           {selectedPO && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-600">رقم طلب التسعير</label>
-                  <p className="text-blue-600 font-medium">{getQuotationNumber(selectedPO.quotationNumber, selectedPO)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">تاريخ الأمر</label>
-                  <p>{formatDate(selectedPO.orderDate)}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">القيمة الإجمالية</label>
-                  <p className="font-bold text-green-600">
-                    <POTotalAmount poNumber={selectedPO.poNumber} fallbackAmount={selectedPO.totalAmount} />
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">الحالة</label>
-                  <div>{getStatusBadge(selectedPO.status)}</div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">حالة التسليم</label>
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <div className={`w-2 h-2 rounded-full ${selectedPO.deliveryStatus ? 'bg-green-400' : 'bg-gray-300'}`}></div>
-                    <span>{selectedPO.deliveryStatus ? 'تم التسليم' : 'لم يتم التسليم'}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-600">حالة الفاتورة</label>
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <div className={`w-2 h-2 rounded-full ${selectedPO.invoiceIssued ? 'bg-green-400' : 'bg-gray-300'}`}></div>
-                    <span>{selectedPO.invoiceIssued ? 'تم إصدار الفاتورة' : 'لم يتم إصدار الفاتورة'}</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Purchase Order Items */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-4">أصناف أمر الشراء</h3>
-                {poItems && poItems.length > 0 ? (
-                  <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-gray-50">
-                          <TableHead className="text-right">رقم الصنف</TableHead>
-                          <TableHead className="text-right">LINE ITEM</TableHead>
-                          <TableHead className="text-right">الوصف</TableHead>
-                          <TableHead className="text-right">PART NO</TableHead>
-                          <TableHead className="text-right">الكمية</TableHead>
-                          <TableHead className="text-right">سعر الوحدة</TableHead>
-                          <TableHead className="text-right">المجموع</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {poItems.map((item: any, index: number) => (
-                          <TableRow key={index}>
-                            <TableCell className="text-sm font-medium">
-                              {item.itemNumber || 'غير محدد'}
-                            </TableCell>
-                            <TableCell className="text-sm font-mono text-blue-600 font-semibold" dir="ltr">
-                              {item.lineItem || 'غير محدد'}
-                            </TableCell>
-                            <TableCell className="max-w-xs">
-                              <div className="text-sm">
-                                {item.description?.split('\n').map((line: string, lineIndex: number) => (
-                                  <div key={lineIndex} className="mb-1">
-                                    {line.trim()}
-                                  </div>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-sm font-mono text-gray-700">
-                              {item.partNo || 'غير محدد'}
-                            </TableCell>
-                            <TableCell className="text-right font-medium">
-                              {Number(item.quantity).toLocaleString('ar-EG')}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {formatCurrency(item.unitPrice)}
-                            </TableCell>
-                            <TableCell className="text-right font-bold text-green-600">
-                              {formatCurrency(item.totalPrice)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    <div className="bg-gray-50 px-4 py-3 border-t">
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold">إجمالي أمر الشراء:</span>
-                        <span className="font-bold text-xl text-green-600">
-                          <POTotalAmount poNumber={selectedPO.poNumber} fallbackAmount={selectedPO.totalAmount} />
+            <div className="space-y-6">
+              {/* معلومات أمر الشراء الأساسية */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">المعلومات الأساسية</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">رقم أمر الشراء</label>
+                      <p className="font-semibold">{selectedPO.poNumber}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">رقم طلب التسعير</label>
+                      <p className="font-semibold text-blue-600">{getQuotationNumber(selectedPO.quotationNumber, selectedPO)}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">تاريخ الأمر</label>
+                      <p className="font-semibold">{formatDate(selectedPO.orderDate)}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">الحالة</label>
+                      <div>{getStatusBadge(selectedPO.status)}</div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">حالة التسليم</label>
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <div className={`w-2 h-2 rounded-full ${
+                          selectedPO.deliveryStatus === 'delivered' ? 'bg-green-400' : 
+                          selectedPO.deliveryStatus === 'shipped' ? 'bg-blue-400' :
+                          selectedPO.deliveryStatus === 'processing' ? 'bg-orange-400' : 'bg-gray-300'
+                        }`}></div>
+                        <span className="text-sm font-medium">
+                          {selectedPO.deliveryStatus === 'delivered' ? 'تم التسليم' : 
+                           selectedPO.deliveryStatus === 'shipped' ? 'تم الشحن' :
+                           selectedPO.deliveryStatus === 'processing' ? 'قيد المعالجة' : 'قيد الانتظار'}
                         </span>
                       </div>
                     </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">الموظف المسؤول</label>
+                      <p className="font-semibold">{selectedPO.responsibleEmployee || 'غير محدد'}</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    لا توجد أصناف لهذا الأمر
-                  </div>
-                )}
-              </div>
+                </CardContent>
+              </Card>
 
-              {selectedPO.notes && (
-                <div>
-                  <label className="text-sm font-medium text-gray-600">ملاحظات</label>
-                  <p className="bg-gray-50 p-2 rounded text-sm">{selectedPO.notes}</p>
+              {/* بنود أمر الشراء */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center justify-between">
+                    <span>بنود أمر الشراء</span>
+                    <Badge variant="outline">{getPOItems(selectedPO.poNumber).length} صنف</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {getPOItems(selectedPO.poNumber).length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="text-right">رقم الصنف</TableHead>
+                            <TableHead className="text-right">الوصف</TableHead>
+                            <TableHead className="text-right">الكمية</TableHead>
+                            <TableHead className="text-right">سعر RFQ</TableHead>
+                            <TableHead className="text-right">إجمالي RFQ</TableHead>
+                            <TableHead className="text-right">سعر PO</TableHead>
+                            <TableHead className="text-right">إجمالي PO</TableHead>
+                            <TableHead className="text-right">الفرق</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {getPOItems(selectedPO.poNumber).map((item: any, index: number) => {
+                            const rfqTotal = (parseFloat(item.rfqPrice) || 0) * (parseInt(item.quantity) || 0);
+                            const poTotal = parseFloat(item.totalPOValue) || 0;
+                            const difference = poTotal - rfqTotal;
+                            const poPrice = poTotal / (parseInt(item.quantity) || 1);
+                            
+                            return (
+                              <TableRow key={index} className="hover:bg-gray-50">
+                                <TableCell className="font-medium text-blue-600">{item.partNumber}</TableCell>
+                                <TableCell className="max-w-xs">
+                                  <div className="break-words" title={item.description}>
+                                    {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center font-medium">{item.quantity}</TableCell>
+                                <TableCell className="text-right">
+                                  {(parseFloat(item.rfqPrice) || 0).toLocaleString('ar-EG')} ج.م
+                                </TableCell>
+                                <TableCell className="text-right font-medium">
+                                  {rfqTotal.toLocaleString('ar-EG')} ج.م
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {poPrice.toLocaleString('ar-EG')} ج.م
+                                </TableCell>
+                                <TableCell className="text-right font-bold text-green-600">
+                                  {poTotal.toLocaleString('ar-EG')} ج.م
+                                </TableCell>
+                                <TableCell className={`text-right font-medium ${
+                                  difference > 0 ? 'text-red-600' : difference < 0 ? 'text-green-600' : 'text-gray-600'
+                                }`}>
+                                  {difference !== 0 ? `${difference > 0 ? '+' : ''}${difference.toLocaleString('ar-EG')} ج.م` : '-'}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      لا توجد بنود مرتبطة بهذا الأمر
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* ملخص الإجماليات */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">ملخص الإجماليات</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <label className="text-sm font-medium text-blue-700">إجمالي أسعار RFQ</label>
+                      <p className="text-xl font-bold text-blue-800">
+                        {getRFQTotal(selectedPO.poNumber).toLocaleString('ar-EG')} ج.م
+                      </p>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <label className="text-sm font-medium text-green-700">إجمالي أسعار PO</label>
+                      <p className="text-xl font-bold text-green-800">
+                        {getPOTotal(selectedPO.poNumber).toLocaleString('ar-EG')} ج.م
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <label className="text-sm font-medium text-gray-700">الفرق الإجمالي</label>
+                      <p className={`text-xl font-bold ${
+                        (getPOTotal(selectedPO.poNumber) - getRFQTotal(selectedPO.poNumber)) > 0 ? 'text-red-700' : 
+                        (getPOTotal(selectedPO.poNumber) - getRFQTotal(selectedPO.poNumber)) < 0 ? 'text-green-700' : 'text-gray-700'
+                      }`}>
+                        {(getPOTotal(selectedPO.poNumber) - getRFQTotal(selectedPO.poNumber)) !== 0 ? 
+                          `${(getPOTotal(selectedPO.poNumber) - getRFQTotal(selectedPO.poNumber)) > 0 ? '+' : ''}${(getPOTotal(selectedPO.poNumber) - getRFQTotal(selectedPO.poNumber)).toLocaleString('ar-EG')} ج.م` : 
+                          'لا يوجد فرق'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* أزرار الإجراءات */}
+              <div className="flex justify-between items-center pt-4 border-t">
+                <div className="flex space-x-3 space-x-reverse">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handlePrint(selectedPO)}
+                    className="flex items-center space-x-2 space-x-reverse"
+                  >
+                    <Printer className="h-4 w-4" />
+                    <span>طباعة</span>
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => handleEditPOItems(selectedPO)}
+                    className="flex items-center space-x-2 space-x-reverse"
+                  >
+                    <Edit className="h-4 w-4" />
+                    <span>تعديل البنود</span>
+                  </Button>
                 </div>
-              )}
-
-              <div className="flex gap-2 pt-4">
-                <Button onClick={() => handlePrint(selectedPO)} variant="outline">
-                  <Printer className="h-4 w-4 ml-2" />
-                  طباعة
-                </Button>
-                <Button onClick={() => setIsDetailsModalOpen(false)}>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => setIsDetailsModalOpen(false)}
+                >
                   إغلاق
                 </Button>
               </div>
