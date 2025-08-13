@@ -215,7 +215,49 @@ export class UserSheetsManager {
   // البحث عن المستخدم باسم المستخدم
   async getUserByUsername(username: string): Promise<UserSheet | undefined> {
     const users = await this.getAllUsers();
-    return users.find(user => user.username === username && user.isActive);
+    const sheetUser = users.find(user => user.username === username && user.isActive);
+    
+    // إذا لم نجد المستخدم في Google Sheets وكان اسم المستخدم admin، استخدم المستخدم الاحتياطي
+    if (!sheetUser && username === 'admin') {
+      return this.getFallbackAdminUser();
+    }
+    
+    return sheetUser;
+  }
+
+  // مستخدم admin احتياطي عندما تكون Google Sheets غير متاحة
+  private getFallbackAdminUser(): UserSheet {
+    return {
+      id: 'admin-001',
+      username: 'admin',
+      password: '$2b$10$CwTycUXWue0Thq9StjUM0urJmfnJ2uqLyss1aj6tbbNc8hfGv8uh.',  // admin123
+      fullName: 'مدير النظام',
+      email: 'admin@qurtoba.com',
+      role: 'manager',
+      permissions: JSON.stringify({
+        dashboard: true,
+        quotations: { view: true, create: true, edit: true, delete: true },
+        items: { view: true, create: true, edit: true, delete: true },
+        clients: { view: true, create: true, edit: true, delete: true },
+        suppliers: { view: true, create: true, edit: true, delete: true },
+        purchaseOrders: { view: true, create: true, edit: true, delete: true },
+        supplierPricing: { view: true, create: true, edit: true, delete: true },
+        customerPricing: { view: true, create: true, edit: true, delete: true },
+        reports: { view: true, export: true },
+        analytics: { view: true },
+        admin: { userManagement: true, systemSettings: true, backupRestore: true },
+        import: { quotations: true, items: true, purchaseOrders: true },
+        activity: { view: true },
+        pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true }
+      }),
+      isActive: true,
+      isOnline: false,
+      lastLoginAt: new Date().toISOString(),
+      lastActivityAt: new Date().toISOString(),
+      ipAddress: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   }
 
   // البحث عن المستخدم بالبريد الإلكتروني

@@ -28,6 +28,7 @@ export class GoogleSheetsUnification {
   private unifiedItems = 0;
   private startTime = '';
   private totalRows = 0;
+  private nextItemId = 1; // العداد للمعرفات الجديدة
 
   static getInstance(): GoogleSheetsUnification {
     if (!GoogleSheetsUnification.instance) {
@@ -523,6 +524,9 @@ export class GoogleSheetsUnification {
     try {
       console.log('🚀 بدء عملية التوحيد الذكي مع Google Sheets...');
       this.isRunning = true;
+
+      // تهيئة عداد المعرفات
+      await this.initializeNextItemId();
       this.currentProgress = 0;
 
       // تشغيل عملية التوحيد الحقيقية
@@ -601,8 +605,8 @@ export class GoogleSheetsUnification {
           let itemId = matchingRow[0];
 
           // إذا لم يكن للصف المطابق معرّف بند، أنشئ واحداً جديداً
-          if (!itemId || !itemId.trim()) {
-            itemId = `ITEM-${Date.now()}-${matchingRowIndex}`;
+          if (!itemId || !itemId.trim() || !itemId.startsWith('P-')) {
+            itemId = this.generateItemId();
             console.log(`🆕 إنشاء معرّف بند جديد: ${itemId} للصف ${matchingRowIndex + 1}`);
             
             // إضافة تحديث للصف المطابق
@@ -623,7 +627,7 @@ export class GoogleSheetsUnification {
           console.log(`✅ تم توحيد الصف ${currentRowIndex + 1} مع الصف ${matchingRowIndex + 1} بالمعرّف: ${itemId}`);
         } else {
           // لم يتم العثور على تطابق، أنشئ معرّف جديد
-          const newItemId = `ITEM-${Date.now()}-${currentRowIndex}`;
+          const newItemId = this.generateItemId();
           updates.push({
             range: `DATA!A${currentRowIndex + 1}`,
             values: [[newItemId]]
@@ -659,6 +663,7 @@ export class GoogleSheetsUnification {
         this.unifiedItems = 0;
         this.startTime = '';
         this.totalRows = 0;
+        // لا نعيد تعيين nextItemId للحفاظ على التسلسل
       }, 2000);
 
     } catch (error) {
@@ -711,6 +716,42 @@ export class GoogleSheetsUnification {
     if (period === 'ص' && hour24 === 12) hour24 = 0;
     
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour24, minutes, seconds).getTime();
+  }
+
+  private generateItemId(): string {
+    const itemId = `P-${this.nextItemId.toString().padStart(9, '0')}`;
+    this.nextItemId++;
+    return itemId;
+  }
+
+  private async initializeNextItemId(): Promise<void> {
+    try {
+      // الحصول على أعلى معرف موجود من Google Sheets
+      const sheets = await this.getSheetsService();
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: '1XdL2hbCEfzxW-dq6LUhCQ5CiTWUe3gP9H8_L1-7F2cA',
+        range: 'DATA!A:A'
+      });
+
+      const values = response.data.values || [];
+      let maxId = 0;
+
+      // البحث عن أعلى رقم معرف
+      for (const row of values) {
+        if (row[0] && typeof row[0] === 'string' && row[0].startsWith('P-')) {
+          const idNumber = parseInt(row[0].substring(2));
+          if (!isNaN(idNumber) && idNumber > maxId) {
+            maxId = idNumber;
+          }
+        }
+      }
+
+      this.nextItemId = maxId + 1;
+      console.log(`🔢 تم تهيئة عداد المعرفات: التالي سيكون P-${this.nextItemId.toString().padStart(9, '0')}`);
+    } catch (error) {
+      console.log('⚠️ تعذر تهيئة عداد المعرفات، البدء من 1');
+      this.nextItemId = 1;
+    }
   }
 
   private async applyUpdatesToSheets(updates: Array<{ range: string; values: any[][] }>): Promise<void> {
