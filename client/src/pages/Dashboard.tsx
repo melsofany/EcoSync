@@ -248,8 +248,8 @@ export default function Dashboard() {
                 <p className="text-sm font-medium text-green-800">إجمالي القيمة</p>
                 <p className="text-xl font-bold text-green-900">
                   {googleSheetsLoading ? "جاري التحميل..." : 
-                   googleSheetsData && googleSheetsData.totalValue > 0 ? 
-                   `${googleSheetsData.totalValue?.toLocaleString('ar-EG')} ج.م` : "0 ج.م"}
+                   googleSheetsData && (googleSheetsData as any).totalValue > 0 ? 
+                   `${(googleSheetsData as any).totalValue?.toLocaleString('ar-EG')} ج.م` : "0 ج.م"}
                 </p>
                 <div className="text-xs text-green-700 mt-1 flex items-center">
                   <Database className="h-3 w-3 ml-1" />
@@ -443,6 +443,37 @@ export default function Dashboard() {
               }} />
             </CardContent>
           )}
+        </Card>
+      )}
+
+      {/* Data Unification Section - Only for IT Admins */}
+      {user?.role === 'it_admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 space-x-reverse">
+              <Database className="h-5 w-5" />
+              <span>توحيد البيانات بالذكاء الاصطناعي</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col space-y-4">
+              <p className="text-sm text-gray-600">
+                نظام ذكي لتوحيد البنود المكررة وتحسين جودة البيانات باستخدام الذكاء الاصطناعي
+              </p>
+              <div className="flex items-center space-x-4 space-x-reverse">
+                <Button
+                  onClick={() => window.location.href = '/data-unification'}
+                  className="flex items-center space-x-2 space-x-reverse"
+                >
+                  <Database className="h-4 w-4" />
+                  <span>الانتقال لشاشة التوحيد</span>
+                </Button>
+                <div className="text-xs text-gray-500">
+                  متاح لمدراء التقنية فقط
+                </div>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       )}
 
