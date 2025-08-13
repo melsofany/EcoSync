@@ -290,13 +290,45 @@ export default function PurchaseOrders() {
     
     console.log('Found PO items:', poItems.length);
     
-    // إذا لم نجد شيء، جرب البحث الواسع
+    // إذا لم نجد شيء، جرب البحث الموسع والذكي
     if (poItems.length === 0) {
+      console.log('🔍 البحث الأساسي لم يجد نتائج، جاري المحاولة بطرق مختلفة...');
+      
       poItems = syncedData.items.filter((item: any) => {
-        const itemStr = JSON.stringify(item).toLowerCase();
-        return itemStr.includes(poNumber.toLowerCase());
+        const columnK = item.rawData?.[10];
+        if (!columnK) return false;
+        
+        const cleanColumnK = String(columnK).trim();
+        const cleanSearchPO = String(cleanPONumber).trim();
+        
+        // جرب مطابقات مختلفة
+        const matches = [
+          cleanColumnK === cleanSearchPO,
+          cleanColumnK.includes(cleanSearchPO),
+          cleanSearchPO.includes(cleanColumnK),
+          cleanColumnK.toLowerCase() === cleanSearchPO.toLowerCase(),
+          // جرب مع وبدون البادئة P25E
+          cleanColumnK.replace('P25E', '') === cleanSearchPO.replace('P25E', ''),
+          // جرب البحث الجزئي - آخر 5 أرقام
+          cleanColumnK.slice(-5) === cleanSearchPO.slice(-5),
+          // جرب البحث في JSON الكامل
+          JSON.stringify(item).toLowerCase().includes(cleanSearchPO.toLowerCase())
+        ];
+        
+        const hasMatch = matches.some(match => match);
+        
+        if (hasMatch) {
+          console.log('🎯 مطابقة موسعة:', {
+            'رقم أمر الشراء في البيانات (K)': cleanColumnK,
+            'رقم البحث': cleanSearchPO,
+            'معرف البند (A)': item.rawData?.[0]
+          });
+        }
+        
+        return hasMatch;
       });
-      console.log('Found items with broad search:', poItems.length);
+      
+      console.log(`🎯 البحث الموسع وجد: ${poItems.length} بند`);
     }
     
     return poItems.map((item: any) => {
