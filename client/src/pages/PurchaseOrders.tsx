@@ -270,6 +270,62 @@ export default function PurchaseOrders() {
     }, 0);
   };
 
+  // الحصول على تاريخ أمر الشراء من العمود L
+  const getPODate = (poNumber: string) => {
+    if (!syncedData?.items) return 'غير محدد';
+    
+    const item = syncedData.items.find((item: any) => {
+      return item.poNumber === poNumber || 
+             item.confirmedPONumber === poNumber ||
+             (item.rawData && (item.rawData[9] === poNumber || item.rawData[10] === poNumber));
+    });
+    
+    if (!item) return 'غير محدد';
+    
+    // العمود L هو الفهرس 11 (0-based)
+    const poDate = item.rawData?.[11] || item.columnL || item.poDate;
+    return formatDate(poDate) || 'غير محدد';
+  };
+
+  // الحصول على اسم الموظف المسؤول من العمود Q
+  const getPOEmployee = (poNumber: string) => {
+    if (!syncedData?.items) return 'غير محدد';
+    
+    const item = syncedData.items.find((item: any) => {
+      return item.poNumber === poNumber || 
+             item.confirmedPONumber === poNumber ||
+             (item.rawData && (item.rawData[9] === poNumber || item.rawData[10] === poNumber));
+    });
+    
+    if (!item) return 'غير محدد';
+    
+    // العمود Q هو الفهرس 16 (0-based)
+    const employee = item.rawData?.[16] || item.columnQ || item.responsibleEmployee;
+    return employee || 'غير محدد';
+  };
+
+  // الحصول على أرقام طلبات التسعير المرتبطة بأمر الشراء من العمود F
+  const getPORFQNumbers = (poNumber: string) => {
+    if (!syncedData?.items) return [];
+    
+    const items = syncedData.items.filter((item: any) => {
+      return item.poNumber === poNumber || 
+             item.confirmedPONumber === poNumber ||
+             (item.rawData && (item.rawData[9] === poNumber || item.rawData[10] === poNumber));
+    });
+    
+    const rfqNumbers = new Set();
+    items.forEach((item: any) => {
+      // العمود F هو الفهرس 5 (0-based)
+      const rfqNumber = item.rawData?.[5] || item.columnF || item.rfqNumber;
+      if (rfqNumber && rfqNumber !== '') {
+        rfqNumbers.add(rfqNumber);
+      }
+    });
+    
+    return Array.from(rfqNumbers);
+  };
+
   // Handle printing purchase order
   const handlePrint = (po: any) => {
     // Create a simple print view
@@ -708,11 +764,18 @@ export default function PurchaseOrders() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">رقم طلب التسعير</label>
-                      <p className="font-semibold text-blue-600">{getQuotationNumber(selectedPO.quotationNumber, selectedPO)}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {getPORFQNumbers(selectedPO.poNumber).length > 0 ? 
+                          getPORFQNumbers(selectedPO.poNumber).map((rfq, index) => (
+                            <Badge key={index} variant="outline" className="text-blue-600">{rfq}</Badge>
+                          )) : 
+                          <p className="font-semibold text-blue-600">{getQuotationNumber(selectedPO.quotationNumber, selectedPO)}</p>
+                        }
+                      </div>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">تاريخ الأمر</label>
-                      <p className="font-semibold">{formatDate(selectedPO.orderDate)}</p>
+                      <p className="font-semibold">{getPODate(selectedPO.poNumber)}</p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">الحالة</label>
@@ -735,7 +798,7 @@ export default function PurchaseOrders() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">الموظف المسؤول</label>
-                      <p className="font-semibold">{selectedPO.responsibleEmployee || 'غير محدد'}</p>
+                      <p className="font-semibold">{getPOEmployee(selectedPO.poNumber)}</p>
                     </div>
                   </div>
                 </CardContent>
