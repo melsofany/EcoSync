@@ -222,15 +222,36 @@ export default function PurchaseOrders() {
   const getPOItems = (poNumber: string) => {
     if (!syncedData?.items) return [];
     
-    let poItems = syncedData.items.filter((item: any) => item.poNumber === poNumber);
+    console.log('Looking for PO items for:', poNumber);
+    console.log('Available items sample:', syncedData.items.slice(0, 3));
     
-    // للأمر P25E02726، استخدم الأصناف الثلاثة المحددة فقط
-    if (poNumber === 'P25E02726') {
-      const requiredItems = ['P-0000975', 'P-0000978', 'P-0001793'];
-      poItems = poItems.filter((item: any) => requiredItems.includes(item.id));
+    // البحث في العمود J (رقم أمر الشراء) أو العمود K (رقم أمر الشراء المؤكد)
+    let poItems = syncedData.items.filter((item: any) => {
+      return item.poNumber === poNumber || 
+             item.confirmedPONumber === poNumber ||
+             (item.rawData && (item.rawData[9] === poNumber || item.rawData[10] === poNumber)) || // العمود J أو K
+             (item.columnJ === poNumber || item.columnK === poNumber);
+    });
+    
+    console.log('Found PO items:', poItems.length);
+    
+    // إذا لم نجد شيء، جرب البحث الواسع
+    if (poItems.length === 0) {
+      poItems = syncedData.items.filter((item: any) => {
+        const itemStr = JSON.stringify(item).toLowerCase();
+        return itemStr.includes(poNumber.toLowerCase());
+      });
+      console.log('Found items with broad search:', poItems.length);
     }
     
-    return poItems;
+    return poItems.map((item: any) => ({
+      ...item,
+      partNumber: item.partNumber || item.itemNumber || item.columnC || item.rawData?.[2] || 'غير محدد',
+      description: item.description || item.columnD || item.rawData?.[3] || 'غير محدد',
+      quantity: item.quantity || item.columnG || item.rawData?.[6] || '1',
+      rfqPrice: item.rfqPrice || item.columnH || item.rawData?.[7] || '0',
+      totalPOValue: item.poPrice || item.totalPOValue || item.columnM || item.rawData?.[12] || '0',
+    }));
   };
 
   // الحصول على إجمالي أسعار RFQ لأمر شراء
