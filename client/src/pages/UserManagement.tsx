@@ -129,9 +129,10 @@ export default function UserManagement() {
   const { toast } = useToast();
 
   // جلب قائمة المستخدمين
-  const { data: usersData, isLoading } = useQuery({
+  const { data: usersData, isLoading, error } = useQuery({
     queryKey: ["/api/users"],
-    enabled: true
+    enabled: true,
+    refetchOnWindowFocus: true
   });
 
   // إنشاء ورقة المستخدمين
@@ -202,6 +203,9 @@ export default function UserManagement() {
 
   // Check if response has success property or is direct data
   const users = usersData?.success ? (usersData.users || []) : (usersData || []);
+  
+  // Clean up debug logging for production
+  // console.log('UserManagement Debug - usersData:', usersData);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -396,6 +400,11 @@ export default function UserManagement() {
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">جاري تحميل المستخدمين...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-600 mb-2">خطأ في تحميل البيانات</p>
+              <p className="text-sm text-gray-500">يرجى تسجيل الدخول مرة أخرى</p>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-8">
