@@ -200,7 +200,8 @@ export default function UserManagement() {
     createUserMutation.mutate(data);
   };
 
-  const users = usersData?.users || [];
+  // Check if response has success property or is direct data
+  const users = usersData?.success ? (usersData.users || []) : (usersData || []);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
