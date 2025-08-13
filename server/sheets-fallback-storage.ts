@@ -153,13 +153,14 @@ export class SheetsFallbackStorage {
       unitPrice: item.unitPrice || item.price || item.rfqPrice,
       totalPrice: item.totalPrice || (parseFloat(item.quantity || 0) * parseFloat(item.unitPrice || item.price || item.rfqPrice || 0)),
       currency: item.currency || 'EGP',
-      // Item details - FINAL CORRECT: UOM(B), LINE ITEM(C), Part No(D), Description(E)
+      // Item details - CORRECTED MAPPING: Data is stored differently than expected
       itemNumber: item.itemNumber || item.kItemId || item.id,
       kItemId: item.kItemId || item.id,
-      partNumber: item.partNumber, // Part No (رقم القطعة) - Column D
-      lineItem: item.description && item.description.trim() !== '' ? item.description : item.id.replace('P-0000', ''), // LINE ITEM - Column C - use item ID number as fallback (1, 2, 3...)
-      description: item.uom, // Description (الوصف) - Column E  
-      unit: item.lineItem, // UOM (وحدة القياس) - Column B (EACH)
+      // CORRECT THE SWAPPED DATA:
+      partNumber: item.description && item.description.trim() !== '' ? item.description : 'غير محدد', // Part No from Column D (stored in description)
+      lineItem: item.partNumber, // LINE ITEM from Column C (stored in partNumber field)
+      description: item.uom, // Description from Column E (stored in uom field)
+      unit: item.lineItem, // UOM from Column B (stored in lineItem field)
       category: item.category,
       brand: item.brand,
       // Supplier details
