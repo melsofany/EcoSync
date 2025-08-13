@@ -58,6 +58,10 @@ export function useLogout() {
     onSuccess: () => {
       queryClient.setQueryData(["/api/auth/me"], null);
       queryClient.clear();
+      
+      // إرسال حدث تسجيل الخروج لتعطيل التسجيل التلقائي
+      window.dispatchEvent(new CustomEvent('user-logout'));
+      
       toast({
         title: "تم تسجيل الخروج بنجاح",
         description: "إلى اللقاء",
