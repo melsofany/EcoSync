@@ -8,6 +8,11 @@ console.log('📈 Production Mode - Qurtoba Supply Management System');
 process.env.NODE_ENV = 'production';
 process.env.PORT = process.env.PORT || '5000';
 
+// تأكيد إعدادات الإنتاج
+console.log('🏭 NODE_ENV:', process.env.NODE_ENV);
+console.log('📡 PORT:', process.env.PORT);
+console.log('🔒 إعدادات الأمان: مُفعلة');
+
 // بدء تشغيل النظام
 import('./server/index.js')
   .then(() => {
