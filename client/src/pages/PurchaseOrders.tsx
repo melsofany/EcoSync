@@ -224,6 +224,7 @@ export default function PurchaseOrders() {
     
     console.log('Looking for PO items for:', poNumber);
     console.log('Available items sample:', syncedData.items.slice(0, 3));
+    console.log('Sample rawData structure:', syncedData.items[0]?.rawData?.slice(0, 15));
     
     // البحث في العمود J (رقم أمر الشراء) أو العمود K (رقم أمر الشراء المؤكد)
     let poItems = syncedData.items.filter((item: any) => {
@@ -244,18 +245,22 @@ export default function PurchaseOrders() {
       console.log('Found items with broad search:', poItems.length);
     }
     
-    return poItems.map((item: any) => ({
-      ...item,
-      // رقم الصنف من العمود A (فهرس 0)
-      partNumber: item.rawData?.[0] || item.columnA || item.itemNumber || 'غير محدد',
-      // الوصف من العمود E (فهرس 4) 
-      description: item.rawData?.[4] || item.columnE || item.description || 'غير محدد',
-      quantity: item.quantity || item.columnG || item.rawData?.[6] || '1',
-      rfqPrice: item.rfqPrice || item.columnH || item.rawData?.[7] || '0',
-      totalPOValue: item.poPrice || item.totalPOValue || item.columnM || item.rawData?.[12] || '0',
-      // تاريخ أمر الشراء من العمود L (فهرس 11)
-      poDate: item.rawData?.[11] || item.columnL || item.poDate || '',
-    }));
+    return poItems.map((item: any) => {
+      console.log('Processing item rawData:', item.rawData?.slice(0, 15)); // First 15 columns for debugging
+      
+      return {
+        ...item,
+        // رقم الصنف من العمود A (فهرس 0)
+        partNumber: item.rawData?.[0] || item.columnA || item.itemNumber || item.partNumber || 'غير محدد',
+        // الوصف من العمود E (فهرس 4) 
+        description: item.rawData?.[4] || item.columnE || item.description || 'غير محدد',
+        quantity: item.quantity || item.columnG || item.rawData?.[6] || '1',
+        rfqPrice: item.rfqPrice || item.columnH || item.rawData?.[7] || '0',
+        totalPOValue: item.poPrice || item.totalPOValue || item.columnM || item.rawData?.[12] || '0',
+        // تاريخ أمر الشراء من العمود L (فهرس 11)
+        poDate: item.rawData?.[11] || item.columnL || item.poDate || '',
+      };
+    });
   };
 
   // الحصول على إجمالي أسعار RFQ لأمر شراء
