@@ -241,43 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   };
 
-  // Auth routes
-  app.post("/api/auth/login", async (req: Request, res: Response) => {
-    try {
-      const { username, password } = req.body;
-      
-      const user = await storage.getUserByUsername(username);
-      if (!user || !user.isActive) {
-        await logActivity(req, "login_failed", "user", undefined, `Failed login attempt for username: ${username}`);
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      if (!isValidPassword) {
-        await logActivity(req, "login_failed", "user", user.id, "Invalid password");
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Update user online status
-      const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
-      await storage.updateUserOnlineStatus(user.id, true, ipAddress);
-
-      req.session.user = {
-        id: user.id,
-        username: user.username,
-        fullName: user.fullName,
-        role: user.role,
-      };
-
-      await logActivity(req, "login_success", "user", user.id, `${user.fullName} قام بتسجيل الدخول بنجاح`);
-
-      const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // تم حذف نظام الدخول المحلي - يستخدم Google Sheets فقط
 
   app.post("/api/auth/logout", requireAuth, async (req: Request, res: Response) => {
     try {
