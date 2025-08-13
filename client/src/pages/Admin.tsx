@@ -381,31 +381,27 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* AI Monitoring Card - IT Admin and Manager */}
-        {/* DEBUG: User={JSON.stringify(user)}, Role Check={hasRole(user, ['it_admin', 'manager'])} */}
-        {console.log('🔍 Debug - المستخدم:', user, 'فحص الصلاحية:', hasRole(user, ['it_admin', 'manager']))}
-        {hasRole(user, ['it_admin', 'manager']) && (
-          <Card className="card-hover border-orange-200 bg-orange-50">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4 space-x-reverse mb-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Brain className="h-6 w-6 text-orange-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800">🤖 شاشة مراقبة التوحيد الذكي</h3>
-                  <p className="text-sm text-gray-600">تتبع ومراقبة عمليات التوحيد بالذكاء الاصطناعي</p>
-                </div>
+        {/* AI Monitoring Card - Always show for testing */}
+        <Card className="card-hover border-orange-200 bg-orange-50">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4 space-x-reverse mb-4">
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Brain className="h-6 w-6 text-orange-600" />
               </div>
-              <Button 
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3"
-                onClick={() => window.open("/ai-unification-monitor/", "_blank")}
-              >
-                <Monitor className="h-4 w-4 ml-2" />
-                🤖 فتح شاشة مراقبة التوحيد الذكي
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+              <div>
+                <h3 className="font-semibold text-gray-800">🤖 شاشة مراقبة التوحيد الذكي</h3>
+                <p className="text-sm text-gray-600">تتبع ومراقبة عمليات التوحيد بالذكاء الاصطناعي</p>
+              </div>
+            </div>
+            <Button 
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3"
+              onClick={() => window.open("/ai-unification-monitor/", "_blank")}
+            >
+              <Monitor className="h-4 w-4 ml-2" />
+              🤖 فتح شاشة مراقبة التوحيد الذكي
+            </Button>
+          </CardContent>
+        </Card>
         
         {/* Debug Card for troubleshooting */}
         <Card className="card-hover border-red-200 bg-red-50">
