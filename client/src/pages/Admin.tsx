@@ -34,7 +34,9 @@ import {
   Download,
   RefreshCw,
   Edit,
-  CheckCircle
+  CheckCircle,
+  Monitor,
+  Brain
 } from "lucide-react";
 
 interface SystemSettings {
@@ -376,6 +378,30 @@ export default function Admin() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* AI Monitoring Card - IT Admin Only */}
+        {user?.role === "it_admin" && (
+          <Card className="card-hover">
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4 space-x-reverse mb-4">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Brain className="h-6 w-6 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">مراقبة AI</h3>
+                  <p className="text-sm text-gray-600">تتبع التوحيد الذكي</p>
+                </div>
+              </div>
+              <Button 
+                className="w-full bg-orange-500 hover:bg-orange-600"
+                onClick={() => window.open("/ai-unification-monitor/", "_blank")}
+              >
+                <Monitor className="h-4 w-4 ml-2" />
+                فتح شاشة المراقبة
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* User Management Section */}
