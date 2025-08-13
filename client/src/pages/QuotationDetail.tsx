@@ -454,6 +454,7 @@ export default function QuotationDetail() {
                   <TableRow>
                     <TableHead>رقم الصنف</TableHead>
                     <TableHead>LINE ITEM</TableHead>
+                    <TableHead>UOM</TableHead>
                     <TableHead>الوصف</TableHead>
                     <TableHead>رقم القطعة</TableHead>
                     <TableHead>الكمية</TableHead>
@@ -475,6 +476,9 @@ export default function QuotationDetail() {
                       </TableCell>
                       <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
                         {quotationItem.lineItem || "غير محدد"}
+                      </TableCell>
+                      <TableCell className="font-mono text-purple-600 text-sm">
+                        {quotationItem.unit || quotationItem.lineItem || "غير محدد"}
                       </TableCell>
                       <TableCell>
                         <div className="max-w-md">
