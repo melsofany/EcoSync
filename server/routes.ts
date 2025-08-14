@@ -634,8 +634,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           rfqNumber: item.rfqNumber || 'غير محدد',
           rfqQuantity: String(item.quantity || 1),
           rfqPrice: String(item.rfqPrice || 0),
-          poNumber: item.poDate || 'غير محدد', // رقم PO موجود في poDate
-          poDate: item.poNumber || 'غير محدد', // التاريخ موجود في poNumber
+          poNumber: item.poNumber || 'غير محدد', // رقم PO
+          poDate: item.poDate || 'غير محدد', // تاريخ PO
           poQuantity: String(specificPOQuantity !== null ? specificPOQuantity : (item.poQuantity || item.quantity || 1)), // العمود M - كمية PO محددة مصححة
           poPrice: String(specificPOPrice !== null ? specificPOPrice : (item.poPrice || 0)), // العمود N - سعر PO مصحح
           employee: 'غير محدد',
@@ -810,8 +810,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             rfqQuantity: row[7] || '',
             rfqPrice: row[8] || '',
             responseDate: row[9] || '',
-            poNumber: row[10] || '',
-            poDate: row[11] || '',
+            poNumber: row[10] || '', // العمود K - رقم أمر الشراء
+            poDate: row[11] || '', // العمود L - تاريخ أمر الشراء
             poQuantity: row[12] || '',
             poPrice: row[13] || '',
             totalPOValue: row[14] || ''
@@ -820,6 +820,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           matchingItems.push(item);
           
           console.log(`🎯 تم العثور على البند ${item.id} في الصف ${rowIndex + 2}: K="${poNumberK}" L="${poDateL}"`);
+          console.log(`  📝 item object: poNumber="${item.poNumber}", poDate="${item.poDate}"`);
         }
       }
       
@@ -851,8 +852,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           rfqNumber: item.rfqNumber || 'غير محدد',
           rfqQuantity: String(item.quantity || 1),
           rfqPrice: String(item.rfqPrice || 0),
-          poNumber: item.poDate || 'غير محدد',
-          poDate: item.poNumber || 'غير محدد',
+          poNumber: item.poNumber || 'غير محدد',
+          poDate: item.poDate || 'غير محدد',
           poQuantity: String(specificQuantity || item.poQuantity || item.quantity || 1), // العمود M - كمية PO محددة
           poPrice: String(item.poPrice || 0), // العمود N - سعر PO
           employee: 'غير محدد',
