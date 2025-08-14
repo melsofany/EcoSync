@@ -54,7 +54,7 @@ export class GoogleSheetsWriter {
       if (useLocalFile) {
         // محاولة تحميل من الملف
         try {
-          const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-75c0919d127e.json');
+          const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
           const fileContent = fs.readFileSync(credentialsPath, 'utf8');
           credentials = JSON.parse(fileContent);
           
@@ -327,16 +327,16 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
           quotation.requestDate,                    // G - REQUEST DATE
           item.quantity.toString(),                 // H - QUANTITY
           '', '', '',                               // I, J, K - فارغة
-          quotation.expiryDate || '',               // L - EXPIRY DATE (العمود J سابقاً)
-          '', '', '', '',                           // M, N, O - فارغة
-          quotation.clientName,                     // P - CLIENT NAME
-          quotation.responsibleEmployee             // Q - RESPONSIBLE EMPLOYEE
+          quotation.expiryDate || '',               // L - EXPIRY DATE
+          '', '', '', '',                           // M, N, O, P - فارغة
+          quotation.clientName,                     // Q - CLIENT NAME
+          quotation.responsibleEmployee || ''       // R - RESPONSIBLE EMPLOYEE
         ];
         rows.push(row);
       }
 
-      // إدراج البيانات
-      const range = `DATA!A${startRow}:Q${startRow + rows.length - 1}`;
+      // إدراج البيانات - توسيع النطاق ليشمل العمود R
+      const range = `DATA!A${startRow}:R${startRow + rows.length - 1}`;
       
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
