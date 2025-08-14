@@ -63,6 +63,11 @@ export class GoogleSheetsWriter {
             throw new Error('ملف المفاتيح غير مكتمل - المفتاح الخاص أو البريد الإلكتروني مفقود');
           }
           
+          // التحقق من طول المفتاح الخاص
+          if (credentials.private_key.length < 1000) {
+            throw new Error(`المفتاح الخاص مقطوع أو غير مكتمل - الطول الحالي: ${credentials.private_key.length} حرف، المطلوب: أكثر من 1000 حرف`);
+          }
+          
           console.log('🔑 تم تحميل مفاتيح Google Sheets من الملف المحلي');
           console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
           console.log(`🔐 طول المفتاح الخاص: ${credentials.private_key.length} حرف`);
