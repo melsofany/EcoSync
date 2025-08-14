@@ -471,28 +471,28 @@ export default function QuotationDetail() {
                     .map((quotationItem: QuotationItemWithDetails) => (
                     <TableRow key={quotationItem.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">
-                        {quotationItem.itemNumber || "غير محدد"}
+                        {quotationItem.item?.itemNumber || quotationItem.itemNumber || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
-                        {quotationItem.lineItem || "غير محدد"}
+                        {quotationItem.item?.lineItem || quotationItem.lineItem || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-mono text-purple-600 text-sm">
-                        {quotationItem.unit || "EACH"}
+                        {quotationItem.item?.uom || quotationItem.unit || "EACH"}
                       </TableCell>
                       <TableCell>
                         <div className="max-w-md">
                           <p className="font-medium text-gray-800 whitespace-pre-wrap text-sm leading-tight">
-                            {quotationItem.description || "غير محدد"}
+                            {quotationItem.item?.description || quotationItem.description || "غير محدد"}
                           </p>
-                          {quotationItem.category && (
+                          {(quotationItem.item?.category || quotationItem.category) && (
                             <p className="text-xs text-gray-500 mt-1">
-                              {quotationItem.category}
+                              {quotationItem.item?.category || quotationItem.category}
                             </p>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {quotationItem.partNumber || "غير محدد"}
+                        {quotationItem.item?.partNumber || quotationItem.partNumber || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-medium text-green-600">
                         {quotationItem.quantity}
