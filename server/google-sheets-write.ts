@@ -330,6 +330,7 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
           quotation.expiryDate || '',               // J - EXPIRY DATE (تاريخ انتهاء العرض)
           '', '',                                   // K, L - فارغة
           '', '', '', '',                           // M, N, O, P - فارغة
+          '',                                       // P - فارغ  
           quotation.clientName,                     // Q - CLIENT NAME
           quotation.responsibleEmployee || ''       // R - RESPONSIBLE EMPLOYEE
         ];
