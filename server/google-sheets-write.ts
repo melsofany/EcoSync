@@ -329,16 +329,15 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
           '',                                       // I - فارغ
           quotation.expiryDate || '',               // J - EXPIRY DATE (تاريخ انتهاء العرض)
           '', '',                                   // K, L - فارغة
-          '', '', '', '',                           // M, N, O, P - فارغة
-          '',                                       // P - فارغ  
-          quotation.clientName,                     // Q - CLIENT NAME
-          quotation.responsibleEmployee || ''       // R - RESPONSIBLE EMPLOYEE
+          '', '', '',                               // M, N, O - فارغة
+          quotation.clientName,                     // P - CLIENT NAME
+          quotation.responsibleEmployee || ''       // Q - RESPONSIBLE EMPLOYEE
         ];
         rows.push(row);
       }
 
-      // إدراج البيانات - توسيع النطاق ليشمل العمود R
-      const range = `DATA!A${startRow}:R${startRow + rows.length - 1}`;
+      // إدراج البيانات - توسيع النطاق ليشمل العمود Q
+      const range = `DATA!A${startRow}:Q${startRow + rows.length - 1}`;
       
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
