@@ -59,21 +59,7 @@ export default function CreateQuotation() {
 
   const createMutation = useMutation({
     mutationFn: async (data: NewQuotation) => {
-      const response = await fetch('/api/quotations/google-sheets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'خطأ في الشبكة');
-      }
-      
-      return await response.json();
+      return await apiRequest('/api/quotations/google-sheets', 'POST', data);
     },
     onSuccess: (data: any) => {
       toast({
