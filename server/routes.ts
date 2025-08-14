@@ -3701,11 +3701,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
               item: {
                 id: item.itemNumber || `item-${Math.random()}`,
                 itemNumber: item.itemNumber || 'غير محدد',
-                lineItem: item.lineItem || 'غير محدد', 
-                description: item.description || 'غير محدد',
+                lineItem: item.lineItem || 'غير محدد',
+                description: item.description || 'غير محدد', 
                 partNumber: item.partNumber || 'غير محدد',
                 category: item.category || 'عام',
-                uom: 'EACH'
+                uom: item.uom || 'EACH'
               }
             };
           });

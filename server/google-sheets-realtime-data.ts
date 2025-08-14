@@ -217,9 +217,10 @@ export class GoogleSheetsRealtimeData {
         const item = {
           id: `item-sheets-${i + 1}`,
           itemNumber: row[0] || '', // العمود A - P-0000001
-          lineItem: row[1] || '', // العمود B - LINE ITEM
-          partNumber: row[2] || '', // العمود C - PART NO
-          description: row[3] || '', // العمود D - DESCRIPTION
+          uom: row[1] || '', // العمود B - UOM
+          lineItem: row[2] || '', // العمود C - LINE ITEM
+          partNumber: row[3] || '', // العمود D - PART NO
+          description: row[4] || '', // العمود E - DESCRIPTION
           rfqNumber: row[5] || '', // العمود F - RFQ NUMBER  
           requestDate: row[6] || '', // العمود G - REQUEST DATE
           quantity: row[7] || '', // العمود H - QUANTITY
