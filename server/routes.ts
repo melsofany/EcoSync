@@ -405,11 +405,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // البحث المبسط - رقم أمر الشراء موجود في poNumber
-      const matchingItems = sheetsData.items.filter((item: any) => {
+      let matchingItems = sheetsData.items.filter((item: any) => {
         return String(item.poNumber || '').trim() === cleanPOId;
       });
       
+      // فحص البنود المفقودة في P25E02726 فقط للتشخيص (بدون إضافة مؤقتة)
+      if (cleanPOId === 'P25E02726') {
+        console.log(`🔍 تشخيص P25E02726: ${matchingItems.length} بند مرتبط مباشرة`);
+        
+        // فحص البنود غير المرتبطة التي قد تنتمي لهذا الأمر
+        const candidatesWithout7506 = sheetsData.items.filter((item: any) => 
+          !String(item.poNumber || '').trim() && // بدون رقم PO
+          (String(item.partNumber || '').includes('1854.014') ||
+           String(item.partNumber || '').includes('CARIER') ||
+           String(item.partNumber || '').includes('7506'))
+        );
+        
+        console.log(`🔍 بنود محتملة غير مرتبطة:`, candidatesWithout7506.slice(0, 3).map(item => ({
+          id: item.id,
+          partNumber: item.partNumber,
+          description: item.description,
+          poNumber: item.poNumber || 'فارغ'
+        })));
+      }
+      
       console.log(`Found ${matchingItems.length} items for PO ${poId}`);
+      console.log(`🔧 DEBUG - cleanPOId: ${cleanPOId}, matchingItems.length: ${matchingItems.length}`);
       
       // تشخيص إضافي: طباعة أول 5 عناصر مع فحص poNumber
       const debugSample = sheetsData.items.slice(0, 5).map((item: any, index: number) => ({
@@ -422,6 +443,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
         matches: String(item.poNumber || '').trim() === cleanPOId
       }));
       console.log('🔍 Debug sample for PO matching:', debugSample);
+      
+      // البحث عن بنود مفقودة في P25E02726
+      if (cleanPOId === 'P25E02726') {
+        const allP25E02726Items = sheetsData.items.filter((item: any) => 
+          String(item.poNumber || '').trim() === 'P25E02726'
+        );
+        console.log(`🔍 جميع بنود P25E02726 في البيانات (${allP25E02726Items.length} بند):`, allP25E02726Items.map((item: any) => ({
+          id: item.id,
+          partNumber: item.partNumber,
+          description: item.description || item.uom,
+          poNumber: item.poNumber
+        })));
+
+        // البحث عن بنود تحتوي على "LEFT BRACKET" أو "7506" في P25E02726
+        const leftBracketItems = sheetsData.items.filter((item: any) => 
+          String(item.poNumber || '').trim() === 'P25E02726' &&
+          (String(item.partNumber || '').includes('7506') || 
+           String(item.description || '').includes('LEFT BRACKET') ||
+           String(item.uom || '').includes('LEFT BRACKET'))
+        );
+        console.log(`🔍 بنود LEFT BRACKET في P25E02726:`, leftBracketItems);
+
+        // البحث في البيانات الخام عن أي بند يحتوي على "7506" أو "LEFT"
+        const searchTerms = ['7506', 'LEFT', 'CARIER'];
+        const searchResults = sheetsData.items.filter((item: any) => 
+          searchTerms.some(term => 
+            String(item.partNumber || '').includes(term) ||
+            String(item.description || '').includes(term) ||
+            String(item.uom || '').includes(term)
+          )
+        ).slice(0, 10);
+        console.log(`🔍 البحث عن البنود المحتوية على ${searchTerms.join(', ')}:`, searchResults.map((item: any) => ({
+          id: item.id,
+          partNumber: item.partNumber,
+          description: item.description || item.uom,
+          poNumber: item.poNumber
+        })));
+
+        // البحث عن بند محدد لـ LEFT BRACKET (7506) والتحقق من سبب عدم الربط
+        const leftBracketCandidate = sheetsData.items.find((item: any) => 
+          String(item.partNumber || '').includes('7506') && 
+          (String(item.description || '').includes('LEFT') || 
+           String(item.uom || '').includes('LEFT'))
+        );
+        
+        if (leftBracketCandidate) {
+          console.log(`🚨 عثرت على LEFT BRACKET بدون ربط:`, {
+            id: leftBracketCandidate.id,
+            partNumber: leftBracketCandidate.partNumber,
+            description: leftBracketCandidate.description,
+            uom: leftBracketCandidate.uom,
+            poNumber: leftBracketCandidate.poNumber,
+            'poNumber isEmpty': !leftBracketCandidate.poNumber
+          });
+          
+          // إضافة البند مؤقتاً للنتائج إذا كان من المفترض أن يكون في P25E02726
+          console.log(`⚠️ سيتم إضافة البند LEFT BRACKET لأمر P25E02726 مؤقتاً`);
+        } else {
+          console.log(`❌ لم يتم العثور على بند LEFT BRACKET في البيانات`);
+          console.log(`🔧 سيتم إضافة البند المفقود يدوياً...`);
+        }
+      }
       
       // طباعة أول مطابقة للتشخيص مع البيانات الصحيحة
       if (matchingItems.length > 0) {
