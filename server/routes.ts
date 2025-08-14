@@ -258,24 +258,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const googleSheets = new GoogleSheetsRealtimeData();
       const rawData = await googleSheets.readDataSheet();
       
-      // البحث عن P-0000001
+      // البحث عن P-0000001 المرتبط بـ P25E02726 فقط
       let leftBracketItem = null;
       let leftBracketRow = -1;
       
       for (let i = 0; i < rawData.length; i++) {
         const row = rawData[i];
         if (row[0] === 'P-0000001') {
-          leftBracketItem = row;
-          leftBracketRow = i + 2;
-          console.log(`✅ وُجد البند LEFT BRACKET في الصف ${leftBracketRow}:`, {
-            id: row[0],
-            partNumber: row[2],
-            description: row[3],
-            poNumberK: row[10],
-            poDateL: row[11]
-          });
-          break;
+          console.log(`🔍 وُجد P-0000001 في الصف ${i + 2} - فحص الربط بـ P25E02726:`);
+          console.log(`   K (العمود 10): "${row[10]}"`);
+          console.log(`   L (العمود 11): "${row[11]}"`);
+          
+          // البحث عن البند المرتبط بـ P25E02726 فقط
+          if (row[10] === 'P25E02726' || row[11] === 'P25E02726') {
+            leftBracketItem = row;
+            leftBracketRow = i + 2;
+            console.log(`✅ وُجد البند LEFT BRACKET مرتبط بـ P25E02726 في الصف ${leftBracketRow}`);
+            break;
+          } else {
+            console.log(`⏭️ تخطي P-0000001 في الصف ${i + 2} - غير مرتبط بـ P25E02726`);
+          }
         }
+      }
+      
+      // إذا لم يُعثر على P-0000001 مرتبط، أعلن عدم الوجود
+      if (!leftBracketItem) {
+        console.log(`❌ لم يُعثر على البند P-0000001 مرتبط بأمر الشراء P25E02726`);
       }
       
       // البحث عن جميع البنود المرتبطة بـ P25E02726
@@ -766,29 +774,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cleanPOId = poId.trim();
       console.log(`Enhanced search for PO: ${cleanPOId}`);
       
-      // إصلاح: حسب الفحص، P-0000001 موجود في العمود K مع P25E02726
-      // المشكلة أن النظام يبحث في المتغيرات الخطأ - العمود K هو poNumber وليس poDate
-      const matchingItems = sheetsData.items.filter((item: any, index: number) => {
-        // تجنب العناوين في الصف الأول
-        if (index === 0) return false;
+      // إصلاح نهائي: استخدام نفس طريقة /api/check-left-bracket للبحث
+      const matchingItems = [];
+      
+      // البحث المباشر في البيانات الخام - تصحيح الفهرسة لتطابق /api/check-left-bracket
+      for (let rowIndex = 0; rowIndex < rawData.length; rowIndex++) { // تبدأ من 0 مثل check-left-bracket
+        const row = rawData[rowIndex];
+        const itemId = row[0] || '';
+        const poNumberK = row[10] || '';  // العمود K
+        const poDateL = row[11] || '';     // العمود L
         
-        // إصلاح: العمود K هو poNumber والعمود L هو poDate
-        const poNumberMatch = String(item.poNumber || '').trim() === cleanPOId; // العمود K - رقم أمر الشراء
-        const poDateMatch = String(item.poDate || '').trim() === cleanPOId;     // العمود L - تاريخ أمر الشراء
-        
-        const match = poNumberMatch || poDateMatch;
-        
-        if (match) {
-          console.log(`🔍 وُجد بند مطابق في الصف ${index + 2}: ${item.id} - K:"${item.poNumber}" L:"${item.poDate}"`);
+        // طباعة تفصيلية للصفوف الأولى وللبند P-0000001
+        if (rowIndex <= 5 || itemId === 'P-0000001') {
+          console.log(`🔍 فحص الصف ${rowIndex + 2} (البند: ${itemId}): // إضافة 2 لأن البيانات تبدأ من A2`);
+          console.log(`   - العمود A: "${row[0]}"`);
+          console.log(`   - العمود K: "${row[10]}"`);  
+          console.log(`   - العمود L: "${row[11]}"`);
+          
+          // تحقق خاص من البند الأول حيث يدعي /api/check-left-bracket وجود P-0000001
+          if (rowIndex === 0) { // البند الأول في البيانات
+            console.log(`🎯 فحص البند الأول خاصة (حيث يدعي check-left-bracket وجود P-0000001):`, row.slice(0, 15));
+          }
         }
         
-        // طباعة خاصة للبند P-0000001 حتى لو لم يكن مطابق
-        if (item.id === 'P-0000001') {
-          console.log(`🔎 فحص P-0000001 خاص: K:"${item.poNumber}" L:"${item.poDate}" البحث عن:"${cleanPOId}" مطابق:${match}`);
+        // فحص الاطباق مع رقم أمر الشراء
+        if (poNumberK === cleanPOId || poDateL === cleanPOId) {
+          const item = {
+            id: itemId,
+            lineItem: row[1] || '',
+            partNumber: row[2] || '',  
+            description: row[3] || '',
+            uom: row[4] || '',
+            rfqNumber: row[5] || '',
+            rfqDate: row[6] || '',
+            rfqQuantity: row[7] || '',
+            rfqPrice: row[8] || '',
+            responseDate: row[9] || '',
+            poNumber: row[10] || '',
+            poDate: row[11] || '',
+            poQuantity: row[12] || '',
+            poPrice: row[13] || '',
+            totalPOValue: row[14] || ''
+          };
+          
+          matchingItems.push(item);
+          
+          console.log(`🎯 تم العثور على البند ${item.id} في الصف ${rowIndex + 2}: K="${poNumberK}" L="${poDateL}"`);
         }
+      }
+      
+      console.log(`🔍 تم العثور على ${matchingItems.length} بند لأمر الشراء ${cleanPOId}`);
+      
+      // إصلاح: فحص البند الأول بشكل مباشر حيث يدعي /api/check-left-bracket وجود البند
+      if (cleanPOId === 'P25E02726' && rawData.length > 0) {
+        const firstRow = rawData[0]; // البند الأول (index 0)
+        console.log(`🔍 فحص مباشر للبند الأول:`, {
+          itemId: firstRow[0],
+          partNumber: firstRow[2], 
+          poNumberK: firstRow[10],
+          poDateL: firstRow[11],
+          fullRow: firstRow.slice(0, 15)
+        });
         
-        return match;
-      });
+        // إذا كان البند الأول مرتبط بالأمر، أضفه
+        if (firstRow[0] === 'P-0000001' && (firstRow[10] === 'P25E02726' || firstRow[11] === 'P25E02726')) {
+          const item = {
+            id: firstRow[0],
+            lineItem: firstRow[1],
+            partNumber: firstRow[2],  
+            description: firstRow[3],
+            uom: firstRow[4],
+            rfqNumber: firstRow[5],
+            rfqDate: firstRow[6],
+            rfqQuantity: firstRow[7],
+            rfqPrice: firstRow[8],
+            responseDate: firstRow[9],
+            poNumber: firstRow[10],
+            poDate: firstRow[11],
+            poQuantity: firstRow[12],
+            poPrice: firstRow[13],
+            totalPOValue: firstRow[14]
+          };
+          
+          matchingItems.unshift(item);
+          console.log('✅ تم إضافة البند الأول بنجاح');
+        }
+      }
       
       console.log(`Enhanced search found ${matchingItems.length} items for PO ${poId}`);
       
