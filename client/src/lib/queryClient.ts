@@ -45,8 +45,8 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // تحويل queryKey إلى URL صحيح
-    const url = Array.isArray(queryKey) ? queryKey.join('') : queryKey as string;
+    // تحويل queryKey إلى URL صحيح - أخذ العنصر الأول إذا كان مصفوفة
+    const url = Array.isArray(queryKey) ? queryKey[0] as string : queryKey as string;
     const res = await fetch(url, {
       credentials: "include",
     });

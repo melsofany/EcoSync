@@ -20,16 +20,16 @@ export interface User {
 }
 
 export const login = async (credentials: LoginCredentials): Promise<User> => {
-  const response = await apiRequest("POST", "/api/auth/login", credentials);
+  const response = await apiRequest("/api/auth/login", "POST", credentials);
   return response.json();
 };
 
 export const logout = async (): Promise<void> => {
-  await apiRequest("POST", "/api/auth/logout");
+  await apiRequest("/api/auth/logout", "POST");
 };
 
 export const getCurrentUser = async (): Promise<User> => {
-  const response = await apiRequest("GET", "/api/auth/me");
+  const response = await apiRequest("/api/auth/me", "GET");
   return response.json();
 };
 
