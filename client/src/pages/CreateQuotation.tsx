@@ -59,7 +59,8 @@ export default function CreateQuotation() {
 
   const createMutation = useMutation({
     mutationFn: async (data: NewQuotation) => {
-      return await apiRequest('/api/quotations/google-sheets', 'POST', data);
+      const response = await apiRequest('/api/quotations/google-sheets', 'POST', data);
+      return await response.json();
     },
     onSuccess: (data: any) => {
       toast({
@@ -71,9 +72,10 @@ export default function CreateQuotation() {
       navigate('/quotations');
     },
     onError: (error: any) => {
+      console.error('❌ خطأ في إنشاء طلب التسعير:', error);
       toast({
         title: "❌ خطأ في إنشاء طلب التسعير",
-        description: error.data?.message || "حدث خطأ غير متوقع",
+        description: error.data?.message || error.message || "حدث خطأ غير متوقع",
         variant: "destructive"
       });
     }
