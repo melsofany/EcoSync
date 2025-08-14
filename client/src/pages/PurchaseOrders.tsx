@@ -49,6 +49,13 @@ function POItemsTable({ poNumber }: { poNumber: string }) {
     );
   }
 
+  // حساب إجمالي RFQ: كمية PO × سعر PO لكل بند
+  const rfqTotal = poItems.reduce((sum: number, item: any) => {
+    const quantity = parseFloat(item.poQuantity) || 0;
+    const price = parseFloat(item.poPrice) || 0;
+    return sum + (quantity * price);
+  }, 0);
+
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -63,32 +70,55 @@ function POItemsTable({ poNumber }: { poNumber: string }) {
             <TableHead className="text-right">سعر RFQ</TableHead>
             <TableHead className="text-center">كمية PO</TableHead>
             <TableHead className="text-right">سعر PO</TableHead>
+            <TableHead className="text-right">إجمالي البند</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {poItems.map((item: any, index: number) => (
-            <TableRow key={index} className="hover:bg-gray-50">
-              <TableCell className="font-medium text-blue-600">{item.itemId}</TableCell>
-              <TableCell className="text-center">{item.uom}</TableCell>
-              <TableCell className="text-center">{item.lineItem}</TableCell>
-              <TableCell className="font-medium">{item.partNumber}</TableCell>
-              <TableCell className="max-w-xs">
-                <div className="break-words" title={item.description}>
-                  {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}
-                </div>
-              </TableCell>
-              <TableCell className="text-center font-medium">{item.rfqQuantity}</TableCell>
-              <TableCell className="text-right">
-                {(parseFloat(item.rfqPrice) || 0).toLocaleString('ar-EG')} ج.م
-              </TableCell>
-              <TableCell className="text-center font-medium">{item.poQuantity}</TableCell>
-              <TableCell className="text-right font-bold text-green-600">
-                {(parseFloat(item.poPrice) || 0).toLocaleString('ar-EG')} ج.م
-              </TableCell>
-            </TableRow>
-          ))}
+          {poItems.map((item: any, index: number) => {
+            const quantity = parseFloat(item.poQuantity) || 0;
+            const price = parseFloat(item.poPrice) || 0;
+            const itemTotal = quantity * price;
+            
+            return (
+              <TableRow key={index} className="hover:bg-gray-50">
+                <TableCell className="font-medium text-blue-600">{item.itemId}</TableCell>
+                <TableCell className="text-center">{item.uom}</TableCell>
+                <TableCell className="text-center">{item.lineItem}</TableCell>
+                <TableCell className="font-medium">{item.partNumber}</TableCell>
+                <TableCell className="max-w-xs">
+                  <div className="break-words" title={item.description}>
+                    {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center font-medium">{item.rfqQuantity}</TableCell>
+                <TableCell className="text-right">
+                  {(parseFloat(item.rfqPrice) || 0).toLocaleString('ar-EG')} ج.م
+                </TableCell>
+                <TableCell className="text-center font-medium">{item.poQuantity}</TableCell>
+                <TableCell className="text-right font-bold text-green-600">
+                  {(parseFloat(item.poPrice) || 0).toLocaleString('ar-EG')} ج.م
+                </TableCell>
+                <TableCell className="text-right font-bold text-blue-600">
+                  {itemTotal.toLocaleString('ar-EG')} ج.م
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
+      
+      {/* إجمالي أسعار RFQ */}
+      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex justify-between items-center">
+          <span className="text-lg font-medium text-blue-800">إجمالي أسعار RFQ:</span>
+          <span className="text-xl font-bold text-blue-900">
+            {rfqTotal.toLocaleString('ar-EG')} ج.م
+          </span>
+        </div>
+        <p className="text-sm text-blue-600 mt-1">
+          (نتاج ضرب الكمية من العمود M في السعر من العمود N)
+        </p>
+      </div>
     </div>
   );
 }

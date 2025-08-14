@@ -118,17 +118,23 @@ export class GoogleSheetsRealtimeData {
       const rows = await this.readDataSheet();
       let totalValue = 0;
 
-      // حساب مجموع العمود N (العمود رقم 13 - محسوب من 0)
-      for (const row of rows) {
-        if (row.length > 13 && row[13]) {
-          const value = parseFloat(row[13].toString().replace(/[^\d.-]/g, ''));
-          if (!isNaN(value)) {
-            totalValue += value;
+      // حساب إجمالي RFQ: كمية العمود M (12) × سعر العمود N (13)
+      for (let i = 1; i < rows.length; i++) { // تخطي صف العناوين
+        const row = rows[i];
+        if (row.length > 13) {
+          // كمية PO من العمود M (رقم 12)
+          const quantity = parseFloat(row[12]?.toString().replace(/[^\d.-]/g, '') || '0');
+          // سعر PO من العمود N (رقم 13)  
+          const price = parseFloat(row[13]?.toString().replace(/[^\d.-]/g, '') || '0');
+          
+          if (!isNaN(quantity) && !isNaN(price) && quantity > 0 && price > 0) {
+            const itemTotal = quantity * price;
+            totalValue += itemTotal;
           }
         }
       }
 
-      console.log(`💰 إجمالي القيمة المحسوبة: ${totalValue.toLocaleString()} ج.م`);
+      console.log(`💰 إجمالي القيمة المحسوبة (الكمية × السعر): ${totalValue.toLocaleString()} ج.م`);
       return totalValue;
     } catch (error) {
       console.error('❌ خطأ في حساب إجمالي القيمة:', (error as Error).message);
