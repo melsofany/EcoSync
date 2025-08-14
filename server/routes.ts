@@ -409,28 +409,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return String(item.poNumber || '').trim() === cleanPOId;
       });
       
-      // فحص البنود المفقودة في P25E02726 فقط للتشخيص (بدون إضافة مؤقتة)
+      // فحص P25E02726 - يجب أن يحتوي على 5 بنود حسب Google Sheets
       if (cleanPOId === 'P25E02726') {
-        console.log(`🔍 تشخيص P25E02726: ${matchingItems.length} بند مرتبط مباشرة`);
+        console.log(`🔍 تشخيص P25E02726: ${matchingItems.length} بند مرتبط مباشرة (المطلوب: 5 بنود)`);
         
-        // فحص البنود غير المرتبطة التي قد تنتمي لهذا الأمر
-        const candidatesWithout7506 = sheetsData.items.filter((item: any) => 
-          !String(item.poNumber || '').trim() && // بدون رقم PO
-          (String(item.partNumber || '').includes('1854.014') ||
-           String(item.partNumber || '').includes('CARIER') ||
-           String(item.partNumber || '').includes('7506'))
-        );
+        // البحث عن جميع البنود التي تحتوي على أرقام قطع مشابهة
+        const allP25E02726Candidates = sheetsData.items.filter((item: any) => {
+          const partNum = String(item.partNumber || '');
+          const desc = String(item.description || item.uom || '');
+          
+          return (
+            // البحث عن البنود المرتبطة بـ CARRIER 42QG18H
+            partNum.includes('1854.014.CARIER.') ||
+            partNum.includes('1531.032.GENRAL.') ||
+            partNum.includes('1854.002.CARIER.') ||
+            desc.includes('CARRIER QG') ||
+            desc.includes('COPPER ELBOW') ||
+            desc.includes('2508809')
+          );
+        });
         
-        console.log(`🔍 بنود محتملة غير مرتبطة:`, candidatesWithout7506.slice(0, 3).map(item => ({
+        console.log(`🔍 جميع البنود المحتملة لـ P25E02726:`, allP25E02726Candidates.slice(0, 10).map(item => ({
           id: item.id,
           partNumber: item.partNumber,
-          description: item.description,
+          description: item.description || item.uom || 'فارغ',
           poNumber: item.poNumber || 'فارغ'
         })));
       }
       
       console.log(`Found ${matchingItems.length} items for PO ${poId}`);
       console.log(`🔧 DEBUG - cleanPOId: ${cleanPOId}, matchingItems.length: ${matchingItems.length}`);
+      
+      // فحص مباشر للبنود الفعلية في Google Sheets لـ P25E02726
+      if (cleanPOId === 'P25E02726') {
+        console.log(`📊 فحص شامل لبيانات P25E02726 في Google Sheets:`);
+        
+        // البحث عن جميع البنود التي تحتوي على P25E02726 في أي حقل
+        const allPOReferences = sheetsData.items.filter((item: any) => {
+          return Object.values(item).some(value => 
+            String(value || '').includes('P25E02726')
+          );
+        });
+        
+        console.log(`🔍 جميع البنود التي تذكر P25E02726:`, allPOReferences.map(item => ({
+          id: item.id,
+          partNumber: item.partNumber,
+          description: item.description || item.uom,
+          poNumber: item.poNumber,
+          poDate: item.poDate,
+          rfqNumber: item.rfqNumber
+        })));
+      }
       
       // تشخيص إضافي: طباعة أول 5 عناصر مع فحص poNumber
       const debugSample = sheetsData.items.slice(0, 5).map((item: any, index: number) => ({
