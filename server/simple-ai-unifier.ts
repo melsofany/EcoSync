@@ -30,7 +30,7 @@ class SimpleAIUnifier {
 
   async init() {
     try {
-      const serviceAccountPath = './attached_assets/cortoba-supp-sys-75c0919d127e.json';
+      const serviceAccountPath = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
       const { readFileSync } = await import('fs');
       const credentials = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
 
