@@ -2141,10 +2141,20 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Purchase order routes - completely disable auth for Google Sheets system
+  // Purchase order routes - reading directly from Google Sheets
   app.get("/api/purchase-orders", async (req: Request, res: Response) => {
     try {
-      const purchaseOrders = await storage.getAllPurchaseOrders();
+      console.log('🔍 API call received for Google Sheets purchase orders list');
+      
+      // قراءة البيانات مباشرة من Google Sheets
+      const { GoogleSheetsRealtimeData } = await import('./google-sheets-realtime-data.js');
+      const googleSheets = new GoogleSheetsRealtimeData();
+      
+      // قراءة أوامر الشراء من Google Sheets مباشرة
+      
+      const purchaseOrders = await googleSheets.getAllPurchaseOrders();
+      
+      console.log(`📦 تم استخراج ${purchaseOrders.length} أمر شراء من Google Sheets`);
       res.json(purchaseOrders);
     } catch (error) {
       console.error("Get purchase orders error:", error);
