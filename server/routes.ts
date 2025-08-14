@@ -17,6 +17,7 @@ import { promises as fs, readFileSync, writeFileSync } from "fs";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 import { GoogleSheetsRealtimeData } from "./google-sheets-realtime-data";
+import { GoogleSheetsWriter } from "./google-sheets-write";
 
 // دالة مساعدة معممة للتحقق من صحة البيانات الرقمية (تتجنب القيم الافتراضية الخاطئة)
 const isValidNumericValue = (value: any): boolean => {
@@ -5408,6 +5409,68 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     } catch (error) {
       console.error("Get unification status error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // إدراج طلب تسعير جديد في Google Sheets
+  app.post('/api/quotations/google-sheets', requireAuth, requireRole(['manager', 'it_admin', 'data_entry']), async (req: Request, res: Response) => {
+    try {
+      const { clientName, rfqNumber, requestDate, expiryDate, responsibleEmployee, items } = req.body;
+
+      // التحقق من صحة البيانات
+      if (!clientName || !rfqNumber || !requestDate || !items || !Array.isArray(items)) {
+        return res.status(400).json({ 
+          message: 'البيانات المطلوبة مفقودة: اسم العميل، رقم الطلب، تاريخ الطلب، والبنود' 
+        });
+      }
+
+      if (items.length === 0) {
+        return res.status(400).json({ message: 'يجب إضافة بند واحد على الأقل' });
+      }
+
+      // إنشاء كاتب Google Sheets
+      const sheetsWriter = new GoogleSheetsWriter();
+      const initialized = await sheetsWriter.initialize();
+      
+      if (!initialized) {
+        return res.status(500).json({ message: 'فشل في الاتصال بـ Google Sheets' });
+      }
+
+      // إدراج طلب التسعير
+      const success = await sheetsWriter.insertNewQuotation({
+        clientName,
+        rfqNumber,
+        requestDate,
+        expiryDate,
+        responsibleEmployee: responsibleEmployee || 'غير محدد',
+        items: items.map((item: any) => ({
+          description: item.description,
+          partNumber: item.partNumber || '',
+          lineItem: item.lineItem || '',
+          uom: item.uom || 'EACH',
+          quantity: parseFloat(item.quantity) || 1,
+          unitPrice: parseFloat(item.unitPrice) || 0,
+          notes: item.notes || ''
+        }))
+      });
+
+      if (success) {
+        await logActivity(req, "quotation_create", "quotations", req.session.user!.id, 
+          `Created quotation ${rfqNumber} for ${clientName} with ${items.length} items`);
+        
+        res.json({ 
+          message: 'تم إنشاء طلب التسعير بنجاح',
+          rfqNumber,
+          clientName,
+          itemsCount: items.length
+        });
+      } else {
+        res.status(500).json({ message: 'فشل في إدراج طلب التسعير' });
+      }
+
+    } catch (error) {
+      console.error('❌ خطأ في إنشاء طلب التسعير:', (error as Error).message);
+      res.status(500).json({ message: 'خطأ داخلي في الخادم' });
     }
   });
 

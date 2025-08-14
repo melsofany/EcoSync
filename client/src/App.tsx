@@ -11,6 +11,7 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Quotations from "@/pages/Quotations";
 import QuotationDetail from "@/pages/QuotationDetail";
+import CreateQuotation from "@/pages/CreateQuotation";
 import Items from "@/pages/Items";
 import PurchaseOrders from "@/pages/PurchaseOrders";
 import Reports from "@/pages/Reports";
@@ -65,6 +66,7 @@ function Router() {
         <Route path="/" component={Dashboard} />
         <Route path="/quotations" component={Quotations} />
         <Route path="/quotations/:id" component={QuotationDetail} />
+        <Route path="/quotations/create" component={CreateQuotation} />
         <Route path="/items" component={Items} />
         <Route path="/item-pricing-requests/:itemId" component={ItemPricingRequests} />
         <Route path="/items/:itemId/data-sheet" component={ItemDataSheet} />
