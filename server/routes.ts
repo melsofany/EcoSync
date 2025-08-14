@@ -5429,6 +5429,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       }
 
       // إنشاء كاتب Google Sheets
+      const { GoogleSheetsWriter } = await import("./google-sheets-write");
       const sheetsWriter = new GoogleSheetsWriter();
       const initialized = await sheetsWriter.initialize();
       
@@ -5469,8 +5470,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       }
 
     } catch (error) {
-      console.error('❌ خطأ في إنشاء طلب التسعير:', (error as Error).message);
-      res.status(500).json({ message: 'خطأ داخلي في الخادم' });
+      console.error('❌ خطأ في إنشاء طلب التسعير:', error);
+      res.status(500).json({ 
+        message: 'خطأ في إنشاء طلب التسعير', 
+        details: (error as Error).message 
+      });
     }
   });
 
