@@ -1993,23 +1993,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Single quotation routes
+  // Single quotation routes - البحث في طلبات التسعير من Google Sheets
   app.get("/api/quotations/:id", requireAuth, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      let quotation;
+      console.log(`🔍 البحث عن طلب التسعير: ${id}`);
       
+      // أولاً: محاولة الحصول على البيانات من Google Sheets
       try {
-        // Try both methods to get quotation data from database
+        const { googleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
+        const quotations = await googleSheetsRealtimeData.getAllQuotations();
+        const quotation = quotations.find((q: any) => q.id === id);
+        
+        if (quotation) {
+          console.log(`✅ تم العثور على طلب التسعير في Google Sheets: ${id}`);
+          return res.json(quotation);
+        }
+        
+        console.log(`📋 تم العثور على ${quotations.length} طلب تسعير`);
+        console.log(`✅ النتيجة: ${quotation ? 'تم العثور عليه' : 'لم يوجد'}`);
+      } catch (sheetsError: any) {
+        console.log("خطأ في قراءة Google Sheets:", sheetsError.message);
+      }
+      
+      // ثانياً: محاولة قاعدة البيانات إذا فشل Google Sheets
+      let quotation;
+      try {
         quotation = await storage.getQuotationById(id);
         if (!quotation) {
           quotation = await storage.getQuotationRequest(id);
         }
       } catch (dbError: any) {
-        console.log("Database access failed, using Google Sheets:", dbError.message);
+        console.log("Database access failed:", dbError.message);
       }
       
-      // If still not found in database, try Google Sheets fallback data
+      // ثالثاً: محاولة التخزين الاحتياطي
       if (!quotation) {
         try {
           const { sheetsFallbackStorage } = await import('./sheets-fallback-storage.js');
@@ -3645,20 +3663,52 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Quotation items routes
+  // Quotation items routes - البحث عن بنود طلبات التسعير من Google Sheets
   app.get("/api/quotations/:quotationId/items", requireAuth, async (req: Request, res: Response) => {
     try {
       const { quotationId } = req.params;
+      console.log(`🔍 البحث عن بنود طلب التسعير: ${quotationId}`);
+      
       let items = [];
       
+      // أولاً: محاولة الحصول على البنود من Google Sheets
       try {
-        // Try database first
-        items = await storage.getQuotationItems(quotationId);
-      } catch (dbError: any) {
-        console.log("Database access failed for items, using Google Sheets:", dbError.message);
+        const { googleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
+        const quotations = await googleSheetsRealtimeData.getAllQuotations();
+        const quotation = quotations.find((q: any) => q.id === quotationId);
+        
+        if (quotation && quotation.items) {
+          console.log(`✅ تم العثور على ${quotation.items.length} بند في Google Sheets`);
+          items = quotation.items.map((item: any) => ({
+            id: `item-${item.id || Math.random()}`,
+            quotationId: quotationId,
+            itemId: item.id,
+            quantity: item.rfqQuantity || 1,
+            unitPrice: parseFloat(item.rfqPrice?.toString().replace(/[^\d.-]/g, '') || '0'),
+            totalPrice: parseFloat(item.totalValue?.toString().replace(/[^\d.-]/g, '') || '0'),
+            notes: item.notes || '',
+            item: {
+              id: item.id,
+              itemNumber: item.itemNumber,
+              description: item.description,
+              partNumber: item.partNumber,
+              category: item.category || 'عام'
+            }
+          }));
+          return res.json(items);
+        }
+      } catch (sheetsError: any) {
+        console.log("خطأ في قراءة بنود Google Sheets:", sheetsError.message);
       }
       
-      // If no items found in database, try Google Sheets fallback data
+      // ثانياً: محاولة قاعدة البيانات
+      try {
+        items = await storage.getQuotationItems(quotationId);
+      } catch (dbError: any) {
+        console.log("Database access failed for items:", dbError.message);
+      }
+      
+      // ثالثاً: محاولة التخزين الاحتياطي
       if (!items || items.length === 0) {
         try {
           const { sheetsFallbackStorage } = await import('./sheets-fallback-storage.js');
@@ -3668,6 +3718,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         }
       }
       
+      console.log(`📋 تم إرجاع ${items?.length || 0} بند`);
       res.json(items || []);
     } catch (error) {
       console.error("Get quotation items error:", error);
