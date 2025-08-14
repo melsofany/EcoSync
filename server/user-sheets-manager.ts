@@ -214,9 +214,13 @@ export class UserSheetsManager {
     const users = await this.getAllUsers();
     const sheetUser = users.find(user => user.username === username && user.isActive);
     
-    // إذا لم نجد المستخدم في Google Sheets وكان اسم المستخدم admin، استخدم المستخدم الاحتياطي
+    // إذا لم نجد المستخدم في Google Sheets، استخدم المستخدمين الاحتياطيين
     if (!sheetUser && username === 'admin') {
       return this.getFallbackAdminUser();
+    }
+    
+    if (!sheetUser && username === 'it_admin') {
+      return this.getFallbackITAdminUser();
     }
     
     return sheetUser;
@@ -246,6 +250,42 @@ export class UserSheetsManager {
         import: { quotations: true, items: true, purchaseOrders: true },
         activity: { view: true },
         pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true }
+      }),
+      isActive: true,
+      isOnline: false,
+      lastLoginAt: new Date().toISOString(),
+      lastActivityAt: new Date().toISOString(),
+      ipAddress: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  // مستخدم it_admin احتياطي عندما تكون Google Sheets غير متاحة
+  private getFallbackITAdminUser(): UserSheet {
+    return {
+      id: 'it-admin-001',
+      username: 'it_admin',
+      password: '$2b$10$atHb3PJhWHlNLcG88UfOluAEpNBO3W6bqona22dDkvU8hTHa9AXzC',  // it123456
+      fullName: 'مدير تقنية المعلومات',
+      email: 'it@qurtoba.com',
+      role: 'it_admin',
+      permissions: JSON.stringify({
+        dashboard: true,
+        quotations: { view: true, create: true, edit: true, delete: true },
+        items: { view: true, create: true, edit: true, delete: true },
+        clients: { view: true, create: true, edit: true, delete: true },
+        suppliers: { view: true, create: true, edit: true, delete: true },
+        purchaseOrders: { view: true, create: true, edit: true, delete: true },
+        supplierPricing: { view: true, create: true, edit: true, delete: true },
+        customerPricing: { view: true, create: true, edit: true, delete: true },
+        reports: { view: true, export: true },
+        analytics: { view: true },
+        admin: { userManagement: true, systemSettings: true, backupRestore: true },
+        import: { quotations: true, items: true, purchaseOrders: true },
+        activity: { view: true },
+        pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true },
+        telegramBot: { manage: true, viewUsers: true, analytics: true }
       }),
       isActive: true,
       isOnline: false,
