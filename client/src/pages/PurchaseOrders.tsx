@@ -107,18 +107,7 @@ function POItemsTable({ poNumber }: { poNumber: string }) {
         </TableBody>
       </Table>
       
-      {/* إجمالي أسعار RFQ */}
-      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex justify-between items-center">
-          <span className="text-lg font-medium text-blue-800">إجمالي أسعار RFQ:</span>
-          <span className="text-xl font-bold text-blue-900">
-            {rfqTotal.toLocaleString('ar-EG')} ج.م
-          </span>
-        </div>
-        <p className="text-sm text-blue-600 mt-1">
-          (نتاج ضرب الكمية من العمود M في السعر من العمود N)
-        </p>
-      </div>
+
     </div>
   );
 }
