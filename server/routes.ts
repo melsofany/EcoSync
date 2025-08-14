@@ -1353,19 +1353,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🆔 بدء توحيد المعرفات في العمود A...');
       
-      const { GoogleAuth } = await import('google-auth-library');
-      const { google } = await import('googleapis');
-      const { readFileSync } = await import('fs');
-      
-      const serviceAccountKey = readFileSync('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
-      const credentials = JSON.parse(serviceAccountKey);
-      
-      const auth = new GoogleAuth({
-        credentials: credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets']
-      });
-      
-      const sheets = google.sheets({ version: 'v4', auth: auth });
+      // استخدام نظام Google Sheets المدمج
+      const googleSheets = new GoogleSheetsRealtimeData();
       const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
       
       console.log('📖 قراءة البيانات من Google Sheets...');
@@ -1870,8 +1859,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { google } = await import('googleapis');
         const { readFileSync } = await import('fs');
         
-        const serviceAccountKey = readFileSync('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
-        const credentials = JSON.parse(serviceAccountKey);
+        // استخدام نظام Google Sheets المدمج
+        const googleSheets = new GoogleSheetsRealtimeData();
+        const rawData = await googleSheets.readDataSheet();
         
         const auth = new GoogleAuth({
           credentials: credentials,
@@ -4361,9 +4351,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       // تنظيف الذاكرة
       resetSystemMemory();
       
-      // كتابة البيانات الفارغة
-      const { writeFileSync } = await import('fs');
-      writeFileSync('./attached_assets/synced_data_from_sheets.json', JSON.stringify(emptyData, null, 2));
+      // لا حاجة لكتابة ملفات - النظام يقرأ من Google Sheets مباشرة
       
       await logActivity(req, "clear_system_data", "system", "", "Cleared all system data");
       
@@ -4378,14 +4366,33 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Get synced data for POTotalAmount component  
+  // Get synced data from Google Sheets directly  
   app.get('/api/synced-data', async (req, res) => {
     try {
-      const { readFileSync } = await import('fs');
-      const syncedDataPath = './attached_assets/synced_data_from_sheets.json';
-      const syncedData = JSON.parse(readFileSync(syncedDataPath, 'utf8'));
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const rawData = await googleSheets.readDataSheet();
       
-      res.json(syncedData);
+      const formattedData = {
+        items: rawData.map((row: any[], index: number) => ({
+          id: row[0] || `P-${String(index + 1).padStart(7, '0')}`,
+          lineItem: row[1] || '',
+          partNumber: row[2] || '',
+          description: row[3] || '',
+          uom: row[4] || '',
+          poQuantity: row[12] || '',
+          poPrice: row[13] || ''
+        })),
+        quotations: [],
+        purchaseOrders: [],
+        totalValue: rawData.reduce((sum, row) => {
+          const poQuantity = parseFloat(row[12]) || 0;
+          const poPrice = parseFloat(row[13]) || 0;
+          return sum + (poQuantity * poPrice);
+        }, 0),
+        status: 'loaded'
+      };
+      
+      res.json(formattedData);
     } catch (error) {
       console.error('Error reading synced data:', error);
       res.status(500).json({ 
@@ -4835,50 +4842,26 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
       
-      // تهيئة Google Sheets
-      let serviceAccountKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+      // قراءة مباشرة من Google Sheets
       
-      // إذا لم يكن متوفراً، اقرأ من الملف
-      if (!serviceAccountKey || serviceAccountKey.includes('cortoba-sy')) {
-        try {
-          const fs = await import('fs');
-          serviceAccountKey = fs.readFileSync('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
-        } catch (error) {
-          return res.status(500).json({ message: 'Google Service Account Key not found' });
-        }
-      }
+      // استخدام نظام Google Sheets المدمج بدلاً من ملفات JSON
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const rawData = await googleSheets.readDataSheet();
 
-      let credentials;
-      try {
-        credentials = JSON.parse(serviceAccountKey);
-      } catch (error) {
-        console.error('❌ خطأ في تحليل مفتاح Google Sheets:', (error as Error).message);
-        return res.status(500).json({ 
-          message: 'خطأ في تحليل مفتاح Google Sheets',
-          error: 'Invalid JSON format' 
+      if (rawData.length === 0) {
+        return res.json({
+          totalValue: 0,
+          message: 'لا توجد بيانات في Google Sheets',
+          status: 'empty'
         });
       }
-      const auth = new GoogleAuth({
-        credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets']
-      });
-
-      const sheets = google.sheets({ version: 'v4', auth });
-
-      // قراءة البيانات من صفحة DATA بدءاً من الصف 2 - تمديد النطاق للعمود O
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range: 'DATA!A2:O10000'
-      });
-
-      const rows = response.data.values || [];
       let totalValue = 0;
 
-      console.log(`📊 معالجة ${rows.length} صف لحساب مجموع العمود O`);
+      console.log(`📊 معالجة ${rawData.length} صف لحساب مجموع العمود O`);
       
-      // حساب مجموع العمود O (العمود رقم 14) بدءاً من الصف 2
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
+      // حساب مجموع العمود O (العمود رقم 14)
+      for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
         if (row.length > 14 && row[14]) {
           const rawValue = row[14].toString().trim();
           const value = parseFloat(rawValue.replace(/[^\d.-]/g, ''));
