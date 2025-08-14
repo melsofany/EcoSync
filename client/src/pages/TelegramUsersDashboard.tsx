@@ -8,15 +8,15 @@ import { useToast } from '@/hooks/use-toast';
 
 interface TelegramUser {
   userId: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
   dateAdded: string;
   status: string;
-  lastActivity: string;
+  lastActivity?: string;
   requestsCount: number;
-  notes: string;
+  notes?: string;
 }
 
 interface UserStats {
@@ -37,7 +37,10 @@ export function TelegramUsersDashboard() {
 
   const fetchUserStats = async () => {
     try {
-      const stats = await apiRequest('/api/telegram-bot/stats', 'GET');
+      const response = await fetch('/api/telegram-bot/stats', {
+        credentials: 'include'
+      });
+      const stats = await response.json();
       setUserStats(stats);
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -46,15 +49,21 @@ export function TelegramUsersDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const response = await apiRequest('/api/telegram-bot/users', 'GET');
-      setUsers(response.users || []);
+      const response = await fetch('/api/telegram-bot/users', {
+        credentials: 'include'
+      });
+      const data = await response.json();
+      setUsers(data.users || []);
       
       // جلب تفاصيل كل مستخدم
       const details: TelegramUser[] = [];
-      for (const userId of response.users || []) {
+      for (const userId of data.users || []) {
         try {
-          const userDetail = await apiRequest(`/api/telegram-bot/user/${userId}`, 'GET');
-          if (userDetail) {
+          const userResponse = await fetch(`/api/telegram-bot/user/${userId}`, {
+            credentials: 'include'
+          });
+          const userDetail = await userResponse.json();
+          if (userDetail && userDetail.userId) {
             details.push(userDetail);
           }
         } catch (error) {
