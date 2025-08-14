@@ -488,6 +488,10 @@ export default function PurchaseOrders() {
     // استخدام البيانات من poItems API الجديد إذا كان متاحاً
     if (poItems && poItems.length > 0 && selectedPO?.poNumber === poNumber) {
       return poItems.reduce((sum: number, item: any) => {
+        // تجاهل البنود التي لا تحتوي على كمية RFQ (فارغة)
+        if (!item.rfqQuantity || item.rfqQuantity === '') {
+          return sum;
+        }
         const quantity = parseFloat(item.rfqQuantity) || 0;
         const price = parseFloat(item.rfqPrice) || 0;
         return sum + (quantity * price);
@@ -497,6 +501,9 @@ export default function PurchaseOrders() {
     // الطريقة القديمة كبديل (fallback)
     const items = getPOItems(poNumber);
     return items.reduce((sum: number, item: any) => {
+      if (!item.rfqQuantity || item.rfqQuantity === '') {
+        return sum;
+      }
       const quantity = parseFloat(item.rfqQuantity) || 0;
       const price = parseFloat(item.rfqPrice) || 0;
       return sum + (quantity * price);
