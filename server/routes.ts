@@ -3920,6 +3920,154 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Get pricing requests for Google Sheets items
+  app.get("/api/sheets/items/:itemId/pricing-requests", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      console.log('Getting pricing requests for Google Sheets item:', itemId);
+      
+      // Load synced data from Google Sheets
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const filePath = path.join(process.cwd(), 'attached_assets', 'synced_data_from_sheets.json');
+      
+      if (!fs.existsSync(filePath)) {
+        return res.json([]);
+      }
+      
+      const rawData = fs.readFileSync(filePath, 'utf8');
+      const allItems = JSON.parse(rawData);
+      
+      // Find all entries for this item ID
+      const itemEntries = allItems.filter((item: any) => item.id === itemId);
+      
+      if (itemEntries.length === 0) {
+        return res.json([]);
+      }
+      
+      // Transform to pricing request format
+      const pricingRequests = itemEntries.map((item: any, index: number) => ({
+        id: `req-${index}`,
+        quotationId: `quotation-${item.rfqNumber || 'unknown'}`,
+        quotationNumber: item.rfqNumber || 'غير محدد',
+        clientName: 'عميل Google Sheets',
+        requestDate: item.rfqDate || new Date().toISOString(),
+        status: 'completed',
+        quantity: parseInt(item.quantity) || 0,
+        unit: item.uom || 'Each',
+        customerPrice: parseFloat(item.rfqPrice) || 0,
+        totalPrice: (parseInt(item.quantity) || 0) * (parseFloat(item.rfqPrice) || 0),
+        currency: 'EGP',
+        notes: `Part: ${item.partNumber || ''}, PO: ${item.poDate || ''}`,
+        responsibleEmployee: 'موظف النظام'
+      }));
+      
+      console.log(`Found ${pricingRequests.length} pricing requests for item ${itemId}`);
+      res.json(pricingRequests);
+    } catch (error) {
+      console.error("Error fetching Google Sheets item pricing requests:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get purchase orders for Google Sheets items
+  app.get("/api/sheets/items/:itemId/purchase-orders", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      console.log('Getting purchase orders for Google Sheets item:', itemId);
+      
+      // Load synced data from Google Sheets
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const filePath = path.join(process.cwd(), 'attached_assets', 'synced_data_from_sheets.json');
+      
+      if (!fs.existsSync(filePath)) {
+        return res.json([]);
+      }
+      
+      const rawData = fs.readFileSync(filePath, 'utf8');
+      const allItems = JSON.parse(rawData);
+      
+      // Find all entries for this item ID
+      const itemEntries = allItems.filter((item: any) => item.id === itemId);
+      
+      if (itemEntries.length === 0) {
+        return res.json([]);
+      }
+      
+      // Transform to purchase order format
+      const purchaseOrders = itemEntries
+        .filter((item: any) => item.poDate && item.poDate !== 'غير محدد')
+        .map((item: any, index: number) => ({
+          id: `po-${index}`,
+          poNumber: item.poDate || 'غير محدد',
+          poDate: item.poNumber || new Date().toISOString(),
+          status: 'completed',
+          quantity: parseInt(item.poQuantity) || 0,
+          unitPrice: parseFloat(item.poPrice) || 0,
+          totalValue: (parseInt(item.poQuantity) || 0) * (parseFloat(item.poPrice) || 0),
+          currency: 'EGP',
+          supplierName: 'مورد Google Sheets',
+          notes: `RFQ: ${item.rfqNumber || ''}`
+        }));
+      
+      console.log(`Found ${purchaseOrders.length} purchase orders for item ${itemId}`);
+      res.json(purchaseOrders);
+    } catch (error) {
+      console.error("Error fetching Google Sheets item purchase orders:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get comprehensive data for Google Sheets items
+  app.get("/api/sheets/items/:itemId/comprehensive-data", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.params;
+      console.log('Getting comprehensive data for Google Sheets item:', itemId);
+      
+      // Load synced data from Google Sheets
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const filePath = path.join(process.cwd(), 'attached_assets', 'synced_data_from_sheets.json');
+      
+      if (!fs.existsSync(filePath)) {
+        return res.json([]);
+      }
+      
+      const rawData = fs.readFileSync(filePath, 'utf8');
+      const allItems = JSON.parse(rawData);
+      
+      // Find all entries for this item ID
+      const itemEntries = allItems.filter((item: any) => item.id === itemId);
+      
+      if (itemEntries.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get the first entry as representative data
+      const representative = itemEntries[0];
+      
+      const comprehensiveData = [{
+        id: itemId,
+        part_no: representative.partNumber || 'غير محدد',
+        description: representative.description || representative.uom || 'غير محدد',
+        line_item: representative.lineItem || 'غير محدد',
+        unit: 'Each',
+        category: 'general',
+        brand: 'عامة'
+      }];
+      
+      console.log(`Returning comprehensive data for item ${itemId}`);
+      res.json(comprehensiveData);
+    } catch (error) {
+      console.error("Error fetching Google Sheets item comprehensive data:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Import data endpoint (simple)
   app.post('/api/import-data', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
     try {
