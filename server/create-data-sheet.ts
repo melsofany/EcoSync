@@ -11,7 +11,7 @@ export async function createDataSheet(): Promise<any> {
     
     // إعداد المصادقة
     console.log('🔑 قراءة مفتاح الخدمة من الملف...');
-    const keyFile = readFileSync('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
+    const keyFile = readFileSync('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json', 'utf8');
     const serviceAccountKey = JSON.parse(keyFile);
     console.log('✅ تم تحليل مفتاح الخدمة بنجاح');
     
