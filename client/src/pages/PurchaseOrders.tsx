@@ -16,7 +16,7 @@ import EditPOItemsModal from "@/components/modals/EditPOItemsModal";
 // مكون لعرض عدد البنود
 function POItemsBadge({ poNumber }: { poNumber: string }) {
   const { data: poItems, isLoading } = useQuery({
-    queryKey: [`/api/sheets/purchase-orders/${poNumber}/items`],
+    queryKey: [`/api/sheets/po/${poNumber}/items`],
     enabled: !!poNumber
   });
 
@@ -29,7 +29,7 @@ function POItemsBadge({ poNumber }: { poNumber: string }) {
 // مكون لعرض جدول البنود
 function POItemsTable({ poNumber }: { poNumber: string }) {
   const { data: poItems, isLoading } = useQuery({
-    queryKey: [`/api/sheets/purchase-orders/${poNumber}/items`],
+    queryKey: [`/api/sheets/po/${poNumber}/items`],
     enabled: !!poNumber
   });
 
