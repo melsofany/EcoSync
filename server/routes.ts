@@ -18,6 +18,17 @@ import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 import { GoogleSheetsRealtimeData } from "./google-sheets-realtime-data";
 
+// دالة مساعدة معممة للتحقق من صحة البيانات الرقمية (تتجنب القيم الافتراضية الخاطئة)
+const isValidNumericValue = (value: any): boolean => {
+  return value !== null && value !== undefined && value !== '' && !isNaN(parseFloat(value)) && parseFloat(value) !== 0;
+};
+
+// دالة مساعدة معممة لمعالجة البيانات الفارغة بأمان
+const safeParseFloat = (value: any, defaultValue: number = 0): number => {
+  if (!isValidNumericValue(value)) return defaultValue;
+  return parseFloat(value) || defaultValue;
+};
+
 // إعداد Multer لرفع الصور
 const storage_multer = multer.diskStorage({
   destination: async (req, file, cb) => {

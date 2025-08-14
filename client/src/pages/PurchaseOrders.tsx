@@ -13,6 +13,11 @@ import NewPurchaseOrderModal from "@/components/modals/NewPurchaseOrderModal";
 import EditPurchaseOrderModal from "@/components/modals/EditPurchaseOrderModal";
 import EditPOItemsModal from "@/components/modals/EditPOItemsModal";
 
+// دالة مساعدة للتحقق من وجود كمية RFQ صحيحة (معممة لجميع أوامر الشراء)
+const hasValidRfqQuantity = (quantity: string | number | null | undefined): boolean => {
+  return quantity !== null && quantity !== undefined && quantity !== '' && quantity !== '0' && quantity !== 0;
+};
+
 // مكون لعرض عدد البنود
 function POItemsBadge({ poNumber }: { poNumber: string }) {
   const { data: poItems, isLoading } = useQuery({
@@ -75,9 +80,13 @@ function POItemsTable({ poNumber }: { poNumber: string }) {
         </TableHeader>
         <TableBody>
           {poItems.map((item: any, index: number) => {
+            // حساب إجمالي البند: كمية PO × سعر PO
             const quantity = parseFloat(item.poQuantity) || 0;
             const price = parseFloat(item.poPrice) || 0;
             const itemTotal = quantity * price;
+            
+            // استخدام الدالة المساعدة المعممة للتحقق من كمية RFQ
+            const hasRfqQuantity = hasValidRfqQuantity(item.rfqQuantity);
             
             return (
               <TableRow key={index} className="hover:bg-gray-50">
@@ -90,9 +99,11 @@ function POItemsTable({ poNumber }: { poNumber: string }) {
                     {item.description?.length > 50 ? `${item.description.substring(0, 50)}...` : item.description}
                   </div>
                 </TableCell>
-                <TableCell className="text-center font-medium">{item.rfqQuantity}</TableCell>
+                <TableCell className="text-center font-medium">
+                  {hasRfqQuantity ? item.rfqQuantity : '-'}
+                </TableCell>
                 <TableCell className="text-right">
-                  {(parseFloat(item.rfqPrice) || 0).toLocaleString('ar-EG')} ج.م
+                  {hasRfqQuantity ? `${(parseFloat(item.rfqPrice) || 0).toLocaleString('ar-EG')} ج.م` : '-'}
                 </TableCell>
                 <TableCell className="text-center font-medium">{item.poQuantity}</TableCell>
                 <TableCell className="text-right font-bold text-green-600">
@@ -488,8 +499,8 @@ export default function PurchaseOrders() {
     // استخدام البيانات من poItems API الجديد إذا كان متاحاً
     if (poItems && poItems.length > 0 && selectedPO?.poNumber === poNumber) {
       return poItems.reduce((sum: number, item: any) => {
-        // تجاهل البنود التي لا تحتوي على كمية RFQ (فارغة)
-        if (!item.rfqQuantity || item.rfqQuantity === '') {
+        // استخدام الدالة المساعدة المعممة - تجاهل البنود بدون كمية RFQ صحيحة
+        if (!hasValidRfqQuantity(item.rfqQuantity)) {
           return sum;
         }
         const quantity = parseFloat(item.rfqQuantity) || 0;
@@ -501,7 +512,7 @@ export default function PurchaseOrders() {
     // الطريقة القديمة كبديل (fallback)
     const items = getPOItems(poNumber);
     return items.reduce((sum: number, item: any) => {
-      if (!item.rfqQuantity || item.rfqQuantity === '') {
+      if (!hasValidRfqQuantity(item.rfqQuantity)) {
         return sum;
       }
       const quantity = parseFloat(item.rfqQuantity) || 0;
