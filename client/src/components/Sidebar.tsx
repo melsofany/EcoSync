@@ -46,8 +46,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     profileImage: null
   };
   
-  const logout = () => {
-    // Simple logout for Google Sheets system
+  const logout = async () => {
+    try {
+      // Call logout API
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    // Redirect to login page
     window.location.href = '/';
   };
 
@@ -300,7 +309,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Logout */}
           <div 
-            onClick={() => logout.mutate()}
+            onClick={() => logout()}
             className={cn(
               "flex items-center space-x-4 space-x-reverse px-4 py-3 lg:px-5 lg:py-4 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
               "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm"

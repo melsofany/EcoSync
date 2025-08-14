@@ -24,7 +24,7 @@ Data Consistency: SYSTEM FULLY OPERATIONAL (August 14, 2025) - All critical syst
 - **Form Handling**: React Hook Form with Zod validation.
 - **Backend Runtime**: Node.js with Express.js (TypeScript, ES modules).
 - **Database ORM**: Drizzle ORM with PostgreSQL dialect.
-- **Authentication**: Complete Google Sheets-based user management system with Express sessions and bcrypt password hashing. Comprehensive role-based access control (manager, it_admin, data_entry, purchasing, accounting). Successfully migrated from PostgreSQL to Google Sheets for user storage (August 13, 2025). All user data including credentials, permissions, and activity tracking now stored in Google Sheets with full functionality maintained.
+- **Authentication**: Complete Google Sheets-based user management system with Express sessions and bcrypt password hashing. Comprehensive role-based access control (manager, it_admin, data_entry, purchasing, accounting). Successfully migrated from PostgreSQL to Google Sheets for user storage (August 13, 2025). All user data including credentials, permissions, and activity tracking now stored in Google Sheets with full functionality maintained. LOGOUT FUNCTIONALITY FIXED (August 14, 2025): Resolved logout.mutate() error in Sidebar component by converting to proper async function with API call to /api/auth/logout endpoint.
 - **API Design**: RESTful API with centralized error handling and activity logging.
 - **Data Validation**: Zod schemas for type-safe data validation.
 - **Database Migrations**: Drizzle Kit for schema management.
