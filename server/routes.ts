@@ -577,6 +577,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Role-based access control
+  const requireRole = (roles: string[]) => {
+    return (req: Request, res: Response, next: Function) => {
+      if (!req.session.user || !roles.includes(req.session.user.role)) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      next();
+    };
+  };
+
+  // إصلاح البند الناقص في أمر الشراء P25E02726
+  app.post("/api/fix-missing-item/:poId", requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { poId } = req.params;
+      const { itemId } = req.body;
+      
+      console.log(`🔧 إصلاح البند الناقص ${itemId} في أمر الشراء ${poId}`);
+      
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const success = await googleSheets.updatePONumber(itemId, poId);
+      
+      if (success) {
+        res.json({
+          success: true,
+          message: `تم إصلاح البند ${itemId} وإضافته إلى أمر الشراء ${poId}`,
+          itemId,
+          poId
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: `لم يتم العثور على البند ${itemId}`
+        });
+      }
+    } catch (error) {
+      console.error("خطأ في إصلاح البند الناقص:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "خطأ في إصلاح البند الناقص", 
+        error: error.message 
+      });
+    }
+  });
+
   // مسار محسن للحصول على عناصر أمر الشراء من Google Sheets مع بيانات صحيحة
   app.get("/api/sheets/po/:poId/items", async (req: Request, res: Response) => {
     try {
@@ -662,16 +706,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Internal server error", error: error.message });
     }
   });
-
-  // Role-based access control
-  const requireRole = (roles: string[]) => {
-    return (req: Request, res: Response, next: Function) => {
-      if (!req.session.user || !roles.includes(req.session.user.role)) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-      next();
-    };
-  };
 
   // Simple auth for Google Sheets only system
   app.post("/api/auth/login", async (req: Request, res: Response) => {

@@ -84,6 +84,69 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
+  async findItemByPartNumber(partNumber: string): Promise<{row: number, data: any} | null> {
+    try {
+      const rawData = await this.readDataSheet();
+      
+      for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
+        if (row[2] && row[2].toString().includes(partNumber)) { // العمود C - part number
+          return {
+            row: i + 2, // +2 لأن البيانات تبدأ من الصف 2
+            data: {
+              id: row[0] || '',
+              lineItem: row[1] || '',
+              partNumber: row[2] || '',
+              description: row[3] || '',
+              uom: row[4] || '',
+              poNumber: row[10] || '', // العمود K - رقم أمر الشراء
+            }
+          };
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('خطأ في البحث عن البند:', error);
+      return null;
+    }
+  }
+
+  async updatePONumber(itemId: string, poNumber: string): Promise<boolean> {
+    try {
+      const rawData = await this.readDataSheet();
+      console.log(`🔍 البحث عن البند ${itemId} لتحديث PO إلى ${poNumber}`);
+      
+      for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
+        console.log(`فحص الصف ${i + 2}: ${row[0]} مقابل ${itemId}`);
+        
+        if (row[0] === itemId) { // العمود A - معرف البند
+          const rowNumber = i + 2; // +2 لأن البيانات تبدأ من الصف 2
+          console.log(`🎯 تم العثور على البند ${itemId} في الصف ${rowNumber}`);
+          
+          // تحديث العمود K (رقم أمر الشراء) والعمود L (تاريخ أمر الشراء)
+          await this.updateCellValue(`K${rowNumber}`, poNumber); // العمود K
+          await this.updateCellValue(`L${rowNumber}`, new Date().toLocaleDateString('ar-EG')); // العمود L
+          
+          console.log(`✅ تم تحديث البند ${itemId} في الصف ${rowNumber} - PO: ${poNumber}`);
+          
+          // التأكد من التحديث بقراءة البيانات مرة أخرى
+          const verificationData = await this.readDataSheet();
+          const updatedRow = verificationData[i];
+          console.log(`🔍 تأكد من التحديث: العمود K = "${updatedRow[10]}" العمود L = "${updatedRow[11]}"`);
+          
+          return true;
+        }
+      }
+      
+      console.log(`❌ لم يتم العثور على البند ${itemId}`);
+      return false;
+    } catch (error) {
+      console.error('خطأ في تحديث رقم أمر الشراء:', error);
+      return false;
+    }
+  }
+
   async deleteRow(rowNumber: number): Promise<void> {
     try {
       if (!this.sheets) {
