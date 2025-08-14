@@ -1,5 +1,7 @@
 import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
+import * as fs from 'fs';
+import * as path from 'path';
 
 interface QuotationItem {
   description: string;
@@ -34,14 +36,40 @@ export class GoogleSheetsWriter {
       // محاولة تحميل المفتاح من متغير البيئة أو الملف
       let credentials;
       
-      if (process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY) {
-        credentials = JSON.parse(process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY);
-        console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة');
-      } else {
+      // استخدام الملف المحلي مباشرة لتجنب مشاكل تحليل JSON
+      let useLocalFile = true;
+      
+      if (process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY && !useLocalFile) {
+        try {
+          const keyData = process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY.trim();
+          credentials = JSON.parse(keyData);
+          console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة');
+        } catch (parseError) {
+          console.error('❌ خطأ في تحليل مفتاح Google Sheets:', (parseError as Error).message);
+          console.log('🔄 التبديل لاستخدام الملف المحلي...');
+          useLocalFile = true;
+        }
+      }
+      
+      if (useLocalFile) {
         // محاولة تحميل من الملف
-        const credentialsPath = './attached_assets/cortoba-supp-sys-75c0919d127e.json';
-        credentials = require(credentialsPath);
-        console.log('🔑 تم تحميل مفاتيح Google Sheets من الملف');
+        try {
+          const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-75c0919d127e.json');
+          const fileContent = fs.readFileSync(credentialsPath, 'utf8');
+          credentials = JSON.parse(fileContent);
+          
+          // التحقق من وجود المفتاح الخاص
+          if (!credentials.private_key || !credentials.client_email) {
+            throw new Error('ملف المفاتيح غير مكتمل - المفتاح الخاص أو البريد الإلكتروني مفقود');
+          }
+          
+          console.log('🔑 تم تحميل مفاتيح Google Sheets من الملف المحلي');
+          console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
+          console.log(`🔐 طول المفتاح الخاص: ${credentials.private_key.length} حرف`);
+        } catch (fileError) {
+          console.error('❌ خطأ في تحميل ملف مفاتيح Google Sheets:', (fileError as Error).message);
+          throw new Error('فشل في تحميل مفاتيح Google Sheets');
+        }
       }
 
       this.auth = new GoogleAuth({
@@ -49,11 +77,17 @@ export class GoogleSheetsWriter {
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
       });
 
-      this.sheets = google.sheets({ version: 'v4', auth: this.auth });
+      // إضافة خيارات إضافية لحل مشاكل SSL/TLS
+      this.sheets = google.sheets({ 
+        version: 'v4', 
+        auth: this.auth,
+        timeout: 30000 // مهلة زمنية 30 ثانية
+      });
       console.log('✅ تم تهيئة Google Sheets للكتابة');
       return true;
     } catch (error) {
-      console.error('❌ خطأ في تهيئة Google Sheets للكتابة:', (error as Error).message);
+      console.error('❌ خطأ في تهيئة Google Sheets للكتابة:', error);
+      console.error('❌ تفاصيل الخطأ:', (error as Error).stack);
       return false;
     }
   }
@@ -63,6 +97,7 @@ export class GoogleSheetsWriter {
    */
   async findNextEmptyRow(): Promise<number> {
     try {
+      // محاولة مع إعدادات أمان محسنة
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: 'DATA!F:F', // العمود F فقط
