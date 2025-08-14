@@ -364,7 +364,7 @@ export default function QuotationDetail() {
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">اسم العميل</Label>
-              <p className="text-lg font-semibold text-gray-800">{getClientName((quotation as any)?.clientId)}</p>
+              <p className="text-lg font-semibold text-gray-800">{(quotation as any)?.clientName || getClientName((quotation as any)?.clientId) || "غير محدد"}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-gray-600">تاريخ الطلب</Label>
