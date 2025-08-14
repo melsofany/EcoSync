@@ -266,9 +266,9 @@ export default function PurchaseOrders() {
     return 'غير محدد';
   };
 
-  // Get purchase order items from Google Sheets
+  // Get purchase order items from Google Sheets using the corrected API
   const { data: poItems } = useQuery({
-    queryKey: ["/api/sheets/purchase-orders", selectedPO?.poNumber, "items"],
+    queryKey: ["/api/sheets/po", selectedPO?.poNumber, "items"],
     enabled: !!selectedPO?.poNumber,
   });
 
@@ -1018,7 +1018,12 @@ export default function PurchaseOrders() {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">تاريخ الأمر</label>
-                      <p className="font-semibold">{getPODate(selectedPO.poNumber)}</p>
+                      <p className="font-semibold">
+                        {poItems && poItems.length > 0 ? 
+                          (poItems[0].poDate || 'غير محدد') : 
+                          getPODate(selectedPO.poNumber)
+                        }
+                      </p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-600">الحالة</label>
