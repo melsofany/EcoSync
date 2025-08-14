@@ -41,20 +41,20 @@ export default function ItemPricingRequests() {
     endDate: ""
   });
 
-  // Fetch pricing requests for this specific item - use Google Sheets API for Google Sheets items
+  // Fetch pricing requests for this specific item
   const { data: pricingRequests, isLoading } = useQuery({
-    queryKey: [`/api/sheets/items/${itemId}/pricing-requests`],
+    queryKey: [`/api/items/${itemId}/pricing-requests`],
     enabled: !!itemId,
   });
 
   const { data: purchaseOrders, isLoading: isLoadingPO } = useQuery({
-    queryKey: [`/api/sheets/items/${itemId}/purchase-orders`],
+    queryKey: [`/api/items/${itemId}/purchase-orders`],
     enabled: !!itemId,
   });
 
   // Fetch comprehensive item details
   const { data: itemDetails } = useQuery({
-    queryKey: [`/api/sheets/items/${itemId}/comprehensive-data`],
+    queryKey: [`/api/items/${itemId}/comprehensive-data`],
     enabled: !!itemId,
   });
 
@@ -142,21 +142,6 @@ export default function ItemPricingRequests() {
       (!filters.endDate || new Date(request.requestDate) <= new Date(filters.endDate))
     );
   });
-
-  // Calculate totals for RFQ and PO
-  const calculateTotals = () => {
-    const rfqTotal = filteredRequests.reduce((sum: number, req: PricingRequest) => {
-      return sum + (req.totalPrice || (req.quantity * (req.customerPrice || 0)));
-    }, 0);
-
-    const poTotal = (purchaseOrders || []).reduce((sum: number, po: any) => {
-      return sum + (po.totalValue || (po.quantity * po.unitPrice));
-    }, 0);
-
-    return { rfqTotal, poTotal };
-  };
-
-  const { rfqTotal, poTotal } = calculateTotals();
 
   const handleViewQuotation = (quotationNumber: string) => {
     window.open(`/quotations/${quotationNumber}`, '_blank');
@@ -438,49 +423,6 @@ export default function ItemPricingRequests() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Totals Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center space-x-2 space-x-reverse">
-            <DollarSign className="h-5 w-5 text-green-600" />
-            <span>ملخص الإجماليات</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-blue-50 p-4 rounded-lg text-center">
-              <h3 className="text-lg font-bold text-blue-700 mb-2">إجمالي أسعار RFQ</h3>
-              <p className="text-2xl font-bold text-blue-800">
-                {formatCurrency(rfqTotal)}
-              </p>
-              <p className="text-sm text-blue-600 mt-1">
-                من {filteredRequests.length} طلب تسعير
-              </p>
-            </div>
-            
-            <div className="bg-green-50 p-4 rounded-lg text-center">
-              <h3 className="text-lg font-bold text-green-700 mb-2">إجمالي أسعار PO</h3>
-              <p className="text-2xl font-bold text-green-800">
-                {formatCurrency(poTotal)}
-              </p>
-              <p className="text-sm text-green-600 mt-1">
-                من {(purchaseOrders || []).length} أمر شراء
-              </p>
-            </div>
-            
-            <div className="bg-purple-50 p-4 rounded-lg text-center">
-              <h3 className="text-lg font-bold text-purple-700 mb-2">الفرق الإجمالي</h3>
-              <p className={`text-2xl font-bold ${poTotal - rfqTotal >= 0 ? 'text-green-800' : 'text-red-800'}`}>
-                {formatCurrency(Math.abs(poTotal - rfqTotal))}
-              </p>
-              <p className="text-sm text-purple-600 mt-1">
-                {poTotal - rfqTotal >= 0 ? 'ربح' : 'خسارة'}
-              </p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
