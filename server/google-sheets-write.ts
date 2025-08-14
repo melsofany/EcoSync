@@ -317,10 +317,15 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         const item = quotation.items[i];
         const itemId = await this.findOrCreateItemId(item.description, item.partNumber);
         
+        // تولید خودکار LINE ITEM اگر خالی باشد
+        const lineItemValue = item.lineItem && item.lineItem.trim() 
+          ? item.lineItem.trim() 
+          : `${i + 1}`.padStart(4, '0'); // 0001, 0002, etc.
+        
         const row = [
           itemId,                                    // A - Item Number
           item.uom || 'EACH',                       // B - UOM
-          item.lineItem || '',                      // C - LINE ITEM
+          lineItemValue,                            // C - LINE ITEM (تولید خودکار)
           item.partNumber || '',                    // D - PART NO
           item.description,                         // E - DESCRIPTION
           quotation.rfqNumber,                      // F - RFQ NUMBER
