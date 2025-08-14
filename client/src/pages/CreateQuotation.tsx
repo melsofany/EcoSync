@@ -53,7 +53,7 @@ export default function CreateQuotation() {
     lineItem: '',
     uom: 'EACH',
     quantity: 1,
-    unitPrice: 0,
+    unitPrice: 0, // يتم تعيينه لاحقاً في مرحلة التسعير
     notes: ''
   });
 
@@ -61,10 +61,10 @@ export default function CreateQuotation() {
     mutationFn: async (data: NewQuotation) => {
       return await apiRequest('/api/quotations/google-sheets', 'POST', data);
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "✅ تم إنشاء طلب التسعير",
-        description: `تم حفظ الطلب ${data.rfqNumber} بنجاح مع ${data.itemsCount} بند`
+        description: `تم حفظ الطلب ${data.rfqNumber || quotation.rfqNumber} بنجاح مع ${quotation.items.length} بند`
       });
       
       queryClient.invalidateQueries({ queryKey: ['/api/quotations'] });
@@ -115,7 +115,7 @@ export default function CreateQuotation() {
       lineItem: '',
       uom: 'EACH',
       quantity: 1,
-      unitPrice: 0,
+      unitPrice: 0, // يتم تعيينه لاحقاً في مرحلة التسعير
       notes: ''
     });
 
@@ -170,7 +170,7 @@ export default function CreateQuotation() {
   };
 
   const totalItems = quotation.items.length;
-  const totalValue = quotation.items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+  const totalValue = 0; // سيتم التسعير لاحقاً في مرحلة تسعير الموردين
 
   return (
     <div className="container mx-auto p-6 space-y-6" dir="rtl">
@@ -336,20 +336,6 @@ export default function CreateQuotation() {
             </div>
 
             <div>
-              <Label htmlFor="unitPrice">السعر الوحدة</Label>
-              <Input
-                id="unitPrice"
-                type="number"
-                min="0"
-                step="0.01"
-                value={currentItem.unitPrice}
-                onChange={(e) => setCurrentItem(prev => ({ ...prev, unitPrice: parseFloat(e.target.value) || 0 }))}
-                placeholder="0.00"
-                className="mt-1"
-              />
-            </div>
-
-            <div>
               <Label htmlFor="notes">ملاحظات</Label>
               <Input
                 id="notes"
@@ -394,8 +380,6 @@ export default function CreateQuotation() {
                   <TableHead>LINE ITEM</TableHead>
                   <TableHead>الوحدة</TableHead>
                   <TableHead>الكمية</TableHead>
-                  <TableHead>السعر</TableHead>
-                  <TableHead>الإجمالي</TableHead>
                   <TableHead>إجراءات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -424,20 +408,6 @@ export default function CreateQuotation() {
                     <TableCell className="text-center font-medium">
                       {item.quantity}
                     </TableCell>
-                    <TableCell className="text-left" dir="ltr">
-                      {item.unitPrice.toLocaleString('en-US', { 
-                        style: 'currency', 
-                        currency: 'EGP',
-                        minimumFractionDigits: 2
-                      })}
-                    </TableCell>
-                    <TableCell className="text-left font-medium" dir="ltr">
-                      {(item.quantity * item.unitPrice).toLocaleString('en-US', { 
-                        style: 'currency', 
-                        currency: 'EGP',
-                        minimumFractionDigits: 2
-                      })}
-                    </TableCell>
                     <TableCell>
                       <Button
                         variant="destructive"
@@ -452,18 +422,9 @@ export default function CreateQuotation() {
               </TableBody>
             </Table>
 
-            <div className="mt-4 p-4 bg-gray-50 rounded-md">
-              <div className="flex justify-between items-center">
-                <div className="text-lg font-semibold text-gray-800">
-                  إجمالي القيمة المقدرة:
-                </div>
-                <div className="text-xl font-bold text-green-600" dir="ltr">
-                  {totalValue.toLocaleString('en-US', { 
-                    style: 'currency', 
-                    currency: 'EGP',
-                    minimumFractionDigits: 2
-                  })}
-                </div>
+            <div className="mt-4 p-4 bg-blue-50 rounded-md">
+              <div className="text-center text-blue-700">
+                <p className="text-sm">💡 سيتم إضافة الأسعار لاحقاً في مرحلة تسعير الموردين</p>
               </div>
             </div>
           </CardContent>
