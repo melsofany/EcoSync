@@ -632,7 +632,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           partNumber: item.description || 'غير محدد', // العمود D 
           description: (item.uom && item.uom.trim()) || (item.description && item.description.trim()) || item.partNumber || 'غير محدد', // استخدام UOM كوصف أو part number
           rfqNumber: item.rfqNumber || 'غير محدد',
-          rfqQuantity: String(item.quantity || 1),
+          rfqQuantity: String(item.rfqQuantity || 1), // من العمود H
           rfqPrice: String(item.rfqPrice || 0),
           poNumber: item.poNumber || 'غير محدد', // رقم PO
           poDate: item.poDate || 'غير محدد', // تاريخ PO
@@ -807,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             uom: row[4] || '',
             rfqNumber: row[5] || '',
             rfqDate: row[6] || '',
-            rfqQuantity: row[7] || '',
+            rfqQuantity: row[7] || '', // العمود H - كمية RFQ
             rfqPrice: row[8] || '',
             responseDate: row[9] || '',
             poNumber: row[10] || '', // العمود K - رقم أمر الشراء
@@ -850,7 +850,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           partNumber: item.description || 'غير محدد', // العمود D
           description: item.uom || item.description || 'غير محدد',
           rfqNumber: item.rfqNumber || 'غير محدد',
-          rfqQuantity: String(item.quantity || 1),
+          rfqQuantity: String(item.rfqQuantity || 1), // من العمود H
           rfqPrice: String(item.rfqPrice || 0),
           poNumber: item.poNumber || 'غير محدد',
           poDate: item.poDate || 'غير محدد',
