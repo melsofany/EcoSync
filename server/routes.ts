@@ -3679,22 +3679,38 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         
         if (quotation && quotation.items) {
           console.log(`✅ تم العثور على ${quotation.items.length} بند في Google Sheets`);
-          items = quotation.items.map((item: any) => ({
-            id: `item-${item.id || Math.random()}`,
-            quotationId: quotationId,
-            itemId: item.id,
-            quantity: item.rfqQuantity || 1,
-            unitPrice: parseFloat(item.rfqPrice?.toString().replace(/[^\d.-]/g, '') || '0'),
-            totalPrice: parseFloat(item.totalValue?.toString().replace(/[^\d.-]/g, '') || '0'),
-            notes: item.notes || '',
-            item: {
-              id: item.id,
+          
+          items = quotation.items.map((item: any, index: number) => {
+            console.log(`📋 معالجة البند ${index + 1}:`, {
               itemNumber: item.itemNumber,
-              description: item.description,
+              lineItem: item.lineItem,
               partNumber: item.partNumber,
-              category: item.category || 'عام'
-            }
-          }));
+              description: item.description,
+              quantity: item.quantity,
+              price: item.price
+            });
+            
+            return {
+              id: `item-${item.itemNumber || Math.random()}`,
+              quotationId: quotationId,
+              itemId: item.itemNumber || `item-${Math.random()}`,
+              quantity: parseFloat(item.quantity?.toString().replace(/[^\d.-]/g, '') || '1'),
+              unitPrice: parseFloat(item.price?.toString().replace(/[^\d.-]/g, '') || '0'),
+              totalPrice: parseFloat(item.totalValue?.toString().replace(/[^\d.-]/g, '') || '0'),
+              notes: item.notes || '-',
+              item: {
+                id: item.itemNumber || `item-${Math.random()}`,
+                itemNumber: item.itemNumber || 'غير محدد',
+                lineItem: item.lineItem || 'غير محدد', 
+                description: item.description || 'غير محدد',
+                partNumber: item.partNumber || 'غير محدد',
+                category: item.category || 'عام',
+                uom: 'EACH'
+              }
+            };
+          });
+          
+          console.log(`📋 تم تحويل ${items.length} بند للتنسيق المطلوب`);
           return res.json(items);
         }
       } catch (sheetsError: any) {
