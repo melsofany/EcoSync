@@ -825,41 +825,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`🔍 تم العثور على ${matchingItems.length} بند لأمر الشراء ${cleanPOId}`);
       
-      // إصلاح: فحص البند الأول بشكل مباشر حيث يدعي /api/check-left-bracket وجود البند
-      if (cleanPOId === 'P25E02726' && rawData.length > 0) {
-        const firstRow = rawData[0]; // البند الأول (index 0)
-        console.log(`🔍 فحص مباشر للبند الأول:`, {
-          itemId: firstRow[0],
-          partNumber: firstRow[2], 
-          poNumberK: firstRow[10],
-          poDateL: firstRow[11],
-          fullRow: firstRow.slice(0, 15)
-        });
-        
-        // إذا كان البند الأول مرتبط بالأمر، أضفه
-        if (firstRow[0] === 'P-0000001' && (firstRow[10] === 'P25E02726' || firstRow[11] === 'P25E02726')) {
-          const item = {
-            id: firstRow[0],
-            lineItem: firstRow[1],
-            partNumber: firstRow[2],  
-            description: firstRow[3],
-            uom: firstRow[4],
-            rfqNumber: firstRow[5],
-            rfqDate: firstRow[6],
-            rfqQuantity: firstRow[7],
-            rfqPrice: firstRow[8],
-            responseDate: firstRow[9],
-            poNumber: firstRow[10],
-            poDate: firstRow[11],
-            poQuantity: firstRow[12],
-            poPrice: firstRow[13],
-            totalPOValue: firstRow[14]
-          };
-          
-          matchingItems.unshift(item);
-          console.log('✅ تم إضافة البند الأول بنجاح');
-        }
-      }
+      console.log(`🔍 تم العثور على ${matchingItems.length} بند نهائياً لأمر الشراء ${cleanPOId}`);
       
       console.log(`Enhanced search found ${matchingItems.length} items for PO ${poId}`);
       
@@ -5107,7 +5073,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const uniquePOs = new Set();
       const uniqueConfirmedPOs = new Set(); // للقيم الفريدة في العمود K
       
-      for (const row of rows) {
+      for (const row of rawData) {
         if (row[5]) uniqueRFQs.add(row[5]); // العمود F - RFQ NUMBER
         if (row[9]) uniquePOs.add(row[9]); // العمود J - PO NUMBER
         
@@ -5115,7 +5081,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         if (row[10] && row[10].toString().trim()) {
           const kValue = row[10].toString().trim();
           uniqueConfirmedPOs.add(kValue);
-          console.log(`📅 العمود K الصف ${rows.indexOf(row) + 2}: ${kValue}`);
+          console.log(`📅 العمود K الصف ${rawData.indexOf(row) + 2}: ${kValue}`);
         }
       }
 
@@ -5123,7 +5089,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const uniquePOArray = Array.from(uniqueConfirmedPOs);
       const purchaseOrdersData = uniquePOArray.map(poNumber => {
         // البحث عن جميع السجلات المطابقة لهذا الرقم
-        const matchingRows = rows.filter(row => row[10] && row[10].toString().trim() === poNumber);
+        const matchingRows = rawData.filter(row => row[10] && row[10].toString().trim() === poNumber);
         const firstRecord = matchingRows[0];
         
         // جمع جميع أرقام طلبات التسعير الفريدة من العمود F
@@ -5163,8 +5129,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       });
 
       const stats = {
-        totalRows: rows.length,
-        totalItems: rows.length,
+        totalRows: rawData.length,
+        totalItems: rawData.length,
         totalQuotations: uniqueRFQs.size,
         totalPurchaseOrders: uniquePOs.size,
         confirmedPOs: uniqueConfirmedPOs.size, // استخدام القيم الفريدة
