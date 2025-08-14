@@ -351,6 +351,14 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       console.log(`✅ تم إدراج ${rows.length} بند في Google Sheets`);
       console.log(`📊 طلب التسعير: ${quotation.rfqNumber} | العميل: ${quotation.clientName}`);
       
+      // Send Telegram notification for new quotation
+      try {
+        const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
+        await telegramBotGoogleSheets.sendNewQuotationAnalysis(quotation);
+      } catch (telegramError) {
+        console.error('📱 [TELEGRAM BOT] Failed to send notification:', telegramError);
+      }
+      
       return true;
     } catch (error) {
       console.error('❌ خطأ في إدراج طلب التسعير:', (error as Error).message);

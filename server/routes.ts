@@ -5479,5 +5479,67 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Telegram Bot Management Routes
+  app.get('/api/telegram-bot/status', requireAuth, async (req, res) => {
+    try {
+      const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
+      const authorizedUsers = telegramBotGoogleSheets.getAuthorizedUsers();
+      
+      res.json({
+        status: 'active',
+        botName: '@Req_item_bot',
+        authorizedUsers: authorizedUsers.count,
+        deepSeekConfigured: !!process.env.DEEPSEEK_API_KEY
+      });
+    } catch (error) {
+      console.error('Error getting bot status:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.post('/api/telegram-bot/add-user', requireAuth, async (req, res) => {
+    try {
+      const { telegramUserId } = req.body;
+      
+      if (!telegramUserId) {
+        return res.status(400).json({ error: 'معرف التليجرام مطلوب' });
+      }
+      
+      const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
+      const result = telegramBotGoogleSheets.addExternalUser(telegramUserId);
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error adding user:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.delete('/api/telegram-bot/remove-user/:userId', requireAuth, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
+      const result = telegramBotGoogleSheets.removeExternalUser(userId);
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error removing user:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.get('/api/telegram-bot/users', requireAuth, async (req, res) => {
+    try {
+      const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
+      const users = telegramBotGoogleSheets.getAuthorizedUsers();
+      
+      res.json(users);
+    } catch (error) {
+      console.error('Error getting users:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   return httpServer;
 }

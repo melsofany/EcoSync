@@ -55,7 +55,7 @@ Data Consistency: SYSTEM FULLY OPERATIONAL (August 14, 2025) - All critical syst
 
 ### AI Services
 - **DeepSeek API**: Used for AI-powered item analysis and duplicate detection.
-- **Telegram Bot Integration**: Fully operational @Req_item_bot with comprehensive analysis notifications and advanced image search system, supporting sales representatives with item analysis for quotations.
+- **Telegram Bot Integration**: Fully operational @Req_item_bot with comprehensive analysis notifications and advanced image search system, supporting sales representatives with item analysis for quotations. UPDATED FOR GOOGLE SHEETS INTEGRATION (August 14, 2025): Bot completely migrated from PostgreSQL to Google Sheets integration with automatic notifications for new quotations, AI-powered analysis using DeepSeek API, and comprehensive command system (/latest, /analyze, /stats, /help).
 
 ### Development & Build Tools
 - **Vite**: Frontend development and build tool.

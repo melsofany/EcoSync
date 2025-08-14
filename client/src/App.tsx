@@ -78,7 +78,7 @@ function Router() {
         <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
         <Route path="/reports" component={Reports} />
         <Route path="/admin" component={GeneralAdmin} />
-        <Route path="/telegram-bot" component={TelegramBot} />
+        <Route path="/telegram-bot" component={() => import('./pages/TelegramBotManagement').then(m => ({ default: m.TelegramBotManagement }))} />
         <Route path="/data-recovery" component={DataRecoveryPage} />
         <Route path="/database-storage" component={DatabaseStoragePage} />
         <Route path="/voice-control" component={VoiceControlPage} />
