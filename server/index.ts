@@ -1,10 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import "./telegram-bot"; // Initialize Telegram bot
-import GoogleSheetsSync from "./google-sheets-sync";
-import { realTimeSync } from "./real-time-google-sheets-sync";
 import { storage } from "./storage";
-import { setupRealTimeSync } from "./sync-with-sheets";
 
 // إعلان النوع العالمي للنظام الفارغ
 declare global {

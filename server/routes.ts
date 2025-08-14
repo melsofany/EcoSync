@@ -262,9 +262,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // قراءة البيانات مباشرة من Google Sheets للحصول على أحدث البيانات
       let sheetsData = null;
       try {
-        // إجبار استخدام البيانات الصحيحة مؤقتاً
-        console.log('🔄 استخدام البيانات الصحيحة المحدثة...');
-        throw new Error('Force use of corrected data');
+        console.log('🔄 قراءة البيانات مباشرة من Google Sheets...');
+        const { GoogleSheetsRealtimeData } = await import('./google-sheets-realtime-data.js');
+        const googleSheets = new GoogleSheetsRealtimeData();
+        const rawData = await googleSheets.readDataSheet();
+        
+        console.log(`📊 تم تحميل ${rawData.length} صف من Google Sheets`);
+        
+        if (rawData.length === 0) {
+          throw new Error('No data in Google Sheets');
+        }
         
         // تحويل البيانات الخام إلى تنسيق مناسب
         const items = [];
@@ -308,16 +315,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
       } catch (error) {
-        console.log('⚠️ تعذر تحميل البيانات من Google Sheets، استخدام البيانات المحفوظة');
-        try {
-          const fs = await import('fs');
-          const dataString = fs.readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8');
-          sheetsData = JSON.parse(dataString);
-          console.log('✅ تم تحميل البيانات من synced_data_from_sheets.json');
-        } catch (error2) {
-          console.error('❌ فشل في تحميل البيانات:', error2.message);
-          return res.status(404).json({ message: "No Google Sheets data available" });
-        }
+        console.error('❌ فشل في تحميل البيانات من Google Sheets:', error.message);
+        return res.status(500).json({ message: "Error loading data from Google Sheets", error: error.message });
       }
       
       if (!sheetsData || !sheetsData.items) {
@@ -379,7 +378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       function findPOQuantityFromColumnM(itemId: string, poId: string, items: any[]): number | null {
         // البحث عن السجل المطابق تماماً لمعرف البند ورقم أمر الشراء
         const exactMatch = items.find((item: any) => 
-          item.id === itemId && String(item.poDate || '').trim() === poId
+          item.id === itemId && String(item.poNumber || '').trim() === poId
         );
         
         if (exactMatch && exactMatch.poQuantity !== undefined && exactMatch.poQuantity !== null) {
@@ -395,7 +394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // دالة مساعدة للبحث عن سعر PO من العمود N
       function findPOPriceFromColumnN(itemId: string, poId: string, items: any[]): number | null {
         const exactMatch = items.find((item: any) => 
-          item.id === itemId && String(item.poDate || '').trim() === poId
+          item.id === itemId && String(item.poNumber || '').trim() === poId
         );
         
         if (exactMatch && exactMatch.poPrice !== undefined && exactMatch.poPrice !== null) {
@@ -405,12 +404,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return null;
       }
       
-      // البحث المبسط - رقم أمر الشراء موجود في poDate
+      // البحث المبسط - رقم أمر الشراء موجود في poNumber
       const matchingItems = sheetsData.items.filter((item: any) => {
-        return String(item.poDate || '').trim() === cleanPOId;
+        return String(item.poNumber || '').trim() === cleanPOId;
       });
       
       console.log(`Found ${matchingItems.length} items for PO ${poId}`);
+      
+      // تشخيص إضافي: طباعة أول 5 عناصر مع فحص poNumber
+      const debugSample = sheetsData.items.slice(0, 5).map((item: any, index: number) => ({
+        index,
+        id: item.id,
+        poNumber: item.poNumber,
+        poNumberType: typeof item.poNumber,
+        poNumberTrimmed: String(item.poNumber || '').trim(),
+        cleanPOId: cleanPOId,
+        matches: String(item.poNumber || '').trim() === cleanPOId
+      }));
+      console.log('🔍 Debug sample for PO matching:', debugSample);
       
       // طباعة أول مطابقة للتشخيص مع البيانات الصحيحة
       if (matchingItems.length > 0) {
@@ -4388,10 +4399,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
       console.log('🔄 بدء مزامنة البيانات المصححة إلى Google Sheets...');
       
-      // استيراد وتشغيل دالة المزامنة مباشرة
-      const { syncSavedDataToSheets } = await import('./sync-saved-data-to-sheets');
-      
-      const result = await syncSavedDataToSheets();
+      // تم تعطيل المزامنة - النظام يقرأ مباشرة من Google Sheets
+      const result = { success: true, message: "النظام يقرأ مباشرة من Google Sheets" };
       
       if (result.success) {
         console.log('✅ اكتملت مزامنة التواريخ المصححة');
@@ -4625,15 +4634,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // تضمين routes المزامنة
-  const syncRouter = await import('./routes/sync');
-  app.use('/api', syncRouter.default);
+  // تم تعطيل routes المزامنة - النظام يقرأ مباشرة من Google Sheets
 
   // مزامنة النظام مع Google Sheets
   app.post('/api/sync/with-sheets', requireAuth, async (req, res) => {
     try {
-      const { syncWithSheets } = await import('./sync-with-sheets');
-      const result = await syncWithSheets();
+      // تم تعطيل المزامنة - النظام يقرأ مباشرة من Google Sheets
+      const result = { success: true, message: "النظام يقرأ مباشرة من Google Sheets" };
       
       res.json(result);
     } catch (error) {
