@@ -5,7 +5,7 @@ A comprehensive web application for قرطبة للتوريدات (Qurtoba Suppl
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
-Data source: Google Sheets ONLY - no database storage, all data must come from Google Sheets exclusively.
+Data source: Google Sheets ONLY - no database storage, all data must come from Google Sheets exclusively. Excel files completely removed and no longer used as data source (August 14, 2025).
 UI Preferences: No unification buttons in main Items page - all unification operations should be separate/programmatic.
 Authentication: Successfully converted to Google Sheets-based user management system (August 13, 2025) - user authentication, creation, and management now fully operational using Google Sheets instead of PostgreSQL database. Default admin credentials: admin/admin123. System includes comprehensive error handling and user guidance for authentication issues.
 

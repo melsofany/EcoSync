@@ -13,7 +13,7 @@ import MemoryStore from "memorystore";
 import { randomBytes } from "crypto";
 import path from "path";
 import multer from "multer";
-import { promises as fs } from "fs";
+import { promises as fs, readFileSync, writeFileSync } from "fs";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 import { GoogleSheetsRealtimeData } from "./google-sheets-realtime-data";
@@ -583,10 +583,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { poId } = req.params;
       console.log('🔍 Enhanced API call for Google Sheets PO items:', poId);
       
-      // تحميل البيانات من الملف المزامن
-      const sheetsData = JSON.parse(
-        fs.readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8')
-      );
+      // قراءة البيانات من Google Sheets مباشرة
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const rawData = await googleSheets.readDataSheet();
+      
+      if (rawData.length === 0) {
+        throw new Error('لا توجد بيانات في Google Sheets');
+      }
+      
+      // تحويل البيانات الخام إلى تنسيق منظم
+      const sheetsData = {
+        items: rawData.map((row: any[], index: number) => ({
+          id: row[0] || `P-${String(index + 1).padStart(7, '0')}`, // العمود A - معرف البند
+          lineItem: row[1] || '', // العمود B - LINE ITEM
+          partNumber: row[2] || '', // العمود C - PART NO  
+          description: row[3] || '', // العمود D - الوصف
+          uom: row[4] || '', // العمود E - وحدة القياس
+          rfqNumber: row[5] || '', // العمود F - رقم طلب التسعير
+          rfqDate: row[6] || '', // العمود G - تاريخ طلب التسعير
+          rfqQuantity: row[7] || '', // العمود H - كمية طلب التسعير
+          rfqPrice: row[8] || '', // العمود I - سعر طلب التسعير
+          responseDate: row[9] || '', // العمود J - تاريخ الاستجابة
+          poNumber: row[10] || '', // العمود K - رقم أمر الشراء
+          poDate: row[11] || '', // العمود L - تاريخ أمر الشراء
+          poQuantity: row[12] || '', // العمود M - كمية أمر الشراء
+          poPrice: row[13] || '', // العمود N - سعر أمر الشراء
+          totalPOValue: row[14] || '' // العمود O - إجمالي قيمة أمر الشراء
+        }))
+      };
       
       const cleanPOId = poId.trim();
       console.log(`Enhanced search for PO: ${cleanPOId}`);
