@@ -481,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           poNumber: item.poNumber
         })));
 
-        // البحث عن بند محدد لـ LEFT BRACKET (7506) والتحقق من سبب عدم الربط
+        // البحث عن بند محدد لـ LEFT BRACKET (7506) 
         const leftBracketCandidate = sheetsData.items.find((item: any) => 
           String(item.partNumber || '').includes('7506') && 
           (String(item.description || '').includes('LEFT') || 
@@ -489,20 +489,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         
         if (leftBracketCandidate) {
-          console.log(`🚨 عثرت على LEFT BRACKET بدون ربط:`, {
+          console.log(`✅ وُجد البند LEFT BRACKET في Google Sheets:`, {
             id: leftBracketCandidate.id,
             partNumber: leftBracketCandidate.partNumber,
-            description: leftBracketCandidate.description,
             uom: leftBracketCandidate.uom,
-            poNumber: leftBracketCandidate.poNumber,
-            'poNumber isEmpty': !leftBracketCandidate.poNumber
+            poNumber: leftBracketCandidate.poNumber || 'فارغ'
           });
-          
-          // إضافة البند مؤقتاً للنتائج إذا كان من المفترض أن يكون في P25E02726
-          console.log(`⚠️ سيتم إضافة البند LEFT BRACKET لأمر P25E02726 مؤقتاً`);
         } else {
-          console.log(`❌ لم يتم العثور على بند LEFT BRACKET في البيانات`);
-          console.log(`🔧 سيتم إضافة البند المفقود يدوياً...`);
+          console.log(`❌ لم يتم العثور على بند LEFT BRACKET في Google Sheets`);
         }
       }
       
