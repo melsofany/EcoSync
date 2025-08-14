@@ -251,6 +251,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
+  // فحص البند LEFT BRACKET والبنود المرتبطة بأمر الشراء P25E02726
+  app.get("/api/check-left-bracket", async (req: Request, res: Response) => {
+    try {
+      console.log('🔍 فحص البند LEFT BRACKET...');
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const rawData = await googleSheets.readDataSheet();
+      
+      // البحث عن P-0000001
+      let leftBracketItem = null;
+      let leftBracketRow = -1;
+      
+      for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
+        if (row[0] === 'P-0000001') {
+          leftBracketItem = row;
+          leftBracketRow = i + 2;
+          console.log(`✅ وُجد البند LEFT BRACKET في الصف ${leftBracketRow}:`, {
+            id: row[0],
+            partNumber: row[2],
+            description: row[3],
+            poNumberK: row[10],
+            poDateL: row[11]
+          });
+          break;
+        }
+      }
+      
+      // البحث عن جميع البنود المرتبطة بـ P25E02726
+      const p25e02726Items = [];
+      
+      for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
+        const hasP25E02726 = row[10] === 'P25E02726' || row[11] === 'P25E02726';
+        
+        if (hasP25E02726) {
+          p25e02726Items.push({
+            rowInSheet: i + 2,
+            id: row[0],
+            partNumber: row[2],
+            description: row[3],
+            poNumberK: row[10],
+            poDateL: row[11]
+          });
+          console.log(`📋 بند في P25E02726 - الصف ${i + 2}: ${row[0]} - ${row[2]}`);
+        }
+      }
+      
+      res.json({
+        leftBracketFound: !!leftBracketItem,
+        leftBracketRow,
+        leftBracketData: leftBracketItem ? {
+          id: leftBracketItem[0],
+          partNumber: leftBracketItem[2],
+          description: leftBracketItem[3],
+          poNumberK: leftBracketItem[10],
+          poDateL: leftBracketItem[11]
+        } : null,
+        p25e02726ItemsCount: p25e02726Items.length,
+        p25e02726Items
+      });
+    } catch (error) {
+      console.error('خطأ في فحص LEFT BRACKET:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Google Sheets Purchase Order Items endpoint (simplified and fixed)
   app.get("/api/sheets/purchase-orders/:id/items", async (req: Request, res: Response) => {
     try {
@@ -621,6 +687,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // فحص جميع البنود المرتبطة بأمر شراء محدد مع البحث المحسن (بدون مصادقة للتطوير)
+  app.get("/api/debug/po/:poId/all-items", async (req: Request, res: Response) => {
+    try {
+      const { poId } = req.params;
+      console.log(`🔍 فحص شامل لجميع البنود في أمر الشراء: ${poId}`);
+      
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const rawData = await googleSheets.readDataSheet();
+      
+      // البحث في جميع العمود K و L عن أمر الشراء
+      const allMatches = rawData.map((row, index) => ({
+        rowNumber: index + 2,
+        id: row[0] || '',
+        partNumber: row[2] || '',
+        description: row[3] || '',
+        poNumberK: row[10] || '', // العمود K
+        poDateL: row[11] || '', // العمود L
+        matches: [
+          row[10] === poId,  // العمود K
+          row[11] === poId,  // العمود L
+          String(row[10] || '').includes(poId),
+          String(row[11] || '').includes(poId)
+        ]
+      })).filter(item => 
+        item.matches.some(match => match) || 
+        item.id === 'P-0000001' // تأكد من إدراج LEFT BRACKET
+      );
+      
+      console.log(`🎯 وُجد ${allMatches.length} بند محتمل لأمر الشراء ${poId}`);
+      
+      res.json({
+        poId,
+        totalFound: allMatches.length,
+        items: allMatches
+      });
+    } catch (error) {
+      console.error("خطأ في فحص البنود:", error);
+      res.status(500).json({ message: "خطأ في فحص البنود", error: error.message });
+    }
+  });
+
   // مسار محسن للحصول على عناصر أمر الشراء من Google Sheets مع بيانات صحيحة
   app.get("/api/sheets/po/:poId/items", async (req: Request, res: Response) => {
     try {
@@ -659,11 +766,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cleanPOId = poId.trim();
       console.log(`Enhanced search for PO: ${cleanPOId}`);
       
-      // البحث المحسن - رقم أمر الشراء موجود في poDate!
-      const matchingItems = sheetsData.items.filter((item: any) => {
-        const poDateMatch = String(item.poDate || '').trim() === cleanPOId;
-        const poNumberMatch = String(item.poNumber || '').includes(cleanPOId);
-        return poDateMatch || poNumberMatch;
+      // إصلاح: حسب الفحص، P-0000001 موجود في العمود K مع P25E02726
+      // المشكلة أن النظام يبحث في المتغيرات الخطأ - العمود K هو poNumber وليس poDate
+      const matchingItems = sheetsData.items.filter((item: any, index: number) => {
+        // تجنب العناوين في الصف الأول
+        if (index === 0) return false;
+        
+        // إصلاح: العمود K هو poNumber والعمود L هو poDate
+        const poNumberMatch = String(item.poNumber || '').trim() === cleanPOId; // العمود K - رقم أمر الشراء
+        const poDateMatch = String(item.poDate || '').trim() === cleanPOId;     // العمود L - تاريخ أمر الشراء
+        
+        const match = poNumberMatch || poDateMatch;
+        
+        if (match) {
+          console.log(`🔍 وُجد بند مطابق في الصف ${index + 2}: ${item.id} - K:"${item.poNumber}" L:"${item.poDate}"`);
+        }
+        
+        // طباعة خاصة للبند P-0000001 حتى لو لم يكن مطابق
+        if (item.id === 'P-0000001') {
+          console.log(`🔎 فحص P-0000001 خاص: K:"${item.poNumber}" L:"${item.poDate}" البحث عن:"${cleanPOId}" مطابق:${match}`);
+        }
+        
+        return match;
       });
       
       console.log(`Enhanced search found ${matchingItems.length} items for PO ${poId}`);
