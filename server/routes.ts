@@ -1046,80 +1046,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // إنشاء ورقة المستخدمين في Google Sheets
-  app.post("/api/users/create-sheet", async (req: Request, res: Response) => {
-    try {
-      console.log('🔧 طلب إنشاء ورقة المستخدمين...');
-      
-      const result = await userSheetsManager.createUserSheet();
-      
-      if (result) {
-        console.log('✅ تم إنشاء ورقة المستخدمين بنجاح');
-        res.json({
-          success: true,
-          message: "تم إنشاء ورقة المستخدمين بنجاح مع مستخدم المدير الافتراضي"
-        });
-      } else {
-        console.error('❌ فشل في إنشاء ورقة المستخدمين');
-        res.status(500).json({
-          success: false,
-          message: "فشل في إنشاء ورقة المستخدمين"
-        });
-      }
-    } catch (error) {
-      console.error('❌ خطأ في إنشاء ورقة المستخدمين:', error);
-      res.status(500).json({
-        success: false,
-        message: "خطأ داخلي في الخادم"
-      });
-    }
-  });
+  // تم إزالة نظام إنشاء ورقة المستخدمين حسب طلب المستخدم (14 أغسطس 2025)
 
-  // إضافة مستخدم جديد
-  app.post("/api/users/create", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
-    try {
-      const { username, password, fullName, email, phone, role, permissions } = req.body;
-      
-      if (!username || !password || !fullName || !role) {
-        return res.status(400).json({
-          success: false,
-          message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
-        });
-      }
-
-      console.log(`👤 إنشاء مستخدم جديد: ${username}`);
-      
-      const newUser = await userSheetsManager.createUser({
-        username,
-        password,
-        fullName,
-        email,
-        phone,
-        role,
-        permissions
-      });
-      
-      if (newUser) {
-        console.log(`✅ تم إنشاء المستخدم: ${newUser.username}`);
-        const { password: _, ...userWithoutPassword } = newUser;
-        res.json({
-          success: true,
-          message: `تم إنشاء المستخدم ${newUser.username} بنجاح`,
-          user: userWithoutPassword
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          message: "فشل في إنشاء المستخدم"
-        });
-      }
-    } catch (error: any) {
-      console.error('❌ خطأ في إنشاء المستخدم:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "خطأ داخلي في الخادم"
-      });
-    }
-  });
+  // تم إزالة نظام إنشاء المستخدمين حسب طلب المستخدم (14 أغسطس 2025)
 
   // رفع صورة المستخدم
   app.post("/api/upload/profile-image", requireAuth, upload.single('image'), async (req: Request, res: Response) => {

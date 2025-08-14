@@ -133,12 +133,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: Shield,
       section: "admin",
     },
-    {
-      title: "إدارة المستخدمين",
-      href: "/user-management",
-      icon: Users,
-      section: "admin",
-    },
+
     {
       title: "استيراد البيانات",
       href: "/import",
