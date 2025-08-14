@@ -188,14 +188,6 @@ export default function Quotations() {
             <Plus className="h-4 w-4" />
             <span>إنشاء طلب تسعير</span>
           </Button>
-          <Button onClick={() => setIsNewQuotationModalOpen(true)} variant="outline">
-            <Plus className="h-4 w-4 ml-2" />
-            طلب بسيط
-          </Button>
-          <Button onClick={() => setIsEnhancedQuotationModalOpen(true)} variant="outline">
-            <Plus className="h-4 w-4 ml-2" />
-            طلب تسعير متكامل
-          </Button>
         </div>
       </div>
 
