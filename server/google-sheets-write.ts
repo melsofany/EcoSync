@@ -326,8 +326,9 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
           quotation.rfqNumber,                      // F - RFQ NUMBER
           quotation.requestDate,                    // G - REQUEST DATE
           item.quantity.toString(),                 // H - QUANTITY
-          '', '', '',                               // I, J, K - فارغة
-          quotation.expiryDate || '',               // L - EXPIRY DATE
+          '',                                       // I - فارغ
+          quotation.expiryDate || '',               // J - EXPIRY DATE (تاريخ انتهاء العرض)
+          '', '',                                   // K, L - فارغة
           '', '', '', '',                           // M, N, O, P - فارغة
           quotation.clientName,                     // Q - CLIENT NAME
           quotation.responsibleEmployee || ''       // R - RESPONSIBLE EMPLOYEE
