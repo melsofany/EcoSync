@@ -184,11 +184,15 @@ export default function Quotations() {
           <p className="text-gray-600">إضافة وإدارة طلبات التسعير الواردة</p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={() => setLocation('/quotations/create')} className="flex items-center space-x-2 space-x-reverse">
+            <Plus className="h-4 w-4" />
+            <span>إنشاء طلب تسعير</span>
+          </Button>
           <Button onClick={() => setIsNewQuotationModalOpen(true)} variant="outline">
             <Plus className="h-4 w-4 ml-2" />
             طلب بسيط
           </Button>
-          <Button onClick={() => setIsEnhancedQuotationModalOpen(true)}>
+          <Button onClick={() => setIsEnhancedQuotationModalOpen(true)} variant="outline">
             <Plus className="h-4 w-4 ml-2" />
             طلب تسعير متكامل
           </Button>
