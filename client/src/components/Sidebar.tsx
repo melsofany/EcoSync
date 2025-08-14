@@ -157,12 +157,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: Bot,
       section: "admin",
     },
-    {
-      title: "مستخدمو التليجرام",
-      href: "/telegram-users",
-      icon: Users,
-      section: "admin",
-    },
+
     {
       title: "مراقب التوحيد الذكي",
       href: "/unification-monitor",

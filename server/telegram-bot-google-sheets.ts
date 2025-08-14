@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { realTimeDataManager } from './google-sheets-realtime-data';
-import { telegramUsersSheetsManager } from './telegram-users-sheets-manager';
+// إزالة نظام إدارة مستخدمي التليجرام حسب طلب المستخدم
 
 // Configuration
 const TELEGRAM_BOT_TOKEN = '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
