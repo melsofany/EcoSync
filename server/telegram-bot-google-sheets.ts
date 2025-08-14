@@ -1,5 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { realTimeDataManager } from './google-sheets-realtime-data';
+import { telegramUsersSheetsManager } from './telegram-users-sheets-manager';
 
 // Configuration
 const TELEGRAM_BOT_TOKEN = '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
@@ -113,9 +114,23 @@ class QortobaAnalysisBotGoogleSheets {
     });
   }
 
-  private isAuthorizedUser(userId?: number): boolean {
+  private async isAuthorizedUser(userId?: number): Promise<boolean> {
     if (!userId) return false;
-    return AUTHORIZED_USERS.includes(userId.toString());
+    const userIdStr = userId.toString();
+    
+    // التحقق من القائمة المحلية أولاً
+    if (AUTHORIZED_USERS.includes(userIdStr)) {
+      return true;
+    }
+    
+    // التحقق من Google Sheets
+    try {
+      const activeUsers = await telegramUsersSheetsManager.getActiveUsers();
+      return activeUsers.includes(userIdStr);
+    } catch (error) {
+      console.error('❌ خطأ في التحقق من المستخدم في Google Sheets:', (error as Error).message);
+      return false;
+    }
   }
 
   private async loadInitialAuthorizedUsers() {
