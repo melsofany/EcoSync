@@ -231,7 +231,7 @@ export class GoogleSheetsRealtimeData {
           poQuantity: row[12] || '', // العمود M - PO QUANTITY
           poPrice: row[13] || '', // العمود N - PO PRICE
           totalValue: row[14] || '', // العمود O - القيمة الإجمالية
-          clientName: row[15] || '', // العمود P - اسم العميل
+          clientName: row[15] || '', // العمود P (فهرس 15) - اسم العميل
           responsibleEmployee: row[16] || '', // العمود Q (فهرس 16) - الموظف المسؤول
           isActive: true,
           createdAt: new Date().toISOString()
@@ -240,14 +240,15 @@ export class GoogleSheetsRealtimeData {
         // طباعة عينة من البيانات للتشخيص (أول 10 صفوف فقط)
         if (i < 10) {
           console.log(`📋 عينة البيانات - الصف ${i + 1}:`, {
-            rfqNumber: row[5],
+            itemNumber: row[0] || 'فارغ',
+            uom: row[1] || 'فارغ',
+            lineItem: row[2] || 'فارغ', 
+            partNumber: row[3] || 'فارغ',
+            description: (row[4] || 'فارغ').substring(0, 50) + '...',
+            rfqNumber: row[5] || 'فارغ',
             clientName: row[15] || 'فارغ',
-            columnQ16: `"${row[16] || ''}"`, // العمود 16 (Q)
-            columnR17: `"${row[17] || ''}"`, // العمود 17 (R) - ربما هنا البيانات؟
-            columnS18: `"${row[18] || ''}"`, // العمود 18 (S)
-            columnT19: `"${row[19] || ''}"`, // العمود 19 (T)
-            totalColumns: row.length,
-            allRow: row.slice(15, 20) // عرض الأعمدة P-T
+            responsibleEmployee: row[16] || 'فارغ',
+            totalColumns: row.length
           });
         }
 
@@ -276,7 +277,7 @@ export class GoogleSheetsRealtimeData {
             id: `rfq-sheets-${item.rfqNumber}`,
             requestNumber: item.rfqNumber, // رقم الطلب من العمود F
             customRequestNumber: item.rfqNumber, // رقم الطلب من العمود F
-            clientName: item.clientName && item.clientName.trim() ? item.clientName.trim() : 'غير محدد', // اسم العميل من العمود P
+            clientName: item.clientName && item.clientName.trim() && item.clientName.trim() !== '""' ? item.clientName.trim() : 'غير محدد', // اسم العميل من العمود P
             requestDate: item.requestDate, // التاريخ من العمود G
             expiryDate: item.responseDate || null, // تاريخ الانتهاء من العمود J
             responsibleEmployee: item.responsibleEmployee && item.responsibleEmployee.trim() ? item.responsibleEmployee.trim() : 'غير محدد', // الموظف المسؤول من العمود Q
