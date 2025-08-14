@@ -483,16 +483,38 @@ export default function PurchaseOrders() {
     });
   };
 
-  // الحصول على إجمالي أسعار RFQ لأمر شراء
+  // الحصول على إجمالي أسعار RFQ لأمر شراء من API الجديد
   const getRFQTotal = (poNumber: string) => {
+    // استخدام البيانات من poItems API الجديد إذا كان متاحاً
+    if (poItems && poItems.length > 0 && selectedPO?.poNumber === poNumber) {
+      return poItems.reduce((sum: number, item: any) => {
+        const quantity = parseFloat(item.rfqQuantity) || 0;
+        const price = parseFloat(item.rfqPrice) || 0;
+        return sum + (quantity * price);
+      }, 0);
+    }
+    
+    // الطريقة القديمة كبديل (fallback)
     const items = getPOItems(poNumber);
     return items.reduce((sum: number, item: any) => {
-      return sum + (parseFloat(item.rfqPrice) * parseInt(item.quantity) || 0);
+      const quantity = parseFloat(item.rfqQuantity) || 0;
+      const price = parseFloat(item.rfqPrice) || 0;
+      return sum + (quantity * price);
     }, 0);
   };
 
-  // الحصول على إجمالي أسعار PO لأمر شراء
+  // الحصول على إجمالي أسعار PO لأمر شراء من API الجديد
   const getPOTotal = (poNumber: string) => {
+    // استخدام البيانات من poItems API الجديد إذا كان متاحاً
+    if (poItems && poItems.length > 0 && selectedPO?.poNumber === poNumber) {
+      return poItems.reduce((sum: number, item: any) => {
+        const quantity = parseFloat(item.poQuantity) || 0;
+        const price = parseFloat(item.poPrice) || 0;
+        return sum + (quantity * price);
+      }, 0);
+    }
+    
+    // الطريقة القديمة كبديل (fallback)
     const items = getPOItems(poNumber);
     return items.reduce((sum: number, item: any) => {
       return sum + (parseFloat(item.totalPOValue) || 0);
