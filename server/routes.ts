@@ -1302,6 +1302,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete user endpoint
+  app.delete("/api/delete-user/:username", async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      
+      // Get all users
+      const users = await userSheetsManager.getAllUsers();
+      const userIndex = users.findIndex(u => u.username === username);
+      
+      if (userIndex === -1) {
+        return res.status(404).json({ message: "المستخدم غير موجود" });
+      }
+
+      // Delete from Google Sheets by clearing the row
+      const rowIndex = userIndex + 2; // +2 because data starts from row 2
+      await userSheetsManager.sheets.spreadsheets.values.clear({
+        spreadsheetId: userSheetsManager.spreadsheetId,
+        range: `USERS!A${rowIndex}:P${rowIndex}`
+      });
+
+      console.log(`✅ تم حذف المستخدم: ${username}`);
+      res.json({ success: true, message: `تم حذف المستخدم ${username} بنجاح` });
+      
+    } catch (error) {
+      console.error("Delete user error:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف المستخدم" });
+    }
+  });
+
   // Reset specific user password
   app.post("/api/reset-user-password", async (req: Request, res: Response) => {
     try {
