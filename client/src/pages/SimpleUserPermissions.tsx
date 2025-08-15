@@ -275,8 +275,11 @@ export default function SimpleUserPermissions() {
       if (passwordData.newPassword !== passwordData.confirmPassword) {
         throw new Error('كلمة المرور وتأكيدها غير متطابقين');
       }
+      if (passwordData.newPassword.length < 6) {
+        throw new Error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      }
       
-      const response = await apiRequest(`/api/users/${selectedUser.id}/password`, 'PATCH', {
+      const response = await apiRequest(`/api/sheets-users/${selectedUser.username}/password`, 'PATCH', {
         newPassword: passwordData.newPassword
       });
       return response.json();

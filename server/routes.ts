@@ -1219,6 +1219,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // تغيير كلمة مرور مستخدم معين (للمدراء)
+  app.patch("/api/sheets-users/:username/password", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const { newPassword } = req.body;
+      
+      if (!newPassword) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "كلمة المرور الجديدة مطلوبة" 
+        });
+      }
+      
+      if (newPassword.length < 6) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" 
+        });
+      }
+
+      // تشفير كلمة المرور الجديدة
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // الحصول على جميع المستخدمين
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const userIndex = users.findIndex(u => u.username === username);
+      
+      if (userIndex === -1) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "المستخدم غير موجود" 
+        });
+      }
+
+      // تحديث كلمة المرور في Google Sheets
+      const rowNumber = userIndex + 2; // الصف الأول عناوين
+      
+      await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        range: `USERS!E${rowNumber}`, // عمود كلمة المرور
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[hashedPassword]]
+        }
+      });
+
+      // تحديث وقت التعديل
+      await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        range: `USERS!L${rowNumber}`, // عمود Updated At
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[new Date().toISOString()]]
+        }
+      });
+
+      console.log(`✅ تم تغيير كلمة مرور المستخدم ${username}`);
+      
+      res.json({ 
+        success: true, 
+        message: "تم تغيير كلمة المرور بنجاح" 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في تغيير كلمة المرور:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "خطأ داخلي في الخادم" 
+      });
+    }
+  });
+
   // جلب جميع المستخدمين
   app.get("/api/users", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
