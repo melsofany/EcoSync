@@ -1190,20 +1190,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
-      // For Google Sheets system, return mock admin if session exists
-      if (req.session.user) {
-        const mockUser = {
-          id: 'admin-user',
-          username: 'admin',
-          fullName: 'مدير النظام',
-          email: 'admin@qurtoba.com',
-          role: 'manager',
-          permissions: ['view_all', 'edit_all', 'delete_all'],
-          isActive: true
-        };
-        return res.json(mockUser);
+      if (req.session && req.session.user) {
+        console.log(`✅ جلسة نشطة للمستخدم: ${req.session.user.username} (${req.session.user.id})`);
+        // إرجاع بيانات المستخدم الفعلية من الجلسة
+        return res.json({ user: req.session.user });
       }
       
+      console.log(`❌ لا توجد جلسة نشطة - Session ID: ${req.sessionID || 'غير محدد'}`);
       return res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
       console.error("خطأ في جلب بيانات المستخدم:", error);
