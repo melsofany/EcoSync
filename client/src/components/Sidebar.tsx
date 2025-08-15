@@ -170,12 +170,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: Activity,
       section: "activity",
     },
-    {
-      title: "بوت تليجرام",
-      href: "/telegram-bot",
-      icon: Bot,
-      section: "admin",
-    },
+
 
     {
       title: "مراقب التوحيد الذكي",
