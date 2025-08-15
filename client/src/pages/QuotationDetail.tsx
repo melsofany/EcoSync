@@ -274,12 +274,29 @@ export default function QuotationDetail() {
     );
   }
 
-  if (!quotation || !(quotation as any)?.id) {
+  // تحسين فحص وجود طلب التسعير - تحقق من أي معرف صالح
+  const hasValidQuotation = quotation && (
+    (quotation as any)?.id || 
+    (quotation as any)?.requestNumber || 
+    (quotation as any)?.customRequestNumber
+  );
+
+  if (!hasValidQuotation) {
+    console.log("Quotation debug info:", {
+      quotation,
+      quotationId,
+      hasQuotation: !!quotation,
+      quotationKeys: quotation ? Object.keys(quotation) : []
+    });
+    
     return (
       <div className="text-center py-8">
         <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-800 mb-2">طلب التسعير غير موجود</h3>
         <p className="text-gray-600 mb-4">لم يتم العثور على طلب التسعير المطلوب</p>
+        <div className="text-sm text-gray-500 mb-4">
+          معرف الطلب: {quotationId || "غير محدد"}
+        </div>
         <Button onClick={() => setLocation("/quotations")}>
           العودة لقائمة طلبات التسعير
         </Button>
