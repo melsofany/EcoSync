@@ -210,7 +210,7 @@ export function TelegramBotManagement() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {botUsers && botUsers.users.length > 0 ? (
+          {botUsers && botUsers.users && botUsers.users.length > 0 ? (
             <div className="space-y-2">
               {botUsers.users.map((userId, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
