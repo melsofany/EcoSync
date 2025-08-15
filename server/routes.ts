@@ -1210,10 +1210,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "البيانات الأساسية مطلوبة" });
       }
 
+      // Check if user already exists
+      const existingUsers = await userSheetsManager.getAllUsers();
+      const userExists = existingUsers.find(u => u.username === username);
+      
+      if (userExists) {
+        return res.status(400).json({ message: `المستخدم ${username} موجود بالفعل` });
+      }
+
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
       const now = new Date().toISOString();
       const userId = `${role}-${Date.now()}`;
+
+      // Create enhanced permissions based on role
+      let permissions = { dashboard: true };
+      if (role === 'manager') {
+        permissions = {
+          dashboard: true,
+          quotations: { view: true, create: true, edit: true, delete: true },
+          admin: { userManagement: true, systemSettings: true, generalAdmin: true },
+          user_management: true,
+          admin_panel: true
+        };
+      } else if (role === 'it_admin') {
+        permissions = {
+          dashboard: true,
+          admin: { userManagement: true, systemSettings: true, backupRestore: true },
+          user_management: true,
+          admin_panel: true
+        };
+      }
 
       // Create user data for Google Sheets
       const userData = [
@@ -1225,7 +1252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '', // phone
         '', // profile image
         role,
-        JSON.stringify({ dashboard: true }), // basic permissions
+        JSON.stringify(permissions),
         'TRUE', // isActive
         'FALSE', // isOnline
         '', // lastLoginAt
@@ -1284,8 +1311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "اسم المستخدم وكلمة المرور الجديدة مطلوبان" });
       }
       
-      // Update password directly
-      await userSheetsManager.updateUserPassword(username, newPassword);
+      // Hash the new password before updating
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await userSheetsManager.updateUserPassword(username, hashedPassword);
       
       console.log(`✅ تم إعادة تعيين كلمة مرور للمستخدم: ${username}`);
       
