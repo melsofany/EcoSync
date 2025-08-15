@@ -218,6 +218,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
   
+  // إعداد CORS بشكل صحيح أولاً
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.get('Origin') || 'http://localhost:5000');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Cookie');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(200);
+    } else {
+      next();
+    }
+  });
+  
   // إعداد جلسات محسنة للاستقرار
   app.use(session({
     store: new MemStore({
@@ -238,6 +252,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
     name: 'qurtoba.sid' // اسم فريد للكوكيز
   }));
+
+  // Middleware لطباعة تفاصيل الجلسة والكوكيز
+  app.use((req, res, next) => {
+    if (req.path.includes('/api/') && !req.path.includes('/health')) {
+      console.log(`🔍 [${req.method}] ${req.path}`);
+      console.log(`🍪 Headers Cookie: ${req.headers.cookie || 'لا توجد'}`);
+      console.log(`📋 Session ID: ${req.sessionID}`);
+      console.log(`🔑 Session User: ${req.session?.user ? req.session.user.username : 'غير موجود'}`);
+      console.log(`---`);
+    }
+    next();
+  });
 
   // Middleware to log activity and track IP
   const logActivity = async (req: Request, action: string, entityType?: string, entityId?: string, details?: string) => {
@@ -934,6 +960,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
           
           req.session.user = userResponse;
+          
+          // حفظ الجلسة بوضوح
+          req.session.save((err) => {
+            if (err) {
+              console.log(`❌ خطأ في حفظ الجلسة: ${err.message}`);
+            } else {
+              console.log(`✅ تم حفظ الجلسة بنجاح للمستخدم: ${username}`);
+            }
+          });
+          
+          console.log(`🔍 بيانات الجلسة بعد التعيين:`, {
+            sessionId: req.sessionID,
+            userId: req.session.user?.id,
+            username: req.session.user?.username
+          });
+          
           return res.json({ user: userResponse });
         } else {
           console.log(`❌ كلمة مرور خاطئة للمستخدم: ${username}`);
@@ -961,7 +1003,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         req.session.user = mockUser;
+        
+        // حفظ الجلسة بوضوح للمدير الاحتياطي
+        req.session.save((err) => {
+          if (err) {
+            console.log(`❌ خطأ في حفظ جلسة المدير الاحتياطي: ${err.message}`);
+          } else {
+            console.log(`✅ تم حفظ جلسة المدير الاحتياطي بنجاح`);
+          }
+        });
+        
         console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم الاحتياطي: ${username}`);
+        console.log(`🔍 بيانات جلسة المدير:`, {
+          sessionId: req.sessionID,
+          userId: req.session.user?.id,
+          username: req.session.user?.username
+        });
+        
         return res.json({ user: mockUser });
       }
       
