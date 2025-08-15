@@ -252,7 +252,7 @@ export default function SimpleUserPermissions() {
                               htmlFor={permission.id} 
                               className="font-medium cursor-pointer"
                             >
-                              {permission.category}
+                              {permission.displayName || permission.category}
                             </Label>
                             <p className="text-sm text-gray-600">
                               {permission.description}
