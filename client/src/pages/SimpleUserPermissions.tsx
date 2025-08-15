@@ -44,6 +44,7 @@ interface User {
   username: string;
   fullName: string;
   email: string;
+  phone?: string;
   role: string;
   permissions: string[];
   isActive: boolean;
@@ -80,10 +81,12 @@ export default function SimpleUserPermissions() {
     username: '',
     fullName: '',
     email: '',
+    phone: '',
     password: '',
     role: 'data_entry',
     isActive: true,
-    canAccessBot: false
+    canAccessBot: false,
+    profileImage: null as File | null
   });
 
   // نموذج تغيير كلمة المرور
@@ -172,7 +175,25 @@ export default function SimpleUserPermissions() {
   // إضافة مستخدم جديد
   const addUserMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/users', 'POST', newUser);
+      // إنشاء FormData لرفع الصورة مع البيانات
+      const formData = new FormData();
+      formData.append('username', newUser.username);
+      formData.append('fullName', newUser.fullName);
+      formData.append('email', newUser.email);
+      formData.append('phone', newUser.phone);
+      formData.append('password', newUser.password);
+      formData.append('role', newUser.role);
+      formData.append('isActive', newUser.isActive.toString());
+      formData.append('canAccessBot', newUser.canAccessBot.toString());
+      
+      if (newUser.profileImage) {
+        formData.append('profileImage', newUser.profileImage);
+      }
+
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        body: formData,
+      });
       return response.json();
     },
     onSuccess: () => {
@@ -185,10 +206,12 @@ export default function SimpleUserPermissions() {
         username: '',
         fullName: '',
         email: '',
+        phone: '',
         password: '',
         role: 'data_entry',
         isActive: true,
-        canAccessBot: false
+        canAccessBot: false,
+        profileImage: null
       });
       queryClient.invalidateQueries({ queryKey: ['/api/sheets-users'] });
     },
@@ -425,6 +448,16 @@ export default function SimpleUserPermissions() {
                       />
                     </div>
                     <div className="grid gap-2">
+                      <Label htmlFor="phone">رقم الهاتف</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={newUser.phone}
+                        onChange={(e) => setNewUser(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="رقم الهاتف"
+                      />
+                    </div>
+                    <div className="grid gap-2">
                       <Label htmlFor="password">كلمة المرور</Label>
                       <Input
                         id="password"
@@ -448,6 +481,30 @@ export default function SimpleUserPermissions() {
                           <SelectItem value="accounting">موظف حسابات</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="profileImage">صورة المستخدم</Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          id="profileImage"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            setNewUser(prev => ({ ...prev, profileImage: file || null }));
+                          }}
+                          className="flex-1"
+                        />
+                        {newUser.profileImage && (
+                          <div className="flex items-center gap-2 text-sm text-green-600">
+                            <Camera className="h-4 w-4" />
+                            تم اختيار الصورة
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        اختر صورة للمستخدم (اختياري)
+                      </p>
                     </div>
                   </div>
                   <DialogFooter>
@@ -511,6 +568,9 @@ export default function SimpleUserPermissions() {
                         </div>
                         <p className="text-sm text-gray-600">@{user.username}</p>
                         <p className="text-sm text-gray-500">{user.email}</p>
+                        {user.phone && (
+                          <p className="text-sm text-gray-500">{user.phone}</p>
+                        )}
                         <p className="text-sm text-blue-600">{getRoleLabel(user.role)}</p>
                         
                         <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">

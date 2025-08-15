@@ -1087,6 +1087,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // إضافة مستخدم جديد
+  // إنشاء مستخدم جديد مع دعم رفع الصور
+  app.post("/api/users", requireAuth, requireRole(['it_admin', 'manager']), upload.single('profileImage'), async (req: Request, res: Response) => {
+    try {
+      const { username, password, fullName, email, phone, role, isActive, canAccessBot } = req.body;
+      
+      if (!username || !password || !fullName || !role) {
+        return res.status(400).json({
+          success: false,
+          message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
+        });
+      }
+
+      console.log(`👤 إنشاء مستخدم جديد: ${username}`);
+      
+      // معالجة الصورة الشخصية
+      let profileImagePath = '';
+      if (req.file) {
+        profileImagePath = `/uploads/profiles/${req.file.filename}`;
+        console.log(`📸 تم رفع صورة المستخدم: ${profileImagePath}`);
+      }
+      
+      const newUser = await userSheetsManager.createUser({
+        username,
+        password,
+        fullName,
+        email,
+        phone,
+        role,
+        isActive: isActive === 'true',
+        canAccessBot: canAccessBot === 'true',
+        profileImage: profileImagePath
+      });
+      
+      if (newUser) {
+        console.log(`✅ تم إنشاء المستخدم: ${newUser.username}`);
+        const { password: _, ...userWithoutPassword } = newUser;
+        res.json({
+          success: true,
+          message: `تم إنشاء المستخدم ${newUser.username} بنجاح`,
+          user: userWithoutPassword
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "فشل في إنشاء المستخدم"
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ خطأ في إنشاء المستخدم:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
+  // إبقاء المسار القديم للتوافق مع الأنظمة الأخرى
   app.post("/api/users/create", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
       const { username, password, fullName, email, phone, role, permissions } = req.body;
@@ -1847,6 +1904,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Delete user error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Serve uploaded profile images
+  app.get('/uploads/profiles/:filename', (req: Request, res: Response) => {
+    const filename = req.params.filename;
+    const filepath = path.join(process.cwd(), 'public', 'uploads', 'profiles', filename);
+    res.sendFile(filepath, (err) => {
+      if (err) {
+        console.error('خطأ في إرسال الصورة:', err);
+        res.status(404).json({ message: 'الصورة غير موجودة' });
+      }
+    });
+  });
+
+  // API endpoint لجلب صورة المستخدم
+  app.get('/api/users/:userId/avatar', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      // جلب بيانات المستخدم من Google Sheets
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const user = users.find(u => u.id === userId);
+      
+      if (user && user.profileImage) {
+        const imagePath = path.join(process.cwd(), 'public', user.profileImage);
+        res.sendFile(imagePath, (err) => {
+          if (err) {
+            // إرسال صورة افتراضية أو رد فارغ
+            res.status(404).json({ message: 'الصورة غير موجودة' });
+          }
+        });
+      } else {
+        res.status(404).json({ message: 'لا توجد صورة للمستخدم' });
+      }
+    } catch (error) {
+      console.error('خطأ في جلب صورة المستخدم:', error);
+      res.status(500).json({ message: 'خطأ داخلي في الخادم' });
     }
   });
 

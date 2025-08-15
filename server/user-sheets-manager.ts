@@ -334,6 +334,9 @@ export class UserSheetsManager {
     email?: string;
     phone?: string;
     role: string;
+    isActive?: boolean;
+    canAccessBot?: boolean;
+    profileImage?: string;
     permissions?: object;
   }): Promise<UserSheet | null> {
     if (!this.isInitialized) {
@@ -360,11 +363,11 @@ export class UserSheetsManager {
         userData.fullName,
         userData.email || '',
         userData.phone || '',
-        '',
+        userData.profileImage || '',
         userData.role,
         JSON.stringify(userData.permissions || {}),
-        'TRUE',
-        'FALSE',
+        userData.isActive !== false ? 'TRUE' : 'FALSE',
+        userData.canAccessBot === true ? 'TRUE' : 'FALSE',
         '',
         now,
         '',
