@@ -955,21 +955,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // For demo/development - return username for password reset
-      // In production, you would send a secure email
-      console.log(`✅ تم العثور على المستخدم: ${user.username}`);
+      // Generate a temporary password for the user
+      const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
       
-      res.json({ 
-        success: true,
-        message: "تم العثور على المستخدم في النظام",
-        username: user.username,
-        fullName: user.fullName,
-        hint: "يمكنك الآن استخدام اسم المستخدم لإعادة تعيين كلمة المرور"
-      });
+      // Update user password in Google Sheets
+      await userSheetsManager.updateUserPassword(user.username, tempPassword);
+      
+      console.log(`✅ تم العثور على المستخدم: ${user.username}, كلمة مرور مؤقتة: ${tempPassword}`);
+      
+      // Try to send email with temporary password
+      try {
+        const emailResult = await sendEmail({
+          to: email,
+          subject: "كلمة المرور المؤقتة - نظام قرطبة للتوريدات",
+          html: `
+            <div style="direction: rtl; font-family: Arial, sans-serif; padding: 20px;">
+              <h2>مرحباً ${user.fullName}</h2>
+              <p>تم إنشاء كلمة مرور مؤقتة لحسابك:</p>
+              <div style="background: #f4f4f4; padding: 15px; margin: 20px 0; border-radius: 5px; font-size: 24px; text-align: center; font-weight: bold; color: #2563eb;">
+                ${tempPassword}
+              </div>
+              <p><strong>اسم المستخدم:</strong> ${user.username}</p>
+              <p><strong>كلمة المرور المؤقتة:</strong> ${tempPassword}</p>
+              <p>يرجى تسجيل الدخول وتغيير كلمة المرور فور الدخول للنظام.</p>
+              <hr>
+              <small>نظام قرطبة للتوريدات © 2025</small>
+            </div>
+          `
+        });
+
+        if (emailResult.success) {
+          res.json({ 
+            success: true,
+            message: "تم إرسال كلمة المرور المؤقتة إلى بريدك الإلكتروني",
+            sent: true
+          });
+        } else {
+          // If email fails, still return the temp password
+          res.json({ 
+            success: true,
+            message: "تم إنشاء كلمة مرور مؤقتة (لم يتم إرسال البريد)",
+            username: user.username,
+            tempPassword: tempPassword,
+            emailError: emailResult.message,
+            sent: false
+          });
+        }
+      } catch (emailError) {
+        console.error("Email error:", emailError);
+        res.json({ 
+          success: true,
+          message: "تم إنشاء كلمة مرور مؤقتة",
+          username: user.username,
+          tempPassword: tempPassword,
+          sent: false
+        });
+      }
 
     } catch (error) {
       console.error("Password reset request error:", error);
       res.status(500).json({ message: "حدث خطأ في النظام" });
+    }
+  });
+
+  // Test email endpoint
+  app.post("/api/test-resend-email", async (req: Request, res: Response) => {
+    try {
+      const { to, subject, html } = req.body;
+      
+      const emailResult = await sendEmail({
+        to: to || "ahmed.lifeendy01@gmail.com",
+        subject: subject || "اختبار البريد الإلكتروني",
+        html: html || "<h1>اختبار من نظام قرطبة</h1>"
+      });
+      
+      res.json({
+        success: emailResult.success,
+        message: emailResult.message,
+        result: emailResult
+      });
+    } catch (error) {
+      console.error("Email test error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "خطأ في اختبار البريد",
+        error: error.message 
+      });
     }
   });
 
