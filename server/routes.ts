@@ -218,25 +218,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
   
-  // إعداد جلسات محسنة للاستقرار
+  // إعداد جلسات العرض التوضيحي
   app.use(session({
     store: new MemStore({
       checkPeriod: 86400000,
       ttl: 86400000 // 24 ساعة
     }),
-    secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025',
-    resave: false, // عدم إجبار حفظ الجلسة إلا عند تغييرها
-    saveUninitialized: false, // عدم حفظ الجلسات الفارغة
+    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
     rolling: true, // تجديد الجلسة مع كل طلب
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: false, // السماح للـ JS بالوصول للكوكيز (مؤقتاً للتصحيح)
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax', // تحسين أمان الـ cookies
-      domain: undefined, // السماح لجميع النطاقات الفرعية
-      path: '/' // التأكد من المسار الصحيح
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours (extended for better UX)
+      sameSite: 'lax' // تحسين أمان الـ cookies
     },
-    name: 'connect.sid' // استخدام الاسم الافتراضي
   }));
 
   // Middleware to log activity and track IP
@@ -253,9 +250,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Authentication middleware محسن
+  // Authentication middleware
   const requireAuth = (req: Request, res: Response, next: Function) => {
-    if (!req.session || !req.session.user) {
+    if (!req.session.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
     next();
@@ -669,19 +666,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Role-based access control
   const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
-      if (!req.session?.user) {
-        return res.status(401).json({ message: "Unauthorized" });
+      if (!req.session.user || !roles.includes(req.session.user.role)) {
+        return res.status(403).json({ message: "Forbidden" });
       }
-      
-      // تسجيل لمراقبة الأخطاء
-      console.log(`🔐 التحقق من دور المستخدم: ${req.session.user.username}, الدور: ${req.session.user.role}, الأدوار المطلوبة: ${roles.join(',')}`);
-      
-      if (!roles.includes(req.session.user.role)) {
-        console.log(`❌ الدور ${req.session.user.role} غير مسموح. الأدوار المطلوبة: ${roles.join(',')}`);
-        return res.status(403).json({ message: "Access denied - insufficient permissions" });
-      }
-      
-      console.log(`✅ تم السماح للمستخدم ${req.session.user.username} بالدور ${req.session.user.role}`);
       next();
     };
   };
@@ -900,41 +887,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { username, password } = req.body;
       
       console.log(`🔐 محاولة تسجيل دخول للمستخدم: ${username}`);
-    
-    // تحديث: تحقق مباشر من Google Sheets
-    const allUsers = await userSheetsManager.getAllUsers();
-    console.log(`📊 تم العثور على ${allUsers.length} مستخدم في النظام`);
       
-      // البحث عن المستخدم في Google Sheets أو النظام الاحتياطي
-      const user = allUsers.find(u => u.username === username && u.isActive);
-      
-      if (user) {
-        // تحقق من كلمة المرور
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log(`🔐 تحقق من كلمة المرور للمستخدم ${username}: ${isPasswordValid ? 'صحيحة' : 'خاطئة'}`);
-        
-        if (isPasswordValid) {
-          console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
-          
-          const userResponse = {
-            id: user.id,
-            username: user.username,
-            fullName: user.fullName,
-            email: user.email,
-            role: user.role,
-            permissions: user.permissions ? JSON.parse(user.permissions).map((p: string) => p.replace(/"/g, '')) : ['view_all'],
-            isActive: user.isActive
-          };
-          
-          req.session.user = userResponse;
-          return res.json({ user: userResponse });
-        } else {
-          console.log(`❌ كلمة مرور خاطئة للمستخدم: ${username}`);
-          return res.status(401).json({ message: "بيانات الدخول غير صحيحة" });
-        }
-      }
-      
-      // احتياطي للمدير admin
+      // Simple hardcoded admin for Google Sheets system
       if (username === 'admin' && password === 'admin123') {
         const mockUser = {
           id: 'admin-user',
@@ -942,23 +896,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fullName: 'مدير النظام',
           email: 'admin@qurtoba.com',
           role: 'manager',
-          permissions: [
-            'view_all', 
-            'edit_all', 
-            'delete_all',
-            'user_management',
-            'admin_panel',
-            'system_settings'
-          ],
+          permissions: ['view_all', 'edit_all', 'delete_all'],
           isActive: true
         };
         
         req.session.user = mockUser;
-        console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم الاحتياطي: ${username}`);
+        console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
         return res.json({ user: mockUser });
       }
       
-      console.log(`❌ لم يتم العثور على المستخدم أو غير مفعل: ${username}`);
+      console.log(`❌ بيانات دخول خاطئة للمستخدم: ${username}`);
       return res.status(401).json({ message: "بيانات الدخول غير صحيحة" });
     } catch (error) {
       console.error("خطأ في تسجيل الدخول:", error);
@@ -986,7 +933,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Password reset request - simple version for Google Sheets
+  // Password reset request
   app.post("/api/auth/reset-password-request", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
@@ -995,160 +942,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "البريد الإلكتروني مطلوب" });
       }
 
-      console.log(`🔐 طلب إعادة تعيين كلمة مرور للبريد: ${email}`);
-
       // Find user by email
-      const user = await userSheetsManager.getUserByEmail(email);
+      const user = await storage.getUserByEmail(email);
       if (!user) {
-        // For security, don't reveal if email exists or not
-        return res.json({ 
-          message: "إذا كان البريد الإلكتروني مسجل في النظام، يمكن استخدام اسم المستخدم لإعادة تعيين كلمة المرور",
-          success: false
-        });
+        // Don't reveal if email exists or not for security
+        return res.json({ message: "إذا كان البريد الإلكتروني موجود، ستصلك رسالة استعادة كلمة المرور" });
       }
 
-      // Generate secure reset token
+      // Generate reset token
       const resetToken = randomBytes(32).toString('hex');
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
-      
-      // Store token temporarily (in memory or simple storage)
-      // For now, we'll store it in a simple Map
-      global.passwordResetTokens = global.passwordResetTokens || new Map();
-      global.passwordResetTokens.set(resetToken, {
+
+      // Save token to database
+      await storage.createPasswordResetToken({
         userId: user.id,
-        username: user.username,
+        token: resetToken,
         email: email,
-        expiresAt: expiresAt,
-        used: false
+        expiresAt: expiresAt
       });
-      
-      console.log(`✅ تم العثور على المستخدم: ${user.username}, token: ${resetToken.substring(0, 8)}...`);
-      
+
       // Generate reset link
       const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}`;
       
-      // Try to send email with reset link
-      try {
-        const emailResult = await sendEmail({
-          to: email,
-          subject: "إعادة تعيين كلمة المرور - نظام قرطبة للتوريدات",
-          html: `
-            <div style="direction: rtl; font-family: Arial, sans-serif; padding: 20px; background: #f8f9fa;">
-              <div style="background: white; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h2 style="color: #2563eb; text-align: center; margin-bottom: 20px;">إعادة تعيين كلمة المرور</h2>
-                
-                <p>مرحباً <strong>${user.fullName}</strong>,</p>
-                
-                <p>تلقينا طلباً لإعادة تعيين كلمة المرور لحسابك في نظام قرطبة للتوريدات.</p>
-                
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="${resetLink}" 
-                     style="background: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
-                    إعادة تعيين كلمة المرور
-                  </a>
-                </div>
-                
-                <p style="color: #666; font-size: 14px;">
-                  أو انسخ والصق الرابط التالي في متصفحك:
-                </p>
-                <p style="background: #f4f4f4; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">
-                  ${resetLink}
-                </p>
-                
-                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 20px 0;">
-                  <p style="margin: 0; color: #856404;">
-                    <strong>ملاحظة مهمة:</strong> هذا الرابط صالح لمدة ساعة واحدة فقط.
-                  </p>
-                </div>
-                
-                <p style="color: #666; font-size: 14px;">
-                  إذا لم تطلب إعادة تعيين كلمة المرور، يرجى تجاهل هذه الرسالة.
-                </p>
-                
-                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-                <p style="text-align: center; color: #999; font-size: 12px;">
-                  نظام قرطبة للتوريدات © 2025
-                </p>
-              </div>
-            </div>
-          `
-        });
+      // Send email
+      const emailResult = await sendEmail({
+        to: email,
+        subject: "إعادة تعيين كلمة المرور - نظام قرطبة للتوريدات",
+        html: generatePasswordResetEmail(user.fullName, resetLink)
+      });
 
-        if (emailResult.success) {
-          res.json({ 
-            success: true,
-            message: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
-            sent: true
-          });
-        } else {
-          res.json({ 
-            success: false,
-            message: "فشل في إرسال البريد الإلكتروني",
-            emailError: emailResult.message,
-            sent: false
-          });
-        }
-      } catch (emailError) {
-        console.error("Email error:", emailError);
-        res.json({ 
-          success: false,
-          message: "خطأ في إرسال البريد الإلكتروني",
-          error: emailError.message,
-          sent: false
-        });
+      if (emailResult.success) {
+        res.json({ message: "تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني" });
+      } else {
+        res.status(500).json({ message: emailResult.message });
       }
 
     } catch (error) {
       console.error("Password reset request error:", error);
       res.status(500).json({ message: "حدث خطأ في النظام" });
-    }
-  });
-
-  // Debug users endpoint
-  app.get("/api/debug-users", async (req: Request, res: Response) => {
-    try {
-      const users = await userSheetsManager.getAllUsers();
-      res.json({
-        success: true,
-        users: users.map(user => ({
-          id: user.id,
-          username: user.username,
-          fullName: user.fullName,
-          email: user.email,
-          role: user.role,
-          isActive: user.isActive,
-          createdAt: user.createdAt
-        }))
-      });
-    } catch (error) {
-      console.error("Debug users error:", error);
-      res.status(500).json({ success: false, message: "خطأ في جلب المستخدمين" });
-    }
-  });
-
-  // Test email endpoint
-  app.post("/api/test-resend-email", async (req: Request, res: Response) => {
-    try {
-      const { to, subject, html } = req.body;
-      
-      const emailResult = await sendEmail({
-        to: to || "ahmed.lifeendy01@gmail.com",
-        subject: subject || "اختبار البريد الإلكتروني",
-        html: html || "<h1>اختبار من نظام قرطبة</h1>"
-      });
-      
-      res.json({
-        success: emailResult.success,
-        message: emailResult.message,
-        result: emailResult
-      });
-    } catch (error) {
-      console.error("Email test error:", error);
-      res.status(500).json({ 
-        success: false,
-        message: "خطأ في اختبار البريد",
-        error: error.message 
-      });
     }
   });
 
@@ -1165,22 +996,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" });
       }
 
-      // Get stored tokens
-      global.passwordResetTokens = global.passwordResetTokens || new Map();
-      const resetToken = global.passwordResetTokens.get(token);
-      
+      // Find and validate token
+      const resetToken = await storage.getPasswordResetToken(token);
       if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
         return res.status(400).json({ message: "رمز استعادة كلمة المرور غير صالح أو منتهي الصلاحية" });
       }
 
-      // Update user password in Google Sheets
-      await userSheetsManager.updateUserPassword(resetToken.username, newPassword);
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user password
+      await storage.updateUserPassword(resetToken.userId, hashedPassword);
       
       // Mark token as used
-      resetToken.used = true;
-      global.passwordResetTokens.set(token, resetToken);
+      await storage.markPasswordResetTokenUsed(token);
 
-      console.log(`✅ تم تغيير كلمة مرور المستخدم: ${resetToken.username}`);
+      await logActivity(req, "password_reset", "user", resetToken.userId, "Password reset completed");
 
       res.json({ message: "تم تغيير كلمة المرور بنجاح" });
 
@@ -1192,18 +1023,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
-      console.log(`🔍 فحص الجلسة - Session ID: ${req.sessionID || 'غير محدد'}`);
-      console.log(`🔍 Cookies: ${JSON.stringify(req.cookies)}`);
-      console.log(`🔍 Session exists: ${!!req.session}`);
-      console.log(`🔍 Session user: ${req.session?.user ? req.session.user.username : 'غير موجود'}`);
-      
-      if (req.session && req.session.user) {
-        console.log(`✅ جلسة نشطة للمستخدم: ${req.session.user.username} (${req.session.user.id})`);
-        // إرجاع بيانات المستخدم الفعلية من الجلسة
-        return res.json({ user: req.session.user });
+      // For Google Sheets system, return mock admin if session exists
+      if (req.session.user) {
+        const mockUser = {
+          id: 'admin-user',
+          username: 'admin',
+          fullName: 'مدير النظام',
+          email: 'admin@qurtoba.com',
+          role: 'manager',
+          permissions: ['view_all', 'edit_all', 'delete_all'],
+          isActive: true
+        };
+        return res.json(mockUser);
       }
       
-      console.log(`❌ لا توجد جلسة نشطة أو مستخدم`);
       return res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
       console.error("خطأ في جلب بيانات المستخدم:", error);
@@ -1211,386 +1044,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create specific user
-  app.post("/api/create-specific-user", async (req: Request, res: Response) => {
+  // إنشاء ورقة المستخدمين في Google Sheets
+  app.post("/api/users/create-sheet", async (req: Request, res: Response) => {
     try {
-      const { username, password, fullName, email, role } = req.body;
-      
-      if (!username || !password || !fullName) {
-        return res.status(400).json({ message: "البيانات الأساسية مطلوبة" });
-      }
-
-      // Check if user already exists
-      const existingUsers = await userSheetsManager.getAllUsers();
-      const userExists = existingUsers.find(u => u.username === username);
-      
-      if (userExists) {
-        return res.status(400).json({ message: `المستخدم ${username} موجود بالفعل` });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const now = new Date().toISOString();
-      const userId = `${role}-${Date.now()}`;
-
-      // Create enhanced permissions based on role
-      let permissions = { dashboard: true };
-      if (role === 'manager') {
-        permissions = {
-          dashboard: true,
-          quotations: { view: true, create: true, edit: true, delete: true },
-          admin: { userManagement: true, systemSettings: true, generalAdmin: true },
-          user_management: true,
-          admin_panel: true
-        };
-      } else if (role === 'it_admin') {
-        permissions = {
-          dashboard: true,
-          admin: { userManagement: true, systemSettings: true, backupRestore: true },
-          user_management: true,
-          admin_panel: true
-        };
-      }
-
-      // Create user data for Google Sheets
-      const userData = [
-        userId,
-        username,
-        hashedPassword,
-        fullName,
-        email || '',
-        '', // phone
-        '', // profile image
-        role,
-        JSON.stringify(permissions),
-        'TRUE', // isActive
-        'FALSE', // isOnline
-        '', // lastLoginAt
-        now, // lastActivityAt
-        '', // ipAddress
-        now, // createdAt
-        now  // updatedAt
-      ];
-
-      // Initialize userSheetsManager first
-      await userSheetsManager.initialize();
-      
-      // Add to Google Sheets
-      await userSheetsManager.sheets.spreadsheets.values.append({
-        spreadsheetId: userSheetsManager.spreadsheetId,
-        range: 'USERS!A:P',
-        valueInputOption: 'RAW',
-        resource: { values: [userData] }
-      });
-
-      console.log(`✅ تم إنشاء المستخدم ${username} بنجاح وحفظه في Google Sheets`);
-      
-      res.json({ 
-        success: true,
-        message: `تم إنشاء المستخدم ${username} بنجاح`,
-        user: { id: userId, username, fullName, email, role }
-      });
-      
-    } catch (error) {
-      console.error("Create user error:", error);
-      res.status(500).json({ message: "حدث خطأ في إنشاء المستخدم" });
-    }
-  });
-
-  // Add default users
-  app.post("/api/add-default-users", async (req: Request, res: Response) => {
-    try {
-      const result = await userSheetsManager.addDefaultUsers();
-      if (result) {
-        res.json({ success: true, message: "تم إضافة المستخدمين الافتراضيين بنجاح" });
-      } else {
-        res.status(500).json({ success: false, message: "فشل في إضافة المستخدمين" });
-      }
-    } catch (error) {
-      console.error("Add default users error:", error);
-      res.status(500).json({ message: "حدث خطأ في النظام" });
-    }
-  });
-
-  // Delete user endpoint
-  app.delete("/api/delete-user/:username", async (req: Request, res: Response) => {
-    try {
-      const { username } = req.params;
-      
-      // Get all users
-      const users = await userSheetsManager.getAllUsers();
-      const userIndex = users.findIndex(u => u.username === username);
-      
-      if (userIndex === -1) {
-        return res.status(404).json({ message: "المستخدم غير موجود" });
-      }
-
-      // Delete from Google Sheets by clearing the row
-      const rowIndex = userIndex + 2; // +2 because data starts from row 2
-      await userSheetsManager.sheets.spreadsheets.values.clear({
-        spreadsheetId: userSheetsManager.spreadsheetId,
-        range: `USERS!A${rowIndex}:P${rowIndex}`
-      });
-
-      console.log(`✅ تم حذف المستخدم: ${username}`);
-      res.json({ success: true, message: `تم حذف المستخدم ${username} بنجاح` });
-      
-    } catch (error) {
-      console.error("Delete user error:", error);
-      res.status(500).json({ message: "حدث خطأ في حذف المستخدم" });
-    }
-  });
-
-  // Reset specific user password
-  app.post("/api/reset-user-password", async (req: Request, res: Response) => {
-    try {
-      const { username, newPassword } = req.body;
-      
-      if (!username || !newPassword) {
-        return res.status(400).json({ message: "اسم المستخدم وكلمة المرور الجديدة مطلوبان" });
-      }
-      
-      // Hash the new password before updating
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      await userSheetsManager.updateUserPassword(username, hashedPassword);
-      
-      console.log(`✅ تم إعادة تعيين كلمة مرور للمستخدم: ${username}`);
-      
-      res.json({ 
-        success: true,
-        message: `تم إعادة تعيين كلمة مرور للمستخدم ${username} بنجاح`
-      });
-      
-    } catch (error) {
-      console.error("Reset user password error:", error);
-      res.status(500).json({ message: "حدث خطأ في النظام" });
-    }
-  });
-
-  // تهيئة نظام الصلاحيات الجديد
-  app.post("/api/init-permissions", async (req: Request, res: Response) => {
-    try {
-      console.log('🔧 تهيئة نظام الصلاحيات الجديد...');
-      
-      const { permissionsManager } = await import('./permissions-manager.js');
-      
-      // إنشاء أوراق الصلاحيات
-      const sheetsCreated = await permissionsManager.createPermissionsSheet();
-      if (!sheetsCreated) {
-        return res.status(500).json({ message: "فشل في إنشاء أوراق الصلاحيات" });
-      }
-      
-      // إضافة الصلاحيات الافتراضية
-      const permissionsAdded = await permissionsManager.addDefaultPermissions();
-      if (!permissionsAdded) {
-        return res.status(500).json({ message: "فشل في إضافة الصلاحيات الافتراضية" });
-      }
-      
-      console.log('✅ تم تهيئة نظام الصلاحيات بنجاح');
-      
-      res.json({ 
-        success: true, 
-        message: "تم تهيئة نظام الصلاحيات الجديد بنجاح",
-        details: "تم إنشاء ورقتين: PERMISSIONS و USER_PERMISSIONS مع 41 صلاحية افتراضية"
-      });
-      
-    } catch (error) {
-      console.error("خطأ في تهيئة نظام الصلاحيات:", error);
-      res.status(500).json({ message: "حدث خطأ في تهيئة نظام الصلاحيات" });
-    }
-  });
-
-  // جلب جميع الصلاحيات
-  app.get("/api/permissions", async (req: Request, res: Response) => {
-    try {
-      const { permissionsManager } = await import('./permissions-manager.js');
-      const permissions = await permissionsManager.getAllPermissions();
-      
-      res.json({ 
-        success: true, 
-        permissions,
-        total: permissions.length
-      });
-      
-    } catch (error) {
-      console.error("خطأ في جلب الصلاحيات:", error);
-      res.status(500).json({ message: "حدث خطأ في جلب الصلاحيات" });
-    }
-  });
-
-  // جلب صلاحيات مستخدم معين
-  app.get("/api/user-permissions/:userId", async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.params;
-      const { permissionsManager } = await import('./permissions-manager.js');
-      
-      const userPermissions = await permissionsManager.getUserPermissions(userId);
-      
-      res.json({ 
-        success: true, 
-        userPermissions,
-        userId,
-        total: userPermissions.length
-      });
-      
-    } catch (error) {
-      console.error("خطأ في جلب صلاحيات المستخدم:", error);
-      res.status(500).json({ message: "حدث خطأ في جلب صلاحيات المستخدم" });
-    }
-  });
-
-  // إضافة صلاحيات التليجرام المفقودة
-  app.post("/api/add-telegram-permissions", async (req: Request, res: Response) => {
-    try {
-      const { permissions } = req.body;
-      
-      if (!permissions || !Array.isArray(permissions)) {
-        return res.status(400).json({ message: "قائمة الصلاحيات مطلوبة" });
-      }
-      
-      const { permissionsManager } = await import('./permissions-manager.js');
-      
-      // تحضير البيانات للإضافة
-      const now = new Date().toISOString();
-      const permissionRows = permissions.map((perm: any) => [
-        perm.id,
-        perm.section,
-        perm.subsection,
-        perm.name,
-        perm.description,
-        perm.type,
-        perm.category,
-        'TRUE',
-        now,
-        now
-      ]);
-      
-      // إضافة الصلاحيات إلى Google Sheets
-      await permissionsManager.sheets.spreadsheets.values.append({
-        spreadsheetId: permissionsManager.spreadsheetId,
-        range: 'PERMISSIONS!A:J',
-        valueInputOption: 'RAW',
-        resource: { values: permissionRows }
-      });
-      
-      console.log(`✅ تم إضافة ${permissions.length} صلاحية تليجرام جديدة`);
-      
-      res.json({ 
-        success: true, 
-        message: `تم إضافة ${permissions.length} صلاحية تليجرام بنجاح`,
-        addedPermissions: permissions.length
-      });
-      
-    } catch (error) {
-      console.error("خطأ في إضافة صلاحيات التليجرام:", error);
-      res.status(500).json({ message: "حدث خطأ في إضافة صلاحيات التليجرام" });
-    }
-  });
-
-  // منح صلاحية لمستخدم
-  app.post("/api/grant-permission", async (req: Request, res: Response) => {
-    try {
-      const { userId, username, permissionId } = req.body;
-      const grantedBy = req.session.user?.username || 'system';
-      
-      if (!userId || !username || !permissionId) {
-        return res.status(400).json({ message: "البيانات المطلوبة ناقصة" });
-      }
-      
-      const { permissionsManager } = await import('./permissions-manager.js');
-      const granted = await permissionsManager.grantPermission(userId, username, permissionId, grantedBy);
-      
-      if (granted) {
-        res.json({ 
-          success: true, 
-          message: `تم منح الصلاحية ${permissionId} للمستخدم ${username} بنجاح وتحديث ورقة USERS`
-        });
-      } else {
-        res.status(500).json({ message: "فشل في منح الصلاحية" });
-      }
-      
-    } catch (error) {
-      console.error("خطأ في منح الصلاحية:", error);
-      res.status(500).json({ message: "حدث خطأ في منح الصلاحية" });
-    }
-  });
-
-  // منح صلاحيات متعددة لمستخدم
-  app.post("/api/grant-multiple-permissions", async (req: Request, res: Response) => {
-    try {
-      const { userId, username, permissionIds } = req.body;
-      const grantedBy = req.session.user?.username || 'system';
-      
-      if (!userId || !username || !permissionIds || !Array.isArray(permissionIds)) {
-        return res.status(400).json({ message: "البيانات المطلوبة ناقصة" });
-      }
-      
-      const { permissionsManager } = await import('./permissions-manager.js');
-      const granted = await permissionsManager.grantMultiplePermissions(userId, username, permissionIds, grantedBy);
-      
-      if (granted) {
-        res.json({ 
-          success: true, 
-          message: `تم منح ${permissionIds.length} صلاحية للمستخدم ${username} وتحديث ورقة USERS`
-        });
-      } else {
-        res.status(500).json({ message: "فشل في منح الصلاحيات" });
-      }
-      
-    } catch (error) {
-      console.error("خطأ في منح الصلاحيات المتعددة:", error);
-      res.status(500).json({ message: "حدث خطأ في منح الصلاحيات" });
-    }
-  });
-
-  // إلغاء صلاحية من مستخدم
-  app.post("/api/revoke-permission", async (req: Request, res: Response) => {
-    try {
-      const { userId, username, permissionId } = req.body;
-      const revokedBy = req.session.user?.username || 'system';
-      
-      if (!userId || !username || !permissionId) {
-        return res.status(400).json({ message: "البيانات المطلوبة ناقصة" });
-      }
-      
-      const { permissionsManager } = await import('./permissions-manager.js');
-      const revoked = await permissionsManager.revokePermission(userId, username, permissionId, revokedBy);
-      
-      if (revoked) {
-        res.json({ 
-          success: true, 
-          message: `تم إلغاء الصلاحية ${permissionId} من المستخدم ${username} وتحديث ورقة USERS`
-        });
-      } else {
-        res.status(500).json({ message: "فشل في إلغاء الصلاحية" });
-      }
-      
-    } catch (error) {
-      console.error("خطأ في إلغاء الصلاحية:", error);
-      res.status(500).json({ message: "حدث خطأ في إلغاء الصلاحية" });
-    }
-  });
-
-  // تهيئة ورقة المستخدمين في Google Sheets
-  app.post("/api/init-user-sheet", async (req: Request, res: Response) => {
-    try {
-      console.log('🔧 تهيئة ورقة المستخدمين في Google Sheets...');
+      console.log('🔧 طلب إنشاء ورقة المستخدمين...');
       
       const result = await userSheetsManager.createUserSheet();
       
       if (result) {
+        console.log('✅ تم إنشاء ورقة المستخدمين بنجاح');
         res.json({
           success: true,
-          message: "تم إنشاء ورقة USERS في Google Sheets بنجاح"
+          message: "تم إنشاء ورقة المستخدمين بنجاح مع مستخدم المدير الافتراضي"
         });
       } else {
+        console.error('❌ فشل في إنشاء ورقة المستخدمين');
         res.status(500).json({
           success: false,
           message: "فشل في إنشاء ورقة المستخدمين"
         });
       }
     } catch (error) {
-      console.error('❌ خطأ في تهيئة ورقة المستخدمين:', error);
+      console.error('❌ خطأ في إنشاء ورقة المستخدمين:', error);
       res.status(500).json({
         success: false,
         message: "خطأ داخلي في الخادم"
@@ -1598,167 +1073,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // اختبار إنشاء المستخدم (بدون صلاحيات للاختبار)
-  app.post("/api/test-user-create", async (req: Request, res: Response) => {
-    try {
-      const { username, password, fullName, email, phone, role } = req.body;
-      
-      if (!username || !password || !fullName || !role) {
-        return res.status(400).json({
-          success: false,
-          message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
-        });
-      }
-
-      console.log(`👤 اختبار إنشاء مستخدم جديد: ${username}`);
-      
-      const newUser = await userSheetsManager.createUser({
-        username,
-        password,
-        fullName,
-        email,
-        phone,
-        role,
-        permissions: role === 'it_admin' ? {
-          dashboard: true,
-          quotations: { view: true, create: true, edit: true, delete: true },
-          items: { view: true, create: true, edit: true, delete: true },
-          clients: { view: true, create: true, edit: true, delete: true },
-          suppliers: { view: true, create: true, edit: true, delete: true },
-          purchaseOrders: { view: true, create: true, edit: true, delete: true },
-          supplierPricing: { view: true, create: true, edit: true, delete: true },
-          customerPricing: { view: true, create: true, edit: true, delete: true },
-          reports: { view: true, export: true },
-          analytics: { view: true },
-          admin: { userManagement: true, systemSettings: true, backupRestore: true },
-          import: { quotations: true, items: true, purchaseOrders: true },
-          activity: { view: true },
-          pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true },
-          telegramBot: { manage: true, viewUsers: true, analytics: true }
-        } : {
-          dashboard: true,
-          admin: { userManagement: role === 'manager' }
-        }
-      });
-      
-      if (newUser) {
-        console.log(`✅ تم إنشاء المستخدم بنجاح: ${newUser.username}`);
-        const { password: _, ...userWithoutPassword } = newUser;
-        res.json({
-          success: true,
-          message: `تم إنشاء المستخدم ${newUser.username} وحفظه في ورقة USERS بنجاح`,
-          user: userWithoutPassword
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          message: "فشل في إنشاء المستخدم في Google Sheets"
-        });
-      }
-    } catch (error: any) {
-      console.error('❌ خطأ في إنشاء المستخدم:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "خطأ داخلي في الخادم"
-      });
-    }
-  });
-
-  // إعادة هيكلة ورقة USERS
-  app.post("/api/restructure-users-sheet", async (req: Request, res: Response) => {
-    try {
-      console.log('🔧 إعادة هيكلة ورقة USERS...');
-      
-      // إستيراد الدالة
-      const { restructureUserSheet } = await import('./user-schema-restructure.js');
-      const result = await restructureUserSheet();
-      
-      if (result.success) {
-        res.json(result);
-      } else {
-        res.status(500).json(result);
-      }
-    } catch (error) {
-      console.error('❌ خطأ في إعادة هيكلة ورقة المستخدمين:', error);
-      res.status(500).json({
-        success: false,
-        message: "خطأ داخلي في الخادم"
-      });
-    }
-  });
-
-  // إعادة تعيين كلمة مرور المستخدم
-  app.post("/api/reset-user-password", async (req: Request, res: Response) => {
-    try {
-      const { username, newPassword } = req.body;
-      
-      if (!username || !newPassword) {
-        return res.status(400).json({
-          success: false,
-          message: "مطلوب: اسم المستخدم وكلمة المرور الجديدة"
-        });
-      }
-
-      console.log(`🔑 إعادة تعيين كلمة مرور للمستخدم: ${username}`);
-      
-      // تشفير كلمة المرور الجديدة
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      
-      // تحديث كلمة المرور في Google Sheets
-      const result = await userSheetsManager.updateUserPassword(username, hashedPassword);
-      
-      if (result) {
-        console.log(`✅ تم تحديث كلمة مرور المستخدم: ${username}`);
-        res.json({
-          success: true,
-          message: `تم تحديث كلمة مرور المستخدم ${username} بنجاح`,
-          timestamp: new Date().toISOString()
-        });
-      } else {
-        res.status(404).json({
-          success: false,
-          message: "المستخدم غير موجود"
-        });
-      }
-    } catch (error: any) {
-      console.error('❌ خطأ في إعادة تعيين كلمة المرور:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "خطأ داخلي في الخادم"
-      });
-    }
-  });
-
-  // اختبار جلب المستخدمين من ورقة USERS
-  app.get("/api/test-users-list", async (req: Request, res: Response) => {
-    try {
-      console.log('📋 اختبار جلب قائمة المستخدمين من ورقة USERS...');
-      
-      const users = await userSheetsManager.getAllUsers();
-      
-      // إزالة كلمات المرور من الاستجابة
-      const usersWithoutPasswords = users.map(user => {
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      });
-      
-      res.json({
-        success: true,
-        message: `تم جلب ${users.length} مستخدم من ورقة USERS بنجاح`,
-        users: usersWithoutPasswords,
-        sheetName: "USERS"
-      });
-    } catch (error) {
-      console.error('❌ خطأ في جلب المستخدمين من ورقة USERS:', error);
-      res.status(500).json({
-        success: false,
-        message: "خطأ في جلب المستخدمين من Google Sheets"
-      });
-    }
-  });
-
-  // إضافة مستخدم جديد (للمدراء فقط)
-  app.post("/api/users/create", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+  // إضافة مستخدم جديد
+  app.post("/api/users/create", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
       const { username, password, fullName, email, phone, role, permissions } = req.body;
       
@@ -1834,8 +1150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // جلب جميع المستخدمين
-  // جلب قائمة المستخدمين (للمدراء فقط)
-  app.get("/api/users", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+  app.get("/api/users", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
       console.log('📋 جلب قائمة المستخدمين...');
       
@@ -5210,7 +4525,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  app.get("/api/telegram/status", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
+  app.get("/api/telegram/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       const { telegramBot } = await import("./telegram-bot");
       const status = await telegramBot.getBotStatus();
@@ -5222,7 +4537,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Get all authorized users (internal + external)
-  app.get("/api/telegram/users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
+  app.get("/api/telegram/users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       const { telegramBot } = await import("./telegram-bot");
       const users = await telegramBot.getAllAuthorizedUsers();
@@ -5234,7 +4549,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Add external user to bot
-  app.post("/api/telegram/external-users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
+  app.post("/api/telegram/external-users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       const { telegramUserId } = req.body;
       
@@ -5258,7 +4573,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Remove external user from bot
-  app.delete("/api/telegram/external-users/:telegramUserId", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
+  app.delete("/api/telegram/external-users/:telegramUserId", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       const { telegramUserId } = req.params;
       
@@ -6160,68 +5475,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         message: 'خطأ في إنشاء طلب التسعير', 
         details: (error as Error).message 
       });
-    }
-  });
-
-  // Telegram Bot Management Routes
-  app.get('/api/telegram-bot/status', requireAuth, async (req, res) => {
-    try {
-      const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
-      const authorizedUsers = telegramBotGoogleSheets.getAuthorizedUsers();
-      
-      res.json({
-        status: 'active',
-        botName: '@Req_item_bot',
-        authorizedUsers: authorizedUsers.count,
-        deepSeekConfigured: !!process.env.DEEPSEEK_API_KEY
-      });
-    } catch (error) {
-      console.error('Error getting bot status:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  app.post('/api/telegram-bot/add-user', requireAuth, async (req, res) => {
-    try {
-      const { telegramUserId } = req.body;
-      
-      if (!telegramUserId) {
-        return res.status(400).json({ error: 'معرف التليجرام مطلوب' });
-      }
-      
-      const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
-      const result = telegramBotGoogleSheets.addExternalUser(telegramUserId);
-      
-      res.json(result);
-    } catch (error) {
-      console.error('Error adding user:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  app.delete('/api/telegram-bot/remove-user/:userId', requireAuth, async (req, res) => {
-    try {
-      const { userId } = req.params;
-      
-      const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
-      const result = telegramBotGoogleSheets.removeExternalUser(userId);
-      
-      res.json(result);
-    } catch (error) {
-      console.error('Error removing user:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  app.get('/api/telegram-bot/users', requireAuth, async (req, res) => {
-    try {
-      const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
-      const users = telegramBotGoogleSheets.getAuthorizedUsers();
-      
-      res.json(users);
-    } catch (error) {
-      console.error('Error getting users:', error);
-      res.status(500).json({ error: 'Internal server error' });
     }
   });
 

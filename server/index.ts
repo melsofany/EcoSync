@@ -148,16 +148,5 @@ app.use((req, res, next) => {
         console.log('⚠️ سيتم المحاولة لاحقاً:', (error as Error).message);
       }
     }, 5000); // انتظار 5 ثوانِ
-
-    // تفعيل بوت التليجرام
-    setTimeout(async () => {
-      try {
-        console.log('📱 [TELEGRAM BOT] Starting Telegram bot...');
-        const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
-        console.log('📱 [TELEGRAM BOT] Telegram bot started successfully');
-      } catch (error) {
-        console.error('📱 [TELEGRAM BOT] Failed to start:', error);
-      }
-    }, 7000); // انتظار 7 ثوانِ لضمان استقرار النظام
   });
 })();

@@ -329,15 +329,15 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
           '',                                       // I - فارغ
           quotation.expiryDate || '',               // J - EXPIRY DATE (تاريخ انتهاء العرض)
           '', '',                                   // K, L - فارغة
-          '', '', '',                               // M, N, O - فارغة
-          quotation.clientName,                     // P - CLIENT NAME
-          quotation.responsibleEmployee || ''       // Q - RESPONSIBLE EMPLOYEE
+          '', '', '', '',                           // M, N, O, P - فارغة
+          quotation.clientName,                     // Q - CLIENT NAME
+          quotation.responsibleEmployee || ''       // R - RESPONSIBLE EMPLOYEE
         ];
         rows.push(row);
       }
 
-      // إدراج البيانات - توسيع النطاق ليشمل العمود Q
-      const range = `DATA!A${startRow}:Q${startRow + rows.length - 1}`;
+      // إدراج البيانات - توسيع النطاق ليشمل العمود R
+      const range = `DATA!A${startRow}:R${startRow + rows.length - 1}`;
       
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
@@ -350,14 +350,6 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
 
       console.log(`✅ تم إدراج ${rows.length} بند في Google Sheets`);
       console.log(`📊 طلب التسعير: ${quotation.rfqNumber} | العميل: ${quotation.clientName}`);
-      
-      // Send Telegram notification for new quotation
-      try {
-        const { telegramBotGoogleSheets } = await import('./telegram-bot-google-sheets');
-        await telegramBotGoogleSheets.sendNewQuotationAnalysis(quotation);
-      } catch (telegramError) {
-        console.error('📱 [TELEGRAM BOT] Failed to send notification:', telegramError);
-      }
       
       return true;
     } catch (error) {

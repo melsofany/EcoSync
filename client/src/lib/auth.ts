@@ -57,7 +57,6 @@ export const canAccessSection = (user: User | null, section: string): boolean =>
       "purchase-orders": ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
       reports: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
       admin: ["manager", "it_admin"],
-      user_management: ["manager", "it_admin"],
     };
 
     return permissions[section as keyof typeof permissions]?.includes(user.role) ?? false;

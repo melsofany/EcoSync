@@ -397,5 +397,3 @@ export class GoogleSheetsRealtimeData {
 }
 
 export const googleSheetsRealtimeData = new GoogleSheetsRealtimeData();
-export const realTimeDataManager = new GoogleSheetsRealtimeData();
-export { GoogleSheetsRealtimeData as GoogleSheetsDataManager };

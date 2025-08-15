@@ -23,9 +23,7 @@ import {
   Download,
   Database,
   Mic,
-  Shield,
-  ChevronDown,
-  ChevronLeft
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -38,35 +36,18 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
   
-  // Get user from session or mock for testing
+  // Mock admin user for Google Sheets system
   const user = {
     id: 'admin-user',
     username: 'admin',
     fullName: 'مدير النظام',
     email: 'admin@qurtoba.com',
     role: 'manager',
-    profileImage: null,
-    permissions: [
-      'view_all', 
-      'edit_all', 
-      'delete_all',
-      'user_management',
-      'admin_panel',
-      'system_settings'
-    ]
+    profileImage: null
   };
   
-  const logout = async () => {
-    try {
-      // Call logout API
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-    // Redirect to login page
+  const logout = () => {
+    // Simple logout for Google Sheets system
     window.location.href = '/';
   };
 
@@ -148,16 +129,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: "/user-management",
       icon: Users,
       section: "admin",
-      parentSection: "admin", // هذا عنصر فرعي تحت الإدارة العامة
     },
-    {
-      title: "إدارة الصلاحيات",
-      href: "/permissions",
-      icon: Shield,
-      section: "admin",
-      parentSection: "admin", // هذا عنصر فرعي تحت الإدارة العامة
-    },
-
     {
       title: "استيراد البيانات",
       href: "/import",
@@ -170,8 +142,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: Activity,
       section: "activity",
     },
-
-
+    {
+      title: "بوت تليجرام",
+      href: "/telegram-bot",
+      icon: Bot,
+      section: "admin",
+    },
     {
       title: "مراقب التوحيد الذكي",
       href: "/unification-monitor",
@@ -285,32 +261,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               return null;
             }
 
-            // إخفاء إدارة المستخدمين إذا لم يكن المستخدم مدير
-            if (item.href === '/user-management' && user.role !== 'manager') {
-              return null;
-            }
-
             const Icon = item.icon;
             const isActive = location === item.href || (item.href !== '/' && location.startsWith(item.href));
-            const isSubItem = item.parentSection; // العناصر الفرعية
 
             return (
               <Link key={item.href} href={item.href} onClick={onClose}>
                 <div className={cn(
                   "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 group relative border-2",
-                  isSubItem ? "mr-4 border-l-2 border-l-gray-200" : "", // مسافة إضافية للعناصر الفرعية
                   isActive 
                     ? "bg-primary text-white shadow-lg border-primary-600 transform scale-[1.02]" 
                     : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent hover:border-gray-200 hover:shadow-sm"
                 )}>
-                  <Icon className={cn(
-                    "flex-shrink-0",
-                    isSubItem ? "h-5 w-5 lg:h-6 lg:w-6" : "h-6 w-6 lg:h-7 lg:w-7"
-                  )} />
-                  <span className={cn(
-                    "font-semibold leading-tight",
-                    isSubItem ? "text-sm lg:text-base" : "text-base lg:text-lg"
-                  )}>
+                  <Icon className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
+                  <span className="font-semibold text-base lg:text-lg leading-tight">
                     {item.title}
                   </span>
                 </div>
@@ -331,7 +294,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Logout */}
           <div 
-            onClick={() => logout()}
+            onClick={() => logout.mutate()}
             className={cn(
               "flex items-center space-x-4 space-x-reverse px-4 py-3 lg:px-5 lg:py-4 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
               "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm"

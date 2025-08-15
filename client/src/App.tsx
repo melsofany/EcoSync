@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Login from "@/pages/Login";
-import { ResetPassword } from "@/pages/ResetPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import ChangePassword from "@/pages/ChangePassword";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
@@ -26,8 +26,6 @@ import ItemDataSheet from "@/pages/ItemDataSheet";
 
 import NotFound from "@/pages/not-found";
 import TelegramBot from "@/pages/TelegramBot";
-// TelegramBotManagement is now integrated into Admin page
-
 import DataRecoveryPage from "@/pages/DataRecoveryPage";
 import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
 import { VoiceControlPage } from "@/pages/VoiceControlPage";
@@ -35,8 +33,6 @@ import DataUnification from "@/pages/DataUnification";
 import UnificationMonitor from "@/pages/UnificationMonitor";
 import UnificationProgress from "@/pages/UnificationProgress";
 import UserManagement from "@/pages/UserManagement";
-import PermissionsManagement from "@/pages/PermissionsManagement";
-
 import GeneralAdmin from "@/pages/GeneralAdmin";
 
 function Router() {
@@ -81,8 +77,8 @@ function Router() {
         <Route path="/purchase-orders" component={PurchaseOrders} />
         <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
         <Route path="/reports" component={Reports} />
-        <Route path="/admin" component={Admin} />
-
+        <Route path="/admin" component={GeneralAdmin} />
+        <Route path="/telegram-bot" component={TelegramBot} />
         <Route path="/data-recovery" component={DataRecoveryPage} />
         <Route path="/database-storage" component={DatabaseStoragePage} />
         <Route path="/voice-control" component={VoiceControlPage} />
@@ -90,7 +86,6 @@ function Router() {
         <Route path="/unification-monitor" component={UnificationMonitor} />
         <Route path="/unification-progress" component={UnificationProgress} />
         <Route path="/user-management" component={UserManagement} />
-        <Route path="/permissions" component={PermissionsManagement} />
 
         <Route path="/change-password" component={ChangePassword} />
         <Route component={NotFound} />

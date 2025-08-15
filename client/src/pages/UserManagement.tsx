@@ -1,28 +1,29 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Users, Plus, Shield, Edit, Trash2, UserPlus, Database, Eye, EyeOff } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Users, UserPlus, Shield, Database, CheckCircle, XCircle } from "lucide-react";
 
 const userFormSchema = z.object({
   username: z.string().min(3, "اسم المستخدم يجب أن يكون 3 أحرف على الأقل"),
   password: z.string().min(6, "كلمة المرور يجب أن تكون 6 أحرف على الأقل"),
-  fullName: z.string().min(1, "الاسم الكامل مطلوب"),
-  email: z.string().email("بريد إلكتروني صحيح مطلوب").optional().or(z.literal("")),
+  fullName: z.string().min(2, "الاسم الكامل مطلوب"),
+  email: z.string().email("بريد إلكتروني غير صالح").optional().or(z.literal("")),
   phone: z.string().optional(),
-  role: z.enum(["manager", "it_admin", "data_entry", "purchasing", "accounting"])
+  role: z.enum(["manager", "it_admin", "data_entry", "purchasing", "accounting"], {
+    required_error: "يرجى اختيار دور المستخدم"
+  })
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -35,11 +36,12 @@ interface User {
   phone?: string;
   role: string;
   isActive: boolean;
+  isOnline: boolean;
+  lastLoginAt?: string;
   createdAt: string;
-  lastLogin?: string;
 }
 
-const roleLabels: Record<string, string> = {
+const roleLabels = {
   manager: "مدير",
   it_admin: "مدير تقني",
   data_entry: "إدخال بيانات",
@@ -54,10 +56,15 @@ const getRolePermissions = (role: string) => {
     items: { view: true, create: false, edit: false, delete: false },
     clients: { view: true, create: false, edit: false, delete: false },
     suppliers: { view: true, create: false, edit: false, delete: false },
-    pricing: { view: false, create: false, edit: false, delete: false },
-    purchase_orders: { view: true, create: false, edit: false, delete: false },
-    reports: { view: true, create: false, edit: false, delete: false },
-    admin: { view: false, create: false, edit: false, delete: false }
+    purchaseOrders: { view: true, create: false, edit: false, delete: false },
+    supplierPricing: { view: false, create: false, edit: false, delete: false },
+    customerPricing: { view: false, create: false, edit: false, delete: false },
+    reports: { view: false, export: false },
+    analytics: { view: false },
+    admin: { userManagement: false, systemSettings: false, backupRestore: false },
+    import: { quotations: false, items: false, purchaseOrders: false },
+    activity: { view: false },
+    pricing: { viewSalePrices: false, viewSupplierPrices: false, viewPurchaseOrderPrices: false, viewCosts: false, viewMargins: false }
   };
 
   switch (role) {
@@ -68,10 +75,15 @@ const getRolePermissions = (role: string) => {
         items: { view: true, create: true, edit: true, delete: true },
         clients: { view: true, create: true, edit: true, delete: true },
         suppliers: { view: true, create: true, edit: true, delete: true },
-        pricing: { view: true, create: true, edit: true, delete: true },
-        purchase_orders: { view: true, create: true, edit: true, delete: true },
-        reports: { view: true, create: true, edit: true, delete: false },
-        admin: { view: true, create: true, edit: true, delete: true }
+        purchaseOrders: { view: true, create: true, edit: true, delete: true },
+        supplierPricing: { view: true, create: true, edit: true, delete: true },
+        customerPricing: { view: true, create: true, edit: true, delete: true },
+        reports: { view: true, export: true },
+        analytics: { view: true },
+        admin: { userManagement: true, systemSettings: true, backupRestore: true },
+        import: { quotations: true, items: true, purchaseOrders: true },
+        activity: { view: true },
+        pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true }
       };
     case "it_admin":
       return {
@@ -80,18 +92,16 @@ const getRolePermissions = (role: string) => {
         items: { view: true, create: true, edit: true, delete: false },
         clients: { view: true, create: true, edit: true, delete: false },
         suppliers: { view: true, create: true, edit: true, delete: false },
-        pricing: { view: true, create: false, edit: false, delete: false },
-        purchase_orders: { view: true, create: false, edit: false, delete: false },
-        reports: { view: true, create: true, edit: false, delete: false },
-        admin: { view: true, create: false, edit: true, delete: false }
+        admin: { userManagement: true, systemSettings: true, backupRestore: true },
+        import: { quotations: true, items: true, purchaseOrders: true },
+        activity: { view: true }
       };
     case "data_entry":
       return {
         ...basePermissions,
         quotations: { view: true, create: true, edit: true, delete: false },
         items: { view: true, create: true, edit: true, delete: false },
-        clients: { view: true, create: true, edit: false, delete: false },
-        suppliers: { view: true, create: false, edit: false, delete: false }
+        clients: { view: true, create: true, edit: false, delete: false }
       };
     case "purchasing":
       return {
@@ -99,16 +109,15 @@ const getRolePermissions = (role: string) => {
         quotations: { view: true, create: false, edit: false, delete: false },
         items: { view: true, create: false, edit: false, delete: false },
         suppliers: { view: true, create: true, edit: true, delete: false },
-        pricing: { view: true, create: true, edit: true, delete: false },
-        purchase_orders: { view: true, create: true, edit: true, delete: false }
+        purchaseOrders: { view: true, create: true, edit: true, delete: false },
+        supplierPricing: { view: true, create: true, edit: true, delete: false }
       };
     case "accounting":
       return {
         ...basePermissions,
-        quotations: { view: true, create: false, edit: false, delete: false },
-        purchase_orders: { view: true, create: false, edit: false, delete: false },
-        reports: { view: true, create: true, edit: false, delete: false },
-        pricing: { view: true, create: false, edit: false, delete: false }
+        reports: { view: true, export: true },
+        analytics: { view: true },
+        pricing: { viewSalePrices: true, viewSupplierPrices: false, viewPurchaseOrderPrices: true, viewCosts: false, viewMargins: true }
       };
     default:
       return basePermissions;
@@ -116,40 +125,39 @@ const getRolePermissions = (role: string) => {
 };
 
 export default function UserManagement() {
-  const { user: currentUser } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const { toast } = useToast();
 
-  // Check if user is manager
-  if (currentUser?.role !== "manager") {
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-6 text-center">
-            <Shield className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-red-700 mb-2">غير مصرح بالدخول</h2>
-            <p className="text-red-600">هذه الصفحة متاحة فقط للمدراء</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+  // جلب قائمة المستخدمين
   const { data: usersData, isLoading, error } = useQuery({
     queryKey: ["/api/users"],
-    queryFn: async () => {
-      const response = await fetch("/api/users", {
-        credentials: 'include'
+    enabled: true,
+    refetchOnWindowFocus: true
+  });
+
+  // إنشاء ورقة المستخدمين
+  const createSheetMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("/api/users/create-sheet", "POST");
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "تم بنجاح",
+        description: "تم إنشاء ورقة المستخدمين في Google Sheets بنجاح"
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "خطأ",
+        description: error.message || "فشل في إنشاء ورقة المستخدمين",
+        variant: "destructive"
+      });
     }
   });
 
+  // إضافة مستخدم جديد
   const createUserMutation = useMutation({
     mutationFn: async (userData: UserFormData) => {
       const permissions = getRolePermissions(userData.role);
@@ -198,6 +206,15 @@ export default function UserManagement() {
   
   // معالجة خطأ Unauthorized
   const isUnauthorized = error && (error as any).status === 401;
+  
+  // Debug logging عند وجود مشاكل فقط
+  if (error || (!isLoading && users.length === 0)) {
+    console.log('UserManagement Debug - usersData:', usersData);
+    console.log('UserManagement Debug - isLoading:', isLoading);  
+    console.log('UserManagement Debug - error:', error);
+    console.log('UserManagement Debug - unauthorized:', isUnauthorized);
+    console.log('UserManagement Debug - users length:', users.length);
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
@@ -225,21 +242,31 @@ export default function UserManagement() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">إدارة المستخدمين</h1>
-          <p className="text-gray-600 dark:text-gray-400">إدارة حسابات المستخدمين والصلاحيات</p>
+          <p className="text-gray-600 dark:text-gray-400">إدارة المستخدمين من خلال Google Sheets</p>
         </div>
         <div className="flex gap-3">
+          <Button
+            onClick={() => createSheetMutation.mutate()}
+            disabled={createSheetMutation.isPending}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Database className="h-4 w-4" />
+            إنشاء ورقة المستخدمين
+          </Button>
+          
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
-                إضافة مستخدم جديد
+                إضافة مستخدم
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]" dir="rtl">
+            <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>إضافة مستخدم جديد</DialogTitle>
                 <DialogDescription>
-                  أدخل بيانات المستخدم الجديد وحدد دوره في النظام
+                  إضافة مستخدم جديد إلى النظام في Google Sheets
                 </DialogDescription>
               </DialogHeader>
               <Form {...form}>
@@ -257,7 +284,7 @@ export default function UserManagement() {
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={form.control}
                     name="password"
@@ -265,32 +292,13 @@ export default function UserManagement() {
                       <FormItem>
                         <FormLabel>كلمة المرور</FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <Input 
-                              type={showPassword ? "text" : "password"} 
-                              placeholder="كلمة المرور" 
-                              {...field} 
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
+                          <Input type="password" placeholder="كلمة المرور" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={form.control}
                     name="fullName"
@@ -304,7 +312,7 @@ export default function UserManagement() {
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={form.control}
                     name="email"
@@ -312,13 +320,13 @@ export default function UserManagement() {
                       <FormItem>
                         <FormLabel>البريد الإلكتروني (اختياري)</FormLabel>
                         <FormControl>
-                          <Input placeholder="البريد الإلكتروني" {...field} />
+                          <Input type="email" placeholder="البريد الإلكتروني" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={form.control}
                     name="phone"
@@ -332,7 +340,7 @@ export default function UserManagement() {
                       </FormItem>
                     )}
                   />
-
+                  
                   <FormField
                     control={form.control}
                     name="role"
@@ -357,22 +365,17 @@ export default function UserManagement() {
                       </FormItem>
                     )}
                   />
-
-                  <div className="flex gap-3 pt-4">
-                    <Button 
-                      type="submit" 
-                      disabled={createUserMutation.isPending}
-                      className="flex-1"
-                    >
-                      {createUserMutation.isPending ? "جاري الإنشاء..." : "إنشاء المستخدم"}
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                  
+                  <div className="flex justify-end gap-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={() => setIsCreateDialogOpen(false)}
-                      className="flex-1"
                     >
                       إلغاء
+                    </Button>
+                    <Button type="submit" disabled={createUserMutation.isPending}>
+                      {createUserMutation.isPending ? "جاري الإنشاء..." : "إنشاء المستخدم"}
                     </Button>
                   </div>
                 </form>
@@ -382,127 +385,145 @@ export default function UserManagement() {
         </div>
       </div>
 
-      {/* إحصائيات المستخدمين */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي المستخدمين</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">المستخدمون النشطون</CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {users.filter((u: User) => u.isActive).length}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">المدراء</CardTitle>
-            <Shield className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {users.filter((u: User) => u.role === 'manager').length}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">المدراء التقنيون</CardTitle>
-            <Database className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {users.filter((u: User) => u.role === 'it_admin').length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* جدول المستخدمين */}
+      {/* معلومات الاتصال */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            قائمة المستخدمين
+            <Shield className="h-5 w-5" />
+            معلومات النظام
           </CardTitle>
+          <CardDescription>
+            النظام يستخدم Google Sheets لإدارة المستخدمين والصلاحيات
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
+              <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <div className="font-semibold text-green-700 dark:text-green-400">Google Sheets</div>
+              <div className="text-sm text-green-600 dark:text-green-500">متصل</div>
+            </div>
+            <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+              <Users className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <div className="font-semibold text-blue-700 dark:text-blue-400">المستخدمين</div>
+              <div className="text-sm text-blue-600 dark:text-blue-500">{users.length} مستخدم</div>
+            </div>
+            <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+              <Shield className="h-8 w-8 text-purple-600 mx-auto mb-2" />
+              <div className="font-semibold text-purple-700 dark:text-purple-400">الأمان</div>
+              <div className="text-sm text-purple-600 dark:text-purple-500">تشفير كامل</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* قائمة المستخدمين */}
+      <Card>
+        <CardHeader>
+          <CardTitle>قائمة المستخدمين</CardTitle>
+          <CardDescription>
+            جميع المستخدمين المسجلين في النظام من Google Sheets
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">جاري التحميل...</p>
+              <p className="mt-2 text-gray-600">جاري تحميل المستخدمين...</p>
+            </div>
+          ) : isUnauthorized ? (
+            <div className="text-center py-8">
+              <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+                <div className="flex items-center justify-center mb-4">
+                  <svg className="w-12 h-12 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                  يجب تسجيل الدخول أولاً
+                </h3>
+                <p className="text-yellow-700 dark:text-yellow-300 mb-4">
+                  لعرض المستخدمين يجب تسجيل الدخول بصلاحيات المدير
+                </p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold mb-2">بيانات تسجيل الدخول:</h4>
+                  <p className="text-sm">اسم المستخدم: <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">admin</code></p>
+                  <p className="text-sm">كلمة المرور: <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">admin123</code></p>
+                </div>
+                <button 
+                  onClick={() => window.location.href = '/'}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  الذهاب لتسجيل الدخول
+                </button>
+              </div>
             </div>
           ) : error ? (
             <div className="text-center py-8">
-              <p className="text-red-600">خطأ في تحميل البيانات</p>
-              {!isUnauthorized && <p className="text-sm text-gray-500 mt-1">تأكد من اتصال الإنترنت</p>}
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
+                <div className="flex items-center justify-center mb-4">
+                  <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                  خطأ في تحميل البيانات
+                </h3>
+                <p className="text-red-700 dark:text-red-300 mb-4">
+                  {(error as any).message || 'حدث خطأ غير متوقع'}
+                </p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  إعادة المحاولة
+                </button>
+              </div>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">لا يوجد مستخدمون بعد</p>
+              <p className="text-gray-600 mb-2">لا توجد مستخدمين</p>
+              <p className="text-sm text-gray-500">قم بإنشاء ورقة المستخدمين أولاً</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-right py-3 px-4 font-medium">المستخدم</th>
-                    <th className="text-right py-3 px-4 font-medium">الدور</th>
-                    <th className="text-right py-3 px-4 font-medium">الحالة</th>
-                    <th className="text-right py-3 px-4 font-medium">تاريخ الإنشاء</th>
-                    <th className="text-right py-3 px-4 font-medium">آخر دخول</th>
-                    <th className="text-center py-3 px-4 font-medium">الإجراءات</th>
+                    <th className="text-right py-3 px-4 font-semibold">اسم المستخدم</th>
+                    <th className="text-right py-3 px-4 font-semibold">الاسم الكامل</th>
+                    <th className="text-right py-3 px-4 font-semibold">البريد الإلكتروني</th>
+                    <th className="text-right py-3 px-4 font-semibold">الدور</th>
+                    <th className="text-right py-3 px-4 font-semibold">الحالة</th>
+                    <th className="text-right py-3 px-4 font-semibold">آخر دخول</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user: User) => (
-                    <tr key={user.id} className="border-b hover:bg-gray-50">
+                    <tr key={user.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                      <td className="py-3 px-4 font-medium">{user.username}</td>
+                      <td className="py-3 px-4">{user.fullName}</td>
+                      <td className="py-3 px-4">{user.email || "-"}</td>
                       <td className="py-3 px-4">
-                        <div>
-                          <div className="font-medium">{user.fullName}</div>
-                          <div className="text-sm text-gray-500">@{user.username}</div>
-                          {user.email && <div className="text-sm text-gray-500">{user.email}</div>}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge variant={user.role === 'manager' ? 'default' : 'secondary'}>
-                          {roleLabels[user.role] || user.role}
+                        <Badge variant="secondary">
+                          {roleLabels[user.role as keyof typeof roleLabels] || user.role}
                         </Badge>
                       </td>
                       <td className="py-3 px-4">
-                        <Badge variant={user.isActive ? 'default' : 'destructive'}>
-                          {user.isActive ? 'نشط' : 'غير نشط'}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-SA') : '-'}
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
-                        {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('ar-SA') : 'لم يدخل بعد'}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex justify-center gap-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        <div className="flex items-center gap-2">
+                          {user.isOnline ? (
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-gray-400" />
+                          )}
+                          <span className={user.isOnline ? "text-green-600" : "text-gray-500"}>
+                            {user.isOnline ? "متصل" : "غير متصل"}
+                          </span>
                         </div>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-600">
+                        {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('ar-EG') : "لم يسجل دخول"}
                       </td>
                     </tr>
                   ))}
