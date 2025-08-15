@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { canAccessSection } from "@/lib/auth";
 import { useState } from "react";
+import { useLogout } from "@/hooks/useAuth";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -53,6 +54,7 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const logout = useLogout();
 
   const toggleExpanded = (section: string) => {
     const newExpanded = new Set(expandedItems);
@@ -74,10 +76,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     profileImage: null
   };
   
-  const logout = () => {
-    // Simple logout for Google Sheets system
-    window.location.href = '/';
-  };
+
 
   const menuItems = [
     {
@@ -392,11 +391,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             onClick={() => logout.mutate()}
             className={cn(
               "flex items-center space-x-4 space-x-reverse px-4 py-3 lg:px-5 lg:py-4 rounded-xl transition-all duration-200 cursor-pointer border-2 border-transparent",
-              "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm"
+              "text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 hover:shadow-sm",
+              logout.isPending && "opacity-50 cursor-not-allowed"
             )}
           >
             <LogOut className="h-5 w-5 lg:h-6 lg:w-6 flex-shrink-0" />
-            <span className="font-medium text-sm lg:text-base leading-tight">تسجيل الخروج</span>
+            <span className="font-medium text-sm lg:text-base leading-tight">
+              {logout.isPending ? 'جاري تسجيل الخروج...' : 'تسجيل الخروج'}
+            </span>
           </div>
         </div>
       </div>
