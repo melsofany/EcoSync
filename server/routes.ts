@@ -1161,6 +1161,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // إعادة تعيين كلمة مرور المستخدم
+  app.post("/api/reset-user-password", async (req: Request, res: Response) => {
+    try {
+      const { username, newPassword } = req.body;
+      
+      if (!username || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "مطلوب: اسم المستخدم وكلمة المرور الجديدة"
+        });
+      }
+
+      console.log(`🔑 إعادة تعيين كلمة مرور للمستخدم: ${username}`);
+      
+      // تشفير كلمة المرور الجديدة
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // تحديث كلمة المرور في Google Sheets
+      const result = await userSheetsManager.updateUserPassword(username, hashedPassword);
+      
+      if (result) {
+        console.log(`✅ تم تحديث كلمة مرور المستخدم: ${username}`);
+        res.json({
+          success: true,
+          message: `تم تحديث كلمة مرور المستخدم ${username} بنجاح`,
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "المستخدم غير موجود"
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ خطأ في إعادة تعيين كلمة المرور:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
   // اختبار جلب المستخدمين من ورقة USERS
   app.get("/api/test-users-list", async (req: Request, res: Response) => {
     try {

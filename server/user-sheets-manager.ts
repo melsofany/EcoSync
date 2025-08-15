@@ -304,6 +304,53 @@ export class UserSheetsManager {
     };
   }
 
+  // تحديث كلمة مرور المستخدم
+  async updateUserPassword(username: string, hashedPassword: string): Promise<boolean> {
+    if (!this.isInitialized) {
+      const initialized = await this.initialize();
+      if (!initialized) return false;
+    }
+
+    try {
+      // جلب جميع المستخدمين للعثور على الصف المناسب
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'USERS!A2:P1000'
+      });
+
+      if (!response.data.values) return false;
+
+      const users = response.data.values;
+      const userRowIndex = users.findIndex(row => row[1] === username); // العمود B = USERNAME
+
+      if (userRowIndex === -1) return false;
+
+      const actualRowNumber = userRowIndex + 2; // +2 لأن البيانات تبدأ من الصف 2
+
+      // تحديث كلمة المرور في العمود C
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!C${actualRowNumber}`,
+        valueInputOption: 'RAW',
+        resource: { values: [[hashedPassword]] }
+      });
+
+      // تحديث تاريخ التحديث في العمود P
+      const now = new Date().toISOString();
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!P${actualRowNumber}`,
+        valueInputOption: 'RAW',
+        resource: { values: [[now]] }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث كلمة المرور:', error);
+      return false;
+    }
+  }
+
   // البحث عن المستخدم بالبريد الإلكتروني
   async getUserByEmail(email: string): Promise<UserSheet | undefined> {
     const users = await this.getAllUsers();
