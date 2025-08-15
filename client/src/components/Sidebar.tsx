@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { canAccessSection } from "@/lib/auth";
+import { useState } from "react";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -23,10 +24,26 @@ import {
   Download,
   Database,
   Mic,
-  Shield
+  Shield,
+  ChevronDown,
+  ChevronLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
+
+interface SubItem {
+  title: string;
+  href: string;
+  icon: React.ComponentType<any>;
+}
+
+interface MenuItem {
+  title: string;
+  href: string;
+  icon: React.ComponentType<any>;
+  section: string;
+  subItems?: SubItem[];
+}
 
 interface SidebarProps {
   isOpen: boolean;
@@ -35,6 +52,17 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (section: string) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(section)) {
+      newExpanded.delete(section);
+    } else {
+      newExpanded.add(section);
+    }
+    setExpandedItems(newExpanded);
+  };
   
   // Mock admin user for Google Sheets system
   const user = {
@@ -119,22 +147,27 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "settings",
     },
     {
-      title: "الإدارة العامة",
+      title: "لوحة التحكم",
       href: "/admin",
       icon: Shield,
       section: "admin",
-    },
-    {
-      title: "إدارة المستخدمين",
-      href: "/user-management",
-      icon: Users,
-      section: "admin",
-    },
-    {
-      title: "إدارة الصلاحيات",
-      href: "/user-permissions",
-      icon: Shield,
-      section: "admin",
+      subItems: [
+        {
+          title: "الإدارة العامة",
+          href: "/admin",
+          icon: Settings,
+        },
+        {
+          title: "إدارة المستخدمين",
+          href: "/user-management",
+          icon: Users,
+        },
+        {
+          title: "إدارة الصلاحيات",
+          href: "/user-permissions",
+          icon: Shield,
+        }
+      ]
     },
     {
       title: "استيراد البيانات",
@@ -269,7 +302,70 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             const Icon = item.icon;
             const isActive = location === item.href || (item.href !== '/' && location.startsWith(item.href));
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const isExpanded = expandedItems.has(item.section);
 
+            // Check if any subitem is active
+            const hasActiveSubItem = hasSubItems && item.subItems!.some(subItem => 
+              location === subItem.href || (subItem.href !== '/' && location.startsWith(subItem.href))
+            );
+
+            if (hasSubItems) {
+              return (
+                <div key={item.section}>
+                  {/* Parent item with toggle */}
+                  <div
+                    className={cn(
+                      "flex items-center justify-between space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 group relative border-2 cursor-pointer",
+                      (isActive || hasActiveSubItem)
+                        ? "bg-primary text-white shadow-lg border-primary-600 transform scale-[1.02]" 
+                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent hover:border-gray-200 hover:shadow-sm"
+                    )}
+                    onClick={() => toggleExpanded(item.section)}
+                  >
+                    <div className="flex items-center space-x-4 space-x-reverse">
+                      <Icon className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
+                      <span className="font-semibold text-base lg:text-lg leading-tight">
+                        {item.title}
+                      </span>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronDown className="h-5 w-5 transition-transform duration-200" />
+                    ) : (
+                      <ChevronLeft className="h-5 w-5 transition-transform duration-200" />
+                    )}
+                  </div>
+
+                  {/* Sub items */}
+                  {isExpanded && (
+                    <div className="mr-4 mt-2 space-y-1">
+                      {item.subItems!.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        const isSubActive = location === subItem.href || (subItem.href !== '/' && location.startsWith(subItem.href));
+                        
+                        return (
+                          <Link key={subItem.href} href={subItem.href} onClick={onClose}>
+                            <div className={cn(
+                              "flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-lg transition-all duration-200",
+                              isSubActive
+                                ? "bg-primary/10 text-primary border-r-4 border-primary"
+                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                            )}>
+                              <SubIcon className="h-5 w-5 flex-shrink-0" />
+                              <span className="font-medium text-sm">
+                                {subItem.title}
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Regular item without subitems
             return (
               <Link key={item.href} href={item.href} onClick={onClose}>
                 <div className={cn(
