@@ -15,9 +15,20 @@ interface BotStatus {
   deepseek_configured: boolean;
 }
 
+interface BotUser {
+  telegramUserId: string;
+  fullName?: string;
+  role?: string;
+  type?: string;
+}
+
 interface BotUsers {
-  users: string[];
-  count: number;
+  internal: BotUser[];
+  external: BotUser[];
+  all: BotUser[];
+  users: BotUser[];
+  total: number;
+  authorized: number;
 }
 
 export function TelegramBotManagement() {
@@ -226,21 +237,29 @@ export function TelegramBotManagement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            المستخدمون المخولون ({botUsers?.count || 0})
+            المستخدمون المخولون ({botUsers?.total || 0})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {botUsers && botUsers.users && botUsers.users.length > 0 ? (
+          {botUsers && botUsers.all && botUsers.all.length > 0 ? (
             <div className="space-y-2">
-              {botUsers.users.map((userId, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              {botUsers.all.map((user, index) => (
+                <div key={user.telegramUserId || index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div>
-                    <span className="font-mono text-sm">{userId}</span>
+                    <div className="font-mono text-sm">{user.telegramUserId}</div>
+                    {user.fullName && (
+                      <div className="text-xs text-gray-500">{user.fullName}</div>
+                    )}
+                    {user.role && (
+                      <Badge variant="secondary" className="text-xs mt-1">
+                        {user.role}
+                      </Badge>
+                    )}
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => removeUser(userId)}
+                    onClick={() => removeUser(user.telegramUserId)}
                     disabled={isLoading}
                   >
                     <Trash2 className="w-4 h-4" />
