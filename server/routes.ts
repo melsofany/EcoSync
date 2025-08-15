@@ -1887,7 +1887,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { userId } = req.params;
       
       // Get user details for logging before deletion
-      const user = await storage.getUser(userId);
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const user = users.find(u => u.id === userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -1897,7 +1898,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Cannot delete your own account" });
       }
 
-      await storage.deleteUser(userId);
+      await usersGoogleSheetsManager.deleteUser(userId);
       await logActivity(req, "delete_user", "user", userId, `Deleted user: ${user.username}`);
 
       res.json({ message: "User deleted successfully" });
@@ -1929,14 +1930,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = users.find(u => u.id === userId);
       
       if (user && user.profileImage) {
-        const imagePath = path.join(process.cwd(), 'public', user.profileImage);
+        // إزالة الشرطة المائلة من البداية إذا كانت موجودة
+        const cleanImagePath = user.profileImage.startsWith('/') ? user.profileImage.substring(1) : user.profileImage;
+        const imagePath = path.join(process.cwd(), 'public', cleanImagePath);
+        
+        console.log(`🔍 البحث عن الصورة في: ${imagePath}`);
+        
         res.sendFile(imagePath, (err) => {
           if (err) {
-            // إرسال صورة افتراضية أو رد فارغ
-            res.status(404).json({ message: 'الصورة غير موجودة' });
+            console.error(`❌ خطأ في إرسال الصورة للمستخدم ${userId}:`, err);
+            res.status(404).json({ message: 'لا توجد صورة للمستخدم' });
           }
         });
       } else {
+        console.log(`❌ لا توجد صورة للمستخدم ${userId}`);
         res.status(404).json({ message: 'لا توجد صورة للمستخدم' });
       }
     } catch (error) {

@@ -16,6 +16,7 @@ interface UserData {
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;
+  profileImage?: string;
 }
 
 interface PermissionData {
@@ -198,7 +199,8 @@ export class UsersGoogleSheetsManager {
             canAccessBot: row[8] === 'TRUE',
             lastLogin: row[9] || '',
             createdAt: row[10] || new Date().toISOString(),
-            updatedAt: row[11] || new Date().toISOString()
+            updatedAt: row[11] || new Date().toISOString(),
+            profileImage: row[12] || '' // مسار الصورة الشخصية
           });
         }
       }
@@ -451,7 +453,7 @@ export class UsersGoogleSheetsManager {
         '', // Last Login
         now, // Created At
         now, // Updated At
-        userData.profileImage || '' // Notes أو Profile Image
+        userData.profileImage || '' // Profile Image Path
       ];
 
       // إضافة المستخدم إلى Google Sheets
@@ -484,6 +486,46 @@ export class UsersGoogleSheetsManager {
     } catch (error) {
       console.error('❌ خطأ في إضافة المستخدم:', error);
       throw error;
+    }
+  }
+
+  // حذف مستخدم
+  async deleteUser(userId: string): Promise<boolean> {
+    try {
+      console.log(`🗑️ حذف المستخدم: ${userId}`);
+      
+      const users = await this.getAllUsers();
+      const userIndex = users.findIndex(user => user.id === userId);
+      
+      if (userIndex === -1) {
+        console.log(`❌ المستخدم ${userId} غير موجود`);
+        return false;
+      }
+
+      // حذف الصف من Google Sheets
+      const rowNumber = userIndex + 2; // الصف الأول هو العناوين
+      
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: this.spreadsheetId,
+        resource: {
+          requests: [{
+            deleteDimension: {
+              range: {
+                sheetId: 0, // USERS sheet
+                dimension: 'ROWS',
+                startIndex: rowNumber - 1,
+                endIndex: rowNumber
+              }
+            }
+          }]
+        }
+      });
+
+      console.log(`✅ تم حذف المستخدم ${userId} بنجاح`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في حذف المستخدم:', error);
+      return false;
     }
   }
 }
