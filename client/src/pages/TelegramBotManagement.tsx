@@ -28,7 +28,7 @@ export function TelegramBotManagement() {
 
   const fetchBotStatus = async () => {
     try {
-      const status = await apiRequest('/api/telegram-bot/status', 'GET');
+      const status = await apiRequest('/api/telegram/status', 'GET');
       setBotStatus(status);
     } catch (error) {
       console.error('Error fetching bot status:', error);
@@ -42,7 +42,7 @@ export function TelegramBotManagement() {
 
   const fetchBotUsers = async () => {
     try {
-      const users = await apiRequest('/api/telegram-bot/users', 'GET');
+      const users = await apiRequest('/api/telegram/users', 'GET');
       setBotUsers(users);
     } catch (error) {
       console.error('Error fetching bot users:', error);
@@ -61,7 +61,7 @@ export function TelegramBotManagement() {
 
     setIsLoading(true);
     try {
-      const result = await apiRequest('/api/telegram-bot/add-user', 'POST', {
+      const result = await apiRequest('/api/telegram/external-users', 'POST', {
         telegramUserId: newUserId.trim()
       });
       
@@ -89,7 +89,7 @@ export function TelegramBotManagement() {
 
     setIsLoading(true);
     try {
-      const result = await apiRequest(`/api/telegram-bot/remove-user/${userId}`, 'DELETE');
+      const result = await apiRequest(`/api/telegram/external-users/${userId}`, 'DELETE');
       
       toast({
         title: 'نجح',

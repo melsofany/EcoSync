@@ -667,9 +667,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Role-based access control
   const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
-      if (!req.session.user || !roles.includes(req.session.user.role)) {
-        return res.status(403).json({ message: "Forbidden" });
+      if (!req.session?.user) {
+        return res.status(401).json({ message: "Unauthorized" });
       }
+      
+      // تسجيل لمراقبة الأخطاء
+      console.log(`🔐 التحقق من دور المستخدم: ${req.session.user.username}, الدور: ${req.session.user.role}, الأدوار المطلوبة: ${roles.join(',')}`);
+      
+      if (!roles.includes(req.session.user.role)) {
+        console.log(`❌ الدور ${req.session.user.role} غير مسموح. الأدوار المطلوبة: ${roles.join(',')}`);
+        return res.status(403).json({ message: "Access denied - insufficient permissions" });
+      }
+      
+      console.log(`✅ تم السماح للمستخدم ${req.session.user.username} بالدور ${req.session.user.role}`);
       next();
     };
   };
@@ -910,7 +920,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fullName: user.fullName,
             email: user.email,
             role: user.role,
-            permissions: user.permissions ? user.permissions.split(',') : ['view_all'],
+            permissions: user.permissions ? JSON.parse(user.permissions).map((p: string) => p.replace(/"/g, '')) : ['view_all'],
             isActive: user.isActive
           };
           
@@ -5200,7 +5210,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  app.get("/api/telegram/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+  app.get("/api/telegram/status", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
       const { telegramBot } = await import("./telegram-bot");
       const status = await telegramBot.getBotStatus();
@@ -5212,7 +5222,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Get all authorized users (internal + external)
-  app.get("/api/telegram/users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+  app.get("/api/telegram/users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
       const { telegramBot } = await import("./telegram-bot");
       const users = await telegramBot.getAllAuthorizedUsers();
@@ -5224,7 +5234,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Add external user to bot
-  app.post("/api/telegram/external-users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+  app.post("/api/telegram/external-users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
       const { telegramUserId } = req.body;
       
@@ -5248,7 +5258,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Remove external user from bot
-  app.delete("/api/telegram/external-users/:telegramUserId", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+  app.delete("/api/telegram/external-users/:telegramUserId", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
       const { telegramUserId } = req.params;
       
