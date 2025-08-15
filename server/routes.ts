@@ -1122,6 +1122,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // إعادة هيكلة ورقة USERS
+  app.post("/api/restructure-users-sheet", async (req: Request, res: Response) => {
+    try {
+      console.log('🔧 إعادة هيكلة ورقة USERS...');
+      
+      // إستيراد الدالة
+      const { restructureUserSheet } = await import('./user-schema-restructure.js');
+      const result = await restructureUserSheet();
+      
+      if (result.success) {
+        res.json(result);
+      } else {
+        res.status(500).json(result);
+      }
+    } catch (error) {
+      console.error('❌ خطأ في إعادة هيكلة ورقة المستخدمين:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
   // اختبار جلب المستخدمين من ورقة USERS
   app.get("/api/test-users-list", async (req: Request, res: Response) => {
     try {

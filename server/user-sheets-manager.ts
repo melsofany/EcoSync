@@ -99,11 +99,11 @@ export class UserSheetsManager {
         console.log('📝 ورقة USERS موجودة بالفعل');
       }
 
-      // إعداد العناوين
+      // إعداد العناوين المحسّنة لتناسب النظام
       const headers = [
-        'المعرف', 'اسم المستخدم', 'كلمة المرور', 'الاسم الكامل', 'البريد الإلكتروني',
-        'رقم الهاتف', 'الصورة الشخصية', 'الدور', 'الصلاحيات', 'نشط', 'متصل',
-        'آخر تسجيل دخول', 'آخر نشاط', 'عنوان IP', 'تاريخ الإنشاء', 'تاريخ التحديث'
+        'ID', 'USERNAME', 'PASSWORD', 'FULL_NAME', 'EMAIL',
+        'PHONE', 'PROFILE_IMAGE', 'ROLE', 'PERMISSIONS', 'IS_ACTIVE', 'IS_ONLINE',
+        'LAST_LOGIN', 'LAST_ACTIVITY', 'IP_ADDRESS', 'CREATED_AT', 'UPDATED_AT'
       ];
 
       // مسح البيانات القديمة
@@ -165,7 +165,7 @@ export class UserSheetsManager {
         resource: { values: [adminUser] }
       });
 
-      console.log('✅ تم إنشاء ورقة USERS بنجاح مع مستخدم المدير الافتراضي');
+      console.log('✅ تم إنشاء ورقة USERS بتنسيق محسّن مع مستخدم المدير الافتراضي');
       return true;
     } catch (error) {
       console.error('❌ خطأ في إنشاء ورقة المستخدمين:', (error as Error).message);
