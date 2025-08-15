@@ -29,8 +29,8 @@ export interface UserSheet {
 }
 
 export class UserSheetsManager {
-  private sheets: any;
-  private spreadsheetId: string;
+  public sheets: any;
+  public spreadsheetId: string;
   private isInitialized = false;
 
   constructor() {
@@ -65,6 +65,45 @@ export class UserSheetsManager {
     } catch (error) {
       console.error('❌ خطأ في تهيئة Google Sheets للمستخدمين:', (error as Error).message);
       this.isInitialized = false;
+      return false;
+    }
+  }
+
+  // إضافة المستخدمين الافتراضيين 
+  async addDefaultUsers() {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    try {
+      const now = new Date().toISOString();
+      
+      // مستخدمين افتراضيين
+      const defaultUsers = [
+        // المدير العام
+        ['admin-001', 'admin', await bcrypt.hash('admin123', 10), 'مدير النظام', 'admin@qurtoba.com', '', '', 'manager', JSON.stringify({ dashboard: true, quotations: { view: true, create: true, edit: true, delete: true } }), 'TRUE', 'FALSE', '', now, '', now, now],
+        
+        // مدير تقنية المعلومات
+        ['it-001', 'it_manager', await bcrypt.hash('itmanager123', 10), 'مدير تقنية المعلومات', 'it@qurtoba.com', '', '', 'it_admin', JSON.stringify({ dashboard: true, admin: { userManagement: true, systemSettings: true, backupRestore: true } }), 'TRUE', 'FALSE', '', now, '', now, now],
+        
+        // مدير المشتريات
+        ['pm-001', 'purchase_manager', await bcrypt.hash('purchase123', 10), 'مدير المشتريات', 'purchase@qurtoba.com', '', '', 'purchasing', JSON.stringify({ dashboard: true, purchaseOrders: { view: true, create: true, edit: true, delete: true } }), 'TRUE', 'FALSE', '', now, '', now, now]
+      ];
+
+      // إضافة المستخدمين
+      for (const userData of defaultUsers) {
+        await this.sheets.spreadsheets.values.append({
+          spreadsheetId: this.spreadsheetId,
+          range: 'USERS!A:P',
+          valueInputOption: 'RAW',
+          resource: { values: [userData] }
+        });
+      }
+
+      console.log('✅ تم إضافة المستخدمين الافتراضيين بنجاح');
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في إضافة المستخدمين الافتراضيين:', error);
       return false;
     }
   }

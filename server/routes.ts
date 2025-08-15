@@ -888,8 +888,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { username, password } = req.body;
       
       console.log(`🔐 محاولة تسجيل دخول للمستخدم: ${username}`);
+    
+    // تحديث: تحقق مباشر من Google Sheets
+    const allUsers = await userSheetsManager.getAllUsers();
+    console.log(`📊 تم العثور على ${allUsers.length} مستخدم في النظام`);
       
-      // Simple hardcoded admin for Google Sheets system
+      // البحث عن المستخدم في Google Sheets أو النظام الاحتياطي
+      const user = allUsers.find(u => u.username === username && u.isActive);
+      
+      if (user) {
+        // تحقق من كلمة المرور
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        console.log(`🔐 تحقق من كلمة المرور للمستخدم ${username}: ${isPasswordValid ? 'صحيحة' : 'خاطئة'}`);
+        
+        if (isPasswordValid) {
+          console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
+          
+          const userResponse = {
+            id: user.id,
+            username: user.username,
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            permissions: user.permissions ? user.permissions.split(',') : ['view_all'],
+            isActive: user.isActive
+          };
+          
+          req.session.user = userResponse;
+          return res.json({ user: userResponse });
+        } else {
+          console.log(`❌ كلمة مرور خاطئة للمستخدم: ${username}`);
+          return res.status(401).json({ message: "بيانات الدخول غير صحيحة" });
+        }
+      }
+      
+      // احتياطي للمدير admin
       if (username === 'admin' && password === 'admin123') {
         const mockUser = {
           id: 'admin-user',
@@ -902,11 +935,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         req.session.user = mockUser;
-        console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
+        console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم الاحتياطي: ${username}`);
         return res.json({ user: mockUser });
       }
       
-      console.log(`❌ بيانات دخول خاطئة للمستخدم: ${username}`);
+      console.log(`❌ لم يتم العثور على المستخدم أو غير مفعل: ${username}`);
       return res.status(401).json({ message: "بيانات الدخول غير صحيحة" });
     } catch (error) {
       console.error("خطأ في تسجيل الدخول:", error);
@@ -1052,6 +1085,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug users endpoint
+  app.get("/api/debug-users", async (req: Request, res: Response) => {
+    try {
+      const users = await userSheetsManager.getAllUsers();
+      res.json({
+        success: true,
+        users: users.map(user => ({
+          id: user.id,
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          isActive: user.isActive,
+          createdAt: user.createdAt
+        }))
+      });
+    } catch (error) {
+      console.error("Debug users error:", error);
+      res.status(500).json({ success: false, message: "خطأ في جلب المستخدمين" });
+    }
+  });
+
   // Test email endpoint
   app.post("/api/test-resend-email", async (req: Request, res: Response) => {
     try {
@@ -1136,6 +1191,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("خطأ في جلب بيانات المستخدم:", error);
       res.status(500).json({ message: "خطأ داخلي في الخادم" });
+    }
+  });
+
+  // Create specific user
+  app.post("/api/create-specific-user", async (req: Request, res: Response) => {
+    try {
+      const { username, password, fullName, email, role } = req.body;
+      
+      if (!username || !password || !fullName) {
+        return res.status(400).json({ message: "البيانات الأساسية مطلوبة" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const now = new Date().toISOString();
+      const userId = `${role}-${Date.now()}`;
+
+      // Create user data for Google Sheets
+      const userData = [
+        userId,
+        username,
+        hashedPassword,
+        fullName,
+        email || '',
+        '', // phone
+        '', // profile image
+        role,
+        JSON.stringify({ dashboard: true }), // basic permissions
+        'TRUE', // isActive
+        'FALSE', // isOnline
+        '', // lastLoginAt
+        now, // lastActivityAt
+        '', // ipAddress
+        now, // createdAt
+        now  // updatedAt
+      ];
+
+      // Add to Google Sheets
+      await userSheetsManager.sheets.spreadsheets.values.append({
+        spreadsheetId: userSheetsManager.spreadsheetId,
+        range: 'USERS!A:P',
+        valueInputOption: 'RAW',
+        resource: { values: [userData] }
+      });
+
+      console.log(`✅ تم إنشاء المستخدم ${username} بنجاح`);
+      
+      res.json({ 
+        success: true,
+        message: `تم إنشاء المستخدم ${username} بنجاح`,
+        user: { id: userId, username, fullName, email, role }
+      });
+      
+    } catch (error) {
+      console.error("Create user error:", error);
+      res.status(500).json({ message: "حدث خطأ في إنشاء المستخدم" });
+    }
+  });
+
+  // Add default users
+  app.post("/api/add-default-users", async (req: Request, res: Response) => {
+    try {
+      const result = await userSheetsManager.addDefaultUsers();
+      if (result) {
+        res.json({ success: true, message: "تم إضافة المستخدمين الافتراضيين بنجاح" });
+      } else {
+        res.status(500).json({ success: false, message: "فشل في إضافة المستخدمين" });
+      }
+    } catch (error) {
+      console.error("Add default users error:", error);
+      res.status(500).json({ message: "حدث خطأ في النظام" });
+    }
+  });
+
+  // Reset specific user password
+  app.post("/api/reset-user-password", async (req: Request, res: Response) => {
+    try {
+      const { username, newPassword } = req.body;
+      
+      if (!username || !newPassword) {
+        return res.status(400).json({ message: "اسم المستخدم وكلمة المرور الجديدة مطلوبان" });
+      }
+      
+      // Update password directly
+      await userSheetsManager.updateUserPassword(username, newPassword);
+      
+      console.log(`✅ تم إعادة تعيين كلمة مرور للمستخدم: ${username}`);
+      
+      res.json({ 
+        success: true,
+        message: `تم إعادة تعيين كلمة مرور للمستخدم ${username} بنجاح`
+      });
+      
+    } catch (error) {
+      console.error("Reset user password error:", error);
+      res.status(500).json({ message: "حدث خطأ في النظام" });
     }
   });
 
