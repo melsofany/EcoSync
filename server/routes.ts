@@ -6144,6 +6144,41 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         await logActivity(req, "quotation_create", "quotations", req.session.user!.id, 
           `Created quotation ${rfqNumber} for ${clientName} with ${items.length} items`);
         
+        // إرسال إشعار للتليجرام للبنود الجديدة
+        try {
+          const { telegramBot } = await import("./telegram-bot");
+          
+          for (const item of items) {
+            // إنشاء كائن البيانات للإشعار
+            const itemData = {
+              id: `NEW-${Date.now()}`,
+              partNumber: item.partNumber || 'غير محدد',
+              description: item.description,
+              itemNumber: `P-${Date.now()}`
+            };
+            
+            const quotationData = {
+              requestNumber: rfqNumber,
+              customRequestNumber: rfqNumber,
+              expiryDate: expiryDate
+            };
+            
+            const quotationItem = {
+              quantity: item.quantity || 1
+            };
+            
+            const client = {
+              name: clientName
+            };
+            
+            // إرسال إشعار مباشر
+            await telegramBot.sendNewItemNotification(itemData, quotationData, quotationItem, client);
+          }
+        } catch (telegramError) {
+          console.error('خطأ في إرسال إشعار التليجرام:', telegramError);
+          // لا نوقف العملية إذا فشل التليجرام
+        }
+        
         res.json({ 
           message: 'تم إنشاء طلب التسعير بنجاح',
           rfqNumber,

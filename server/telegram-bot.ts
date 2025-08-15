@@ -558,6 +558,54 @@ class QortobaAnalysisBot {
     return message;
   }
 
+  // إرسال إشعار مباشر للبند الجديد (للاستخدام مع Google Sheets)
+  async sendNewItemNotification(item: any, quotationRequest: any, quotationItem: any, client: any) {
+    try {
+      // Load authorized users if empty
+      if (AUTHORIZED_USERS.length === 0) {
+        await this.loadAuthorizedUsers();
+      }
+
+      if (AUTHORIZED_USERS.length === 0) {
+        console.log('📱 [TELEGRAM BOT] No authorized users found for notification');
+        return;
+      }
+
+      let analysis = null;
+      try {
+        analysis = await this.analyzeWithDeepSeek(item);
+      } catch (error) {
+        console.error('DeepSeek analysis failed, sending basic notification:', error);
+        analysis = null; // Will use fallback message
+      }
+
+      // Format message with quotation request details
+      const message = await this.formatNewItemMessage(item, quotationRequest, quotationItem, client, analysis);
+      
+      // Send to all authorized users
+      for (const userId of AUTHORIZED_USERS) {
+        try {
+          // Send text message with Markdown formatting
+          await this.bot.sendMessage(userId, message, { parse_mode: 'Markdown' });
+          console.log(`📱 [TELEGRAM BOT] Sent notification to user ${userId} for item: ${item.partNumber}`);
+          
+          // Try to find and send item image
+          try {
+            await this.sendItemImage(userId, item);
+          } catch (imageError) {
+            console.log(`📷 [TELEGRAM BOT] Could not send image for ${item.partNumber}: ${(imageError as Error).message}`);
+          }
+          
+        } catch (error) {
+          console.error(`Failed to send to user ${userId}:`, error);
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error sending new item notification:', error);
+    }
+  }
+
   // Enhanced method to search and send item image with price estimation
   private async sendItemImage(userId: string, item: any) {
     try {
