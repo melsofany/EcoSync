@@ -2,6 +2,12 @@ import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
 import bcrypt from 'bcrypt';
 import { readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export interface UserSheet {
   id: string;
@@ -37,11 +43,12 @@ export class UserSheetsManager {
       // استخدام المفتاح الجديد من الملف المحلي
       let credentials;
       try {
-        const credentialsPath = require('path').resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
+        const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
         const fileContent = readFileSync(credentialsPath, 'utf8');
         credentials = JSON.parse(fileContent);
+        console.log('✅ تم تحميل مفتاح Google Sheets للمستخدمين بنجاح');
       } catch (fileError) {
-        console.error('❌ خطأ في قراءة مفتاح Google Sheets:', fileError.message);
+        console.error('❌ خطأ في قراءة مفتاح Google Sheets:', (fileError as Error).message);
         throw fileError;
       }
 
@@ -80,7 +87,7 @@ export class UserSheetsManager {
             requests: [{
               addSheet: {
                 properties: {
-                  title: 'المستخدمين',
+                  title: 'USERS',
                   sheetId: 999
                 }
               }
@@ -89,7 +96,7 @@ export class UserSheetsManager {
         });
       } catch (error) {
         // الورقة موجودة بالفعل
-        console.log('📝 ورقة المستخدمين موجودة بالفعل');
+        console.log('📝 ورقة USERS موجودة بالفعل');
       }
 
       // إعداد العناوين
@@ -102,13 +109,13 @@ export class UserSheetsManager {
       // مسح البيانات القديمة
       await this.sheets.spreadsheets.values.clear({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A:P'
+        range: 'USERS!A:P'
       });
 
       // إضافة العناوين
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A1:P1',
+        range: 'USERS!A1:P1',
         valueInputOption: 'RAW',
         resource: { values: [headers] }
       });
@@ -153,12 +160,12 @@ export class UserSheetsManager {
 
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A2:P2',
+        range: 'USERS!A2:P2',
         valueInputOption: 'RAW',
         resource: { values: [adminUser] }
       });
 
-      console.log('✅ تم إنشاء ورقة المستخدمين بنجاح مع مستخدم المدير الافتراضي');
+      console.log('✅ تم إنشاء ورقة USERS بنجاح مع مستخدم المدير الافتراضي');
       return true;
     } catch (error) {
       console.error('❌ خطأ في إنشاء ورقة المستخدمين:', (error as Error).message);
@@ -176,7 +183,7 @@ export class UserSheetsManager {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A2:P1000'
+        range: 'USERS!A2:P1000'
       });
 
       if (!response.data.values || response.data.values.length === 0) {
@@ -328,25 +335,25 @@ export class UserSheetsManager {
       // تحديث الحقول المحددة
       const updates = [
         {
-          range: `المستخدمين!K${rowIndex}`, // isOnline
+          range: `USERS!K${rowIndex}`, // isOnline
           values: [[isOnline ? 'TRUE' : 'FALSE']]
         },
         {
-          range: `المستخدمين!M${rowIndex}`, // lastActivityAt
+          range: `USERS!M${rowIndex}`, // lastActivityAt
           values: [[now]]
         }
       ];
 
       if (isOnline) {
         updates.push({
-          range: `المستخدمين!L${rowIndex}`, // lastLoginAt
+          range: `USERS!L${rowIndex}`, // lastLoginAt
           values: [[now]]
         });
       }
 
       if (ipAddress) {
         updates.push({
-          range: `المستخدمين!N${rowIndex}`, // ipAddress
+          range: `USERS!N${rowIndex}`, // ipAddress
           values: [[ipAddress]]
         });
       }
@@ -414,7 +421,7 @@ export class UserSheetsManager {
 
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A:P',
+        range: 'USERS!A:P',
         valueInputOption: 'RAW',
         resource: { values: [newUser] }
       });

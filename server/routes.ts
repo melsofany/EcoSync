@@ -1045,8 +1045,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // إنشاء ورقة المستخدمين في Google Sheets
-  // تم إزالة نظام إنشاء ورقة المستخدمين حسب طلب المستخدم (14 أغسطس 2025)
+  // تهيئة ورقة المستخدمين في Google Sheets
+  app.post("/api/init-user-sheet", async (req: Request, res: Response) => {
+    try {
+      console.log('🔧 تهيئة ورقة المستخدمين في Google Sheets...');
+      
+      const result = await userSheetsManager.createUserSheet();
+      
+      if (result) {
+        res.json({
+          success: true,
+          message: "تم إنشاء ورقة USERS في Google Sheets بنجاح"
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "فشل في إنشاء ورقة المستخدمين"
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في تهيئة ورقة المستخدمين:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
+  // اختبار إنشاء المستخدم (بدون صلاحيات للاختبار)
+  app.post("/api/test-user-create", async (req: Request, res: Response) => {
+    try {
+      const { username, password, fullName, email, phone, role } = req.body;
+      
+      if (!username || !password || !fullName || !role) {
+        return res.status(400).json({
+          success: false,
+          message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
+        });
+      }
+
+      console.log(`👤 اختبار إنشاء مستخدم جديد: ${username}`);
+      
+      const newUser = await userSheetsManager.createUser({
+        username,
+        password,
+        fullName,
+        email,
+        phone,
+        role,
+        permissions: {
+          dashboard: true,
+          admin: { userManagement: role === 'manager' }
+        }
+      });
+      
+      if (newUser) {
+        console.log(`✅ تم إنشاء المستخدم بنجاح: ${newUser.username}`);
+        const { password: _, ...userWithoutPassword } = newUser;
+        res.json({
+          success: true,
+          message: `تم إنشاء المستخدم ${newUser.username} وحفظه في ورقة USERS بنجاح`,
+          user: userWithoutPassword
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "فشل في إنشاء المستخدم في Google Sheets"
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ خطأ في إنشاء المستخدم:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "خطأ داخلي في الخادم"
+      });
+    }
+  });
+
+  // اختبار جلب المستخدمين من ورقة USERS
+  app.get("/api/test-users-list", async (req: Request, res: Response) => {
+    try {
+      console.log('📋 اختبار جلب قائمة المستخدمين من ورقة USERS...');
+      
+      const users = await userSheetsManager.getAllUsers();
+      
+      // إزالة كلمات المرور من الاستجابة
+      const usersWithoutPasswords = users.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      res.json({
+        success: true,
+        message: `تم جلب ${users.length} مستخدم من ورقة USERS بنجاح`,
+        users: usersWithoutPasswords,
+        sheetName: "USERS"
+      });
+    } catch (error) {
+      console.error('❌ خطأ في جلب المستخدمين من ورقة USERS:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في جلب المستخدمين من Google Sheets"
+      });
+    }
+  });
 
   // إضافة مستخدم جديد (للمدراء فقط)
   app.post("/api/users/create", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
