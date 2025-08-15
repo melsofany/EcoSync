@@ -9,6 +9,7 @@ interface UserData {
   fullName: string;
   email: string;
   password: string;
+  phone?: string;
   role: string;
   permissions: string[];
   isActive: boolean;
@@ -92,13 +93,13 @@ export class UsersGoogleSheetsManager {
         // إضافة العناوين للمستخدمين
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'USERS!A1:M1',
+          range: 'USERS!A1:N1',
           valueInputOption: 'RAW',
           resource: {
             values: [[
-              'User ID', 'Username', 'Full Name', 'Email', 'Password Hash', 
-              'Role', 'Permissions', 'Is Active', 'Can Access Bot', 
-              'Last Login', 'Created At', 'Updated At', 'Notes'
+              'USER_ID', 'USERNAME', 'FULL_NAME', 'EMAIL', 'PASSWORD', 
+              'PHONE', 'ROLE', 'PERMISSIONS', 'IS_ACTIVE', 'CAN_ACCESS_BOT', 
+              'LAST_LOGIN', 'CREATED_AT', 'UPDATED_AT', 'PROFILE_IMAGE'
             ]]
           }
         });
@@ -179,7 +180,7 @@ export class UsersGoogleSheetsManager {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'USERS!A2:M1000'
+        range: 'USERS!A2:N1000'
       });
 
       const rows = response.data.values || [];
@@ -193,14 +194,15 @@ export class UsersGoogleSheetsManager {
             fullName: row[2] || '',
             email: row[3] || '',
             password: row[4] || '',
-            role: row[5] || 'data_entry',
-            permissions: row[6] ? row[6].split(',').map((p: string) => p.trim()) : [],
-            isActive: row[7] === 'TRUE',
-            canAccessBot: row[8] === 'TRUE',
-            lastLogin: row[9] || '',
-            createdAt: row[10] || new Date().toISOString(),
-            updatedAt: row[11] || new Date().toISOString(),
-            profileImage: row[12] || '' // مسار الصورة الشخصية
+            phone: row[5] || '', // Phone
+            role: row[6] || 'data_entry',
+            permissions: row[7] ? row[7].split(',').map((p: string) => p.trim()) : [],
+            isActive: row[8] === 'TRUE',
+            canAccessBot: row[9] === 'TRUE',
+            lastLogin: row[10] || '',
+            createdAt: row[11] || new Date().toISOString(),
+            updatedAt: row[12] || new Date().toISOString(),
+            profileImage: row[13] || '' // مسار الصورة الشخصية
           });
         }
       }
@@ -446,6 +448,7 @@ export class UsersGoogleSheetsManager {
         userData.fullName,
         userData.email,
         hashedPassword,
+        userData.phone || '', // Phone
         userData.role,
         '', // صلاحيات فارغة في البداية
         userData.isActive ? 'TRUE' : 'FALSE',
@@ -459,7 +462,7 @@ export class UsersGoogleSheetsManager {
       // إضافة المستخدم إلى Google Sheets
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'USERS!A:M',
+        range: 'USERS!A:N',
         valueInputOption: 'RAW',
         resource: {
           values: [newUserRow]
