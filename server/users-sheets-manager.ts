@@ -1,6 +1,7 @@
 import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
 import { readFileSync } from 'fs';
+import bcrypt from 'bcrypt';
 
 interface UserData {
   id: string;
@@ -431,7 +432,6 @@ export class UsersGoogleSheetsManager {
       }
 
       // تشفير كلمة المرور
-      const bcrypt = require('bcrypt');
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       
       // إنشاء بيانات المستخدم الجديد
