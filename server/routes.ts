@@ -1429,6 +1429,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // إضافة صلاحيات التليجرام المفقودة
+  app.post("/api/add-telegram-permissions", async (req: Request, res: Response) => {
+    try {
+      const { permissions } = req.body;
+      
+      if (!permissions || !Array.isArray(permissions)) {
+        return res.status(400).json({ message: "قائمة الصلاحيات مطلوبة" });
+      }
+      
+      const { permissionsManager } = await import('./permissions-manager.js');
+      
+      // تحضير البيانات للإضافة
+      const now = new Date().toISOString();
+      const permissionRows = permissions.map((perm: any) => [
+        perm.id,
+        perm.section,
+        perm.subsection,
+        perm.name,
+        perm.description,
+        perm.type,
+        perm.category,
+        'TRUE',
+        now,
+        now
+      ]);
+      
+      // إضافة الصلاحيات إلى Google Sheets
+      await permissionsManager.sheets.spreadsheets.values.append({
+        spreadsheetId: permissionsManager.spreadsheetId,
+        range: 'PERMISSIONS!A:J',
+        valueInputOption: 'RAW',
+        resource: { values: permissionRows }
+      });
+      
+      console.log(`✅ تم إضافة ${permissions.length} صلاحية تليجرام جديدة`);
+      
+      res.json({ 
+        success: true, 
+        message: `تم إضافة ${permissions.length} صلاحية تليجرام بنجاح`,
+        addedPermissions: permissions.length
+      });
+      
+    } catch (error) {
+      console.error("خطأ في إضافة صلاحيات التليجرام:", error);
+      res.status(500).json({ message: "حدث خطأ في إضافة صلاحيات التليجرام" });
+    }
+  });
+
   // منح صلاحية لمستخدم
   app.post("/api/grant-permission", async (req: Request, res: Response) => {
     try {

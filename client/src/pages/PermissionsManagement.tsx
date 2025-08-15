@@ -46,7 +46,8 @@ const sectionLabels: Record<string, string> = {
   analytics: "الإحصائيات",
   admin: "الإدارة العامة",
   activity: "سجل النشاطات",
-  settings: "الإعدادات"
+  settings: "الإعدادات",
+  telegram: "بوت التليجرام"
 };
 
 const typeLabels: Record<string, string> = {

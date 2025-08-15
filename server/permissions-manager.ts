@@ -219,7 +219,17 @@ export class PermissionsManager {
 
         // الإعدادات
         ['perm-040', 'settings', 'profile', 'إعدادات الملف الشخصي', 'تعديل البيانات الشخصية', 'edit', 'feature', 'TRUE', now, now],
-        ['perm-041', 'settings', 'notifications', 'إعدادات التنبيهات', 'تحكم في التنبيهات', 'edit', 'feature', 'TRUE', now, now]
+        ['perm-041', 'settings', 'notifications', 'إعدادات التنبيهات', 'تحكم في التنبيهات', 'edit', 'feature', 'TRUE', now, now],
+
+        // بوت التليجرام
+        ['perm-042', 'telegram', 'view_bot', 'عرض بوت التليجرام', 'مشاهدة إعدادات وحالة البوت', 'view', 'screen', 'TRUE', now, now],
+        ['perm-043', 'telegram', 'manage_bot', 'إدارة بوت التليجرام', 'تشغيل وإيقاف وإعادة تشغيل البوت', 'admin', 'admin', 'TRUE', now, now],
+        ['perm-044', 'telegram', 'view_users', 'عرض مستخدمي التليجرام', 'مشاهدة قائمة مستخدمي البوت', 'view', 'data', 'TRUE', now, now],
+        ['perm-045', 'telegram', 'manage_users', 'إدارة مستخدمي التليجرام', 'إضافة وحذف مستخدمي البوت', 'admin', 'admin', 'TRUE', now, now],
+        ['perm-046', 'telegram', 'view_messages', 'عرض رسائل التليجرام', 'مشاهدة سجل الرسائل والتفاعلات', 'view', 'data', 'TRUE', now, now],
+        ['perm-047', 'telegram', 'send_messages', 'إرسال رسائل تليجرام', 'إرسال رسائل وتنبيهات عبر البوت', 'create', 'feature', 'TRUE', now, now],
+        ['perm-048', 'telegram', 'view_analytics', 'عرض إحصائيات التليجرام', 'مشاهدة إحصائيات استخدام البوت', 'view', 'data', 'TRUE', now, now],
+        ['perm-049', 'telegram', 'bot_settings', 'إعدادات بوت التليجرام', 'تحكم في إعدادات البوت المتقدمة', 'admin', 'admin', 'TRUE', now, now]
       ];
 
       // إضافة الصلاحيات إلى الورقة
