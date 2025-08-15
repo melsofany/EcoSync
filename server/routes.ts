@@ -218,22 +218,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
   
-  // إعداد جلسات العرض التوضيحي
+  // إعداد جلسات محسنة للاستقرار
   app.use(session({
     store: new MemStore({
       checkPeriod: 86400000,
       ttl: 86400000 // 24 ساعة
     }),
-    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
-    resave: false,
-    saveUninitialized: false,
+    secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025',
+    resave: true, // إجبار حفظ الجلسة
+    saveUninitialized: true, // حفظ الجلسات غير المهيأة
     rolling: true, // تجديد الجلسة مع كل طلب
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours (extended for better UX)
+      httpOnly: true, // الحماية من XSS
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: 'lax' // تحسين أمان الـ cookies
     },
+    name: 'qurtoba.sid' // اسم مخصص للجلسة
   }));
 
   // Middleware to log activity and track IP
@@ -250,9 +251,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
-  // Authentication middleware
+  // Authentication middleware محسن
   const requireAuth = (req: Request, res: Response, next: Function) => {
-    if (!req.session.user) {
+    if (!req.session || !req.session.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
     next();
