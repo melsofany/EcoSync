@@ -153,14 +153,14 @@ export function TelegramBotManagement() {
               <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                 <div className="text-sm text-purple-600 dark:text-purple-400">المستخدمون المخولون</div>
                 <div className="font-semibold text-purple-800 dark:text-purple-300">
-                  {botStatus.authorizedUsers}
+                  {botStatus.authorized_users || 0}
                 </div>
               </div>
               <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
                 <div className="text-sm text-orange-600 dark:text-orange-400">تكوين AI</div>
                 <div className="font-semibold text-orange-800 dark:text-orange-300">
-                  <Badge variant={botStatus.deepSeekConfigured ? 'default' : 'destructive'}>
-                    {botStatus.deepSeekConfigured ? 'مكون' : 'غير مكون'}
+                  <Badge variant={botStatus.deepseek_configured ? 'default' : 'destructive'}>
+                    {botStatus.deepseek_configured ? 'مكون' : 'غير مكون'}
                   </Badge>
                 </div>
               </div>
