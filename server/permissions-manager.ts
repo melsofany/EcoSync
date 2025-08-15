@@ -336,9 +336,134 @@ export class PermissionsManager {
         resource: { values: [permissionData] }
       });
 
+      // تحديث ورقة USERS أيضاً
+      await this.updateUserPermissionsInUsersSheet(userId, username);
+
       return true;
     } catch (error) {
       console.error('❌ خطأ في منح الصلاحية:', error);
+      return false;
+    }
+  }
+
+  // تحديث صلاحيات المستخدم في ورقة USERS
+  async updateUserPermissionsInUsersSheet(userId: string, username: string): Promise<boolean> {
+    try {
+      // جلب صلاحيات المستخدم الحالية
+      const userPermissions = await this.getUserPermissions(userId);
+      const grantedPermissions = userPermissions.filter(p => p.granted).map(p => p.permissionId);
+      
+      // جلب بيانات المستخدمين من ورقة USERS
+      const usersResponse = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'USERS!A2:P1000'
+      });
+
+      if (!usersResponse.data.values) return false;
+
+      // العثور على المستخدم
+      const userRowIndex = usersResponse.data.values.findIndex((row: string[]) => row[0] === userId);
+      if (userRowIndex === -1) return false;
+
+      // تحديث عمود الصلاحيات (العمود I - العمود التاسع)
+      const permissionsString = JSON.stringify(grantedPermissions);
+      const actualRowNumber = userRowIndex + 2; // +2 لأن البيانات تبدأ من الصف الثاني
+
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!I${actualRowNumber}`,
+        valueInputOption: 'RAW',
+        resource: { values: [[permissionsString]] }
+      });
+
+      console.log(`✅ تم تحديث صلاحيات المستخدم ${username} في ورقة USERS`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث ورقة USERS:', error);
+      return false;
+    }
+  }
+
+  // منح صلاحيات متعددة لمستخدم
+  async grantMultiplePermissions(userId: string, username: string, permissionIds: string[], grantedBy: string): Promise<boolean> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    try {
+      const now = new Date().toISOString();
+      
+      // تحضير البيانات لجميع الصلاحيات
+      const permissionsData = permissionIds.map(permissionId => [
+        userId,
+        username,
+        permissionId,
+        'TRUE',
+        grantedBy,
+        now,
+        now,
+        'منحت تلقائياً'
+      ]);
+
+      // إضافة جميع الصلاحيات دفعة واحدة
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: 'USER_PERMISSIONS!A:H',
+        valueInputOption: 'RAW',
+        resource: { values: permissionsData }
+      });
+
+      // تحديث ورقة USERS
+      await this.updateUserPermissionsInUsersSheet(userId, username);
+
+      console.log(`✅ تم منح ${permissionIds.length} صلاحية للمستخدم ${username}`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في منح الصلاحيات المتعددة:', error);
+      return false;
+    }
+  }
+
+  // إلغاء صلاحية من مستخدم
+  async revokePermission(userId: string, username: string, permissionId: string, revokedBy: string): Promise<boolean> {
+    if (!this.isInitialized) {
+      await this.initialize();
+    }
+
+    try {
+      // جلب صلاحيات المستخدم
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'USER_PERMISSIONS!A2:H1000'
+      });
+
+      if (!response.data.values) return false;
+
+      // العثور على الصلاحية المطلوب إلغاؤها
+      const permissionRowIndex = response.data.values.findIndex((row: string[]) => 
+        row[0] === userId && row[2] === permissionId && row[3] === 'TRUE'
+      );
+
+      if (permissionRowIndex === -1) return false;
+
+      // تحديث حالة الصلاحية إلى FALSE
+      const actualRowNumber = permissionRowIndex + 2;
+      const now = new Date().toISOString();
+
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USER_PERMISSIONS!D${actualRowNumber}:G${actualRowNumber}`,
+        valueInputOption: 'RAW',
+        resource: { values: [['FALSE', revokedBy, now, now]] }
+      });
+
+      // تحديث ورقة USERS
+      await this.updateUserPermissionsInUsersSheet(userId, username);
+
+      console.log(`✅ تم إلغاء الصلاحية ${permissionId} من المستخدم ${username}`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في إلغاء الصلاحية:', error);
       return false;
     }
   }

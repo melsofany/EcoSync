@@ -127,6 +127,26 @@ POST /api/grant-permission
 }
 ```
 
+### 5. منح صلاحيات متعددة لمستخدم
+```bash
+POST /api/grant-multiple-permissions
+{
+  "userId": "admin-001",
+  "username": "admin", 
+  "permissionIds": ["perm-001", "perm-002", "perm-003"]
+}
+```
+
+### 6. إلغاء صلاحية من مستخدم
+```bash
+POST /api/revoke-permission
+{
+  "userId": "admin-001",
+  "username": "admin", 
+  "permissionId": "perm-001"
+}
+```
+
 ## 📱 واجهة إدارة الصلاحيات
 
 - **المسار**: `/permissions`
@@ -175,6 +195,9 @@ POST /api/grant-permission
 5. **تفاعلي**: واجهة بديهية لإدارة الصلاحيات
 6. **آمن**: ربط مباشر بـ Google Sheets
 7. **قابل للتتبع**: سجل كامل لمنح الصلاحيات
+8. **متزامن**: التحديث التلقائي لورقة USERS عند تغيير الصلاحيات
+9. **متعدد**: إمكانية منح/إلغاء صلاحيات متعددة دفعة واحدة
+10. **شامل**: دعم إلغاء الصلاحيات مع تتبع كامل
 
 ## 🔄 التحديث (15 أغسطس 2025)
 

@@ -148,6 +148,21 @@ export default function PermissionsManagement() {
     return userPermissions.some((up: UserPermission) => up.permissionId === permissionId && up.granted);
   };
 
+  // إلغاء صلاحية
+  const revokePermissionMutation = useMutation({
+    mutationFn: async ({ userId, username, permissionId }: { userId: string, username: string, permissionId: string }) => {
+      const response = await apiRequest('/api/revoke-permission', 'POST', { userId, username, permissionId });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "تم إلغاء الصلاحية بنجاح" });
+      queryClient.invalidateQueries({ queryKey: ['/api/user-permissions'] });
+    },
+    onError: () => {
+      toast({ title: "خطأ في إلغاء الصلاحية", variant: "destructive" });
+    }
+  });
+
   // منح/إلغاء صلاحية
   const togglePermission = (permission: Permission, granted: boolean) => {
     if (!selectedUser) return;
@@ -157,6 +172,12 @@ export default function PermissionsManagement() {
 
     if (granted) {
       grantPermissionMutation.mutate({
+        userId: selectedUser,
+        username: selectedUserData.username,
+        permissionId: permission.id
+      });
+    } else {
+      revokePermissionMutation.mutate({
         userId: selectedUser,
         username: selectedUserData.username,
         permissionId: permission.id
@@ -350,7 +371,7 @@ export default function PermissionsManagement() {
                             onCheckedChange={(checked) => 
                               togglePermission(permission, checked as boolean)
                             }
-                            disabled={grantPermissionMutation.isPending}
+                            disabled={grantPermissionMutation.isPending || revokePermissionMutation.isPending}
                           />
                         </TableCell>
                       )}

@@ -1493,7 +1493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (granted) {
         res.json({ 
           success: true, 
-          message: `تم منح الصلاحية ${permissionId} للمستخدم ${username} بنجاح`
+          message: `تم منح الصلاحية ${permissionId} للمستخدم ${username} بنجاح وتحديث ورقة USERS`
         });
       } else {
         res.status(500).json({ message: "فشل في منح الصلاحية" });
@@ -1502,6 +1502,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("خطأ في منح الصلاحية:", error);
       res.status(500).json({ message: "حدث خطأ في منح الصلاحية" });
+    }
+  });
+
+  // منح صلاحيات متعددة لمستخدم
+  app.post("/api/grant-multiple-permissions", async (req: Request, res: Response) => {
+    try {
+      const { userId, username, permissionIds } = req.body;
+      const grantedBy = req.session.user?.username || 'system';
+      
+      if (!userId || !username || !permissionIds || !Array.isArray(permissionIds)) {
+        return res.status(400).json({ message: "البيانات المطلوبة ناقصة" });
+      }
+      
+      const { permissionsManager } = await import('./permissions-manager.js');
+      const granted = await permissionsManager.grantMultiplePermissions(userId, username, permissionIds, grantedBy);
+      
+      if (granted) {
+        res.json({ 
+          success: true, 
+          message: `تم منح ${permissionIds.length} صلاحية للمستخدم ${username} وتحديث ورقة USERS`
+        });
+      } else {
+        res.status(500).json({ message: "فشل في منح الصلاحيات" });
+      }
+      
+    } catch (error) {
+      console.error("خطأ في منح الصلاحيات المتعددة:", error);
+      res.status(500).json({ message: "حدث خطأ في منح الصلاحيات" });
+    }
+  });
+
+  // إلغاء صلاحية من مستخدم
+  app.post("/api/revoke-permission", async (req: Request, res: Response) => {
+    try {
+      const { userId, username, permissionId } = req.body;
+      const revokedBy = req.session.user?.username || 'system';
+      
+      if (!userId || !username || !permissionId) {
+        return res.status(400).json({ message: "البيانات المطلوبة ناقصة" });
+      }
+      
+      const { permissionsManager } = await import('./permissions-manager.js');
+      const revoked = await permissionsManager.revokePermission(userId, username, permissionId, revokedBy);
+      
+      if (revoked) {
+        res.json({ 
+          success: true, 
+          message: `تم إلغاء الصلاحية ${permissionId} من المستخدم ${username} وتحديث ورقة USERS`
+        });
+      } else {
+        res.status(500).json({ message: "فشل في إلغاء الصلاحية" });
+      }
+      
+    } catch (error) {
+      console.error("خطأ في إلغاء الصلاحية:", error);
+      res.status(500).json({ message: "حدث خطأ في إلغاء الصلاحية" });
     }
   });
 
