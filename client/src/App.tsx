@@ -26,7 +26,7 @@ import ItemDataSheet from "@/pages/ItemDataSheet";
 
 import NotFound from "@/pages/not-found";
 import TelegramBot from "@/pages/TelegramBot";
-// TelegramBotManagement is now integrated into Admin page
+import { TelegramBotManagement } from "@/pages/TelegramBotManagement";
 
 import DataRecoveryPage from "@/pages/DataRecoveryPage";
 import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
@@ -58,7 +58,6 @@ function Router() {
     return (
       <Switch>
         <Route path="/reset-password" component={ResetPassword} />
-        <Route path="/login" component={Login} />
         <Route path="/" component={Login} />
         <Route component={Login} />
       </Switch>
@@ -82,7 +81,8 @@ function Router() {
         <Route path="/purchase-orders" component={PurchaseOrders} />
         <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
         <Route path="/reports" component={Reports} />
-        <Route path="/admin" component={Admin} />
+        <Route path="/admin" component={GeneralAdmin} />
+        <Route path="/telegram-bot" component={TelegramBotManagement} />
 
         <Route path="/data-recovery" component={DataRecoveryPage} />
         <Route path="/database-storage" component={DatabaseStoragePage} />

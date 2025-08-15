@@ -218,41 +218,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
   
-  // إعداد جلسات محسنة للاستقرار والتوافق
+  // إعداد جلسات محسنة للاستقرار
   app.use(session({
     store: new MemStore({
-      checkPeriod: 86400000, // فحص كل 24 ساعة
-      ttl: 86400000, // مدة البقاء 24 ساعة
-      dispose: function(key, session) {
-        console.log('🗑️ تنظيف الجلسة:', key);
-      }
+      checkPeriod: 86400000,
+      ttl: 86400000 // 24 ساعة
     }),
     secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025',
-    resave: false, // عدم حفظ الجلسة إذا لم تتغير
+    resave: false, // عدم إجبار حفظ الجلسة إلا عند تغييرها
     saveUninitialized: false, // عدم حفظ الجلسات الفارغة
     rolling: true, // تجديد الجلسة مع كل طلب
     cookie: {
-      secure: false, // false للتطوير، true للإنتاج مع HTTPS
-      httpOnly: false, // السماح للـ JS بالوصول للـ debugging
-      maxAge: 24 * 60 * 60 * 1000, // 24 ساعة
-      sameSite: 'none', // أفضل للـ cross-origin requests
-      domain: undefined, // عدم تحديد النطاق للمرونة
-      path: '/' // المسار الجذر
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: false, // السماح للـ JS بالوصول للكوكيز (مؤقتاً للتصحيح)
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'lax', // تحسين أمان الـ cookies
+      domain: undefined, // السماح لجميع النطاقات الفرعية
+      path: '/' // التأكد من المسار الصحيح
     },
-    name: 'qurtoba.session' // اسم أكثر وضوحاً
+    name: 'connect.sid' // استخدام الاسم الافتراضي
   }));
-
-  // Middleware لطباعة تفاصيل الجلسة والكوكيز
-  app.use((req, res, next) => {
-    if (req.path.includes('/api/') && !req.path.includes('/health')) {
-      console.log(`🔍 [${req.method}] ${req.path}`);
-      console.log(`🍪 Headers Cookie: ${req.headers.cookie || 'لا توجد'}`);
-      console.log(`📋 Session ID: ${req.sessionID}`);
-      console.log(`🔑 Session User: ${req.session?.user ? req.session.user.username : 'غير موجود'}`);
-      console.log(`---`);
-    }
-    next();
-  });
 
   // Middleware to log activity and track IP
   const logActivity = async (req: Request, action: string, entityType?: string, entityId?: string, details?: string) => {
@@ -270,16 +255,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Authentication middleware محسن
   const requireAuth = (req: Request, res: Response, next: Function) => {
-    console.log(`🔐 [requireAuth] فحص المصادقة - Session ID: ${req.sessionID}`);
-    console.log(`🔐 [requireAuth] Session exists: ${!!req.session}`);
-    console.log(`🔐 [requireAuth] Session user: ${req.session?.user ? req.session.user.username + ' (' + req.session.user.role + ')' : 'غير موجود'}`);
-    
     if (!req.session || !req.session.user) {
-      console.log(`❌ [requireAuth] رفض الوصول - لا توجد جلسة أو مستخدم`);
       return res.status(401).json({ message: "Unauthorized" });
     }
-    
-    console.log(`✅ [requireAuth] تم السماح للمستخدم: ${req.session.user.username}`);
     next();
   };
 
@@ -949,22 +927,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
           
           req.session.user = userResponse;
-          
-          // حفظ الجلسة بوضوح
-          req.session.save((err) => {
-            if (err) {
-              console.log(`❌ خطأ في حفظ الجلسة: ${err.message}`);
-            } else {
-              console.log(`✅ تم حفظ الجلسة بنجاح للمستخدم: ${username}`);
-            }
-          });
-          
-          console.log(`🔍 بيانات الجلسة بعد التعيين:`, {
-            sessionId: req.sessionID,
-            userId: req.session.user?.id,
-            username: req.session.user?.username
-          });
-          
           return res.json({ user: userResponse });
         } else {
           console.log(`❌ كلمة مرور خاطئة للمستخدم: ${username}`);
@@ -992,23 +954,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         req.session.user = mockUser;
-        
-        // حفظ الجلسة بوضوح للمدير الاحتياطي
-        req.session.save((err) => {
-          if (err) {
-            console.log(`❌ خطأ في حفظ جلسة المدير الاحتياطي: ${err.message}`);
-          } else {
-            console.log(`✅ تم حفظ جلسة المدير الاحتياطي بنجاح`);
-          }
-        });
-        
         console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم الاحتياطي: ${username}`);
-        console.log(`🔍 بيانات جلسة المدير:`, {
-          sessionId: req.sessionID,
-          userId: req.session.user?.id,
-          username: req.session.user?.username
-        });
-        
         return res.json({ user: mockUser });
       }
       

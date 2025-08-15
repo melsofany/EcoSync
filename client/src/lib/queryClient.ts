@@ -28,19 +28,12 @@ export async function apiRequest(
   method: string = 'GET',
   data?: unknown | undefined,
 ): Promise<Response> {
-  console.log(`🚀 [apiRequest] ${method} ${url}`);
-  console.log(`🍪 [apiRequest] Document cookies:`, document.cookie);
-  console.log(`📦 [apiRequest] Request data:`, data ? JSON.stringify(data).substring(0, 100) + '...' : 'none');
-  
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
-
-  console.log(`📡 [apiRequest] Response status: ${res.status}`);
-  console.log(`🔍 [apiRequest] Response headers:`, Object.fromEntries(res.headers.entries()));
 
   await throwIfResNotOk(res);
   return res;
