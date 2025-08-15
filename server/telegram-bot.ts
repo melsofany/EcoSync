@@ -371,8 +371,8 @@ class QortobaAnalysisBot {
       // Send to all authorized users
       for (const userId of AUTHORIZED_USERS) {
         try {
-          // Send text message first
-          await this.bot.sendMessage(userId, message);
+          // Send text message first with Markdown formatting
+          await this.bot.sendMessage(userId, message, { parse_mode: 'Markdown' });
           console.log(`📱 [TELEGRAM BOT] Sent analysis to user ${userId} for item: ${item.partNumber}`);
           
           // Try to find and send item image only for specific known products
@@ -520,6 +520,11 @@ class QortobaAnalysisBot {
       message += `👤 ${client?.name || 'غير محدد'}\n\n`;
     }
     
+    // Item ID (معرف البند) - highlighted
+    if (item.itemNumber || item.id) {
+      message += `🆔 *معرف البند: ${item.itemNumber || item.id}*\n`;
+    }
+    
     // Item details (shortened)
     message += `🔧 ${item.partNumber}\n`;
     message += `📝 ${item.description.substring(0, 80)}...\n`;
@@ -528,11 +533,17 @@ class QortobaAnalysisBot {
       message += `📦 الكمية: ${quotationItem.quantity}\n`;
     }
     
+    // Expiry Date in red (using ⚠️ for attention and bold for emphasis)
+    if (quotationRequest?.expiryDate) {
+      const expiryDate = new Date(quotationRequest.expiryDate).toLocaleDateString('ar-EG');
+      message += `🔴 *⚠️ تاريخ انتهاء العرض: ${expiryDate} ⚠️*\n`;
+    }
+    
     message += `\n`;
     
     if (analysis) {
       // Truncate analysis for message length limits
-      const maxAnalysisLength = 2500;
+      const maxAnalysisLength = 2200; // Reduced to accommodate new fields
       const truncatedAnalysis = analysis.substring(0, maxAnalysisLength);
       message += `🤖 التحليل:\n${truncatedAnalysis}`;
       
