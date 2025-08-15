@@ -5639,6 +5639,47 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // تحديث صلاحيات المستخدم
+  app.patch("/api/user-permissions/:username", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const { permissions } = req.body;
+      
+      if (!Array.isArray(permissions)) {
+        return res.status(400).json({
+          success: false,
+          message: "يجب تحديد قائمة الصلاحيات"
+        });
+      }
+      
+      const success = await usersGoogleSheetsManager.updateUserPermissions(username, permissions);
+      
+      if (success) {
+        await logActivity(req, "update_user_permissions", "user", username, 
+          `تم تحديث صلاحيات المستخدم ${username} (${permissions.length} صلاحية)`);
+        
+        res.json({
+          success: true,
+          message: `تم تحديث صلاحيات المستخدم ${username} بنجاح`,
+          username: username,
+          permissionsCount: permissions.length,
+          permissions: permissions
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "المستخدم غير موجود"
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في تحديث صلاحيات المستخدم:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في تحديث الصلاحيات"
+      });
+    }
+  });
+
   // تهيئة أوراق المستخدمين والصلاحيات عند بدء التشغيل
   app.post("/api/initialize-user-sheets", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {

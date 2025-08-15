@@ -33,7 +33,7 @@ import DataUnification from "@/pages/DataUnification";
 import UnificationMonitor from "@/pages/UnificationMonitor";
 import UnificationProgress from "@/pages/UnificationProgress";
 import UserManagement from "@/pages/UserManagement";
-import UserPermissions from "@/pages/UserPermissions";
+import SimpleUserPermissions from "@/pages/SimpleUserPermissions";
 import GeneralAdmin from "@/pages/GeneralAdmin";
 
 function Router() {
@@ -87,7 +87,7 @@ function Router() {
         <Route path="/unification-monitor" component={UnificationMonitor} />
         <Route path="/unification-progress" component={UnificationProgress} />
         <Route path="/user-management" component={UserManagement} />
-        <Route path="/user-permissions" component={UserPermissions} />
+        <Route path="/user-permissions" component={SimpleUserPermissions} />
 
         <Route path="/change-password" component={ChangePassword} />
         <Route component={NotFound} />

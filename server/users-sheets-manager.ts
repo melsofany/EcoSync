@@ -358,6 +358,38 @@ export class UsersGoogleSheetsManager {
       return false;
     }
   }
+
+  // تحديث صلاحيات المستخدم
+  async updateUserPermissions(username: string, permissions: string[]): Promise<boolean> {
+    try {
+      const users = await this.getUsers();
+      const userIndex = users.findIndex(user => user.username === username);
+      
+      if (userIndex === -1) {
+        console.log(`❌ المستخدم ${username} غير موجود`);
+        return false;
+      }
+
+      // تحديث الصلاحيات في Google Sheets (العمود F - فهرس 5)
+      const rowNumber = userIndex + 2; // الصف الأول هو العناوين
+      const permissionsString = permissions.join(',');
+
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!F${rowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[permissionsString]]
+        }
+      });
+
+      console.log(`✅ تم تحديث صلاحيات المستخدم ${username} بنجاح`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث صلاحيات المستخدم:', error);
+      return false;
+    }
+  }
 }
 
 export const usersGoogleSheetsManager = new UsersGoogleSheetsManager();
