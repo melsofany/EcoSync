@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Login from "@/pages/Login";
-import ResetPassword from "@/pages/ResetPassword";
+import { ResetPassword } from "@/pages/ResetPassword";
 import ChangePassword from "@/pages/ChangePassword";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";

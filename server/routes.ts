@@ -955,31 +955,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate a temporary password for the user
-      const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
+      // Generate secure reset token
+      const resetToken = randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
       
-      // Update user password in Google Sheets
-      await userSheetsManager.updateUserPassword(user.username, tempPassword);
+      // Store token temporarily (in memory or simple storage)
+      // For now, we'll store it in a simple Map
+      global.passwordResetTokens = global.passwordResetTokens || new Map();
+      global.passwordResetTokens.set(resetToken, {
+        userId: user.id,
+        username: user.username,
+        email: email,
+        expiresAt: expiresAt,
+        used: false
+      });
       
-      console.log(`✅ تم العثور على المستخدم: ${user.username}, كلمة مرور مؤقتة: ${tempPassword}`);
+      console.log(`✅ تم العثور على المستخدم: ${user.username}, token: ${resetToken.substring(0, 8)}...`);
       
-      // Try to send email with temporary password
+      // Generate reset link
+      const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}`;
+      
+      // Try to send email with reset link
       try {
         const emailResult = await sendEmail({
           to: email,
-          subject: "كلمة المرور المؤقتة - نظام قرطبة للتوريدات",
+          subject: "إعادة تعيين كلمة المرور - نظام قرطبة للتوريدات",
           html: `
-            <div style="direction: rtl; font-family: Arial, sans-serif; padding: 20px;">
-              <h2>مرحباً ${user.fullName}</h2>
-              <p>تم إنشاء كلمة مرور مؤقتة لحسابك:</p>
-              <div style="background: #f4f4f4; padding: 15px; margin: 20px 0; border-radius: 5px; font-size: 24px; text-align: center; font-weight: bold; color: #2563eb;">
-                ${tempPassword}
+            <div style="direction: rtl; font-family: Arial, sans-serif; padding: 20px; background: #f8f9fa;">
+              <div style="background: white; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h2 style="color: #2563eb; text-align: center; margin-bottom: 20px;">إعادة تعيين كلمة المرور</h2>
+                
+                <p>مرحباً <strong>${user.fullName}</strong>,</p>
+                
+                <p>تلقينا طلباً لإعادة تعيين كلمة المرور لحسابك في نظام قرطبة للتوريدات.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${resetLink}" 
+                     style="background: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+                    إعادة تعيين كلمة المرور
+                  </a>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">
+                  أو انسخ والصق الرابط التالي في متصفحك:
+                </p>
+                <p style="background: #f4f4f4; padding: 10px; border-radius: 5px; word-break: break-all; font-size: 12px;">
+                  ${resetLink}
+                </p>
+                
+                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 20px 0;">
+                  <p style="margin: 0; color: #856404;">
+                    <strong>ملاحظة مهمة:</strong> هذا الرابط صالح لمدة ساعة واحدة فقط.
+                  </p>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">
+                  إذا لم تطلب إعادة تعيين كلمة المرور، يرجى تجاهل هذه الرسالة.
+                </p>
+                
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+                <p style="text-align: center; color: #999; font-size: 12px;">
+                  نظام قرطبة للتوريدات © 2025
+                </p>
               </div>
-              <p><strong>اسم المستخدم:</strong> ${user.username}</p>
-              <p><strong>كلمة المرور المؤقتة:</strong> ${tempPassword}</p>
-              <p>يرجى تسجيل الدخول وتغيير كلمة المرور فور الدخول للنظام.</p>
-              <hr>
-              <small>نظام قرطبة للتوريدات © 2025</small>
             </div>
           `
         });
@@ -987,16 +1025,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (emailResult.success) {
           res.json({ 
             success: true,
-            message: "تم إرسال كلمة المرور المؤقتة إلى بريدك الإلكتروني",
+            message: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
             sent: true
           });
         } else {
-          // If email fails, still return the temp password
           res.json({ 
-            success: true,
-            message: "تم إنشاء كلمة مرور مؤقتة (لم يتم إرسال البريد)",
-            username: user.username,
-            tempPassword: tempPassword,
+            success: false,
+            message: "فشل في إرسال البريد الإلكتروني",
             emailError: emailResult.message,
             sent: false
           });
@@ -1004,10 +1039,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (emailError) {
         console.error("Email error:", emailError);
         res.json({ 
-          success: true,
-          message: "تم إنشاء كلمة مرور مؤقتة",
-          username: user.username,
-          tempPassword: tempPassword,
+          success: false,
+          message: "خطأ في إرسال البريد الإلكتروني",
+          error: emailError.message,
           sent: false
         });
       }
@@ -1057,22 +1091,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" });
       }
 
-      // Find and validate token
-      const resetToken = await storage.getPasswordResetToken(token);
+      // Get stored tokens
+      global.passwordResetTokens = global.passwordResetTokens || new Map();
+      const resetToken = global.passwordResetTokens.get(token);
+      
       if (!resetToken || resetToken.used || new Date() > resetToken.expiresAt) {
         return res.status(400).json({ message: "رمز استعادة كلمة المرور غير صالح أو منتهي الصلاحية" });
       }
 
-      // Hash new password
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-      // Update user password
-      await storage.updateUserPassword(resetToken.userId, hashedPassword);
+      // Update user password in Google Sheets
+      await userSheetsManager.updateUserPassword(resetToken.username, newPassword);
       
       // Mark token as used
-      await storage.markPasswordResetTokenUsed(token);
+      resetToken.used = true;
+      global.passwordResetTokens.set(token, resetToken);
 
-      await logActivity(req, "password_reset", "user", resetToken.userId, "Password reset completed");
+      console.log(`✅ تم تغيير كلمة مرور المستخدم: ${resetToken.username}`);
 
       res.json({ message: "تم تغيير كلمة المرور بنجاح" });
 
