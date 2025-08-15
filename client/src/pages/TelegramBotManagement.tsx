@@ -29,7 +29,11 @@ export function TelegramBotManagement() {
 
   const fetchBotStatus = async () => {
     try {
-      const status = await apiRequest('/api/telegram/status', 'GET');
+      const response = await fetch('/api/telegram/status', {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch bot status');
+      const status = await response.json();
       console.log('Received bot status data:', status);
       setBotStatus(status);
     } catch (error) {
@@ -44,7 +48,11 @@ export function TelegramBotManagement() {
 
   const fetchBotUsers = async () => {
     try {
-      const users = await apiRequest('/api/telegram/users', 'GET');
+      const response = await fetch('/api/telegram/users', {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch bot users');
+      const users = await response.json();
       setBotUsers(users);
     } catch (error) {
       console.error('Error fetching bot users:', error);
@@ -63,9 +71,14 @@ export function TelegramBotManagement() {
 
     setIsLoading(true);
     try {
-      const result = await apiRequest('/api/telegram/external-users', 'POST', {
-        telegramUserId: newUserId.trim()
+      const response = await fetch('/api/telegram/external-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ telegramUserId: newUserId.trim() })
       });
+      if (!response.ok) throw new Error('Failed to add user');
+      const result = await response.json();
       
       toast({
         title: 'نجح',
@@ -91,7 +104,12 @@ export function TelegramBotManagement() {
 
     setIsLoading(true);
     try {
-      const result = await apiRequest(`/api/telegram/external-users/${userId}`, 'DELETE');
+      const response = await fetch(`/api/telegram/external-users/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to remove user');
+      const result = await response.json();
       
       toast({
         title: 'نجح',
