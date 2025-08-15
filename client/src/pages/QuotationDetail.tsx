@@ -80,11 +80,8 @@ export default function QuotationDetail() {
 
 
 
-  // Fetch quotation items
-  const { data: quotationItems, isLoading: itemsLoading } = useQuery({
-    queryKey: ["/api/quotations", quotationId, "items"],
-    enabled: !!quotationId,
-  });
+  // Get quotation items from the quotation data itself
+  const quotationItems = quotation?.items || [];
 
   // Fetch clients for display
   const { data: clients } = useQuery({
@@ -259,8 +256,10 @@ export default function QuotationDetail() {
     if (!quotationItems || !Array.isArray(quotationItems)) return 0;
     return quotationItems
       .filter(item => item.quantity && item.quantity > 0)
-      .reduce((total: number, item: QuotationItem) => {
-        return total + (item.quantity * (item.unitPrice || 0));
+      .reduce((total: number, item: any) => {
+        const quantity = parseFloat(item.quantity) || 0;
+        const price = parseFloat(item.price) || 0;
+        return total + (quantity * price);
       }, 0);
   };
 
@@ -414,12 +413,7 @@ export default function QuotationDetail() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {itemsLoading ? (
-            <div className="text-center py-8">
-              <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full loading-spinner mx-auto mb-2"></div>
-              <p className="text-gray-600">جاري تحميل الأصناف...</p>
-            </div>
-          ) : !quotationItems || !Array.isArray(quotationItems) || quotationItems.length === 0 ? (
+          {!quotationItems || !Array.isArray(quotationItems) || quotationItems.length === 0 ? (
             <div className="text-center py-12">
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-800 mb-2">لا توجد أصناف</h3>
@@ -465,43 +459,38 @@ export default function QuotationDetail() {
                 </TableHeader>
                 <TableBody>
                   {quotationItems
-                    .filter((quotationItem: QuotationItemWithDetails) => 
-                      quotationItem.quantity && quotationItem.quantity > 0
+                    .filter((quotationItem: any) => 
+                      quotationItem.quantity && parseFloat(quotationItem.quantity) > 0
                     )
-                    .map((quotationItem: QuotationItemWithDetails) => (
+                    .map((quotationItem: any) => (
                     <TableRow key={quotationItem.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">
-                        {quotationItem.item?.itemNumber || quotationItem.itemNumber || "غير محدد"}
+                        {quotationItem.itemNumber || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-mono text-blue-600 text-sm" dir="ltr">
-                        {quotationItem.item?.lineItem || quotationItem.lineItem || "غير محدد"}
+                        {quotationItem.lineItem || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-mono text-purple-600 text-sm">
-                        {quotationItem.item?.uom || quotationItem.unit || "EACH"}
+                        {quotationItem.uom || "EACH"}
                       </TableCell>
                       <TableCell>
                         <div className="max-w-md">
                           <p className="font-medium text-gray-800 whitespace-pre-wrap text-sm leading-tight">
-                            {quotationItem.item?.description || quotationItem.description || "غير محدد"}
+                            {quotationItem.description || "غير محدد"}
                           </p>
-                          {(quotationItem.item?.category || quotationItem.category) && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              {quotationItem.item?.category || quotationItem.category}
-                            </p>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {quotationItem.item?.partNumber || quotationItem.partNumber || "غير محدد"}
+                        {quotationItem.partNumber || "غير محدد"}
                       </TableCell>
                       <TableCell className="font-medium text-green-600">
                         {quotationItem.quantity}
                       </TableCell>
                       <TableCell>
-                        {quotationItem.unitPrice ? formatEGP(quotationItem.unitPrice) : "لم يتم التسعير"}
+                        {quotationItem.price ? formatEGP(parseFloat(quotationItem.price)) : "لم يتم التسعير"}
                       </TableCell>
                       <TableCell className="font-bold text-green-600">
-                        {quotationItem.unitPrice ? formatEGP(quotationItem.quantity * quotationItem.unitPrice) : "في انتظار التسعير"}
+                        {quotationItem.price ? formatEGP(parseFloat(quotationItem.quantity) * parseFloat(quotationItem.price)) : "في انتظار التسعير"}
                       </TableCell>
                       <TableCell>
                         {quotationItem.notes ? (
