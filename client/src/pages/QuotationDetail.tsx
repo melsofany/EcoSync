@@ -72,12 +72,12 @@ export default function QuotationDetail() {
     notes: ""
   });
 
-  // Fetch quotation data
+  // Fetch quotation data - استخدام URL مباشر
   const { data: quotation, isLoading, error } = useQuery({
-    queryKey: ["/api/quotations", quotationId],
+    queryKey: [`/api/quotations/${quotationId}`],
     enabled: !!quotationId,
     retry: 2,
-    staleTime: 0, // دائماً إحضار بيانات جديدة
+    staleTime: 0,
     refetchOnMount: true,
   });
 
