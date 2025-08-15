@@ -100,19 +100,25 @@ class QortobaAnalysisBot {
 
   private async loadAuthorizedUsers() {
     try {
-      const { users } = await import('../shared/schema');
-      const authorizedUsers = await db
-        .select({ telegramUserId: users.telegramUserId })
-        .from(users)
-        .where(eq(users.role, 'it_admin'));
+      // استخدام Google Sheets بدلاً من PostgreSQL
+      const { userSheetsManager } = await import('./user-sheets-manager');
+      const allUsers = await userSheetsManager.getAllUsers();
       
-      AUTHORIZED_USERS = authorizedUsers
-        .filter(user => user.telegramUserId)
-        .map(user => user.telegramUserId!);
+      // البحث عن المستخدمين المخولين (it_admin أو manager) الذين لديهم معرف تليجرام
+      const authorizedUsers = allUsers
+        .filter(user => 
+          user.telegramUserId && 
+          (user.role === 'it_admin' || user.role === 'manager') &&
+          user.isActive
+        )
+        .map(user => user.telegramUserId);
       
-      console.log('📱 [TELEGRAM BOT] Loaded authorized users:', AUTHORIZED_USERS.length);
+      AUTHORIZED_USERS = authorizedUsers;
+      
+      console.log('📱 [TELEGRAM BOT] Loaded authorized users from Google Sheets:', AUTHORIZED_USERS.length);
     } catch (error) {
-      console.error('Error loading authorized users:', error);
+      console.error('Error loading authorized users from Google Sheets:', error);
+      // في حالة الفشل، نبقي على القائمة الحالية
     }
   }
 
@@ -447,34 +453,54 @@ class QortobaAnalysisBot {
     }
   }
 
-  // Get all authorized users (both internal and external)
+  // Get all authorized users (both internal and external) - Google Sheets version
   async getAllAuthorizedUsers() {
-    // Get internal users with Telegram IDs
-    const internalUsers = await db
-      .select({
-        telegramUserId: users.telegramUserId,
-        fullName: users.fullName,
-        role: users.role
-      })
-      .from(users)
-      .where(sql`${users.telegramUserId} IS NOT NULL`);
+    try {
+      // استخدام Google Sheets بدلاً من PostgreSQL
+      const { userSheetsManager } = await import('./user-sheets-manager');
+      const allUsers = await userSheetsManager.getAllUsers();
+      
+      // المستخدمون الداخليون الذين لديهم معرف تليجرام
+      const internalUsers = allUsers
+        .filter(user => user.telegramUserId)
+        .map(user => ({
+          telegramUserId: user.telegramUserId,
+          fullName: user.fullName,
+          role: user.role,
+          type: 'internal'
+        }));
 
-    // External users (those in AUTHORIZED_USERS but not in database)
-    const internalTelegramIds = internalUsers.map(u => u.telegramUserId);
-    const externalUsers = AUTHORIZED_USERS
-      .filter(id => !internalTelegramIds.includes(id))
-      .map(id => ({
-        telegramUserId: id,
-        fullName: 'مستخدم خارجي',
-        role: 'external',
-        type: 'external'
-      }));
+      // المستخدمون الخارجيون (في AUTHORIZED_USERS لكن ليس في Google Sheets)
+      const internalTelegramIds = internalUsers.map(u => u.telegramUserId);
+      const externalUsers = AUTHORIZED_USERS
+        .filter(id => !internalTelegramIds.includes(id))
+        .map(id => ({
+          telegramUserId: id,
+          fullName: 'مستخدم خارجي',
+          role: 'external',
+          type: 'external'
+        }));
 
-    return {
-      internal: internalUsers.map(u => ({...u, type: 'internal'})),
-      external: externalUsers,
-      all: [...internalUsers.map(u => ({...u, type: 'internal'})), ...externalUsers]
-    };
+      return {
+        internal: internalUsers,
+        external: externalUsers,
+        all: [...internalUsers, ...externalUsers],
+        users: [...internalUsers, ...externalUsers],
+        total: internalUsers.length + externalUsers.length,
+        authorized: AUTHORIZED_USERS.length
+      };
+    } catch (error) {
+      console.error('Error getting authorized users from Google Sheets:', error);
+      // إرجاع بيانات فارغة في حالة الخطأ
+      return {
+        internal: [],
+        external: [],
+        all: [],
+        users: [],
+        total: 0,
+        authorized: AUTHORIZED_USERS.length
+      };
+    }
   }
 
   private async formatNewItemMessage(

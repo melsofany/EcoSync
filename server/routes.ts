@@ -5224,13 +5224,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get all authorized users (internal + external)
   app.get("/api/telegram/users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
-      // إرجاع مستخدمين فارغين مؤقتاً حتى يتم إصلاح قاعدة البيانات
-      const mockUsers = {
-        users: [],
-        total: 0,
-        authorized: 0
-      };
-      res.json(mockUsers);
+      const { telegramBot } = await import("./telegram-bot");
+      const users = await telegramBot.getAllAuthorizedUsers();
+      res.json(users);
     } catch (error) {
       console.error("Get telegram users error:", error);
       res.status(500).json({ message: "خطأ في جلب المستخدمين" });
