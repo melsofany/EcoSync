@@ -17,7 +17,6 @@ import EditUserModal from "@/components/modals/EditUserModal";
 import { UserDisplayName } from "@/components/UserDisplayName";
 import { UserAvatar } from "@/components/UserAvatar";
 import PermissionsManager from "@/components/PermissionsManager";
-import { TelegramBotSection } from "@/components/TelegramBotSection";
 import { 
   Users, 
   Shield, 
@@ -35,8 +34,7 @@ import {
   Download,
   RefreshCw,
   Edit,
-  CheckCircle,
-  Bot
+  CheckCircle
 } from "lucide-react";
 
 interface SystemSettings {
@@ -375,27 +373,6 @@ export default function Admin() {
             >
               {activeSection === "database" ? "إخفاء" : "إدارة"} البيانات
               <ArrowRight className={`h-4 w-4 mr-2 transition-transform ${activeSection === "database" ? "rotate-90" : ""}`} />
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="card-hover">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-4 space-x-reverse mb-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Bot className="h-6 w-6 text-orange-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-800">بوت التليجرام</h3>
-                <p className="text-sm text-gray-600">إدارة وتكوين البوت</p>
-              </div>
-            </div>
-            <Button 
-              className="w-full bg-orange-500 hover:bg-orange-600"
-              onClick={() => setActiveSection(activeSection === "telegram" ? "" : "telegram")}
-            >
-              {activeSection === "telegram" ? "إخفاء" : "إدارة"} البوت
-              <ArrowRight className={`h-4 w-4 mr-2 transition-transform ${activeSection === "telegram" ? "rotate-90" : ""}`} />
             </Button>
           </CardContent>
         </Card>
@@ -983,13 +960,6 @@ export default function Admin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Telegram Bot Section */}
-      {activeSection === "telegram" && (
-        <div>
-          <TelegramBotSection />
-        </div>
-      )}
 
       {/* Permissions Management Modal */}
       {permissionsUser && (
