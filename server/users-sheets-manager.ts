@@ -362,7 +362,10 @@ export class UsersGoogleSheetsManager {
   // تحديث صلاحيات المستخدم
   async updateUserPermissions(username: string, permissions: string[]): Promise<boolean> {
     try {
-      const users = await this.getUsers();
+      console.log(`🔄 تحديث صلاحيات المستخدم ${username}...`);
+      console.log(`📋 الصلاحيات المحددة:`, permissions);
+      
+      const users = await this.getAllUsers();
       const userIndex = users.findIndex(user => user.username === username);
       
       if (userIndex === -1) {
@@ -374,6 +377,8 @@ export class UsersGoogleSheetsManager {
       const rowNumber = userIndex + 2; // الصف الأول هو العناوين
       const permissionsString = permissions.join(',');
 
+      console.log(`📝 تحديث الصف ${rowNumber} بالصلاحيات: ${permissionsString}`);
+
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
         range: `USERS!F${rowNumber}`,
@@ -383,10 +388,21 @@ export class UsersGoogleSheetsManager {
         }
       });
 
+      // تحديث وقت التعديل
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!L${rowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[new Date().toISOString()]]
+        }
+      });
+
       console.log(`✅ تم تحديث صلاحيات المستخدم ${username} بنجاح`);
       return true;
     } catch (error) {
       console.error('❌ خطأ في تحديث صلاحيات المستخدم:', error);
+      console.error('تفاصيل الخطأ:', error.message);
       return false;
     }
   }

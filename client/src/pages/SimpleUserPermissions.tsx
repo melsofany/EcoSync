@@ -88,21 +88,37 @@ export default function SimpleUserPermissions() {
     mutationFn: async () => {
       if (!selectedUser) throw new Error('لم يتم اختيار مستخدم');
       
+      console.log('إرسال طلب تحديث الصلاحيات:', {
+        username: selectedUser.username,
+        permissions: Array.from(userPermissions)
+      });
+      
       const response = await apiRequest(`/api/user-permissions/${selectedUser.username}`, 'PATCH', {
         permissions: Array.from(userPermissions)
       });
-      return response.json();
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('خطأ في الاستجابة:', response.status, errorText);
+        throw new Error(`خطأ في الخادم: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('نتيجة تحديث الصلاحيات:', result);
+      return result;
     },
     onSuccess: (data) => {
+      console.log('تم تحديث الصلاحيات بنجاح:', data);
       toast({
         title: "تم التحديث",
-        description: "تم حفظ صلاحيات المستخدم بنجاح",
+        description: `تم حفظ ${Array.from(userPermissions).length} صلاحية للمستخدم ${selectedUser?.fullName}`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/sheets-users'] });
     },
     onError: (error: any) => {
+      console.error('خطأ في تحديث الصلاحيات:', error);
       toast({
-        title: "خطأ",
+        title: "خطأ في التحديث",
         description: error.message || "فشل في تحديث الصلاحيات",
         variant: "destructive",
       });
