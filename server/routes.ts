@@ -218,20 +218,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
   
-  // إعداد جلسات محسنة للاستقرار
+  // إعداد جلسات محسنة للاستقرار - تم إصلاحها لمنع انتهاء الصلاحية السريع
   app.use(session({
     store: new MemStore({
-      checkPeriod: 86400000,
-      ttl: 86400000 // 24 ساعة
+      checkPeriod: 86400000, // 24 ساعة
+      ttl: 86400000 // 24 ساعة - زمن أطول للجلسة
     }),
-    secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025',
-    resave: true, // إجبار حفظ الجلسة
-    saveUninitialized: true, // حفظ الجلسات غير المهيأة
-    rolling: true, // تجديد الجلسة مع كل طلب
+    secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025-extended',
+    resave: false, // عدم إجبار حفظ الجلسة لتحسين الأداء
+    saveUninitialized: false, // عدم حفظ الجلسات غير المهيأة
+    rolling: true, // تجديد الجلسة مع كل طلب - مهم جداً
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: true, // الحماية من XSS
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      httpOnly: false, // السماح بالوصول من JavaScript لتحسين التوافق
+      maxAge: 7 * 24 * 60 * 60 * 1000, // أسبوع كامل - زمن أطول جداً
       sameSite: 'lax' // تحسين أمان الـ cookies
     },
     name: 'qurtoba.sid' // اسم مخصص للجلسة
@@ -253,9 +253,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Authentication middleware محسن
   const requireAuth = (req: Request, res: Response, next: Function) => {
-    if (!req.session || !req.session.user) {
+    // تحسين middleware المصادقة مع تسجيل مفصل
+    if (!req.session) {
+      console.log(`❌ [${new Date().toISOString()}] No session found for ${req.method} ${req.path}`);
       return res.status(401).json({ message: "Unauthorized" });
     }
+    if (!req.session.user) {
+      console.log(`❌ [${new Date().toISOString()}] No user in session for ${req.method} ${req.path}`);
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    // تجديد الجلسة لمنع انتهاء الصلاحية
+    req.session.touch();
+    
+    console.log(`✅ [${new Date().toISOString()}] Auth success for user ${req.session.user.username} on ${req.method} ${req.path}`);
     next();
   };
 

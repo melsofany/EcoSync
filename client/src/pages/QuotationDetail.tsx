@@ -81,7 +81,7 @@ export default function QuotationDetail() {
 
 
   // Get quotation items from the quotation data itself
-  const quotationItems = quotation?.items || [];
+  const quotationItems = (quotation as any)?.items || [];
 
   // Fetch clients for display
   const { data: clients } = useQuery({
