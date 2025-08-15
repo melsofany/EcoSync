@@ -218,20 +218,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
   
-  // إعداد CORS بشكل صحيح أولاً
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.get('Origin') || 'http://localhost:5000');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Cookie');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    
-    if (req.method === 'OPTIONS') {
-      res.sendStatus(200);
-    } else {
-      next();
-    }
-  });
-  
   // إعداد جلسات محسنة للاستقرار
   app.use(session({
     store: new MemStore({
