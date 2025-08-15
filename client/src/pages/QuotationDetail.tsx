@@ -73,9 +73,12 @@ export default function QuotationDetail() {
   });
 
   // Fetch quotation data
-  const { data: quotation, isLoading } = useQuery({
+  const { data: quotation, isLoading, error } = useQuery({
     queryKey: ["/api/quotations", quotationId],
     enabled: !!quotationId,
+    retry: 2,
+    staleTime: 0, // دائماً إحضار بيانات جديدة
+    refetchOnMount: true,
   });
 
 
@@ -286,7 +289,9 @@ export default function QuotationDetail() {
       quotation,
       quotationId,
       hasQuotation: !!quotation,
-      quotationKeys: quotation ? Object.keys(quotation) : []
+      quotationKeys: quotation ? Object.keys(quotation) : [],
+      error,
+      isLoading
     });
     
     return (
@@ -297,9 +302,23 @@ export default function QuotationDetail() {
         <div className="text-sm text-gray-500 mb-4">
           معرف الطلب: {quotationId || "غير محدد"}
         </div>
-        <Button onClick={() => setLocation("/quotations")}>
-          العودة لقائمة طلبات التسعير
-        </Button>
+        {error && (
+          <div className="text-sm text-red-500 mb-4">
+            خطأ: {error.message || "حدث خطأ في تحميل البيانات"}
+          </div>
+        )}
+        <div className="flex flex-col items-center space-y-2">
+          <Button onClick={() => setLocation("/quotations")}>
+            العودة لقائمة طلبات التسعير
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.reload()}
+            className="text-sm"
+          >
+            إعادة تحميل الصفحة
+          </Button>
+        </div>
       </div>
     );
   }
