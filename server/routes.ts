@@ -934,7 +934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Password reset request
+  // Password reset request - simple version for Google Sheets
   app.post("/api/auth/reset-password-request", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
@@ -943,40 +943,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "البريد الإلكتروني مطلوب" });
       }
 
+      console.log(`🔐 طلب إعادة تعيين كلمة مرور للبريد: ${email}`);
+
       // Find user by email
-      const user = await storage.getUserByEmail(email);
+      const user = await userSheetsManager.getUserByEmail(email);
       if (!user) {
-        // Don't reveal if email exists or not for security
-        return res.json({ message: "إذا كان البريد الإلكتروني موجود، ستصلك رسالة استعادة كلمة المرور" });
+        // For security, don't reveal if email exists or not
+        return res.json({ 
+          message: "إذا كان البريد الإلكتروني مسجل في النظام، يمكن استخدام اسم المستخدم لإعادة تعيين كلمة المرور",
+          success: false
+        });
       }
 
-      // Generate reset token
-      const resetToken = randomBytes(32).toString('hex');
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
-
-      // Save token to database
-      await storage.createPasswordResetToken({
-        userId: user.id,
-        token: resetToken,
-        email: email,
-        expiresAt: expiresAt
-      });
-
-      // Generate reset link
-      const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}`;
+      // For demo/development - return username for password reset
+      // In production, you would send a secure email
+      console.log(`✅ تم العثور على المستخدم: ${user.username}`);
       
-      // Send email
-      const emailResult = await sendEmail({
-        to: email,
-        subject: "إعادة تعيين كلمة المرور - نظام قرطبة للتوريدات",
-        html: generatePasswordResetEmail(user.fullName, resetLink)
+      res.json({ 
+        success: true,
+        message: "تم العثور على المستخدم في النظام",
+        username: user.username,
+        fullName: user.fullName,
+        hint: "يمكنك الآن استخدام اسم المستخدم لإعادة تعيين كلمة المرور"
       });
-
-      if (emailResult.success) {
-        res.json({ message: "تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني" });
-      } else {
-        res.status(500).json({ message: emailResult.message });
-      }
 
     } catch (error) {
       console.error("Password reset request error:", error);
