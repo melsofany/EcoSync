@@ -2101,6 +2101,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const googleSheets = new GoogleSheetsRealtimeData();
         const rawData = await googleSheets.readDataSheet();
         
+        // تحميل مفتاح Google Sheets
+        const keyPath = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
+        const credentials = JSON.parse(readFileSync(keyPath, 'utf8'));
+        
         const auth = new GoogleAuth({
           credentials: credentials,
           scopes: ['https://www.googleapis.com/auth/spreadsheets']
