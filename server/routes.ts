@@ -225,18 +225,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ttl: 86400000 // 24 ساعة
     }),
     secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025',
-    resave: false, // عدم إجبار حفظ الجلسة إلا عند تغييرها
-    saveUninitialized: false, // عدم حفظ الجلسات الفارغة
+    resave: true, // إجبار حفظ الجلسة حتى لو لم تتغير
+    saveUninitialized: true, // حفظ الجلسات الفارغة لضمان الحفظ
     rolling: true, // تجديد الجلسة مع كل طلب
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: false, // السماح للـ JS بالوصول للكوكيز (مؤقتاً للتصحيح)
+      httpOnly: true, // حماية الكوكيز من الوصول عبر JS
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: 'lax', // تحسين أمان الـ cookies
       domain: undefined, // السماح لجميع النطاقات الفرعية
       path: '/' // التأكد من المسار الصحيح
     },
-    name: 'connect.sid' // استخدام الاسم الافتراضي
+    name: 'qurtoba.sid' // اسم فريد للكوكيز
   }));
 
   // Middleware to log activity and track IP
@@ -255,9 +255,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Authentication middleware محسن
   const requireAuth = (req: Request, res: Response, next: Function) => {
+    console.log(`🔐 [requireAuth] فحص المصادقة - Session ID: ${req.sessionID}`);
+    console.log(`🔐 [requireAuth] Session exists: ${!!req.session}`);
+    console.log(`🔐 [requireAuth] Session user: ${req.session?.user ? req.session.user.username + ' (' + req.session.user.role + ')' : 'غير موجود'}`);
+    
     if (!req.session || !req.session.user) {
+      console.log(`❌ [requireAuth] رفض الوصول - لا توجد جلسة أو مستخدم`);
       return res.status(401).json({ message: "Unauthorized" });
     }
+    
+    console.log(`✅ [requireAuth] تم السماح للمستخدم: ${req.session.user.username}`);
     next();
   };
 
