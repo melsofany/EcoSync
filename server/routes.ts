@@ -1093,7 +1093,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         phone,
         role,
-        permissions: {
+        permissions: role === 'it_admin' ? {
+          dashboard: true,
+          quotations: { view: true, create: true, edit: true, delete: true },
+          items: { view: true, create: true, edit: true, delete: true },
+          clients: { view: true, create: true, edit: true, delete: true },
+          suppliers: { view: true, create: true, edit: true, delete: true },
+          purchaseOrders: { view: true, create: true, edit: true, delete: true },
+          supplierPricing: { view: true, create: true, edit: true, delete: true },
+          customerPricing: { view: true, create: true, edit: true, delete: true },
+          reports: { view: true, export: true },
+          analytics: { view: true },
+          admin: { userManagement: true, systemSettings: true, backupRestore: true },
+          import: { quotations: true, items: true, purchaseOrders: true },
+          activity: { view: true },
+          pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true },
+          telegramBot: { manage: true, viewUsers: true, analytics: true }
+        } : {
           dashboard: true,
           admin: { userManagement: role === 'manager' }
         }
