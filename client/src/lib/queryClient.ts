@@ -65,8 +65,12 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000, // 5 دقائق بدلاً من Infinity
+      retry: (failureCount, error: any) => {
+        // عدم إعادة المحاولة للأخطاء 401 (غير مصرح)
+        if (error?.status === 401) return false;
+        return failureCount < 3;
+      },
     },
     mutations: {
       retry: false,

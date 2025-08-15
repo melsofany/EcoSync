@@ -9,13 +9,16 @@ export function useAuth() {
       try {
         return await getCurrentUser();
       } catch (error: any) {
-        if (error.message.includes("401")) {
+        if (error.message.includes("401") || error.status === 401) {
           return null;
         }
         throw error;
       }
     },
     retry: false,
+    refetchInterval: 5 * 60 * 1000, // تحديث كل 5 دقائق للحفاظ على الجلسة
+    refetchOnWindowFocus: true, // إعادة التحقق عند العودة للنافذة
+    staleTime: 2 * 60 * 1000, // البيانات تبقى صالحة لدقيقتين
   });
 
   return {
