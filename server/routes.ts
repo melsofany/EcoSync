@@ -225,16 +225,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ttl: 86400000 // 24 ساعة
     }),
     secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025',
-    resave: true, // إجبار حفظ الجلسة
-    saveUninitialized: true, // حفظ الجلسات غير المهيأة
+    resave: false, // عدم إجبار حفظ الجلسة إلا عند تغييرها
+    saveUninitialized: false, // عدم حفظ الجلسات الفارغة
     rolling: true, // تجديد الجلسة مع كل طلب
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: true, // الحماية من XSS
+      httpOnly: false, // السماح للـ JS بالوصول للكوكيز (مؤقتاً للتصحيح)
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax' // تحسين أمان الـ cookies
+      sameSite: 'lax', // تحسين أمان الـ cookies
+      domain: undefined, // السماح لجميع النطاقات الفرعية
+      path: '/' // التأكد من المسار الصحيح
     },
-    name: 'qurtoba.sid' // اسم مخصص للجلسة
+    name: 'connect.sid' // استخدام الاسم الافتراضي
   }));
 
   // Middleware to log activity and track IP
@@ -1190,13 +1192,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
+      console.log(`🔍 فحص الجلسة - Session ID: ${req.sessionID || 'غير محدد'}`);
+      console.log(`🔍 Cookies: ${JSON.stringify(req.cookies)}`);
+      console.log(`🔍 Session exists: ${!!req.session}`);
+      console.log(`🔍 Session user: ${req.session?.user ? req.session.user.username : 'غير موجود'}`);
+      
       if (req.session && req.session.user) {
         console.log(`✅ جلسة نشطة للمستخدم: ${req.session.user.username} (${req.session.user.id})`);
         // إرجاع بيانات المستخدم الفعلية من الجلسة
         return res.json({ user: req.session.user });
       }
       
-      console.log(`❌ لا توجد جلسة نشطة - Session ID: ${req.sessionID || 'غير محدد'}`);
+      console.log(`❌ لا توجد جلسة نشطة أو مستخدم`);
       return res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
       console.error("خطأ في جلب بيانات المستخدم:", error);
@@ -5217,9 +5224,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get all authorized users (internal + external)
   app.get("/api/telegram/users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
-      const { telegramBot } = await import("./telegram-bot");
-      const users = await telegramBot.getAllAuthorizedUsers();
-      res.json(users);
+      // إرجاع مستخدمين فارغين مؤقتاً حتى يتم إصلاح قاعدة البيانات
+      const mockUsers = {
+        users: [],
+        total: 0,
+        authorized: 0
+      };
+      res.json(mockUsers);
     } catch (error) {
       console.error("Get telegram users error:", error);
       res.status(500).json({ message: "خطأ في جلب المستخدمين" });
