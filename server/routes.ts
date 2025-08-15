@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage, initializeDatabase } from "./storage";
 import { linkedStorage } from "./linked-storage";
 import { userSheetsManager } from "./user-sheets-manager";
+import { usersGoogleSheetsManager } from "./users-sheets-manager";
 import { insertUserSchema, insertClientSchema, insertQuotationRequestSchema, insertItemSchema, insertPurchaseOrderSchema, insertSupplierSchema, insertQuotationItemSchema, insertPurchaseOrderItemSchema, insertSupplierQuoteSchema } from "@shared/schema";
 import { autoMapExcelColumns, processExcelRowForQuotation } from "./simpleExcelImport";
 import { sendEmail, generatePasswordResetEmail } from "./emailService";
@@ -5490,6 +5491,169 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       res.status(500).json({ 
         message: 'خطأ في إنشاء طلب التسعير', 
         details: (error as Error).message 
+      });
+    }
+  });
+
+  // APIs جديدة لإدارة المستخدمين والصلاحيات في Google Sheets
+  
+  // جلب جميع المستخدمين من Google Sheets
+  app.get("/api/sheets-users", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      console.log('📋 جلب المستخدمين من Google Sheets...');
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      
+      // إزالة كلمات المرور من الاستجابة
+      const usersWithoutPasswords = users.map(user => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
+      
+      res.json({
+        success: true,
+        users: usersWithoutPasswords,
+        count: users.length
+      });
+    } catch (error) {
+      console.error('❌ خطأ في جلب المستخدمين من Google Sheets:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في الوصول إلى بيانات المستخدمين"
+      });
+    }
+  });
+
+  // إنشاء مستخدم جديد في Google Sheets
+  app.post("/api/sheets-users", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const userData = req.body;
+      
+      if (!userData.username || !userData.password || !userData.fullName) {
+        return res.status(400).json({
+          success: false,
+          message: "اسم المستخدم وكلمة المرور والاسم الكامل مطلوبة"
+        });
+      }
+
+      // تشفير كلمة المرور
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      userData.password = hashedPassword;
+      
+      console.log(`👤 إنشاء مستخدم جديد في Google Sheets: ${userData.username}`);
+      const newUser = await usersGoogleSheetsManager.createUser(userData);
+      
+      // إزالة كلمة المرور من الاستجابة
+      const { password: _, ...userWithoutPassword } = newUser;
+      
+      res.status(201).json({
+        success: true,
+        message: `تم إنشاء المستخدم ${newUser.username} بنجاح`,
+        user: userWithoutPassword
+      });
+    } catch (error) {
+      console.error('❌ خطأ في إنشاء المستخدم في Google Sheets:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في إنشاء المستخدم"
+      });
+    }
+  });
+
+  // جلب جميع الصلاحيات من Google Sheets
+  app.get("/api/permissions", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      console.log('🔐 جلب الصلاحيات من Google Sheets...');
+      const permissions = await usersGoogleSheetsManager.getAllPermissions();
+      
+      res.json({
+        success: true,
+        permissions: permissions,
+        count: permissions.length
+      });
+    } catch (error) {
+      console.error('❌ خطأ في جلب الصلاحيات من Google Sheets:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في الوصول إلى بيانات الصلاحيات"
+      });
+    }
+  });
+
+  // فحص صلاحية الوصول للبوت
+  app.get("/api/bot-access/:username", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const hasAccess = await usersGoogleSheetsManager.checkBotAccess(username);
+      
+      res.json({
+        success: true,
+        username: username,
+        canAccessBot: hasAccess
+      });
+    } catch (error) {
+      console.error('❌ خطأ في فحص صلاحية الوصول للبوت:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في فحص الصلاحية"
+      });
+    }
+  });
+
+  // تحديث صلاحية الوصول للبوت
+  app.patch("/api/bot-access/:username", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const { canAccess } = req.body;
+      
+      if (typeof canAccess !== 'boolean') {
+        return res.status(400).json({
+          success: false,
+          message: "يجب تحديد صلاحية الوصول (true أو false)"
+        });
+      }
+      
+      const success = await usersGoogleSheetsManager.updateBotAccess(username, canAccess);
+      
+      if (success) {
+        await logActivity(req, "update_bot_access", "user", username, 
+          `تم ${canAccess ? 'منح' : 'إلغاء'} صلاحية الوصول للبوت للمستخدم ${username}`);
+        
+        res.json({
+          success: true,
+          message: `تم ${canAccess ? 'منح' : 'إلغاء'} صلاحية الوصول للبوت للمستخدم ${username}`,
+          username: username,
+          canAccessBot: canAccess
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          message: "المستخدم غير موجود"
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في تحديث صلاحية الوصول للبوت:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في تحديث الصلاحية"
+      });
+    }
+  });
+
+  // تهيئة أوراق المستخدمين والصلاحيات عند بدء التشغيل
+  app.post("/api/initialize-user-sheets", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      console.log('🚀 تهيئة أوراق المستخدمين والصلاحيات...');
+      await usersGoogleSheetsManager.createUsersWorksheet();
+      
+      res.json({
+        success: true,
+        message: "تم تهيئة أوراق المستخدمين والصلاحيات بنجاح"
+      });
+    } catch (error) {
+      console.error('❌ خطأ في تهيئة أوراق المستخدمين:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في تهيئة الأوراق"
       });
     }
   });
