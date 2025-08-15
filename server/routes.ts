@@ -1228,6 +1228,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         now  // updatedAt
       ];
 
+      // Initialize userSheetsManager first
+      await userSheetsManager.initialize();
+      
       // Add to Google Sheets
       await userSheetsManager.sheets.spreadsheets.values.append({
         spreadsheetId: userSheetsManager.spreadsheetId,
@@ -1236,7 +1239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         resource: { values: [userData] }
       });
 
-      console.log(`✅ تم إنشاء المستخدم ${username} بنجاح`);
+      console.log(`✅ تم إنشاء المستخدم ${username} بنجاح وحفظه في Google Sheets`);
       
       res.json({ 
         success: true,
