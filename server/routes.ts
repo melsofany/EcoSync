@@ -1357,6 +1357,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // تهيئة نظام الصلاحيات الجديد
+  app.post("/api/init-permissions", async (req: Request, res: Response) => {
+    try {
+      console.log('🔧 تهيئة نظام الصلاحيات الجديد...');
+      
+      const { permissionsManager } = await import('./permissions-manager.js');
+      
+      // إنشاء أوراق الصلاحيات
+      const sheetsCreated = await permissionsManager.createPermissionsSheet();
+      if (!sheetsCreated) {
+        return res.status(500).json({ message: "فشل في إنشاء أوراق الصلاحيات" });
+      }
+      
+      // إضافة الصلاحيات الافتراضية
+      const permissionsAdded = await permissionsManager.addDefaultPermissions();
+      if (!permissionsAdded) {
+        return res.status(500).json({ message: "فشل في إضافة الصلاحيات الافتراضية" });
+      }
+      
+      console.log('✅ تم تهيئة نظام الصلاحيات بنجاح');
+      
+      res.json({ 
+        success: true, 
+        message: "تم تهيئة نظام الصلاحيات الجديد بنجاح",
+        details: "تم إنشاء ورقتين: PERMISSIONS و USER_PERMISSIONS مع 41 صلاحية افتراضية"
+      });
+      
+    } catch (error) {
+      console.error("خطأ في تهيئة نظام الصلاحيات:", error);
+      res.status(500).json({ message: "حدث خطأ في تهيئة نظام الصلاحيات" });
+    }
+  });
+
+  // جلب جميع الصلاحيات
+  app.get("/api/permissions", async (req: Request, res: Response) => {
+    try {
+      const { permissionsManager } = await import('./permissions-manager.js');
+      const permissions = await permissionsManager.getAllPermissions();
+      
+      res.json({ 
+        success: true, 
+        permissions,
+        total: permissions.length
+      });
+      
+    } catch (error) {
+      console.error("خطأ في جلب الصلاحيات:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب الصلاحيات" });
+    }
+  });
+
+  // جلب صلاحيات مستخدم معين
+  app.get("/api/user-permissions/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { permissionsManager } = await import('./permissions-manager.js');
+      
+      const userPermissions = await permissionsManager.getUserPermissions(userId);
+      
+      res.json({ 
+        success: true, 
+        userPermissions,
+        userId,
+        total: userPermissions.length
+      });
+      
+    } catch (error) {
+      console.error("خطأ في جلب صلاحيات المستخدم:", error);
+      res.status(500).json({ message: "حدث خطأ في جلب صلاحيات المستخدم" });
+    }
+  });
+
+  // منح صلاحية لمستخدم
+  app.post("/api/grant-permission", async (req: Request, res: Response) => {
+    try {
+      const { userId, username, permissionId } = req.body;
+      const grantedBy = req.session.user?.username || 'system';
+      
+      if (!userId || !username || !permissionId) {
+        return res.status(400).json({ message: "البيانات المطلوبة ناقصة" });
+      }
+      
+      const { permissionsManager } = await import('./permissions-manager.js');
+      const granted = await permissionsManager.grantPermission(userId, username, permissionId, grantedBy);
+      
+      if (granted) {
+        res.json({ 
+          success: true, 
+          message: `تم منح الصلاحية ${permissionId} للمستخدم ${username} بنجاح`
+        });
+      } else {
+        res.status(500).json({ message: "فشل في منح الصلاحية" });
+      }
+      
+    } catch (error) {
+      console.error("خطأ في منح الصلاحية:", error);
+      res.status(500).json({ message: "حدث خطأ في منح الصلاحية" });
+    }
+  });
+
   // تهيئة ورقة المستخدمين في Google Sheets
   app.post("/api/init-user-sheet", async (req: Request, res: Response) => {
     try {

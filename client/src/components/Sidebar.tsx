@@ -150,6 +150,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "admin",
       parentSection: "admin", // هذا عنصر فرعي تحت الإدارة العامة
     },
+    {
+      title: "إدارة الصلاحيات",
+      href: "/permissions",
+      icon: Shield,
+      section: "admin",
+      parentSection: "admin", // هذا عنصر فرعي تحت الإدارة العامة
+    },
 
     {
       title: "استيراد البيانات",
