@@ -53,6 +53,8 @@ export const canAccessSection = (user: User | null, section: string): boolean =>
       clients: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
       suppliers: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
       supplier_pricing: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+      admin: ["manager", "it_admin"],
+      user_management: ["manager", "it_admin"],
       customer_pricing: ["manager", "accounting"],
       "purchase-orders": ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
       reports: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],

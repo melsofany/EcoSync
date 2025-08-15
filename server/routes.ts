@@ -930,7 +930,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fullName: 'مدير النظام',
           email: 'admin@qurtoba.com',
           role: 'manager',
-          permissions: ['view_all', 'edit_all', 'delete_all'],
+          permissions: [
+            'view_all', 
+            'edit_all', 
+            'delete_all',
+            'user_management',
+            'admin_panel',
+            'system_settings'
+          ],
           isActive: true
         };
         

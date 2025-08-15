@@ -38,14 +38,22 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
   
-  // Mock admin user for Google Sheets system
+  // Get user from session or mock for testing
   const user = {
     id: 'admin-user',
     username: 'admin',
     fullName: 'مدير النظام',
     email: 'admin@qurtoba.com',
     role: 'manager',
-    profileImage: null
+    profileImage: null,
+    permissions: [
+      'view_all', 
+      'edit_all', 
+      'delete_all',
+      'user_management',
+      'admin_panel',
+      'system_settings'
+    ]
   };
   
   const logout = async () => {

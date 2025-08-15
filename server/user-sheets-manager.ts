@@ -81,7 +81,13 @@ export class UserSheetsManager {
       // مستخدمين افتراضيين
       const defaultUsers = [
         // المدير العام
-        ['admin-001', 'admin', await bcrypt.hash('admin123', 10), 'مدير النظام', 'admin@qurtoba.com', '', '', 'manager', JSON.stringify({ dashboard: true, quotations: { view: true, create: true, edit: true, delete: true } }), 'TRUE', 'FALSE', '', now, '', now, now],
+        ['admin-001', 'admin', await bcrypt.hash('admin123', 10), 'مدير النظام', 'admin@qurtoba.com', '', '', 'manager', JSON.stringify({ 
+          dashboard: true, 
+          quotations: { view: true, create: true, edit: true, delete: true },
+          admin: { userManagement: true, systemSettings: true, generalAdmin: true },
+          user_management: true,
+          admin_panel: true
+        }), 'TRUE', 'FALSE', '', now, '', now, now],
         
         // مدير تقنية المعلومات
         ['it-001', 'it_manager', await bcrypt.hash('itmanager123', 10), 'مدير تقنية المعلومات', 'it@qurtoba.com', '', '', 'it_admin', JSON.stringify({ dashboard: true, admin: { userManagement: true, systemSettings: true, backupRestore: true } }), 'TRUE', 'FALSE', '', now, '', now, now],
