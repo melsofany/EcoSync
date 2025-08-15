@@ -23,7 +23,9 @@ import {
   Download,
   Database,
   Mic,
-  Shield
+  Shield,
+  ChevronDown,
+  ChevronLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserDisplayName } from "@/components/UserDisplayName";
@@ -132,6 +134,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: "/admin",
       icon: Shield,
       section: "admin",
+    },
+    {
+      title: "إدارة المستخدمين",
+      href: "/user-management",
+      icon: Users,
+      section: "admin",
+      parentSection: "admin", // هذا عنصر فرعي تحت الإدارة العامة
     },
 
     {
@@ -266,19 +275,32 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               return null;
             }
 
+            // إخفاء إدارة المستخدمين إذا لم يكن المستخدم مدير
+            if (item.href === '/user-management' && user.role !== 'manager') {
+              return null;
+            }
+
             const Icon = item.icon;
             const isActive = location === item.href || (item.href !== '/' && location.startsWith(item.href));
+            const isSubItem = item.parentSection; // العناصر الفرعية
 
             return (
               <Link key={item.href} href={item.href} onClick={onClose}>
                 <div className={cn(
                   "flex items-center space-x-4 space-x-reverse px-4 py-4 lg:px-5 lg:py-5 rounded-xl transition-all duration-200 group relative border-2",
+                  isSubItem ? "mr-4 border-l-2 border-l-gray-200" : "", // مسافة إضافية للعناصر الفرعية
                   isActive 
                     ? "bg-primary text-white shadow-lg border-primary-600 transform scale-[1.02]" 
                     : "text-gray-700 hover:bg-gray-50 hover:text-gray-900 border-transparent hover:border-gray-200 hover:shadow-sm"
                 )}>
-                  <Icon className="h-6 w-6 lg:h-7 lg:w-7 flex-shrink-0" />
-                  <span className="font-semibold text-base lg:text-lg leading-tight">
+                  <Icon className={cn(
+                    "flex-shrink-0",
+                    isSubItem ? "h-5 w-5 lg:h-6 lg:w-6" : "h-6 w-6 lg:h-7 lg:w-7"
+                  )} />
+                  <span className={cn(
+                    "font-semibold leading-tight",
+                    isSubItem ? "text-sm lg:text-base" : "text-base lg:text-lg"
+                  )}>
                     {item.title}
                   </span>
                 </div>

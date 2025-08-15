@@ -1048,7 +1048,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // إنشاء ورقة المستخدمين في Google Sheets
   // تم إزالة نظام إنشاء ورقة المستخدمين حسب طلب المستخدم (14 أغسطس 2025)
 
-  // تم إزالة نظام إنشاء المستخدمين حسب طلب المستخدم (14 أغسطس 2025)
+  // إضافة مستخدم جديد (للمدراء فقط)
+  app.post("/api/users/create", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+    try {
+      const { username, password, fullName, email, phone, role, permissions } = req.body;
+      
+      if (!username || !password || !fullName || !role) {
+        return res.status(400).json({
+          success: false,
+          message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
+        });
+      }
+
+      console.log(`👤 إنشاء مستخدم جديد: ${username}`);
+      
+      const newUser = await userSheetsManager.createUser({
+        username,
+        password,
+        fullName,
+        email,
+        phone,
+        role,
+        permissions
+      });
+      
+      if (newUser) {
+        console.log(`✅ تم إنشاء المستخدم: ${newUser.username}`);
+        const { password: _, ...userWithoutPassword } = newUser;
+        res.json({
+          success: true,
+          message: `تم إنشاء المستخدم ${newUser.username} بنجاح`,
+          user: userWithoutPassword
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "فشل في إنشاء المستخدم"
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ خطأ في إنشاء المستخدم:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "خطأ داخلي في الخادم"
+      });
+    }
+  });
 
   // رفع صورة المستخدم
   app.post("/api/upload/profile-image", requireAuth, upload.single('image'), async (req: Request, res: Response) => {
@@ -1080,7 +1125,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // جلب جميع المستخدمين
-  app.get("/api/users", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+  // جلب قائمة المستخدمين (للمدراء فقط)
+  app.get("/api/users", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
     try {
       console.log('📋 جلب قائمة المستخدمين...');
       
