@@ -87,11 +87,16 @@ export default function CreateQuotation() {
       
       if (error.message?.includes('تسجيل الدخول')) {
         errorMessage = "يجب تسجيل الدخول أولاً لحفظ طلب التسعير";
-        // إعادة توجيه لصفحة تسجيل الدخول
-        setTimeout(() => navigate('/login'), 2000);
+        // إعادة توجيه لصفحة تسجيل الدخول الصحيحة
+        setTimeout(() => {
+          // إعادة تحميل الصفحة للحصول على حالة مصادقة محدثة
+          window.location.href = '/login';
+        }, 1500);
       } else if (error.status === 401) {
         errorMessage = "انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى";
-        setTimeout(() => navigate('/login'), 2000);
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
       } else {
         errorMessage = error.data?.message || error.message || "حدث خطأ غير متوقع";
       }

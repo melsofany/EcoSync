@@ -218,25 +218,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
   
-  // إعداد جلسات محسنة للاستقرار
+  // إعداد جلسات محسنة للاستقرار والتوافق
   app.use(session({
     store: new MemStore({
-      checkPeriod: 86400000,
-      ttl: 86400000 // 24 ساعة
+      checkPeriod: 86400000, // فحص كل 24 ساعة
+      ttl: 86400000, // مدة البقاء 24 ساعة
+      dispose: function(key, session) {
+        console.log('🗑️ تنظيف الجلسة:', key);
+      }
     }),
     secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025',
-    resave: true, // إجبار حفظ الجلسة حتى لو لم تتغير
-    saveUninitialized: true, // حفظ الجلسات الفارغة لضمان الحفظ
+    resave: false, // عدم حفظ الجلسة إذا لم تتغير
+    saveUninitialized: false, // عدم حفظ الجلسات الفارغة
     rolling: true, // تجديد الجلسة مع كل طلب
     cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: true, // حماية الكوكيز من الوصول عبر JS
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax', // تحسين أمان الـ cookies
-      domain: undefined, // السماح لجميع النطاقات الفرعية
-      path: '/' // التأكد من المسار الصحيح
+      secure: false, // false للتطوير، true للإنتاج مع HTTPS
+      httpOnly: false, // السماح للـ JS بالوصول للـ debugging
+      maxAge: 24 * 60 * 60 * 1000, // 24 ساعة
+      sameSite: 'none', // أفضل للـ cross-origin requests
+      domain: undefined, // عدم تحديد النطاق للمرونة
+      path: '/' // المسار الجذر
     },
-    name: 'qurtoba.sid' // اسم فريد للكوكيز
+    name: 'qurtoba.session' // اسم أكثر وضوحاً
   }));
 
   // Middleware لطباعة تفاصيل الجلسة والكوكيز

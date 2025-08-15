@@ -11,17 +11,25 @@ declare global {
 
 const app = express();
 
-// إعداد CORS أولاً قبل أي middleware آخر
+// إعداد CORS محسن للجلسات والكوكيز
 app.use((req, res, next) => {
+  // تحديد المصدر بدقة أكبر
   const origin = req.get('Origin') || req.get('Referer')?.split('/').slice(0, 3).join('/') || 'http://localhost:5000';
+  
+  console.log(`🌐 CORS Origin: ${origin}`);
+  
   res.header('Access-Control-Allow-Origin', origin);
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Cookie, Set-Cookie');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie, Set-Cookie');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Expose-Headers', 'Set-Cookie');
   
+  // معالجة طلبات OPTIONS بشكل صحيح
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
+  
   next();
 });
 
