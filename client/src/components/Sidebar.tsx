@@ -85,6 +85,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: "/",
       icon: LayoutDashboard,
       section: "dashboard",
+      subItems: [
+        {
+          title: "الشاشة الرئيسية",
+          href: "/",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "إدارة المستخدمين",
+          href: "/user-management",
+          icon: Users,
+        },
+        {
+          title: "إدارة الصلاحيات",
+          href: "/user-permissions",
+          icon: Shield,
+        }
+      ]
     },
     {
       title: "طلبات التسعير",
@@ -147,29 +164,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "settings",
     },
     {
-      title: "لوحة التحكم",
-      href: "/admin",
-      icon: Shield,
-      section: "admin",
-      subItems: [
-        {
-          title: "الإدارة العامة",
-          href: "/admin",
-          icon: Settings,
-        },
-        {
-          title: "إدارة المستخدمين",
-          href: "/user-management",
-          icon: Users,
-        },
-        {
-          title: "إدارة الصلاحيات",
-          href: "/user-permissions",
-          icon: Shield,
-        }
-      ]
-    },
-    {
       title: "استيراد البيانات",
       href: "/import",
       icon: Upload,
@@ -217,7 +211,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: Database,
       section: "admin",
     },
-
   ];
 
   const getRoleLabel = (role: string) => {
