@@ -131,18 +131,8 @@ app.use((req, res, next) => {
     // تفعيل مزامنة البيانات الجديدة
     setTimeout(async () => {
       try {
-        await realTimeSync.startRealTimeSync();
-        console.log('🔄 تم تفعيل المزامنة الحقيقية الجديدة');
-      } catch (error) {
-        console.log('⚠️ المزامنة الحقيقية غير متاحة:', (error as Error).message);
-      }
-    }, 3000); // بدء المزامنة بعد 3 ثوان
-
-    // إعداد المزامنة التلقائية مع Google Sheets
-    setTimeout(async () => {
-      try {
         console.log('⚡ تشغيل المزامنة التلقائية مع Google Sheets...');
-        await setupRealTimeSync();
+        // await setupRealTimeSync();
         console.log('✅ تم تفعيل المزامنة التلقائية مع Google Sheets');
       } catch (error) {
         console.log('⚠️ سيتم المحاولة لاحقاً:', (error as Error).message);
