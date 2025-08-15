@@ -10,8 +10,9 @@ import { useToast } from '@/hooks/use-toast';
 interface BotStatus {
   status: string;
   botName: string;
-  authorizedUsers: number;
-  deepSeekConfigured: boolean;
+  username?: string;
+  authorized_users: number;
+  deepseek_configured: boolean;
 }
 
 interface BotUsers {
@@ -29,6 +30,7 @@ export function TelegramBotManagement() {
   const fetchBotStatus = async () => {
     try {
       const status = await apiRequest('/api/telegram/status', 'GET');
+      console.log('Received bot status data:', status);
       setBotStatus(status);
     } catch (error) {
       console.error('Error fetching bot status:', error);
