@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { Plus, Save, Trash2, FileText, Calendar, User, Building } from "lucide-react";
 
@@ -37,6 +38,7 @@ export default function CreateQuotation() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   const [quotation, setQuotation] = useState<NewQuotation>({
     clientName: '',
@@ -59,6 +61,14 @@ export default function CreateQuotation() {
 
   const createMutation = useMutation({
     mutationFn: async (data: NewQuotation) => {
+      // فحص المصادقة قبل إرسال الطلب
+      if (!isAuthenticated || !user) {
+        throw new Error('يجب تسجيل الدخول أولاً لحفظ طلب التسعير');
+      }
+      
+      console.log('🔐 [CreateQuotation] المستخدم المصادق عليه:', user.username, user.role);
+      console.log('📋 [CreateQuotation] بيانات طلب التسعير:', data);
+      
       return await apiRequest('/api/quotations/google-sheets', 'POST', data);
     },
     onSuccess: (data: any) => {
@@ -72,9 +82,23 @@ export default function CreateQuotation() {
     },
     onError: (error: any) => {
       console.error('❌ خطأ في إنشاء طلب التسعير:', error);
+      
+      let errorMessage = "حدث خطأ غير متوقع";
+      
+      if (error.message?.includes('تسجيل الدخول')) {
+        errorMessage = "يجب تسجيل الدخول أولاً لحفظ طلب التسعير";
+        // إعادة توجيه لصفحة تسجيل الدخول
+        setTimeout(() => navigate('/login'), 2000);
+      } else if (error.status === 401) {
+        errorMessage = "انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى";
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        errorMessage = error.data?.message || error.message || "حدث خطأ غير متوقع";
+      }
+      
       toast({
         title: "❌ خطأ في إنشاء طلب التسعير",
-        description: error.data?.message || error.message || "حدث خطأ غير متوقع",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -443,10 +467,15 @@ export default function CreateQuotation() {
         
         <Button
           onClick={handleSubmit}
-          disabled={createMutation.isPending || quotation.items.length === 0}
+          disabled={createMutation.isPending || quotation.items.length === 0 || !isAuthenticated}
           className="flex items-center space-x-2 space-x-reverse"
         >
-          {createMutation.isPending ? (
+          {!isAuthenticated ? (
+            <>
+              <User className="h-4 w-4" />
+              <span>يجب تسجيل الدخول أولاً</span>
+            </>
+          ) : createMutation.isPending ? (
             <>
               <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
               <span>جاري الحفظ...</span>
