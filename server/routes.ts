@@ -1108,7 +1108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`📸 تم رفع صورة المستخدم: ${profileImagePath}`);
       }
       
-      const newUser = await userSheetsManager.createUser({
+      const newUser = await usersGoogleSheetsManager.addUser({
         username,
         password,
         fullName,

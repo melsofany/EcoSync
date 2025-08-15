@@ -402,8 +402,88 @@ export class UsersGoogleSheetsManager {
       return true;
     } catch (error) {
       console.error('❌ خطأ في تحديث صلاحيات المستخدم:', error);
-      console.error('تفاصيل الخطأ:', error.message);
+      console.error('تفاصيل الخطأ:', (error as Error).message);
       return false;
+    }
+  }
+
+  // إضافة مستخدم جديد
+  async addUser(userData: {
+    username: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    password: string;
+    role: string;
+    isActive: boolean;
+    canAccessBot: boolean;
+    profileImage?: string;
+  }): Promise<UserData | null> {
+    try {
+      console.log(`👤 إضافة مستخدم جديد: ${userData.username}`);
+      
+      // التحقق من عدم تكرار اسم المستخدم
+      const existingUsers = await this.getAllUsers();
+      const userExists = existingUsers.some(user => user.username === userData.username);
+      
+      if (userExists) {
+        throw new Error(`اسم المستخدم "${userData.username}" موجود بالفعل`);
+      }
+
+      // تشفير كلمة المرور
+      const bcrypt = require('bcrypt');
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      
+      // إنشاء بيانات المستخدم الجديد
+      const userId = `user-${Date.now()}`;
+      const now = new Date().toISOString();
+      
+      const newUserRow = [
+        userId,
+        userData.username,
+        userData.fullName,
+        userData.email,
+        hashedPassword,
+        userData.role,
+        '', // صلاحيات فارغة في البداية
+        userData.isActive ? 'TRUE' : 'FALSE',
+        userData.canAccessBot ? 'TRUE' : 'FALSE',
+        '', // Last Login
+        now, // Created At
+        now, // Updated At
+        userData.profileImage || '' // Notes أو Profile Image
+      ];
+
+      // إضافة المستخدم إلى Google Sheets
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: 'USERS!A:M',
+        valueInputOption: 'RAW',
+        resource: {
+          values: [newUserRow]
+        }
+      });
+
+      console.log(`✅ تم إضافة المستخدم ${userData.username} بنجاح`);
+      
+      // إرجاع بيانات المستخدم الجديد
+      return {
+        id: userId,
+        username: userData.username,
+        fullName: userData.fullName,
+        email: userData.email,
+        password: hashedPassword,
+        role: userData.role,
+        permissions: [],
+        isActive: userData.isActive,
+        canAccessBot: userData.canAccessBot,
+        lastLogin: '',
+        createdAt: now,
+        updatedAt: now
+      };
+    } catch (error) {
+      console.error('❌ خطأ في إضافة المستخدم:', error);
+      throw error;
     }
   }
 }

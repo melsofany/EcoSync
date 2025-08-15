@@ -41,7 +41,7 @@ export class UserSheetsManager {
         const fileContent = readFileSync(credentialsPath, 'utf8');
         credentials = JSON.parse(fileContent);
       } catch (fileError) {
-        console.error('❌ خطأ في قراءة مفتاح Google Sheets:', fileError.message);
+        console.error('❌ خطأ في قراءة مفتاح Google Sheets:', (fileError as Error).message);
         throw fileError;
       }
 
