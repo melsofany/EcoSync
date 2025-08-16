@@ -6072,31 +6072,23 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('📋 جلب المستخدمين المخولين للتليجرام...');
       
-      // Get internal users with telegram access
-      const users = await usersGoogleSheetsManager.getAllUsers();
-      const internalUsers = users.filter(user => 
-        user.isActive && 
-        (user.canAccessBot || 
-         (Array.isArray(user.permissions) && user.permissions.includes('access_bot')) ||
-         user.role === 'manager' ||
-         user.role === 'it_admin')
-      ).map(user => ({
+      // استخدام النظام الجديد المدمج مع Google Sheets
+      const telegramUsers = await usersGoogleSheetsManager.getAllTelegramUsers();
+      
+      // تحويل البيانات لصيغة مناسبة للعرض
+      const internalUsers = telegramUsers.internal.map(user => ({
         id: user.id,
         fullName: user.fullName,
         username: user.username,
         role: user.role,
-        telegramUserId: user.profileImage && user.profileImage.match(/^\d{8,}$/) ? user.profileImage : ''
+        telegramUserId: user.profileImage
       }));
 
-      // Get external users
-      const externalUsersFile = path.join(process.cwd(), 'external-telegram-users.json');
-      let externalUsers = [];
-      try {
-        const data = readFileSync(externalUsersFile, 'utf8');
-        externalUsers = JSON.parse(data);
-      } catch (error) {
-        externalUsers = [];
-      }
+      const externalUsers = telegramUsers.external.map(user => ({
+        telegramUserId: user.profileImage,
+        fullName: user.fullName,
+        addedAt: user.createdAt
+      }));
 
       res.json({
         internal: internalUsers,
@@ -6111,44 +6103,31 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Add external telegram user
   app.post("/api/telegram/external-users", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
-      const { telegramUserId } = req.body;
+      const { telegramUserId, fullName } = req.body;
       
       if (!telegramUserId || !telegramUserId.match(/^\d{8,}$/)) {
         return res.status(400).json({ error: 'معرف التليجرام غير صحيح' });
       }
 
-      console.log(`➕ إضافة مستخدم تليجرام خارجي: ${telegramUserId}`);
+      console.log(`➕ إضافة مستخدم تليجرام خارجي في Google Sheets: ${telegramUserId}`);
       
-      // Load existing external users
-      const externalUsersFile = path.join(process.cwd(), 'external-telegram-users.json');
-      let externalUsers = [];
-      try {
-        const data = readFileSync(externalUsersFile, 'utf8');
-        externalUsers = JSON.parse(data);
-      } catch (error) {
-        externalUsers = [];
+      // استخدام النظام الجديد المدمج مع Google Sheets
+      const newUser = await usersGoogleSheetsManager.addTelegramUser(telegramUserId, fullName);
+      
+      if (!newUser) {
+        return res.status(409).json({ error: 'معرف التليجرام موجود مسبقاً أو حدث خطأ في الإضافة' });
       }
 
-      // Check if user already exists
-      const existingUser = externalUsers.find((u: any) => u.telegramUserId === telegramUserId);
-      if (existingUser) {
-        return res.status(409).json({ error: 'المستخدم موجود بالفعل' });
-      }
-
-      // Add new external user
-      const newUser = {
-        telegramUserId,
-        fullName: `مستخدم خارجي ${telegramUserId}`,
-        addedAt: new Date().toISOString()
-      };
-
-      externalUsers.push(newUser);
-
-      // Save to file
-      writeFileSync(externalUsersFile, JSON.stringify(externalUsers, null, 2));
-
-      console.log(`✅ تم إضافة مستخدم تليجرام خارجي: ${telegramUserId}`);
-      res.json({ success: true, user: newUser });
+      console.log(`✅ تم إضافة مستخدم تليجرام خارجي في Google Sheets: ${telegramUserId}`);
+      
+      res.json({ 
+        success: true, 
+        user: {
+          telegramUserId: newUser.profileImage,
+          fullName: newUser.fullName,
+          addedAt: newUser.createdAt
+        }
+      });
     } catch (error) {
       console.error('❌ خطأ في إضافة مستخدم تليجرام خارجي:', error);
       res.status(500).json({ error: 'خطأ في إضافة المستخدم' });
@@ -6160,30 +6139,16 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       const { telegramUserId } = req.params;
       
-      console.log(`🗑️ حذف مستخدم تليجرام خارجي: ${telegramUserId}`);
+      console.log(`🗑️ حذف مستخدم تليجرام خارجي من Google Sheets: ${telegramUserId}`);
       
-      // Load existing external users
-      const externalUsersFile = path.join(process.cwd(), 'external-telegram-users.json');
-      let externalUsers = [];
-      try {
-        const data = readFileSync(externalUsersFile, 'utf8');
-        externalUsers = JSON.parse(data);
-      } catch (error) {
-        return res.status(404).json({ error: 'لا توجد مستخدمين خارجيين' });
-      }
-
-      // Find and remove user
-      const userIndex = externalUsers.findIndex((u: any) => u.telegramUserId === telegramUserId);
-      if (userIndex === -1) {
+      // استخدام النظام الجديد المدمج مع Google Sheets
+      const success = await usersGoogleSheetsManager.removeTelegramUser(telegramUserId);
+      
+      if (!success) {
         return res.status(404).json({ error: 'المستخدم غير موجود' });
       }
 
-      externalUsers.splice(userIndex, 1);
-
-      // Save to file
-      writeFileSync(externalUsersFile, JSON.stringify(externalUsers, null, 2));
-
-      console.log(`✅ تم حذف مستخدم تليجرام خارجي: ${telegramUserId}`);
+      console.log(`✅ تم حذف مستخدم تليجرام خارجي من Google Sheets: ${telegramUserId}`);
       res.json({ success: true });
     } catch (error) {
       console.error('❌ خطأ في حذف مستخدم تليجرام خارجي:', error);

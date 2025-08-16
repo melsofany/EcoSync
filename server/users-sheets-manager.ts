@@ -514,13 +514,186 @@ export class UsersGoogleSheetsManager {
       // بدلاً من حذف الصف، نمسح محتوياته فقط
       await this.sheets.spreadsheets.values.clear({
         spreadsheetId: this.spreadsheetId,
-        range: `USERS!A${rowNumber}:N${rowNumber}`
+        range: `USERS!A${rowNumber}:P${rowNumber}`
       });
 
       console.log(`✅ تم حذف المستخدم ${userId} بنجاح`);
       return true;
     } catch (error) {
       console.error('❌ خطأ في حذف المستخدم:', error);
+      return false;
+    }
+  }
+
+  // ربط معرف التليجرام بمستخدم موجود في Google Sheets
+  async linkTelegramId(username: string, telegramUserId: string): Promise<boolean> {
+    try {
+      console.log(`📱 ربط معرف التليجرام ${telegramUserId} بالمستخدم ${username}`);
+      
+      const users = await this.getAllUsers();
+      const userIndex = users.findIndex(user => user.username === username && user.isActive);
+      
+      if (userIndex === -1) {
+        console.log(`❌ المستخدم ${username} غير موجود أو غير نشط`);
+        return false;
+      }
+
+      // تحديث معرف التليجرام في العمود G (PROFILE_IMAGE) مؤقتاً
+      const rowNumber = userIndex + 2;
+      
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!G${rowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[telegramUserId]]
+        }
+      });
+
+      // تحديث وقت التعديل
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!P${rowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[new Date().toISOString()]]
+        }
+      });
+
+      console.log(`✅ تم ربط معرف التليجرام ${telegramUserId} بالمستخدم ${username}`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في ربط معرف التليجرام:', error);
+      return false;
+    }
+  }
+
+  // إضافة مستخدم تليجرام خارجي جديد
+  async addTelegramUser(telegramUserId: string, fullName?: string): Promise<UserData | null> {
+    try {
+      console.log(`📱 إضافة مستخدم تليجرام خارجي: ${telegramUserId}`);
+      
+      // التحقق من عدم وجود المستخدم مسبقاً
+      const users = await this.getAllUsers();
+      const existingUser = users.find(user => user.profileImage === telegramUserId);
+      
+      if (existingUser) {
+        console.log(`❌ معرف التليجرام ${telegramUserId} مرتبط بالفعل بالمستخدم ${existingUser.username}`);
+        return null;
+      }
+
+      // إنشاء بيانات المستخدم الجديد
+      const userId = `telegram-${telegramUserId}`;
+      const username = `telegram_${telegramUserId}`;
+      const displayName = fullName || `مستخدم تليجرام ${telegramUserId}`;
+      const now = new Date().toISOString();
+      
+      const newUserRow = [
+        userId, // A: ID
+        username, // B: USERNAME
+        '', // C: PASSWORD - فارغة للمستخدمين الخارجيين
+        displayName, // D: FULL_NAME
+        `${telegramUserId}@telegram.user`, // E: EMAIL - إيميل وهمي
+        '', // F: PHONE
+        telegramUserId, // G: PROFILE_IMAGE - نحفظ معرف التليجرام هنا
+        'external_telegram', // H: ROLE
+        'access_bot', // I: PERMISSIONS - صلاحية الوصول للبوت فقط
+        'TRUE', // J: IS_ACTIVE
+        'FALSE', // K: IS_ONLINE
+        '', // L: LAST_LOGIN
+        now, // M: LAST_ACTIVITY
+        '', // N: IP_ADDRESS
+        now, // O: CREATED_AT
+        now  // P: UPDATED_AT
+      ];
+
+      // إضافة المستخدم إلى Google Sheets
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: 'USERS!A:P',
+        valueInputOption: 'RAW',
+        resource: {
+          values: [newUserRow]
+        }
+      });
+
+      console.log(`✅ تم إضافة مستخدم تليجرام خارجي: ${telegramUserId}`);
+      
+      return {
+        id: userId,
+        username: username,
+        fullName: displayName,
+        email: `${telegramUserId}@telegram.user`,
+        password: '',
+        role: 'external_telegram',
+        permissions: ['access_bot'],
+        isActive: true,
+        canAccessBot: true,
+        lastLogin: '',
+        createdAt: now,
+        updatedAt: now,
+        profileImage: telegramUserId
+      };
+    } catch (error) {
+      console.error('❌ خطأ في إضافة مستخدم تليجرام خارجي:', error);
+      return null;
+    }
+  }
+
+  // الحصول على جميع مستخدمي التليجرام (الداخليين والخارجيين)
+  async getAllTelegramUsers(): Promise<{internal: UserData[], external: UserData[]}> {
+    try {
+      const users = await this.getAllUsers();
+      
+      const internal = users.filter(user => 
+        user.isActive && 
+        user.profileImage && 
+        user.profileImage.match(/^\d{8,}$/) && 
+        user.role !== 'external_telegram'
+      );
+      
+      const external = users.filter(user => 
+        user.isActive && 
+        user.role === 'external_telegram'
+      );
+
+      console.log(`📱 مستخدمو التليجرام: ${internal.length} داخلي، ${external.length} خارجي`);
+      
+      return { internal, external };
+    } catch (error) {
+      console.error('❌ خطأ في جلب مستخدمي التليجرام:', error);
+      return { internal: [], external: [] };
+    }
+  }
+
+  // حذف مستخدم تليجرام خارجي
+  async removeTelegramUser(telegramUserId: string): Promise<boolean> {
+    try {
+      console.log(`🗑️ حذف مستخدم تليجرام خارجي: ${telegramUserId}`);
+      
+      const users = await this.getAllUsers();
+      const userIndex = users.findIndex(user => 
+        user.profileImage === telegramUserId && 
+        user.role === 'external_telegram'
+      );
+      
+      if (userIndex === -1) {
+        console.log(`❌ مستخدم التليجرام ${telegramUserId} غير موجود`);
+        return false;
+      }
+
+      // حذف الصف من Google Sheets
+      const rowNumber = userIndex + 2;
+      
+      await this.sheets.spreadsheets.values.clear({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!A${rowNumber}:P${rowNumber}`
+      });
+
+      console.log(`✅ تم حذف مستخدم التليجرام ${telegramUserId} بنجاح`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في حذف مستخدم التليجرام:', error);
       return false;
     }
   }

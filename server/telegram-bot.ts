@@ -171,34 +171,24 @@ class QortobaAnalysisBot {
 
   private async loadAuthorizedUsers() {
     try {
-      // Load from Google Sheets users who have bot access
-      const users = await usersGoogleSheetsManager.getAllUsers();
-      const authorizedUsers = users.filter(user => 
-        user.isActive && 
-        (user.canAccessBot || 
-         (Array.isArray(user.permissions) && user.permissions.includes('access_bot')) ||
-         user.role === 'manager' ||
-         user.role === 'it_admin')
-      );
+      // استخدام النظام الجديد المدمج مع Google Sheets
+      const telegramUsers = await usersGoogleSheetsManager.getAllTelegramUsers();
       
-      // Get internal users with telegram IDs (stored temporarily in profileImage field)
-      const internalTelegramIds = [];
-      for (const user of authorizedUsers) {
-        if (user.profileImage && user.profileImage.match(/^\d{8,}$/)) {
-          internalTelegramIds.push(user.profileImage);
-        }
-      }
+      // جمع معرفات التليجرام من المستخدمين الداخليين والخارجيين
+      const internalTelegramIds = telegramUsers.internal
+        .filter(user => user.profileImage && user.profileImage.match(/^\d{8,}$/))
+        .map(user => user.profileImage);
       
-      // Load external users
-      await loadExternalUsers();
-      const externalTelegramIds = EXTERNAL_TELEGRAM_USERS.map(u => u.telegramUserId);
+      const externalTelegramIds = telegramUsers.external
+        .filter(user => user.profileImage && user.profileImage.match(/^\d{8,}$/))
+        .map(user => user.profileImage);
       
       AUTHORIZED_USERS = [...internalTelegramIds, ...externalTelegramIds];
       
-      console.log(`📱 [TELEGRAM BOT] Loaded ${AUTHORIZED_USERS.length} authorized users (${internalTelegramIds.length} internal, ${externalTelegramIds.length} external)`);
+      console.log(`📱 [TELEGRAM BOT] تم تحميل ${AUTHORIZED_USERS.length} مستخدم مخول (${internalTelegramIds.length} داخلي، ${externalTelegramIds.length} خارجي)`);
+      console.log(`📱 [TELEGRAM BOT] معرفات المستخدمين المخولين: ${AUTHORIZED_USERS.slice(0, 3).join(', ')}${AUTHORIZED_USERS.length > 3 ? '...' : ''}`);
     } catch (error) {
-      console.error('Error loading authorized users from Google Sheets:', error);
-      // Fallback - add some default admin IDs if needed
+      console.error('❌ خطأ في تحميل المستخدمين المخولين من Google Sheets:', error);
       AUTHORIZED_USERS = [];
     }
   }
@@ -487,53 +477,58 @@ class QortobaAnalysisBot {
     }
   }
 
-  // Add external user by Telegram ID only
-  async addExternalUser(telegramUserId: string) {
+  // Add external user by Telegram ID only  
+  async addExternalUser(telegramUserId: string, fullName?: string) {
     try {
-      // Check if already exists in authorized users
-      if (AUTHORIZED_USERS.includes(telegramUserId)) {
+      console.log(`📱 [TELEGRAM BOT] محاولة إضافة مستخدم خارجي: ${telegramUserId}`);
+      
+      // استخدام النظام الجديد المدمج مع Google Sheets
+      const newUser = await usersGoogleSheetsManager.addTelegramUser(telegramUserId, fullName);
+      
+      if (!newUser) {
+        console.log(`❌ [TELEGRAM BOT] فشل في إضافة المستخدم ${telegramUserId} - موجود مسبقاً`);
         return { success: false, message: 'المستخدم موجود مسبقاً' };
       }
       
-      // Check if already exists in external users
-      const exists = EXTERNAL_TELEGRAM_USERS.find(u => u.telegramUserId === telegramUserId);
-      if (exists) {
-        return { success: false, message: 'المستخدم الخارجي موجود مسبقاً' };
-      }
+      // إعادة تحميل قائمة المستخدمين المخولين
+      await this.loadAuthorizedUsers();
       
-      // Add to external users
-      EXTERNAL_TELEGRAM_USERS.push({
-        telegramUserId,
-        fullName: `External User ${telegramUserId}`,
-        addedAt: new Date().toISOString()
-      });
-      
-      // Save to file
-      await this.saveExternalUsers();
-      
-      // Add to authorized users list
-      AUTHORIZED_USERS.push(telegramUserId);
-      
-      console.log(`📱 [TELEGRAM BOT] Added external user: ${telegramUserId}`);
-      return { success: true, message: 'تم إضافة المستخدم الخارجي بنجاح' };
+      console.log(`✅ [TELEGRAM BOT] تم إضافة مستخدم خارجي في Google Sheets: ${telegramUserId}`);
+      return { 
+        success: true, 
+        message: 'تم إضافة المستخدم بنجاح وحفظه في Google Sheets', 
+        user: {
+          telegramUserId: newUser.profileImage,
+          fullName: newUser.fullName,
+          addedAt: newUser.createdAt
+        }
+      };
     } catch (error) {
-      console.error('Error adding external user:', error);
-      return { success: false, message: 'حدث خطأ في إضافة المستخدم' };
+      console.error('❌ [TELEGRAM BOT] خطأ في إضافة المستخدم الخارجي:', error);
+      return { success: false, message: 'خطأ في إضافة المستخدم' };
     }
   }
 
   // Remove external user
   async removeExternalUser(telegramUserId: string) {
     try {
-      const index = AUTHORIZED_USERS.indexOf(telegramUserId);
-      if (index > -1) {
-        AUTHORIZED_USERS.splice(index, 1);
-        console.log(`📱 [TELEGRAM BOT] Removed external user: ${telegramUserId}`);
-        return { success: true, message: 'تم حذف المستخدم الخارجي بنجاح' };
+      console.log(`🗑️ [TELEGRAM BOT] محاولة حذف مستخدم خارجي: ${telegramUserId}`);
+      
+      // استخدام النظام الجديد المدمج مع Google Sheets
+      const success = await usersGoogleSheetsManager.removeTelegramUser(telegramUserId);
+      
+      if (!success) {
+        console.log(`❌ [TELEGRAM BOT] فشل في حذف المستخدم ${telegramUserId} - غير موجود`);
+        return { success: false, message: 'المستخدم غير موجود' };
       }
-      return { success: false, message: 'المستخدم غير موجود' };
+      
+      // إعادة تحميل قائمة المستخدمين المخولين
+      await this.loadAuthorizedUsers();
+      
+      console.log(`✅ [TELEGRAM BOT] تم حذف مستخدم خارجي من Google Sheets: ${telegramUserId}`);
+      return { success: true, message: 'تم حذف المستخدم بنجاح من Google Sheets' };
     } catch (error) {
-      console.error('Error removing external user:', error);
+      console.error('❌ [TELEGRAM BOT] خطأ في حذف المستخدم الخارجي:', error);
       return { success: false, message: 'حدث خطأ في حذف المستخدم' };
     }
   }
