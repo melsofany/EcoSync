@@ -40,8 +40,14 @@ export default function TelegramBot() {
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
 
-  // Check if current user is IT admin
-  if (currentUser?.role !== 'it_admin') {
+  // Check if current user is IT admin or has comprehensive permissions
+  const hasAdminAccess = currentUser?.role === 'it_admin' || 
+    currentUser?.role === 'manager' || 
+    (typeof currentUser?.role === 'string' && 
+     currentUser.role.includes('perm-001') && 
+     currentUser.role.includes('perm-009')); // perm-009 is bot access permission
+
+  if (!hasAdminAccess) {
     return (
       <div className="container mx-auto p-6">
         <Card>
