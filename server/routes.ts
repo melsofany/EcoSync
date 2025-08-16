@@ -894,14 +894,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Simple auth for Google Sheets only system
+  // Complete authentication system for Google Sheets
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
       
       console.log(`🔐 محاولة تسجيل دخول للمستخدم: ${username}`);
       
-      // Simple hardcoded admin for Google Sheets system
+      // Check hardcoded admin first for backwards compatibility
       if (username === 'admin' && password === 'admin123') {
         const mockUser = {
           id: 'admin-user',
@@ -916,6 +916,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.user = mockUser;
         console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
         return res.json({ user: mockUser });
+      }
+
+      // Check Google Sheets users
+      try {
+        // Try to get user from both systems
+        let user = await userSheetsManager.getUserByUsername(username);
+        
+        if (!user) {
+          // Try the other user manager as fallback
+          const usersData = await usersGoogleSheetsManager.getAllUsers();
+          user = usersData.find(u => u.username === username && u.isActive);
+        }
+
+        if (!user) {
+          console.log(`❌ المستخدم ${username} غير موجود أو غير نشط`);
+          return res.status(401).json({ message: "بيانات الدخول غير صحيحة" });
+        }
+
+        // Check password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+          console.log(`❌ كلمة مرور خاطئة للمستخدم: ${username}`);
+          return res.status(401).json({ message: "بيانات الدخول غير صحيحة" });
+        }
+
+        // Update user online status
+        await userSheetsManager.updateUserOnlineStatus(user.id, true, req.ip);
+
+        // Prepare session user data
+        const sessionUser = {
+          id: user.id,
+          username: user.username,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          permissions: typeof user.permissions === 'string' ? 
+            JSON.parse(user.permissions || '{}') : 
+            (user.permissions || []),
+          isActive: user.isActive
+        };
+
+        req.session.user = sessionUser;
+        console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
+        return res.json({ user: sessionUser });
+
+      } catch (sheetsError) {
+        console.error('❌ خطأ في التحقق من Google Sheets:', sheetsError);
+        // Fallback to error response
       }
       
       console.log(`❌ بيانات دخول خاطئة للمستخدم: ${username}`);
