@@ -6156,6 +6156,63 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Fix user bot access - temporary endpoint for troubleshooting
+  app.post("/api/fix-user-bot-access", async (req: Request, res: Response) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ success: false, message: "اسم المستخدم مطلوب" });
+      }
+
+      console.log(`🔧 إصلاح صلاحيات البوت للمستخدم: ${username}`);
+      
+      // الحصول على المستخدم وتحديث صلاحياته
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const user = users.find(u => u.username === username);
+      
+      if (!user) {
+        return res.status(404).json({ success: false, message: "المستخدم غير موجود" });
+      }
+
+      // تحديث صلاحيات المستخدم لتشمل access_bot
+      let currentPermissions = [];
+      if (Array.isArray(user.permissions)) {
+        currentPermissions = user.permissions;
+      } else if (typeof user.permissions === 'string' && user.permissions) {
+        currentPermissions = user.permissions.split(',').map(p => p.trim());
+      }
+
+      // إضافة صلاحية الوصول للبوت إذا لم تكن موجودة
+      if (!currentPermissions.includes('access_bot')) {
+        currentPermissions.push('access_bot');
+      }
+
+      // تحديث الصلاحيات في Google Sheets
+      const success = await usersGoogleSheetsManager.updateUserPermissions(username, currentPermissions);
+      
+      if (success) {
+        console.log(`✅ تم إصلاح صلاحيات البوت للمستخدم ${username}`);
+        res.json({ 
+          success: true, 
+          message: "تم إصلاح صلاحيات الوصول للبوت بنجاح",
+          permissions: currentPermissions,
+          user: {
+            username: user.username,
+            role: user.role,
+            permissions: currentPermissions,
+            canAccessBot: true
+          }
+        });
+      } else {
+        res.status(500).json({ success: false, message: "فشل في تحديث الصلاحيات" });
+      }
+    } catch (error) {
+      console.error("❌ خطأ في إصلاح صلاحيات البوت:", error);
+      res.status(500).json({ success: false, message: "خطأ في إصلاح الصلاحيات" });
+    }
+  });
+
   // Test item analysis
   app.post("/api/telegram/analyze-item", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
