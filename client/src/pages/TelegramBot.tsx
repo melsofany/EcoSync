@@ -48,7 +48,12 @@ export default function TelegramBot() {
      currentUser.role.includes('perm-009')) ||
     (typeof currentUser?.role === 'string' && 
      currentUser.role.includes('perm-001') && 
-     currentUser.role.includes('perm-010')); // Comprehensive admin permissions
+     currentUser.role.includes('perm-010')) ||
+    // تحقق إضافي للمستخدمين ذوي الصلاحيات الشاملة
+    (typeof currentUser?.role === 'string' && 
+     currentUser.role.includes('perm-001') && 
+     currentUser.role.includes('perm-002') && 
+     currentUser.role.includes('perm-003'));
 
   if (!hasAdminAccess) {
     return (
@@ -78,7 +83,7 @@ export default function TelegramBot() {
   });
 
   // Get all authorized telegram users (internal + external)
-  const { data: telegramUsers, isLoading: telegramUsersLoading, refetch: refetchTelegramUsers } = useQuery({
+  const { data: telegramUsers, isLoading: telegramUsersLoading, refetch: refetchTelegramUsers } = useQuery<{internal: User[], external: any[]}>({
     queryKey: ["/api/telegram/users"]
   });
 
@@ -452,7 +457,7 @@ export default function TelegramBot() {
               </TableHeader>
               <TableBody>
                 {/* Internal Users */}
-                {telegramUsers?.internal?.map((user: any) => (
+                {telegramUsers?.internal?.map((user: User) => (
                   <TableRow key={user.telegramUserId}>
                     <TableCell className="font-medium">{user.fullName}</TableCell>
                     <TableCell>

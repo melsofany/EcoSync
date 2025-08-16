@@ -1102,18 +1102,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
-      // For Google Sheets system, return mock admin if session exists
+      // Return actual user data from session if exists
       if (req.session.user) {
-        const mockUser = {
-          id: 'admin-user',
-          username: 'admin',
-          fullName: 'مدير النظام',
-          email: 'admin@qurtoba.com',
-          role: 'manager',
-          permissions: ['view_all', 'edit_all', 'delete_all'],
-          isActive: true
-        };
-        return res.json(mockUser);
+        console.log(`🔍 جلب بيانات المستخدم من session: ${req.session.user.username}`);
+        
+        // إذا كان المستخدم admin hardcoded، إعيد البيانات المباشرة
+        if (req.session.user.username === 'admin') {
+          const mockUser = {
+            id: 'admin-user',
+            username: 'admin',
+            fullName: 'مدير النظام',
+            email: 'admin@qurtoba.com',
+            role: 'manager',
+            permissions: ['view_all', 'edit_all', 'delete_all'],
+            isActive: true
+          };
+          return res.json(mockUser);
+        }
+        
+        // للمستخدمين من Google Sheets، إعيد بياناتهم الحقيقية
+        try {
+          const users = await usersGoogleSheetsManager.getAllUsers();
+          const currentUser = users.find(u => u.username === req.session.user.username);
+          
+          if (currentUser) {
+            console.log(`✅ تم العثور على بيانات المستخدم ${currentUser.username} من Google Sheets`);
+            return res.json({
+              id: currentUser.id,
+              username: currentUser.username,
+              fullName: currentUser.fullName,
+              email: currentUser.email,
+              role: currentUser.role,
+              permissions: currentUser.permissions,
+              isActive: currentUser.isActive
+            });
+          }
+        } catch (sheetsError) {
+          console.error('❌ خطأ في جلب بيانات المستخدم من Google Sheets:', sheetsError);
+        }
+        
+        // fallback - إعيد بيانات session الأساسية
+        return res.json(req.session.user);
       }
       
       return res.status(401).json({ message: "Unauthorized" });
