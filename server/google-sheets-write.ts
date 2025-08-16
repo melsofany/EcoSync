@@ -298,7 +298,7 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
   /**
    * إدراج طلب تسعير جديد في Google Sheets
    */
-  async insertNewQuotation(quotation: NewQuotation): Promise<boolean> {
+  async insertNewQuotation(quotation: NewQuotation): Promise<{ success: boolean; itemIds: string[] }> {
     try {
       if (!this.sheets) {
         const initialized = await this.initialize();
@@ -312,10 +312,12 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
 
       // تحضير البيانات للإدراج
       const rows = [];
+      const createdItemIds: string[] = [];
       
       for (let i = 0; i < quotation.items.length; i++) {
         const item = quotation.items[i];
         const itemId = await this.findOrCreateItemId(item.description, item.partNumber);
+        createdItemIds.push(itemId); // حفظ معرف البند الحقيقي
         
         const row = [
           itemId,                                    // A - Item Number
@@ -350,11 +352,12 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
 
       console.log(`✅ تم إدراج ${rows.length} بند في Google Sheets`);
       console.log(`📊 طلب التسعير: ${quotation.rfqNumber} | العميل: ${quotation.clientName}`);
+      console.log(`🆔 معرفات البنود المنشأة: ${createdItemIds.join(', ')}`);
       
-      return true;
+      return { success: true, itemIds: createdItemIds };
     } catch (error) {
       console.error('❌ خطأ في إدراج طلب التسعير:', (error as Error).message);
-      return false;
+      return { success: false, itemIds: [] };
     }
   }
 }

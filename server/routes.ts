@@ -5779,7 +5779,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       }
 
       // إدراج طلب التسعير
-      const success = await sheetsWriter.insertNewQuotation({
+      const insertResult = await sheetsWriter.insertNewQuotation({
         clientName,
         rfqNumber,
         requestDate,
@@ -5796,7 +5796,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         }))
       });
 
-      if (success) {
+      if (insertResult.success) {
         await logActivity(req, "quotation_create", "quotations", req.session.user!.id, 
           `Created quotation ${rfqNumber} for ${clientName} with ${items.length} items`);
         
@@ -5809,16 +5809,20 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           // Wait longer for Google Sheets to fully sync  
           await new Promise(resolve => setTimeout(resolve, 3000));
           
-          // Send analysis for each new item in the quotation with direct data
-          for (const item of items) {
-            if (item.partNumber) {
+          // Send analysis for each new item using real item IDs from Google Sheets
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            const realItemId = insertResult.itemIds[i]; // استخدام معرف البند الحقيقي من العمود A
+            
+            if (item.partNumber && realItemId) {
               console.log(`📱 [TELEGRAM BOT] إرسال تحليل مباشر للبند: ${item.partNumber} - ${item.description}`);
+              console.log(`🆔 [TELEGRAM BOT] معرف البند الحقيقي من العمود A: ${realItemId}`);
               
               try {
-                // Create new item data with all required information
+                // Create new item data with real item ID from Google Sheets column A
                 const newItemData = {
-                  id: `P-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                  itemNumber: `P-${Date.now()}`,
+                  id: realItemId, // استخدام معرف البند الحقيقي من العمود A
+                  itemNumber: realItemId, // نفس المعرف
                   partNumber: item.partNumber,
                   description: item.description,
                   uom: item.uom || 'EACH',
@@ -5831,16 +5835,16 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
                   quantity: item.quantity
                 };
                 
-                console.log(`📱 [TELEGRAM BOT] إرسال تحليل مباشر بالبيانات الكاملة للبند: ${newItemData.id}`);
+                console.log(`📱 [TELEGRAM BOT] إرسال تحليل بالمعرف الحقيقي: ${realItemId}`);
                 
-                // Send analysis with the complete item data object directly
+                // Send analysis with the real item ID from Google Sheets
                 await telegramBot.sendNewItemAnalysisWithData(newItemData);
-                console.log(`✅ [TELEGRAM BOT] تم إرسال التحليل بنجاح للبند: ${item.partNumber}`);
+                console.log(`✅ [TELEGRAM BOT] تم إرسال التحليل بنجاح للبند: ${item.partNumber} (ID: ${realItemId})`);
               } catch (analysisError) {
                 console.error(`❌ [TELEGRAM BOT] فشل في إرسال التحليل للبند ${item.partNumber}:`, analysisError);
               }
             } else {
-              console.warn(`⚠️ [TELEGRAM BOT] البند بدون رقم قطعة: ${item.description}`);
+              console.warn(`⚠️ [TELEGRAM BOT] البند بدون رقم قطعة أو معرف: ${item.description}`);
             }
           }
         } catch (telegramError) {
