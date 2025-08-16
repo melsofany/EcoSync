@@ -679,9 +679,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Role-based access control
   const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
-      if (!req.session.user || !roles.includes(req.session.user.role)) {
+      if (!req.session.user) {
         return res.status(403).json({ message: "Forbidden" });
       }
+      
+      const userRole = req.session.user.role;
+      
+      // إذا كان الدور يحتوي على صلاحيات متعددة (مثل Ahmed)، فهو مدير
+      if (typeof userRole === 'string' && userRole.includes('perm-001') && userRole.includes('perm-010')) {
+        // المستخدم لديه صلاحيات إدارية شاملة
+        console.log(`✅ المستخدم ${req.session.user.username} لديه صلاحيات إدارية شاملة`);
+        next();
+        return;
+      }
+      
+      // التحقق العادي من الأدوار
+      if (!roles.includes(userRole)) {
+        console.log(`❌ المستخدم ${req.session.user.username} لا يملك الدور المطلوب. دوره: ${userRole}, الأدوار المطلوبة: ${roles.join(', ')}`);
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      
+      console.log(`✅ المستخدم ${req.session.user.username} تم قبول الوصول`);
       next();
     };
   };
@@ -5718,6 +5736,56 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
   // APIs جديدة لإدارة المستخدمين والصلاحيات في Google Sheets
   
+  // تحديث دور المستخدم
+  app.patch("/api/sheets-users/:username/role", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const { role } = req.body;
+      
+      if (!role) {
+        return res.status(400).json({ success: false, message: "الدور مطلوب" });
+      }
+
+      console.log(`🔄 تحديث دور المستخدم ${username} إلى ${role}...`);
+      
+      // الحصول على جميع المستخدمين
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const userIndex = users.findIndex(user => user.username === username);
+      
+      if (userIndex === -1) {
+        return res.status(404).json({ success: false, message: "المستخدم غير موجود" });
+      }
+
+      // تحديث الدور في Google Sheets
+      const rowNumber = userIndex + 2; // +2 لأن الصف الأول عناوين والصفوف تبدأ من 1
+      
+      await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        range: `USERS!H${rowNumber}`, // العمود H هو ROLE
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[role]]
+        }
+      });
+
+      // تحديث وقت التعديل
+      await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        range: `USERS!P${rowNumber}`, // العمود P هو UPDATED_AT
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[new Date().toISOString()]]
+        }
+      });
+
+      console.log(`✅ تم تحديث دور المستخدم ${username} إلى ${role}`);
+      res.json({ success: true, message: `تم تحديث دور المستخدم إلى ${role}` });
+    } catch (error) {
+      console.error('❌ خطأ في تحديث دور المستخدم:', error);
+      res.status(500).json({ success: false, message: "خطأ في تحديث دور المستخدم" });
+    }
+  });
+
   // جلب جميع المستخدمين من Google Sheets
   app.get("/api/sheets-users", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
