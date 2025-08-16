@@ -4822,14 +4822,39 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Get all authorized users (internal + external)
-  app.get("/api/telegram/users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+  app.get("/api/telegram/users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
-      const { telegramBot } = await import("./telegram-bot");
-      const users = await telegramBot.getAllAuthorizedUsers();
-      res.json(users);
+      // جلب المستخدمين الداخليين من النظام الرئيسي
+      const internalUsers = await usersGoogleSheetsManager.getAllUsers();
+      const internalTelegramUsers = internalUsers.filter(user => user.telegramUserId);
+      
+      // جلب المستخدمين الخارجيين من ورقة BOT_USERS
+      const externalUsers = await usersGoogleSheetsManager.getAllBotUsers();
+      
+      console.log(`📱 مستخدمو التليجرام: ${internalTelegramUsers.length} داخلي، ${externalUsers.length} خارجي`);
+      
+      const response = {
+        internal: internalTelegramUsers,
+        external: externalUsers,
+        all: [...internalTelegramUsers, ...externalUsers]
+      };
+      
+      res.json(response);
     } catch (error) {
       console.error("Get telegram users error:", error);
       res.status(500).json({ message: "خطأ في جلب المستخدمين" });
+    }
+  });
+
+  // Get external bot users from BOT_USERS sheet
+  app.get("/api/telegram/external-users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const externalUsers = await usersGoogleSheetsManager.getAllBotUsers();
+      console.log(`📱 جلب ${externalUsers.length} مستخدم من ورقة BOT_USERS`);
+      res.json(externalUsers);
+    } catch (error) {
+      console.error("Get external users error:", error);
+      res.status(500).json({ message: "خطأ في جلب المستخدمين الخارجيين" });
     }
   });
 
