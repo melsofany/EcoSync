@@ -394,6 +394,111 @@ export class GoogleSheetsRealtimeData {
       };
     }
   }
+
+  // Methods for Telegram Bot Support
+  async getLatestQuotations(limit: number = 5): Promise<any[]> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A2:Z1000'
+      });
+
+      const rows = response.data.values || [];
+      const quotations = [];
+      const seenRfqNumbers = new Set();
+
+      // Process rows to get unique quotations
+      for (const row of rows) {
+        if (row[5]) { // Column F contains RFQ Number
+          const rfqNumber = row[5];
+          if (!seenRfqNumbers.has(rfqNumber)) {
+            seenRfqNumbers.add(rfqNumber);
+            quotations.push({
+              rfqNumber: rfqNumber,
+              requestDate: row[6] || '', // Column G - Request Date
+              clientName: row[16] || '', // Column Q - Client Name
+              expiryDate: row[9] || '' // Column J - Expiry Date
+            });
+          }
+        }
+      }
+
+      // Sort by date and return latest
+      return quotations
+        .sort((a, b) => new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime())
+        .slice(0, limit);
+    } catch (error) {
+      console.error('❌ خطأ في جلب آخر طلبات التسعير:', error);
+      return [];
+    }
+  }
+
+  async getPendingItems(limit: number = 10): Promise<any[]> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A2:Z1000'
+      });
+
+      const rows = response.data.values || [];
+      const pendingItems = [];
+
+      // Get items that might be pending (no price or incomplete data)
+      for (const row of rows) {
+        if (row[3] && row[4]) { // Part Number and Description exist
+          const hasPrice = row[11] && parseFloat(row[11]) > 0; // Check if has price
+          
+          if (!hasPrice) {
+            pendingItems.push({
+              partNumber: row[3] || '', // Column D - Part Number
+              description: row[4] || '', // Column E - Description
+              rfqNumber: row[5] || '', // Column F - RFQ Number
+              requestDate: row[6] || '', // Column G - Request Date
+              quantity: row[7] || '', // Column H - Quantity
+              clientName: row[16] || '' // Column Q - Client Name
+            });
+          }
+        }
+      }
+
+      return pendingItems.slice(0, limit);
+    } catch (error) {
+      console.error('❌ خطأ في جلب البنود المعلقة:', error);
+      return [];
+    }
+  }
+
+  async getAllItems(): Promise<any[]> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A2:Z1000'
+      });
+
+      const rows = response.data.values || [];
+      const items = [];
+
+      for (const row of rows) {
+        if (row[3] && row[4]) { // Part Number and Description exist
+          items.push({
+            id: row[0] || '', // Column A - Item Number
+            itemNumber: row[0] || '',
+            partNumber: row[3] || '', // Column D - Part Number
+            description: row[4] || '', // Column E - Description
+            rfqNumber: row[5] || '', // Column F - RFQ Number
+            requestDate: row[6] || '', // Column G - Request Date
+            quantity: row[7] || '', // Column H - Quantity
+            clientName: row[16] || '' // Column Q - Client Name
+          });
+        }
+      }
+
+      return items;
+    } catch (error) {
+      console.error('❌ خطأ في جلب جميع الأصناف:', error);
+      return [];
+    }
+  }
 }
 
 export const googleSheetsRealtimeData = new GoogleSheetsRealtimeData();

@@ -1,13 +1,82 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { db } from './db';
-import { items, quotationRequests, quotationItems, clients, users } from '../shared/schema';
-import { eq, sql } from 'drizzle-orm';
+import { usersGoogleSheetsManager } from './users-sheets-manager';
+import { GoogleSheetsRealtimeData } from './google-sheets-realtime-data';
+import { readFileSync, writeFileSync } from 'fs';
+import path from 'path';
 
 // Configuration
 const TELEGRAM_BOT_TOKEN = '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
 let AUTHORIZED_USERS: string[] = [
-  // Will be loaded from database
+  // Will be loaded from Google Sheets
 ];
+
+// External users storage
+const EXTERNAL_USERS_FILE = path.join(process.cwd(), 'external-telegram-users.json');
+let EXTERNAL_TELEGRAM_USERS: { telegramUserId: string; fullName: string; addedAt: string }[] = [];
+
+// Load external users from file
+async function loadExternalUsers() {
+  try {
+    const data = readFileSync(EXTERNAL_USERS_FILE, 'utf8');
+    EXTERNAL_TELEGRAM_USERS = JSON.parse(data);
+    console.log(`📱 تم تحميل ${EXTERNAL_TELEGRAM_USERS.length} مستخدم خارجي للتليجرام`);
+  } catch (error) {
+    console.log('📱 لا توجد مستخدمين خارجيين للتليجرام، سيتم إنشاء قائمة جديدة');
+    EXTERNAL_TELEGRAM_USERS = [];
+  }
+}
+
+// Save external users to file
+function saveExternalUsers() {
+  try {
+    writeFileSync(EXTERNAL_USERS_FILE, JSON.stringify(EXTERNAL_TELEGRAM_USERS, null, 2));
+    console.log(`💾 تم حفظ ${EXTERNAL_TELEGRAM_USERS.length} مستخدم خارجي للتليجرام`);
+  } catch (error) {
+    console.error('❌ خطأ في حفظ المستخدمين الخارجيين:', error);
+  }
+}
+
+// Add external user
+function addExternalUser(telegramUserId: string, fullName: string = 'مستخدم خارجي') {
+  const existingUser = EXTERNAL_TELEGRAM_USERS.find(u => u.telegramUserId === telegramUserId);
+  if (existingUser) {
+    console.log(`👤 المستخدم ${telegramUserId} موجود بالفعل`);
+    return false;
+  }
+  
+  const newUser = {
+    telegramUserId,
+    fullName,
+    addedAt: new Date().toISOString()
+  };
+  
+  EXTERNAL_TELEGRAM_USERS.push(newUser);
+  saveExternalUsers();
+  console.log(`✅ تم إضافة مستخدم خارجي جديد: ${telegramUserId}`);
+  return true;
+}
+
+// Remove external user
+function removeExternalUser(telegramUserId: string) {
+  const index = EXTERNAL_TELEGRAM_USERS.findIndex(u => u.telegramUserId === telegramUserId);
+  if (index === -1) {
+    console.log(`❌ المستخدم ${telegramUserId} غير موجود`);
+    return false;
+  }
+  
+  EXTERNAL_TELEGRAM_USERS.splice(index, 1);
+  saveExternalUsers();
+  console.log(`🗑️ تم حذف المستخدم الخارجي: ${telegramUserId}`);
+  return true;
+}
+
+// Get all authorized users (internal + external)
+function getAllAuthorizedUsers() {
+  return {
+    internal: [], // Will be filled from Google Sheets
+    external: EXTERNAL_TELEGRAM_USERS
+  };
+}
 
 // DeepSeek API configuration
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
@@ -19,6 +88,8 @@ class QortobaAnalysisBot {
   constructor() {
     this.bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
     this.setupHandlers();
+    // Load external users on initialization
+    loadExternalUsers();
   }
 
   private setupHandlers() {
@@ -100,51 +171,53 @@ class QortobaAnalysisBot {
 
   private async loadAuthorizedUsers() {
     try {
-      const { users } = await import('../shared/schema');
-      const authorizedUsers = await db
-        .select({ telegramUserId: users.telegramUserId })
-        .from(users)
-        .where(eq(users.role, 'it_admin'));
+      // Load from Google Sheets users who have bot access
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const authorizedUsers = users.filter(user => 
+        user.isActive && 
+        (user.canAccessBot || 
+         (Array.isArray(user.permissions) && user.permissions.includes('access_bot')) ||
+         user.role === 'manager' ||
+         user.role === 'it_admin')
+      );
       
-      AUTHORIZED_USERS = authorizedUsers
-        .filter(user => user.telegramUserId)
-        .map(user => user.telegramUserId!);
+      // Get internal users with telegram IDs (stored temporarily in profileImage field)
+      const internalTelegramIds = [];
+      for (const user of authorizedUsers) {
+        if (user.profileImage && user.profileImage.match(/^\d{8,}$/)) {
+          internalTelegramIds.push(user.profileImage);
+        }
+      }
       
-      console.log('📱 [TELEGRAM BOT] Loaded authorized users:', AUTHORIZED_USERS.length);
+      // Load external users
+      await loadExternalUsers();
+      const externalTelegramIds = EXTERNAL_TELEGRAM_USERS.map(u => u.telegramUserId);
+      
+      AUTHORIZED_USERS = [...internalTelegramIds, ...externalTelegramIds];
+      
+      console.log(`📱 [TELEGRAM BOT] Loaded ${AUTHORIZED_USERS.length} authorized users (${internalTelegramIds.length} internal, ${externalTelegramIds.length} external)`);
     } catch (error) {
-      console.error('Error loading authorized users:', error);
+      console.error('Error loading authorized users from Google Sheets:', error);
+      // Fallback - add some default admin IDs if needed
+      AUTHORIZED_USERS = [];
     }
   }
 
   async sendLatestQuotations(chatId: number) {
     try {
-      const latestQuotations = await db
-        .select({
-          rfqNumber: quotationRequests.customRequestNumber,
-          requestDate: quotationRequests.requestDate,
-          clientName: clients.name
-        })
-        .from(quotationRequests)
-        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
-        .orderBy(quotationRequests.requestDate)
-        .limit(5);
+      const quotationsData = new GoogleSheetsRealtimeData();
+      const latestQuotations = await quotationsData.getLatestQuotations(5);
 
       let message = '📋 آخر 5 طلبات تسعير:\n\n';
       
       for (const req of latestQuotations) {
-        message += `🔹 رقم الطلب: ${req.rfqNumber}\n`;
-        message += `📅 التاريخ: ${(() => {
-          const date = new Date(req.requestDate);
-          const year = date.getFullYear();
-          const month = (date.getMonth() + 1).toString().padStart(2, '0');
-          const day = date.getDate().toString().padStart(2, '0');
-          return `${year}/${day}/${month}`;
-        })()}\n`;
+        message += `🔹 رقم الطلب: ${req.rfqNumber || 'غير محدد'}\n`;
+        message += `📅 التاريخ: ${req.requestDate || 'غير محدد'}\n`;
         message += `👤 العميل: ${req.clientName || 'غير محدد'}\n`;
         message += `\n`;
       }
       
-      this.bot.sendMessage(chatId, message);
+      this.bot.sendMessage(chatId, message || '✅ لا توجد طلبات تسعير');
     } catch (error) {
       console.error('Error sending latest quotations:', error);
       this.bot.sendMessage(chatId, '❌ خطأ في جلب البيانات');
@@ -153,32 +226,16 @@ class QortobaAnalysisBot {
 
   async sendPendingItems(chatId: number) {
     try {
-      const pendingItems = await db
-        .select({
-          partNumber: items.partNumber,
-          description: items.description,
-          rfqNumber: quotationRequests.customRequestNumber,
-          requestDate: quotationRequests.requestDate
-        })
-        .from(items)
-        .innerJoin(quotationItems, eq(items.id, quotationItems.itemId))
-        .innerJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
-        .where(eq(quotationRequests.status, 'pending'))
-        .limit(10);
+      const quotationsData = new GoogleSheetsRealtimeData();
+      const pendingItems = await quotationsData.getPendingItems(10);
 
       let message = '⏳ البنود المعلقة (بحاجة لتسعير):\n\n';
       
       for (const item of pendingItems) {
-        message += `🔧 رقم القطعة: ${item.partNumber}\n`;
-        message += `📝 الوصف: ${item.description}\n`;
-        message += `📋 RFQ: ${item.rfqNumber}\n`;
-        message += `📅 ${(() => {
-          const date = new Date(item.requestDate);
-          const year = date.getFullYear();
-          const month = (date.getMonth() + 1).toString().padStart(2, '0');
-          const day = date.getDate().toString().padStart(2, '0');
-          return `${year}/${day}/${month}`;
-        })()}\n\n`;
+        message += `🔧 رقم القطعة: ${item.partNumber || 'غير محدد'}\n`;
+        message += `📝 الوصف: ${item.description || 'غير محدد'}\n`;
+        message += `📋 RFQ: ${item.rfqNumber || 'غير محدد'}\n`;
+        message += `📅 ${item.requestDate || 'غير محدد'}\n\n`;
       }
       
       this.bot.sendMessage(chatId, message || '✅ لا توجد بنود معلقة');
@@ -192,19 +249,15 @@ class QortobaAnalysisBot {
     try {
       this.bot.sendMessage(chatId, '🔍 جاري تحليل البند...');
       
-      // Get item from database
-      const itemData = await db
-        .select()
-        .from(items)
-        .where(eq(items.partNumber, partNumber))
-        .limit(1);
+      // Get item from Google Sheets
+      const quotationsData = new GoogleSheetsRealtimeData();
+      const items = await quotationsData.getAllItems();
+      const item = items.find(i => i.partNumber === partNumber);
 
-      if (!itemData.length) {
+      if (!item) {
         this.bot.sendMessage(chatId, `❌ لم يتم العثور على البند: ${partNumber}`);
         return;
       }
-
-      const item = itemData[0];
       
       // Analyze with DeepSeek AI
       const analysis = await this.analyzeWithDeepSeek(item);
@@ -412,13 +465,51 @@ class QortobaAnalysisBot {
     await this.loadAuthorizedUsers();
   }
 
+  // Load external users from file
+  private async loadExternalUsers() {
+    try {
+      if (require('fs').existsSync(EXTERNAL_USERS_FILE)) {
+        const fileContent = readFileSync(EXTERNAL_USERS_FILE, 'utf8');
+        EXTERNAL_TELEGRAM_USERS = JSON.parse(fileContent);
+      }
+    } catch (error) {
+      console.error('Error loading external users file:', error);
+      EXTERNAL_TELEGRAM_USERS = [];
+    }
+  }
+
+  // Save external users to file
+  private async saveExternalUsers() {
+    try {
+      writeFileSync(EXTERNAL_USERS_FILE, JSON.stringify(EXTERNAL_TELEGRAM_USERS, null, 2));
+    } catch (error) {
+      console.error('Error saving external users file:', error);
+    }
+  }
+
   // Add external user by Telegram ID only
   async addExternalUser(telegramUserId: string) {
     try {
-      // Check if already exists
+      // Check if already exists in authorized users
       if (AUTHORIZED_USERS.includes(telegramUserId)) {
         return { success: false, message: 'المستخدم موجود مسبقاً' };
       }
+      
+      // Check if already exists in external users
+      const exists = EXTERNAL_TELEGRAM_USERS.find(u => u.telegramUserId === telegramUserId);
+      if (exists) {
+        return { success: false, message: 'المستخدم الخارجي موجود مسبقاً' };
+      }
+      
+      // Add to external users
+      EXTERNAL_TELEGRAM_USERS.push({
+        telegramUserId,
+        fullName: `External User ${telegramUserId}`,
+        addedAt: new Date().toISOString()
+      });
+      
+      // Save to file
+      await this.saveExternalUsers();
       
       // Add to authorized users list
       AUTHORIZED_USERS.push(telegramUserId);

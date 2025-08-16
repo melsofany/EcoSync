@@ -45,7 +45,10 @@ export default function TelegramBot() {
     currentUser?.role === 'manager' || 
     (typeof currentUser?.role === 'string' && 
      currentUser.role.includes('perm-001') && 
-     currentUser.role.includes('perm-009')); // perm-009 is bot access permission
+     currentUser.role.includes('perm-009')) ||
+    (typeof currentUser?.role === 'string' && 
+     currentUser.role.includes('perm-001') && 
+     currentUser.role.includes('perm-010')); // Comprehensive admin permissions
 
   if (!hasAdminAccess) {
     return (

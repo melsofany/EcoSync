@@ -5988,5 +5988,197 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // ==== TELEGRAM BOT API ENDPOINTS ====
+  
+  // Get bot status
+  app.get("/api/telegram/status", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('📱 جلب حالة بوت التليجرام...');
+      
+      const { QortobaAnalysisBot } = await import('./telegram-bot.js');
+      
+      // Load external users count
+      const externalUsersFile = path.join(process.cwd(), 'external-telegram-users.json');
+      let externalUsersCount = 0;
+      try {
+        const data = readFileSync(externalUsersFile, 'utf8');
+        const externalUsers = JSON.parse(data);
+        externalUsersCount = externalUsers.length || 0;
+      } catch (error) {
+        externalUsersCount = 0;
+      }
+      
+      // Get internal users count (with telegram access)
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const internalUsersCount = users.filter(user => 
+        user.isActive && 
+        (user.canAccessBot || 
+         (Array.isArray(user.permissions) && user.permissions.includes('access_bot')) ||
+         user.role === 'manager' ||
+         user.role === 'it_admin')
+      ).length;
+      
+      const botStatus = {
+        status: 'active',
+        botName: 'بوت تحليل البنود - قرطبة للتوريدات',
+        username: 'Req_item_bot',
+        authorized_users: internalUsersCount + externalUsersCount,
+        deepseek_configured: !!process.env.DEEPSEEK_API_KEY
+      };
+      
+      res.json(botStatus);
+    } catch (error) {
+      console.error('❌ خطأ في جلب حالة البوت:', error);
+      res.status(500).json({ 
+        error: 'خطأ في جلب حالة البوت',
+        status: 'error',
+        authorized_users: 0,
+        deepseek_configured: false
+      });
+    }
+  });
+
+  // Get all authorized telegram users (internal + external)
+  app.get("/api/telegram/users", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('📋 جلب المستخدمين المخولين للتليجرام...');
+      
+      // Get internal users with telegram access
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const internalUsers = users.filter(user => 
+        user.isActive && 
+        (user.canAccessBot || 
+         (Array.isArray(user.permissions) && user.permissions.includes('access_bot')) ||
+         user.role === 'manager' ||
+         user.role === 'it_admin')
+      ).map(user => ({
+        id: user.id,
+        fullName: user.fullName,
+        username: user.username,
+        role: user.role,
+        telegramUserId: user.profileImage && user.profileImage.match(/^\d{8,}$/) ? user.profileImage : ''
+      }));
+
+      // Get external users
+      const externalUsersFile = path.join(process.cwd(), 'external-telegram-users.json');
+      let externalUsers = [];
+      try {
+        const data = readFileSync(externalUsersFile, 'utf8');
+        externalUsers = JSON.parse(data);
+      } catch (error) {
+        externalUsers = [];
+      }
+
+      res.json({
+        internal: internalUsers,
+        external: externalUsers
+      });
+    } catch (error) {
+      console.error('❌ خطأ في جلب مستخدمي التليجرام:', error);
+      res.status(500).json({ error: 'خطأ في جلب المستخدمين' });
+    }
+  });
+
+  // Add external telegram user
+  app.post("/api/telegram/external-users", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { telegramUserId } = req.body;
+      
+      if (!telegramUserId || !telegramUserId.match(/^\d{8,}$/)) {
+        return res.status(400).json({ error: 'معرف التليجرام غير صحيح' });
+      }
+
+      console.log(`➕ إضافة مستخدم تليجرام خارجي: ${telegramUserId}`);
+      
+      // Load existing external users
+      const externalUsersFile = path.join(process.cwd(), 'external-telegram-users.json');
+      let externalUsers = [];
+      try {
+        const data = readFileSync(externalUsersFile, 'utf8');
+        externalUsers = JSON.parse(data);
+      } catch (error) {
+        externalUsers = [];
+      }
+
+      // Check if user already exists
+      const existingUser = externalUsers.find((u: any) => u.telegramUserId === telegramUserId);
+      if (existingUser) {
+        return res.status(409).json({ error: 'المستخدم موجود بالفعل' });
+      }
+
+      // Add new external user
+      const newUser = {
+        telegramUserId,
+        fullName: `مستخدم خارجي ${telegramUserId}`,
+        addedAt: new Date().toISOString()
+      };
+
+      externalUsers.push(newUser);
+
+      // Save to file
+      writeFileSync(externalUsersFile, JSON.stringify(externalUsers, null, 2));
+
+      console.log(`✅ تم إضافة مستخدم تليجرام خارجي: ${telegramUserId}`);
+      res.json({ success: true, user: newUser });
+    } catch (error) {
+      console.error('❌ خطأ في إضافة مستخدم تليجرام خارجي:', error);
+      res.status(500).json({ error: 'خطأ في إضافة المستخدم' });
+    }
+  });
+
+  // Remove external telegram user
+  app.delete("/api/telegram/external-users/:telegramUserId", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { telegramUserId } = req.params;
+      
+      console.log(`🗑️ حذف مستخدم تليجرام خارجي: ${telegramUserId}`);
+      
+      // Load existing external users
+      const externalUsersFile = path.join(process.cwd(), 'external-telegram-users.json');
+      let externalUsers = [];
+      try {
+        const data = readFileSync(externalUsersFile, 'utf8');
+        externalUsers = JSON.parse(data);
+      } catch (error) {
+        return res.status(404).json({ error: 'لا توجد مستخدمين خارجيين' });
+      }
+
+      // Find and remove user
+      const userIndex = externalUsers.findIndex((u: any) => u.telegramUserId === telegramUserId);
+      if (userIndex === -1) {
+        return res.status(404).json({ error: 'المستخدم غير موجود' });
+      }
+
+      externalUsers.splice(userIndex, 1);
+
+      // Save to file
+      writeFileSync(externalUsersFile, JSON.stringify(externalUsers, null, 2));
+
+      console.log(`✅ تم حذف مستخدم تليجرام خارجي: ${telegramUserId}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('❌ خطأ في حذف مستخدم تليجرام خارجي:', error);
+      res.status(500).json({ error: 'خطأ في حذف المستخدم' });
+    }
+  });
+
+  // Test item analysis
+  app.post("/api/telegram/analyze-item", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { itemId } = req.body;
+      
+      console.log(`🔍 تحليل البند: ${itemId}`);
+      
+      // For now, return a mock response since we would need to send via telegram
+      res.json({ 
+        success: true, 
+        message: 'تم إرسال طلب التحليل عبر التليجرام' 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في تحليل البند:', error);
+      res.status(500).json({ error: 'خطأ في تحليل البند' });
+    }
+  });
+
   return httpServer;
 }
