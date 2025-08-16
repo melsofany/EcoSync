@@ -23,8 +23,8 @@ export interface UserSheet {
 }
 
 export class UserSheetsManager {
-  private sheets: any;
-  private spreadsheetId: string;
+  public sheets: any;
+  public spreadsheetId: string;
   private isInitialized = false;
 
   constructor() {
@@ -142,13 +142,13 @@ export class UserSheetsManager {
           activity: { view: true },
           pricing: { viewSalePrices: true, viewSupplierPrices: true, viewPurchaseOrderPrices: true, viewCosts: true, viewMargins: true }
         }),
-        'TRUE',
-        'FALSE',
-        '',
-        now,
-        '',
-        now,
-        now
+        'TRUE', // isActive
+        'FALSE', // isOnline
+        '', // lastLoginAt
+        now, // lastActivityAt
+        '', // ipAddress
+        now, // createdAt
+        now  // updatedAt
       ];
 
       await this.sheets.spreadsheets.values.append({
@@ -326,6 +326,22 @@ export class UserSheetsManager {
     }
   }
 
+  // إضافة مستخدم جديد (لاستخدام routes.ts)
+  async addUser(userData: {
+    username: string;
+    password: string;
+    fullName: string;
+    email?: string;
+    phone?: string;
+    role: string;
+    isActive?: boolean;
+    canAccessBot?: boolean;
+    profileImage?: string;
+    permissions?: object;
+  }): Promise<UserSheet | null> {
+    return this.createUser(userData);
+  }
+
   // إضافة مستخدم جديد
   async createUser(userData: {
     username: string;
@@ -367,12 +383,12 @@ export class UserSheetsManager {
         userData.role,
         JSON.stringify(userData.permissions || {}),
         userData.isActive !== false ? 'TRUE' : 'FALSE',
-        userData.canAccessBot === true ? 'TRUE' : 'FALSE',
-        '',
-        now,
-        '',
-        now,
-        now
+        'FALSE', // isOnline - بدلاً من canAccessBot
+        '', // lastLoginAt
+        now, // lastActivityAt
+        '', // ipAddress
+        now, // createdAt
+        now  // updatedAt
       ];
 
       await this.sheets.spreadsheets.values.append({

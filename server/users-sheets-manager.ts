@@ -31,8 +31,8 @@ interface PermissionData {
 
 export class UsersGoogleSheetsManager {
   private auth: any;
-  private sheets: any;
-  private spreadsheetId: string;
+  public sheets: any;
+  public spreadsheetId: string;
 
   constructor() {
     this.spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
@@ -274,7 +274,7 @@ export class UsersGoogleSheetsManager {
 
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `USERS!A${nextRow}:M${nextRow}`,
+        range: `USERS!A${nextRow}:N${nextRow}`,
         valueInputOption: 'RAW',
         resource: {
           values: [[
@@ -283,6 +283,7 @@ export class UsersGoogleSheetsManager {
             newUser.fullName,
             newUser.email,
             newUser.password,
+            '', // phone - يجب أن يكون فارغاً هنا
             newUser.role,
             newUser.permissions.join(', '),
             newUser.isActive ? 'TRUE' : 'FALSE',
@@ -290,7 +291,7 @@ export class UsersGoogleSheetsManager {
             newUser.lastLogin,
             newUser.createdAt,
             newUser.updatedAt,
-            ''
+            '' // profileImage
           ]]
         }
       });
@@ -339,7 +340,7 @@ export class UsersGoogleSheetsManager {
 
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `USERS!I${rowNumber}`,
+        range: `USERS!J${rowNumber}`,
         valueInputOption: 'RAW',
         resource: {
           values: [[canAccess ? 'TRUE' : 'FALSE']]
@@ -349,7 +350,7 @@ export class UsersGoogleSheetsManager {
       // تحديث وقت التعديل
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `USERS!L${rowNumber}`,
+        range: `USERS!M${rowNumber}`,
         valueInputOption: 'RAW',
         resource: {
           values: [[new Date().toISOString()]]
@@ -378,7 +379,7 @@ export class UsersGoogleSheetsManager {
         return false;
       }
 
-      // تحديث الصلاحيات في Google Sheets (العمود F - فهرس 5)
+      // تحديث الصلاحيات في Google Sheets (العمود H - فهرس 7)
       const rowNumber = userIndex + 2; // الصف الأول هو العناوين
       const permissionsString = permissions.join(',');
 
@@ -386,7 +387,7 @@ export class UsersGoogleSheetsManager {
 
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `USERS!F${rowNumber}`,
+        range: `USERS!H${rowNumber}`,
         valueInputOption: 'RAW',
         resource: {
           values: [[permissionsString]]
@@ -396,7 +397,7 @@ export class UsersGoogleSheetsManager {
       // تحديث وقت التعديل
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `USERS!L${rowNumber}`,
+        range: `USERS!M${rowNumber}`,
         valueInputOption: 'RAW',
         resource: {
           values: [[new Date().toISOString()]]
