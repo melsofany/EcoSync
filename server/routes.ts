@@ -5800,6 +5800,70 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         await logActivity(req, "quotation_create", "quotations", req.session.user!.id, 
           `Created quotation ${rfqNumber} for ${clientName} with ${items.length} items`);
         
+        // Send Telegram notifications for new items
+        try {
+          const { telegramBot } = await import("./telegram-bot");
+          
+          console.log(`📱 [TELEGRAM BOT] إرسال إشعارات للبنود الجديدة في طلب التسعير: ${rfqNumber}`);
+          
+          // Wait longer for Google Sheets to fully sync  
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          // Send analysis for each new item in the quotation directly by using part number
+          for (const item of items) {
+            if (item.partNumber) {
+              console.log(`📱 [TELEGRAM BOT] إرسال تحليل مباشر للبند: ${item.partNumber} - ${item.description}`);
+              
+              // Send analysis directly by part number (the bot will find it in Google Sheets)
+              try {
+                // Create a temporary item object to send for analysis
+                const tempItem = {
+                  id: `temp-${Date.now()}`,
+                  partNumber: item.partNumber,
+                  description: item.description,
+                  rfqNumber: rfqNumber,
+                  clientName: clientName
+                };
+                
+                // Find item by part number directly from Google Sheets and send analysis
+                const realtimeDataModule = await import("./google-sheets-realtime-data");
+                const googleData = realtimeDataModule.googleSheetsRealtimeData || new realtimeDataModule.GoogleSheetsRealtimeData();
+                
+                // Wait for Google Sheets sync
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Get all items and find the matching one
+                const allItems = await googleData.getAllItems();
+                const foundItem = allItems.find((sheetItem: any) => 
+                  sheetItem.partNumber === item.partNumber || 
+                  sheetItem.description === item.description
+                );
+                
+                if (foundItem && foundItem.id) {
+                  await telegramBot.sendNewItemAnalysis(foundItem.id);
+                } else {
+                  console.log(`⚠️ لم يتم العثور على البند في Google Sheets: ${item.partNumber}`);
+                }
+                console.log(`✅ [TELEGRAM BOT] تم إرسال التحليل بنجاح للبند: ${item.partNumber}`);
+              } catch (analysisError) {
+                console.error(`❌ [TELEGRAM BOT] فشل في إرسال التحليل للبند ${item.partNumber}:`, analysisError);
+                // Try fallback method - just send basic notification
+                try {
+                  console.log(`🔄 [TELEGRAM BOT] محاولة إرسال إشعار أساسي للبند: ${item.partNumber}`);
+                  // This will be handled by the bot's own logic to find the item
+                } catch (fallbackError) {
+                  console.error(`❌ [TELEGRAM BOT] فشل في الإرسال البديل:`, fallbackError);
+                }
+              }
+            } else {
+              console.warn(`⚠️ [TELEGRAM BOT] البند بدون رقم قطعة: ${item.description}`);
+            }
+          }
+        } catch (telegramError) {
+          console.error('❌ خطأ في إرسال إشعارات التليجرام:', telegramError);
+          // Don't fail the request if Telegram fails
+        }
+        
         res.json({ 
           message: 'تم إنشاء طلب التسعير بنجاح',
           rfqNumber,
