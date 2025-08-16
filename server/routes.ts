@@ -4821,6 +4821,21 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Reload authorized users in Telegram bot
+  app.post("/api/telegram/reload-users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
+    try {
+      const { telegramBot } = await import("./telegram-bot");
+      await telegramBot.reloadAuthorizedUsers();
+      res.json({ 
+        success: true, 
+        message: "تم إعادة تحميل قائمة المستخدمين المخولين بنجاح"
+      });
+    } catch (error) {
+      console.error("Reload users error:", error);
+      res.status(500).json({ message: "خطأ في إعادة تحميل المستخدمين" });
+    }
+  });
+
   // Get all authorized users (internal + external)
   app.get("/api/telegram/users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
@@ -4875,6 +4890,14 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       });
       
       if (result) {
+        // إعادة تحميل قائمة المستخدمين المخولين في البوت
+        try {
+          const { telegramBot } = await import("./telegram-bot");
+          await telegramBot.reloadAuthorizedUsers();
+        } catch (botError) {
+          console.warn("تحذير: فشل في إعادة تحميل قائمة البوت:", botError);
+        }
+        
         await logActivity(req, "add_external_telegram_user", "telegram", telegramUserId, `Added external user: ${telegramUserId}`);
         res.json({ 
           success: true, 

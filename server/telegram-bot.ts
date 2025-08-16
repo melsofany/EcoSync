@@ -10,72 +10,32 @@ let AUTHORIZED_USERS: string[] = [
   // Will be loaded from Google Sheets
 ];
 
-// External users storage
-const EXTERNAL_USERS_FILE = path.join(process.cwd(), 'external-telegram-users.json');
+// Legacy variables - kept for fallback compatibility
 let EXTERNAL_TELEGRAM_USERS: { telegramUserId: string; fullName: string; addedAt: string }[] = [];
 
-// Load external users from file
-async function loadExternalUsers() {
+// Get all authorized users (internal + external) from Google Sheets
+async function getAllAuthorizedUsers() {
   try {
-    const data = readFileSync(EXTERNAL_USERS_FILE, 'utf8');
-    EXTERNAL_TELEGRAM_USERS = JSON.parse(data);
-    console.log(`📱 تم تحميل ${EXTERNAL_TELEGRAM_USERS.length} مستخدم خارجي للتليجرام`);
+    // جلب المستخدمين الداخليين من النظام الرئيسي
+    const internalUsers = await usersGoogleSheetsManager.getAllUsers();
+    const internalTelegramUsers = internalUsers.filter(user => user.telegramUserId);
+    
+    // جلب المستخدمين الخارجيين من ورقة BOT_USERS
+    const externalUsers = await usersGoogleSheetsManager.getAllBotUsers();
+    
+    return {
+      internal: internalTelegramUsers,
+      external: externalUsers,
+      all: [...internalTelegramUsers, ...externalUsers]
+    };
   } catch (error) {
-    console.log('📱 لا توجد مستخدمين خارجيين للتليجرام، سيتم إنشاء قائمة جديدة');
-    EXTERNAL_TELEGRAM_USERS = [];
+    console.error('❌ خطأ في جلب جميع المستخدمين المخولين:', error);
+    return {
+      internal: [],
+      external: EXTERNAL_TELEGRAM_USERS, // fallback to old system
+      all: []
+    };
   }
-}
-
-// Save external users to file
-function saveExternalUsers() {
-  try {
-    writeFileSync(EXTERNAL_USERS_FILE, JSON.stringify(EXTERNAL_TELEGRAM_USERS, null, 2));
-    console.log(`💾 تم حفظ ${EXTERNAL_TELEGRAM_USERS.length} مستخدم خارجي للتليجرام`);
-  } catch (error) {
-    console.error('❌ خطأ في حفظ المستخدمين الخارجيين:', error);
-  }
-}
-
-// Add external user
-function addExternalUser(telegramUserId: string, fullName: string = 'مستخدم خارجي') {
-  const existingUser = EXTERNAL_TELEGRAM_USERS.find(u => u.telegramUserId === telegramUserId);
-  if (existingUser) {
-    console.log(`👤 المستخدم ${telegramUserId} موجود بالفعل`);
-    return false;
-  }
-  
-  const newUser = {
-    telegramUserId,
-    fullName,
-    addedAt: new Date().toISOString()
-  };
-  
-  EXTERNAL_TELEGRAM_USERS.push(newUser);
-  saveExternalUsers();
-  console.log(`✅ تم إضافة مستخدم خارجي جديد: ${telegramUserId}`);
-  return true;
-}
-
-// Remove external user
-function removeExternalUser(telegramUserId: string) {
-  const index = EXTERNAL_TELEGRAM_USERS.findIndex(u => u.telegramUserId === telegramUserId);
-  if (index === -1) {
-    console.log(`❌ المستخدم ${telegramUserId} غير موجود`);
-    return false;
-  }
-  
-  EXTERNAL_TELEGRAM_USERS.splice(index, 1);
-  saveExternalUsers();
-  console.log(`🗑️ تم حذف المستخدم الخارجي: ${telegramUserId}`);
-  return true;
-}
-
-// Get all authorized users (internal + external)
-function getAllAuthorizedUsers() {
-  return {
-    internal: [], // Will be filled from Google Sheets
-    external: EXTERNAL_TELEGRAM_USERS
-  };
 }
 
 // DeepSeek API configuration
@@ -88,8 +48,8 @@ class QortobaAnalysisBot {
   constructor() {
     this.bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
     this.setupHandlers();
-    // Load external users on initialization
-    loadExternalUsers();
+    // Initialize authorized users list
+    this.loadAuthorizedUsers();
   }
 
   private setupHandlers() {
@@ -171,17 +131,17 @@ class QortobaAnalysisBot {
 
   private async loadAuthorizedUsers() {
     try {
-      // استخدام النظام الجديد المدمج مع Google Sheets
-      const telegramUsers = await usersGoogleSheetsManager.getAllTelegramUsers();
+      // جلب المستخدمين الداخليين من النظام الرئيسي
+      const internalUsers = await usersGoogleSheetsManager.getAllUsers();
+      const internalTelegramIds = internalUsers
+        .filter(user => user.telegramUserId && user.telegramUserId.match(/^\d{8,}$/))
+        .map(user => user.telegramUserId);
       
-      // جمع معرفات التليجرام من المستخدمين الداخليين والخارجيين
-      const internalTelegramIds = telegramUsers.internal
-        .filter(user => user.profileImage && user.profileImage.match(/^\d{8,}$/))
-        .map(user => user.profileImage);
-      
-      const externalTelegramIds = telegramUsers.external
-        .filter(user => user.profileImage && user.profileImage.match(/^\d{8,}$/))
-        .map(user => user.profileImage);
+      // جلب المستخدمين الخارجيين من ورقة BOT_USERS المنفصلة
+      const externalUsers = await usersGoogleSheetsManager.getAllBotUsers();
+      const externalTelegramIds = externalUsers
+        .filter(user => user.telegramId && user.telegramId.match(/^\d{8,}$/))
+        .map(user => user.telegramId);
       
       AUTHORIZED_USERS = [...internalTelegramIds, ...externalTelegramIds];
       
@@ -446,25 +406,15 @@ class QortobaAnalysisBot {
     await this.loadAuthorizedUsers();
   }
 
-  // Load external users from file
-  private async loadExternalUsers() {
+  // Get external users from BOT_USERS Google Sheet
+  async getExternalUsers() {
     try {
-      if (require('fs').existsSync(EXTERNAL_USERS_FILE)) {
-        const fileContent = readFileSync(EXTERNAL_USERS_FILE, 'utf8');
-        EXTERNAL_TELEGRAM_USERS = JSON.parse(fileContent);
-      }
+      const externalUsers = await usersGoogleSheetsManager.getAllBotUsers();
+      console.log(`📱 [TELEGRAM BOT] جلب ${externalUsers.length} مستخدم خارجي من ورقة BOT_USERS`);
+      return externalUsers;
     } catch (error) {
-      console.error('Error loading external users file:', error);
-      EXTERNAL_TELEGRAM_USERS = [];
-    }
-  }
-
-  // Save external users to file
-  private async saveExternalUsers() {
-    try {
-      writeFileSync(EXTERNAL_USERS_FILE, JSON.stringify(EXTERNAL_TELEGRAM_USERS, null, 2));
-    } catch (error) {
-      console.error('Error saving external users file:', error);
+      console.error('❌ خطأ في جلب المستخدمين الخارجيين:', error);
+      return [];
     }
   }
 
