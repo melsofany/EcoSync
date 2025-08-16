@@ -369,24 +369,15 @@ class QortobaAnalysisBot {
         await this.loadAuthorizedUsers();
       }
 
-      // Get item with quotation request details
-      const itemData = await db
-        .select({
-          item: items,
-          quotationRequest: quotationRequests,
-          quotationItem: quotationItems,
-          client: clients
-        })
-        .from(items)
-        .leftJoin(quotationItems, eq(items.id, quotationItems.itemId))
-        .leftJoin(quotationRequests, eq(quotationItems.quotationId, quotationRequests.id))
-        .leftJoin(clients, eq(quotationRequests.clientId, clients.id))
-        .where(eq(items.id, itemId))
-        .limit(1);
+      // استخدام Google Sheets بدلاً من قاعدة البيانات
+      const itemData = await googleSheetsRealTimeData.getItemById(itemId);
+      
+      if (!itemData) {
+        console.log('لم يتم العثور على الصنف:', itemId);
+        return;
+      }
 
-      if (!itemData.length) return;
-
-      const { item, quotationRequest, quotationItem, client } = itemData[0];
+      const item = itemData;
       
       // Skip if no part number
       if (!item.partNumber) {
@@ -402,8 +393,8 @@ class QortobaAnalysisBot {
         analysis = null; // Will use fallback message
       }
 
-      // Format message with quotation request details
-      const message = await this.formatNewItemMessage(item, quotationRequest, quotationItem, client, analysis);
+      // Format message with item details
+      const message = await this.formatNewItemMessage(item, null, null, null, analysis);
       
       // Send to all authorized users
       for (const userId of AUTHORIZED_USERS) {
@@ -533,34 +524,47 @@ class QortobaAnalysisBot {
     }
   }
 
-  // Get all authorized users (both internal and external)
+  // Get all authorized users (both internal and external) - now using Google Sheets
   async getAllAuthorizedUsers() {
-    // Get internal users with Telegram IDs
-    const internalUsers = await db
-      .select({
-        telegramUserId: users.telegramUserId,
-        fullName: users.fullName,
-        role: users.role
-      })
-      .from(users)
-      .where(sql`${users.telegramUserId} IS NOT NULL`);
+    try {
+      // استخدام النظام الجديد المدمج مع Google Sheets لجلب جميع المستخدمين
+      const allUsers = await usersGoogleSheetsManager.getAllUsers();
+      
+      // تصفية المستخدمين الداخليين الذين لديهم معرف تليجرام
+      const internalUsers = allUsers
+        .filter(user => (user as any).telegramUserId && (user as any).telegramUserId.trim() !== '')
+        .map(user => ({
+          telegramUserId: (user as any).telegramUserId,
+          fullName: user.fullName || user.username,
+          role: user.role,
+          type: 'internal'
+        }));
 
-    // External users (those in AUTHORIZED_USERS but not in database)
-    const internalTelegramIds = internalUsers.map(u => u.telegramUserId);
-    const externalUsers = AUTHORIZED_USERS
-      .filter(id => !internalTelegramIds.includes(id))
-      .map(id => ({
-        telegramUserId: id,
-        fullName: 'مستخدم خارجي',
-        role: 'external',
-        type: 'external'
-      }));
+      // جلب المستخدمين الخارجيين (من فئة external_telegram)
+      const externalUsers = allUsers
+        .filter(user => user.role === 'external_telegram')
+        .map(user => ({
+          telegramUserId: (user as any).telegramUserId || user.username,
+          fullName: user.fullName || 'مستخدم خارجي',
+          role: 'external',
+          type: 'external'
+        }));
 
-    return {
-      internal: internalUsers.map(u => ({...u, type: 'internal'})),
-      external: externalUsers,
-      all: [...internalUsers.map(u => ({...u, type: 'internal'})), ...externalUsers]
-    };
+      console.log(`📱 مستخدمو التليجرام: ${internalUsers.length} داخلي، ${externalUsers.length} خارجي`);
+
+      return {
+        internal: internalUsers,
+        external: externalUsers,
+        all: [...internalUsers, ...externalUsers]
+      };
+    } catch (error) {
+      console.error('❌ خطأ في جلب المستخدمين المخولين:', error);
+      return {
+        internal: [],
+        external: [],
+        all: []
+      };
+    }
   }
 
   private async formatNewItemMessage(
