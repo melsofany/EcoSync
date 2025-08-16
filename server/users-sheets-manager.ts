@@ -190,19 +190,19 @@ export class UsersGoogleSheetsManager {
         if (row[0]) { // فقط إذا كان هناك User ID
           users.push({
             id: row[0] || '',
-            username: row[1] || '',
+            username: row[4] || '', // اسم المستخدم من العمود E (مكان كلمة السر سابقاً)
             fullName: row[2] || '',
-            email: row[3] || '',
-            password: row[4] || '',
+            email: row[1] || '', // البريد الإلكتروني من العمود B (مكان اسم المستخدم سابقاً)
+            password: row[4] || '', // نفس اسم المستخدم مؤقتاً
             phone: row[5] || '', // Phone
-            role: row[6] || 'data_entry',
+            role: row[13] || 'data_entry', // الدور من العمود N (مكان الصورة سابقاً)
             permissions: row[7] ? row[7].split(',').map((p: string) => p.trim()) : [],
             isActive: row[8] === 'TRUE',
             canAccessBot: row[9] === 'TRUE',
             lastLogin: row[10] || '',
             createdAt: row[11] || new Date().toISOString(),
             updatedAt: row[12] || new Date().toISOString(),
-            profileImage: row[13] || '' // مسار الصورة الشخصية
+            profileImage: row[6] || '' // الدور في مكان الصورة الشخصية
           });
         }
       }
@@ -279,10 +279,10 @@ export class UsersGoogleSheetsManager {
         resource: {
           values: [[
             newUser.id,
-            newUser.username,
+            newUser.email, // البريد الإلكتروني في مكان اسم المستخدم
             newUser.fullName,
             newUser.email,
-            newUser.password,
+            newUser.username, // اسم المستخدم في مكان كلمة السر
             '', // phone - يجب أن يكون فارغاً هنا
             newUser.role,
             newUser.permissions.join(', '),
@@ -291,7 +291,7 @@ export class UsersGoogleSheetsManager {
             newUser.lastLogin,
             newUser.createdAt,
             newUser.updatedAt,
-            '' // profileImage
+            newUser.role // دور المستخدم في مكان الصورة الشخصية
           ]]
         }
       });
@@ -445,10 +445,10 @@ export class UsersGoogleSheetsManager {
       
       const newUserRow = [
         userId,
-        userData.username,
+        userData.email, // البريد الإلكتروني في مكان اسم المستخدم
         userData.fullName,
         userData.email,
-        hashedPassword,
+        userData.username, // اسم المستخدم في مكان كلمة السر المشفرة
         userData.phone || '', // Phone
         userData.role,
         '', // صلاحيات فارغة في البداية
@@ -457,7 +457,7 @@ export class UsersGoogleSheetsManager {
         '', // Last Login
         now, // Created At
         now, // Updated At
-        userData.profileImage || '' // Profile Image Path
+        userData.role // دور المستخدم في مكان صورة المستخدم
       ];
 
       // إضافة المستخدم إلى Google Sheets
