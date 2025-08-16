@@ -4836,7 +4836,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Add external user to bot
   app.post("/api/telegram/external-users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
-      const { telegramUserId, username, firstName, lastName, phone } = req.body;
+      const { telegramUserId, firstName, lastName, phone } = req.body;
       
       if (!telegramUserId) {
         return res.status(400).json({ message: "معرف تليجرام مطلوب" });
@@ -4844,7 +4844,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
       // استخدام النظام الجديد المدمج مع Google Sheets
       const result = await usersGoogleSheetsManager.addTelegramUser(telegramUserId, {
-        username,
         firstName,
         lastName,
         phone

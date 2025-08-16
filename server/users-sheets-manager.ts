@@ -129,11 +129,11 @@ export class UsersGoogleSheetsManager {
         // إضافة العناوين لمستخدمي البوت
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'BOT_USERS!A1:I1',
+          range: 'BOT_USERS!A1:H1',
           valueInputOption: 'RAW',
           resource: {
             values: [[
-              'TELEGRAM_ID', 'USERNAME', 'FIRST_NAME', 'LAST_NAME', 
+              'TELEGRAM_ID', 'FIRST_NAME', 'LAST_NAME', 
               'FULL_NAME', 'PHONE', 'STATUS', 'ADDED_DATE', 'NOTES'
             ]]
           }
@@ -680,7 +680,7 @@ export class UsersGoogleSheetsManager {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'BOT_USERS!A2:I1000'
+        range: 'BOT_USERS!A2:H1000'
       });
 
       const rows = response.data.values || [];
@@ -690,14 +690,13 @@ export class UsersGoogleSheetsManager {
         if (row[0]) { // فقط إذا كان هناك TELEGRAM_ID
           botUsers.push({
             telegramId: row[0] || '',
-            username: row[1] || '',
-            firstName: row[2] || '',
-            lastName: row[3] || '',
-            fullName: row[4] || '',
-            phone: row[5] || '',
-            status: row[6] || 'نشط',
-            addedDate: row[7] || '',
-            notes: row[8] || ''
+            firstName: row[1] || '',
+            lastName: row[2] || '',
+            fullName: row[3] || '',
+            phone: row[4] || '',
+            status: row[5] || 'نشط',
+            addedDate: row[6] || '',
+            notes: row[7] || ''
           });
         }
       }
@@ -712,7 +711,6 @@ export class UsersGoogleSheetsManager {
 
   // إضافة مستخدم تليجرام في ورقة BOT_USERS المنفصلة
   async addTelegramUser(telegramUserId: string, userData?: {
-    username?: string;
     firstName?: string;
     lastName?: string;
     phone?: string;
@@ -730,7 +728,6 @@ export class UsersGoogleSheetsManager {
       }
 
       // إنشاء بيانات المستخدم الجديد
-      const username = userData?.username || `user_${telegramUserId}`;
       const firstName = userData?.firstName || '';
       const lastName = userData?.lastName || '';
       const fullName = `${firstName} ${lastName}`.trim() || `مستخدم ${telegramUserId}`;
@@ -739,20 +736,19 @@ export class UsersGoogleSheetsManager {
       
       const newBotUserRow = [
         telegramUserId, // A: TELEGRAM_ID
-        username, // B: USERNAME
-        firstName, // C: FIRST_NAME
-        lastName, // D: LAST_NAME
-        fullName, // E: FULL_NAME
-        phone, // F: PHONE
-        'نشط', // G: STATUS
-        now, // H: ADDED_DATE
-        '' // I: NOTES
+        firstName, // B: FIRST_NAME
+        lastName, // C: LAST_NAME
+        fullName, // D: FULL_NAME
+        phone, // E: PHONE
+        'نشط', // F: STATUS
+        now, // G: ADDED_DATE
+        '' // H: NOTES
       ];
 
       // إضافة المستخدم إلى ورقة BOT_USERS
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'BOT_USERS!A:I',
+        range: 'BOT_USERS!A:H',
         valueInputOption: 'RAW',
         resource: {
           values: [newBotUserRow]
@@ -763,7 +759,6 @@ export class UsersGoogleSheetsManager {
       
       return {
         telegramId: telegramUserId,
-        username: username,
         firstName: firstName,
         lastName: lastName,
         fullName: fullName,

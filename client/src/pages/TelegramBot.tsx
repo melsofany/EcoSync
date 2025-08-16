@@ -37,7 +37,6 @@ export default function TelegramBot() {
   const [showExternalUserDialog, setShowExternalUserDialog] = useState(false);
   const [externalTelegramUserId, setExternalTelegramUserId] = useState("");
   const [newUserData, setNewUserData] = useState({
-    username: "",
     firstName: "",
     lastName: "",
     phone: ""
@@ -151,7 +150,6 @@ export default function TelegramBot() {
   const addExternalUserMutation = useMutation({
     mutationFn: async (userData: {
       telegramUserId: string;
-      username?: string;
       firstName?: string;
       lastName?: string;
       phone?: string;
@@ -175,7 +173,6 @@ export default function TelegramBot() {
       setShowExternalUserDialog(false);
       setExternalTelegramUserId("");
       setNewUserData({
-        username: "",
         firstName: "",
         lastName: "",
         phone: ""
@@ -666,16 +663,6 @@ export default function TelegramBot() {
               </p>
             </div>
 
-            <div>
-              <Label htmlFor="username">اسم المستخدم</Label>
-              <Input
-                id="username"
-                value={newUserData.username}
-                onChange={(e) => setNewUserData({...newUserData, username: e.target.value})}
-                placeholder="user123"
-              />
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="firstName">الاسم الأول</Label>
@@ -727,7 +714,6 @@ export default function TelegramBot() {
                   setShowExternalUserDialog(false);
                   setExternalTelegramUserId("");
                   setNewUserData({
-                    username: "",
                     firstName: "",
                     lastName: "",
                     phone: ""
