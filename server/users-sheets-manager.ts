@@ -93,13 +93,13 @@ export class UsersGoogleSheetsManager {
         // إضافة العناوين للمستخدمين
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'USERS!A1:N1',
+          range: 'USERS!A1:P1',
           valueInputOption: 'RAW',
           resource: {
             values: [[
-              'USER_ID', 'EMAIL', 'FULL_NAME', 'EMAIL_DUPLICATE', 'USERNAME', 
-              'PHONE', 'ROLE', 'PERMISSIONS', 'IS_ACTIVE', 'CAN_ACCESS_BOT', 
-              'LAST_LOGIN', 'CREATED_AT', 'UPDATED_AT', 'USER_ROLE'
+              'ID', 'USERNAME', 'PASSWORD', 'FULL_NAME', 'EMAIL', 
+              'PHONE', 'PROFILE_IMAGE', 'ROLE', 'PERMISSIONS', 'IS_ACTIVE', 
+              'IS_ONLINE', 'LAST_LOGIN', 'LAST_ACTIVITY', 'IP_ADDRESS', 'CREATED_AT', 'UPDATED_AT'
             ]]
           }
         });
@@ -180,7 +180,7 @@ export class UsersGoogleSheetsManager {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'USERS!A2:N1000'
+        range: 'USERS!A2:P1000'
       });
 
       const rows = response.data.values || [];
@@ -189,20 +189,20 @@ export class UsersGoogleSheetsManager {
       for (const row of rows) {
         if (row[0]) { // فقط إذا كان هناك User ID
           users.push({
-            id: row[0] || '',
-            username: row[4] || '', // اسم المستخدم من العمود E (مكان كلمة السر سابقاً)
-            fullName: row[2] || '',
-            email: row[1] || '', // البريد الإلكتروني من العمود B (مكان اسم المستخدم سابقاً)
-            password: row[4] || '', // نفس اسم المستخدم مؤقتاً
-            phone: row[5] || '', // Phone
-            role: row[13] || 'data_entry', // الدور من العمود N (مكان الصورة سابقاً)
-            permissions: row[7] ? row[7].split(',').map((p: string) => p.trim()) : [],
-            isActive: row[8] === 'TRUE',
-            canAccessBot: row[9] === 'TRUE',
-            lastLogin: row[10] || '',
-            createdAt: row[11] || new Date().toISOString(),
-            updatedAt: row[12] || new Date().toISOString(),
-            profileImage: row[6] || '' // الدور في مكان الصورة الشخصية
+            id: row[0] || '', // A: ID
+            username: row[1] || '', // B: USERNAME
+            fullName: row[3] || '', // D: FULL_NAME
+            email: row[4] || '', // E: EMAIL
+            password: row[2] || '', // C: PASSWORD
+            phone: row[5] || '', // F: PHONE
+            role: row[7] || 'data_entry', // H: ROLE
+            permissions: row[8] ? row[8].split(',').map((p: string) => p.trim()) : [], // I: PERMISSIONS
+            isActive: row[9] === 'TRUE', // J: IS_ACTIVE
+            canAccessBot: row[10] === 'TRUE', // K: IS_ONLINE (مستخدم لـ canAccessBot)
+            lastLogin: row[11] || '', // L: LAST_LOGIN
+            createdAt: row[14] || new Date().toISOString(), // O: CREATED_AT
+            updatedAt: row[15] || new Date().toISOString(), // P: UPDATED_AT
+            profileImage: row[6] || '' // G: PROFILE_IMAGE
           });
         }
       }
@@ -444,26 +444,28 @@ export class UsersGoogleSheetsManager {
       const now = new Date().toISOString();
       
       const newUserRow = [
-        userId,
-        userData.email, // البريد الإلكتروني في مكان اسم المستخدم
-        userData.fullName,
-        userData.email,
-        userData.username, // اسم المستخدم في مكان كلمة السر المشفرة
-        userData.phone || '', // Phone
-        userData.role,
-        '', // صلاحيات فارغة في البداية
-        userData.isActive ? 'TRUE' : 'FALSE',
-        userData.canAccessBot ? 'TRUE' : 'FALSE',
-        '', // Last Login
-        now, // Created At
-        now, // Updated At
-        userData.role // دور المستخدم في مكان صورة المستخدم
+        userId, // A: ID
+        userData.username, // B: USERNAME
+        hashedPassword, // C: PASSWORD
+        userData.fullName, // D: FULL_NAME
+        userData.email, // E: EMAIL
+        userData.phone || '', // F: PHONE
+        userData.profileImage || '', // G: PROFILE_IMAGE
+        userData.role, // H: ROLE
+        '', // I: PERMISSIONS - فارغة في البداية
+        userData.isActive ? 'TRUE' : 'FALSE', // J: IS_ACTIVE
+        'FALSE', // K: IS_ONLINE
+        '', // L: LAST_LOGIN
+        now, // M: LAST_ACTIVITY
+        '', // N: IP_ADDRESS
+        now, // O: CREATED_AT
+        now  // P: UPDATED_AT
       ];
 
       // إضافة المستخدم إلى Google Sheets
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'USERS!A:N',
+        range: 'USERS!A:P',
         valueInputOption: 'RAW',
         resource: {
           values: [newUserRow]

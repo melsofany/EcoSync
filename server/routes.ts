@@ -1258,7 +1258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
         spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
-        range: `USERS!E${rowNumber}`, // عمود اسم المستخدم (مكان كلمة المرور سابقاً)
+        range: `USERS!C${rowNumber}`, // C: PASSWORD
         valueInputOption: 'RAW',
         resource: {
           values: [[hashedPassword]]
@@ -1268,7 +1268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // تحديث وقت التعديل
       await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
         spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
-        range: `USERS!M${rowNumber}`, // عمود Updated At
+        range: `USERS!P${rowNumber}`, // P: UPDATED_AT
         valueInputOption: 'RAW',
         resource: {
           values: [[new Date().toISOString()]]
