@@ -97,9 +97,9 @@ export class UsersGoogleSheetsManager {
           valueInputOption: 'RAW',
           resource: {
             values: [[
-              'USER_ID', 'USERNAME', 'FULL_NAME', 'EMAIL', 'PASSWORD', 
+              'USER_ID', 'EMAIL', 'FULL_NAME', 'EMAIL_DUPLICATE', 'USERNAME', 
               'PHONE', 'ROLE', 'PERMISSIONS', 'IS_ACTIVE', 'CAN_ACCESS_BOT', 
-              'LAST_LOGIN', 'CREATED_AT', 'UPDATED_AT', 'PROFILE_IMAGE'
+              'LAST_LOGIN', 'CREATED_AT', 'UPDATED_AT', 'USER_ROLE'
             ]]
           }
         });
@@ -509,20 +509,10 @@ export class UsersGoogleSheetsManager {
       // حذف الصف من Google Sheets
       const rowNumber = userIndex + 2; // الصف الأول هو العناوين
       
-      await this.sheets.spreadsheets.batchUpdate({
+      // بدلاً من حذف الصف، نمسح محتوياته فقط
+      await this.sheets.spreadsheets.values.clear({
         spreadsheetId: this.spreadsheetId,
-        resource: {
-          requests: [{
-            deleteDimension: {
-              range: {
-                sheetId: 0, // USERS sheet
-                dimension: 'ROWS',
-                startIndex: rowNumber - 1,
-                endIndex: rowNumber
-              }
-            }
-          }]
-        }
+        range: `USERS!A${rowNumber}:N${rowNumber}`
       });
 
       console.log(`✅ تم حذف المستخدم ${userId} بنجاح`);
