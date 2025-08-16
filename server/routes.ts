@@ -693,8 +693,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
       
-      // التحقق العادي من الأدوار
-      if (!roles.includes(userRole)) {
+      // التحقق العادي من الأدوار مع منح صلاحيات إضافية للـ manager
+      if (!roles.includes(userRole) && !(userRole === 'manager' && roles.includes('it_admin'))) {
         console.log(`❌ المستخدم ${req.session.user.username} لا يملك الدور المطلوب. دوره: ${userRole}, الأدوار المطلوبة: ${roles.join(', ')}`);
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -4834,22 +4834,31 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Add external user to bot
-  app.post("/api/telegram/external-users", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+  app.post("/api/telegram/external-users", requireAuth, requireRole(["it_admin", "manager"]), async (req: Request, res: Response) => {
     try {
-      const { telegramUserId } = req.body;
+      const { telegramUserId, username, firstName, lastName, phone } = req.body;
       
       if (!telegramUserId) {
         return res.status(400).json({ message: "معرف تليجرام مطلوب" });
       }
 
-      const { telegramBot } = await import("./telegram-bot");
-      const result = await telegramBot.addExternalUser(telegramUserId);
+      // استخدام النظام الجديد المدمج مع Google Sheets
+      const result = await usersGoogleSheetsManager.addTelegramUser(telegramUserId, {
+        username,
+        firstName,
+        lastName,
+        phone
+      });
       
-      if (result.success) {
+      if (result) {
         await logActivity(req, "add_external_telegram_user", "telegram", telegramUserId, `Added external user: ${telegramUserId}`);
-        res.json(result);
+        res.json({ 
+          success: true, 
+          message: "تم إضافة المستخدم بنجاح إلى ورقة BOT_USERS",
+          user: result
+        });
       } else {
-        res.status(400).json(result);
+        res.status(400).json({ success: false, message: "فشل في إضافة المستخدم" });
       }
     } catch (error) {
       console.error("Add external user error:", error);

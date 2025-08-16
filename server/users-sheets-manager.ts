@@ -107,6 +107,41 @@ export class UsersGoogleSheetsManager {
         console.log('✅ تم إنشاء ورقة المستخدمين في Google Sheets');
       }
 
+      // إنشاء ورقة مستخدمي البوت
+      if (!existingSheets.includes('BOT_USERS')) {
+        await this.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: this.spreadsheetId,
+          resource: {
+            requests: [{
+              addSheet: {
+                properties: {
+                  title: 'BOT_USERS',
+                  gridProperties: {
+                    rowCount: 1000,
+                    columnCount: 10
+                  }
+                }
+              }
+            }]
+          }
+        });
+
+        // إضافة العناوين لمستخدمي البوت
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: 'BOT_USERS!A1:I1',
+          valueInputOption: 'RAW',
+          resource: {
+            values: [[
+              'TELEGRAM_ID', 'USERNAME', 'FIRST_NAME', 'LAST_NAME', 
+              'FULL_NAME', 'PHONE', 'STATUS', 'ADDED_DATE', 'NOTES'
+            ]]
+          }
+        });
+
+        console.log('✅ تم إنشاء ورقة مستخدمي البوت في Google Sheets');
+      }
+
       // إنشاء ورقة الصلاحيات
       if (!existingSheets.includes('PERMISSIONS')) {
         await this.sheets.spreadsheets.batchUpdate({
@@ -640,10 +675,114 @@ export class UsersGoogleSheetsManager {
     }
   }
 
+  // قراءة جميع مستخدمي البوت من ورقة BOT_USERS
+  async getAllBotUsers(): Promise<any[]> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'BOT_USERS!A2:I1000'
+      });
+
+      const rows = response.data.values || [];
+      const botUsers: any[] = [];
+
+      for (const row of rows) {
+        if (row[0]) { // فقط إذا كان هناك TELEGRAM_ID
+          botUsers.push({
+            telegramId: row[0] || '',
+            username: row[1] || '',
+            firstName: row[2] || '',
+            lastName: row[3] || '',
+            fullName: row[4] || '',
+            phone: row[5] || '',
+            status: row[6] || 'نشط',
+            addedDate: row[7] || '',
+            notes: row[8] || ''
+          });
+        }
+      }
+
+      console.log(`📱 تم قراءة ${botUsers.length} مستخدم من ورقة BOT_USERS`);
+      return botUsers;
+    } catch (error) {
+      console.error('❌ خطأ في قراءة مستخدمي البوت:', error);
+      return [];
+    }
+  }
+
+  // إضافة مستخدم تليجرام في ورقة BOT_USERS المنفصلة
+  async addTelegramUser(telegramUserId: string, userData?: {
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+  }): Promise<any> {
+    try {
+      console.log(`📱 إضافة مستخدم تليجرام في ورقة BOT_USERS: ${telegramUserId}`);
+      
+      // التحقق من عدم وجود المستخدم مسبقاً في ورقة BOT_USERS
+      const existingBotUsers = await this.getAllBotUsers();
+      const existingUser = existingBotUsers.find(user => user.telegramId === telegramUserId);
+      
+      if (existingUser) {
+        console.log(`❌ معرف التليجرام ${telegramUserId} موجود بالفعل في ورقة BOT_USERS`);
+        return existingUser;
+      }
+
+      // إنشاء بيانات المستخدم الجديد
+      const username = userData?.username || `user_${telegramUserId}`;
+      const firstName = userData?.firstName || '';
+      const lastName = userData?.lastName || '';
+      const fullName = `${firstName} ${lastName}`.trim() || `مستخدم ${telegramUserId}`;
+      const phone = userData?.phone || '';
+      const now = new Date().toISOString();
+      
+      const newBotUserRow = [
+        telegramUserId, // A: TELEGRAM_ID
+        username, // B: USERNAME
+        firstName, // C: FIRST_NAME
+        lastName, // D: LAST_NAME
+        fullName, // E: FULL_NAME
+        phone, // F: PHONE
+        'نشط', // G: STATUS
+        now, // H: ADDED_DATE
+        '' // I: NOTES
+      ];
+
+      // إضافة المستخدم إلى ورقة BOT_USERS
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: 'BOT_USERS!A:I',
+        valueInputOption: 'RAW',
+        resource: {
+          values: [newBotUserRow]
+        }
+      });
+
+      console.log(`✅ تم إضافة مستخدم تليجرام في ورقة BOT_USERS: ${telegramUserId}`);
+      
+      return {
+        telegramId: telegramUserId,
+        username: username,
+        firstName: firstName,
+        lastName: lastName,
+        fullName: fullName,
+        phone: phone,
+        status: 'نشط',
+        addedDate: now,
+        notes: ''
+      };
+    } catch (error) {
+      console.error('❌ خطأ في إضافة مستخدم تليجرام في ورقة BOT_USERS:', error);
+      return null;
+    }
+  }
+
   // الحصول على جميع مستخدمي التليجرام (الداخليين والخارجيين)
-  async getAllTelegramUsers(): Promise<{internal: UserData[], external: UserData[]}> {
+  async getAllTelegramUsers(): Promise<{internal: UserData[], external: any[]}> {
     try {
       const users = await this.getAllUsers();
+      const botUsers = await this.getAllBotUsers();
       
       const internal = users.filter(user => 
         user.isActive && 
@@ -651,15 +790,10 @@ export class UsersGoogleSheetsManager {
         user.profileImage.match(/^\d{8,}$/) && 
         user.role !== 'external_telegram'
       );
-      
-      const external = users.filter(user => 
-        user.isActive && 
-        user.role === 'external_telegram'
-      );
 
-      console.log(`📱 مستخدمو التليجرام: ${internal.length} داخلي، ${external.length} خارجي`);
+      console.log(`📱 مستخدمو التليجرام: ${internal.length} داخلي، ${botUsers.length} خارجي`);
       
-      return { internal, external };
+      return { internal, external: botUsers };
     } catch (error) {
       console.error('❌ خطأ في جلب مستخدمي التليجرام:', error);
       return { internal: [], external: [] };

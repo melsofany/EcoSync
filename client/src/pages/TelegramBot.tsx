@@ -36,6 +36,12 @@ export default function TelegramBot() {
   const [telegramUserId, setTelegramUserId] = useState("");
   const [showExternalUserDialog, setShowExternalUserDialog] = useState(false);
   const [externalTelegramUserId, setExternalTelegramUserId] = useState("");
+  const [newUserData, setNewUserData] = useState({
+    username: "",
+    firstName: "",
+    lastName: "",
+    phone: ""
+  });
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
@@ -143,11 +149,17 @@ export default function TelegramBot() {
 
   // Add external user mutation
   const addExternalUserMutation = useMutation({
-    mutationFn: async (telegramUserId: string) => {
+    mutationFn: async (userData: {
+      telegramUserId: string;
+      username?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+    }) => {
       const response = await fetch("/api/telegram/external-users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telegramUserId })
+        body: JSON.stringify(userData)
       });
       if (!response.ok) {
         throw new Error(await response.text());
@@ -157,11 +169,17 @@ export default function TelegramBot() {
     onSuccess: () => {
       toast({
         title: "✅ تم بنجاح",
-        description: "تم إضافة المستخدم الخارجي بنجاح",
+        description: "تم إضافة المستخدم إلى ورقة BOT_USERS بنجاح",
       });
       refetchTelegramUsers();
       setShowExternalUserDialog(false);
       setExternalTelegramUserId("");
+      setNewUserData({
+        username: "",
+        firstName: "",
+        lastName: "",
+        phone: ""
+      });
     },
     onError: (error: any) => {
       toast({
@@ -210,7 +228,10 @@ export default function TelegramBot() {
 
   const handleAddExternalUser = () => {
     if (externalTelegramUserId.trim()) {
-      addExternalUserMutation.mutate(externalTelegramUserId.trim());
+      addExternalUserMutation.mutate({
+        telegramUserId: externalTelegramUserId.trim(),
+        ...newUserData
+      });
     }
   };
 
@@ -644,6 +665,47 @@ export default function TelegramBot() {
                 يمكن الحصول على المعرف عبر البوت @userinfobot في تليجرام
               </p>
             </div>
+
+            <div>
+              <Label htmlFor="username">اسم المستخدم</Label>
+              <Input
+                id="username"
+                value={newUserData.username}
+                onChange={(e) => setNewUserData({...newUserData, username: e.target.value})}
+                placeholder="user123"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName">الاسم الأول</Label>
+                <Input
+                  id="firstName"
+                  value={newUserData.firstName}
+                  onChange={(e) => setNewUserData({...newUserData, firstName: e.target.value})}
+                  placeholder="أحمد"
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">اسم العائلة</Label>
+                <Input
+                  id="lastName"
+                  value={newUserData.lastName}
+                  onChange={(e) => setNewUserData({...newUserData, lastName: e.target.value})}
+                  placeholder="محمد"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="phone">رقم الهاتف (اختياري)</Label>
+              <Input
+                id="phone"
+                value={newUserData.phone}
+                onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
+                placeholder="+966501234567"
+              />
+            </div>
             
             <div className="flex gap-2">
               <Button 
@@ -664,6 +726,12 @@ export default function TelegramBot() {
                 onClick={() => {
                   setShowExternalUserDialog(false);
                   setExternalTelegramUserId("");
+                  setNewUserData({
+                    username: "",
+                    firstName: "",
+                    lastName: "",
+                    phone: ""
+                  });
                 }}
               >
                 إلغاء
