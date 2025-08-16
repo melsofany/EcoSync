@@ -524,38 +524,61 @@ class QortobaAnalysisBot {
     client: any, 
     analysis: string | null
   ): Promise<string> {
-    // Shortened format to avoid Telegram length limits
+    // Enhanced format with complete item details
     let message = `🔔 بند جديد!\n\n`;
     
     // Essential quotation info only - use custom request number if available
     if (quotationRequest) {
       const displayNumber = quotationRequest.customRequestNumber || quotationRequest.requestNumber;
-      message += `📋 ${displayNumber}\n`;
-      message += `👤 ${client?.name || 'غير محدد'}\n\n`;
+      message += `📋 طلب تسعير: ${displayNumber}\n`;
+      message += `👤 العميل: ${client?.name || 'غير محدد'}\n\n`;
     }
     
-    // Item details (shortened)
-    message += `🔧 ${item.partNumber}\n`;
-    message += `📝 ${item.description.substring(0, 80)}...\n`;
+    // Complete Item details
+    message += `🆔 معرف البند: ${item.itemNumber || item.id || 'غير محدد'}\n`;
+    message += `🔧 رقم القطعة: ${item.partNumber || 'غير محدد'}\n`;
+    message += `📝 الوصف: ${item.description || 'غير محدد'}\n`;
     
+    // Add category and unit if available
+    if (item.category) {
+      message += `📂 الفئة: ${item.category}\n`;
+    }
+    if (item.unit) {
+      message += `📏 الوحدة: ${item.unit}\n`;
+    }
+    
+    // Add quantity if available
     if (quotationItem?.quantity) {
-      message += `📦 الكمية: ${quotationItem.quantity}\n`;
+      message += `📦 الكمية المطلوبة: ${quotationItem.quantity}\n`;
+    }
+    
+    // Add RFQ information if available
+    if (item.rfqNumber) {
+      message += `📄 رقم RFQ: ${item.rfqNumber}\n`;
+    }
+    
+    // Add dates if available (no red color formatting)
+    if (item.requestDate) {
+      message += `📅 تاريخ الطلب: ${item.requestDate}\n`;
+    }
+    if (item.expiryDate) {
+      message += `⏰ تاريخ انتهاء العرض: ${item.expiryDate}\n`;
     }
     
     message += `\n`;
     
     if (analysis) {
       // Truncate analysis for message length limits
-      const maxAnalysisLength = 2500;
+      const maxAnalysisLength = 2000;
       const truncatedAnalysis = analysis.substring(0, maxAnalysisLength);
-      message += `🤖 التحليل:\n${truncatedAnalysis}`;
+      message += `🤖 التحليل الذكي:\n${truncatedAnalysis}`;
       
       if (analysis.length > maxAnalysisLength) {
-        message += '\n... (مقطوع)';
+        message += '\n... (مقطوع للطول)';
       }
     } else {
-      message += `❌ تعذر التحليل\n`;
-      message += `💡 /analyze ${item.partNumber}`;
+      message += `❌ لم يتم التحليل بعد\n`;
+      message += `💡 لتحليل البند اكتب: /analyze ${item.partNumber || item.id}`;
     }
     
     return message;
