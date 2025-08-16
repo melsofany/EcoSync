@@ -380,6 +380,58 @@ class QortobaAnalysisBot {
     }
   }
 
+  // Send analysis with direct item data (for new quotations)
+  async sendNewItemAnalysisWithData(itemData: any) {
+    try {
+      // Load authorized users if empty
+      if (AUTHORIZED_USERS.length === 0) {
+        await this.loadAuthorizedUsers();
+      }
+
+      console.log(`📱 [TELEGRAM BOT] إرسال تحليل للبند الجديد بالبيانات المباشرة: ${itemData.partNumber}`);
+      console.log(`📱 [TELEGRAM BOT] المستخدمون المخولون: ${AUTHORIZED_USERS.length} مستخدم - معرفاتهم: ${AUTHORIZED_USERS.join(', ')}`);
+      
+      // Skip if no part number
+      if (!itemData.partNumber) {
+        console.log('Skipping item analysis - no part number:', itemData.id);
+        return;
+      }
+
+      let analysis = null;
+      try {
+        analysis = await this.analyzeWithDeepSeek(itemData);
+      } catch (error) {
+        console.error('DeepSeek analysis failed, sending basic notification:', error);
+        analysis = null; // Will use fallback message
+      }
+
+      // Format message with item details
+      const message = await this.formatNewItemMessage(itemData, null, null, null, analysis);
+      
+      // Send to all authorized users
+      for (const userId of AUTHORIZED_USERS) {
+        try {
+          // Send text message first
+          await this.bot.sendMessage(userId, message);
+          console.log(`📱 [TELEGRAM BOT] تم إرسال التحليل للمستخدم ${userId} للبند: ${itemData.partNumber}`);
+          
+          // Try to find and send item image only for specific known products
+          try {
+            await this.sendItemImage(userId, itemData);
+          } catch (imageError) {
+            console.log(`📷 [TELEGRAM BOT] لم يتم العثور على صورة للبند ${itemData.partNumber}: ${(imageError as Error).message}`);
+          }
+          
+        } catch (error) {
+          console.error(`فشل في الإرسال للمستخدم ${userId}:`, error);
+        }
+      }
+      
+    } catch (error) {
+      console.error('خطأ في إرسال تحليل البند الجديد:', error);
+    }
+  }
+
   // Add method to get bot status
   async getBotStatus() {
     try {
