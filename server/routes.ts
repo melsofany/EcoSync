@@ -23,6 +23,9 @@ import { GoogleSheetsWriter } from "./google-sheets-write";
 // إنشاء instance من Google Sheets Realtime Data
 const googleSheetsRealTimeData = new GoogleSheetsRealtimeData();
 
+// إنشاء instance من Google Sheets Writer
+const googleSheetsWriter = new GoogleSheetsWriter();
+
 // دالة مساعدة معممة للتحقق من صحة البيانات الرقمية (تتجنب القيم الافتراضية الخاطئة)
 const isValidNumericValue = (value: any): boolean => {
   return value !== null && value !== undefined && value !== '' && !isNaN(parseFloat(value)) && parseFloat(value) !== 0;
@@ -4495,6 +4498,19 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
 
+
+  // Clear all pricing sheets endpoint (admin only)
+  app.delete("/api/clear-pricing-sheets", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+    try {
+      await googleSheetsWriter.initialize();
+      await googleSheetsWriter.clearAllPricingSheets();
+      await logActivity(req, "clear_pricing_sheets", "admin", "system", "تم مسح جميع البنود من صفحات التسعير");
+      res.json({ message: "تم مسح جميع البنود من صفحات التسعير بنجاح" });
+    } catch (error) {
+      console.error("Error clearing pricing sheets:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   // Customer pricing endpoints
   app.post("/api/customer-pricing", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {

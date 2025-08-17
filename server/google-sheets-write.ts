@@ -682,5 +682,93 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
     }
   }
 
+  /**
+   * مسح جميع البنود من صفحات التسعير
+   */
+  async clearAllPricingSheets(): Promise<void> {
+    try {
+      if (!this.sheets) {
+        throw new Error('Google Sheets not initialized');
+      }
 
+      console.log('🗑️ بدء مسح البنود من صفحات التسعير...');
+
+      // مسح صفحة تسعير الموردين
+      await this.clearSupplierPricing();
+      
+      // مسح صفحة تسعير العملاء  
+      await this.clearCustomerPricing();
+
+      console.log('✅ تم مسح جميع البنود من صفحات التسعير بنجاح');
+    } catch (error) {
+      console.error('❌ خطأ في مسح صفحات التسعير:', (error as Error).message);
+      throw error;
+    }
+  }
+
+  /**
+   * مسح البنود من صفحة تسعير الموردين
+   */
+  private async clearSupplierPricing(): Promise<void> {
+    try {
+      const sheetName = 'تسعير_الموردين';
+      
+      // قراءة البيانات الحالية لمعرفة عدد الصفوف
+      const readResponse = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A2:P1000`
+      });
+
+      const existingRows = readResponse.data.values || [];
+      if (existingRows.length === 0) {
+        console.log('📋 صفحة تسعير الموردين فارغة بالفعل');
+        return;
+      }
+
+      // مسح البيانات من الصف 2 إلى آخر صف
+      await this.sheets.spreadsheets.values.clear({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A2:P${existingRows.length + 1}`
+      });
+
+      console.log(`🗑️ تم مسح ${existingRows.length} صف من صفحة تسعير الموردين`);
+    } catch (error) {
+      console.error('❌ خطأ في مسح صفحة تسعير الموردين:', (error as Error).message);
+      throw error;
+    }
+  }
+
+  /**
+   * مسح البنود من صفحة تسعير العملاء
+   */
+  private async clearCustomerPricing(): Promise<void> {
+    try {
+      const sheetName = 'تسعير_العملاء';
+      
+      // قراءة البيانات الحالية لمعرفة عدد الصفوف
+      const readResponse = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A2:P1000`
+      });
+
+      const existingRows = readResponse.data.values || [];
+      if (existingRows.length === 0) {
+        console.log('📋 صفحة تسعير العملاء فارغة بالفعل');
+        return;
+      }
+
+      // مسح البيانات من الصف 2 إلى آخر صف
+      await this.sheets.spreadsheets.values.clear({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A2:P${existingRows.length + 1}`
+      });
+
+      console.log(`🗑️ تم مسح ${existingRows.length} صف من صفحة تسعير العملاء`);
+    } catch (error) {
+      console.error('❌ خطأ في مسح صفحة تسعير العملاء:', (error as Error).message);
+      throw error;
+    }
+  }
 }
+
+export const googleSheetsWriter = new GoogleSheetsWriter();
