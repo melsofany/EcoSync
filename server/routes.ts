@@ -2303,20 +2303,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quotation = await storage.createQuotationRequest(validatedData);
       await logActivity(req, "create_quotation", "quotation", quotation.id, `Created quotation: ${quotation.requestNumber}`);
 
-      // Send Telegram notification for new quotation items
+      // Send items to both supplier and customer pricing automatically
       try {
-        const { telegramBot } = await import("./telegram-bot");
+        const { GoogleSheetsWriter } = await import("./google-sheets-write");
+        const googleSheetsWriter = new GoogleSheetsWriter();
         
-        // Get quotation items to analyze (after creation)
+        // Get quotation items to send to pricing pages
         const quotationItems = await storage.getQuotationItems(quotation.id);
         if (quotationItems && quotationItems.length > 0) {
+          console.log(`📋 إرسال ${quotationItems.length} بند إلى صفحتي التسعير...`);
+          
+          // إضافة معلومات البند والطلب للعناصر
+          const enrichedItems = [];
+          for (const quotationItem of quotationItems) {
+            const item = await storage.getItem(quotationItem.itemId);
+            enrichedItems.push({
+              ...quotationItem,
+              item: item,
+              quotation: quotation
+            });
+          }
+          
+          // Send items to supplier pricing
+          await googleSheetsWriter.sendItemsToSupplierPricing(enrichedItems);
+          console.log(`✅ تم إرسال البنود إلى تسعير الموردين`);
+          
+          // Send items to customer pricing
+          await googleSheetsWriter.sendItemsToCustomerPricing(enrichedItems);
+          console.log(`✅ تم إرسال البنود إلى تسعير العملاء`);
+          
+          // Send Telegram notification for new quotation items
+          const { telegramBot } = await import("./telegram-bot");
           for (const quotationItem of quotationItems) {
             await telegramBot.sendNewItemAnalysis(quotationItem.itemId);
           }
+          console.log(`📱 تم إرسال إشعارات تليجرام للبنود الجديدة`);
         }
       } catch (error) {
-        console.error('Error sending Telegram notification:', error);
-        // Don't fail the request if Telegram fails
+        console.error('خطأ في إرسال البنود لصفحات التسعير:', error);
+        // Don't fail the request if auto-distribution fails
       }
 
       res.status(201).json(quotation);
@@ -3926,14 +3951,35 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Supplier routes
+  // Supplier routes - استخدام Google Sheets كمصدر البيانات
   app.get("/api/suppliers", requireAuth, async (req: Request, res: Response) => {
     try {
-      const suppliers = await storage.getAllSuppliers();
+      // استخدام Google Sheets لجلب البيانات بدلاً من قاعدة البيانات
+      const googleSheetsData = await realTimeDataManager.getGoogleSheetsData();
+      
+      // استخراج الموردين الفريدين من بيانات Google Sheets
+      const suppliers = Array.from(new Set(
+        googleSheetsData.filter(row => row.supplier && row.supplier.trim())
+          .map(row => row.supplier.trim())
+      )).map(supplierName => ({
+        id: `supplier-${supplierName.toLowerCase().replace(/\s+/g, '-')}`,
+        name: supplierName,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      }));
+      
+      console.log(`📋 تم جلب ${suppliers.length} مورد من Google Sheets`);
       res.json(suppliers);
     } catch (error) {
       console.error("Get suppliers error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      // Fallback to database if Google Sheets fails
+      try {
+        const suppliers = await storage.getAllSuppliers();
+        res.json(suppliers);
+      } catch (dbError) {
+        console.error("Database fallback failed:", dbError);
+        res.status(500).json({ message: "Internal server error" });
+      }
     }
   });
 

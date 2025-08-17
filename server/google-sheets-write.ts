@@ -462,9 +462,9 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
   /**
    * إرسال البنود إلى صفحة تسعير الموردين
    */
-  async sendItemsToSupplierPricing(quotation: NewQuotation, itemIds: string[]): Promise<void> {
+  async sendItemsToSupplierPricing(quotationItems: any[], quotation?: NewQuotation): Promise<void> {
     try {
-      console.log(`📤 إرسال ${itemIds.length} بند إلى صفحة تسعير الموردين...`);
+      console.log(`📤 إرسال ${quotationItems.length} بند إلى صفحة تسعير الموردين...`);
 
       // البحث عن صفحة تسعير الموردين أو إنشاؤها
       const supplierSheetName = 'تسعير_الموردين';
@@ -480,27 +480,28 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       // إنشاء البيانات للإدراج
       const rows = [];
       
-      for (let i = 0; i < quotation.items.length; i++) {
-        const item = quotation.items[i];
-        const itemId = itemIds[i];
+      for (const quotationItem of quotationItems) {
+        // جلب معلومات البند والطلب
+        const itemInfo = quotationItem.item || {};
+        const quotationInfo = quotationItem.quotation || quotation || {};
         
         const row = [
-          itemId,                           // A - Item Number
-          item.partNumber || '',            // B - Part Number
-          item.description,                 // C - Description
-          item.uom || 'EACH',              // D - UOM
-          item.quantity.toString(),         // E - Quantity
-          quotation.rfqNumber,             // F - RFQ Number
-          quotation.clientName,            // G - Client Name
-          quotation.requestDate,           // H - Request Date
-          quotation.expiryDate || '',      // I - Expiry Date
-          '',                              // J - Supplier Name (فارغ للتعبئة)
-          '',                              // K - Unit Price (فارغ للتعبئة)
-          '',                              // L - Total Price (فارغ للحساب التلقائي)
-          '',                              // M - Currency (فارغ للتعبئة)
-          '',                              // N - Delivery Time (فارغ للتعبئة)
-          '',                              // O - Notes (فارغ للتعبئة)
-          'جديد'                           // P - Status (جديد/معتمد/مرفوض)
+          itemInfo.itemNumber || itemInfo.id || '',           // A - Item Number
+          itemInfo.partNumber || '',                          // B - Part Number
+          itemInfo.description || '',                         // C - Description
+          itemInfo.unit || 'EACH',                           // D - UOM
+          quotationItem.quantity?.toString() || '1',         // E - Quantity
+          quotationInfo.requestNumber || '',                 // F - RFQ Number
+          quotationInfo.clientName || '',                    // G - Client Name
+          quotationInfo.requestDate || '',                   // H - Request Date
+          quotationInfo.expiryDate || '',                    // I - Expiry Date
+          '',                                                // J - Supplier Name (فارغ للتعبئة)
+          '',                                                // K - Unit Price (فارغ للتعبئة)
+          '',                                                // L - Total Price (فارغ للحساب التلقائي)
+          '',                                                // M - Currency (فارغ للتعبئة)
+          '',                                                // N - Delivery Time (فارغ للتعبئة)
+          '',                                                // O - Notes (فارغ للتعبئة)
+          'جديد'                                             // P - Status (جديد/معتمد/مرفوض)
         ];
         rows.push(row);
       }
@@ -528,9 +529,9 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
   /**
    * إرسال البنود إلى صفحة تسعير العملاء
    */
-  async sendItemsToCustomerPricing(quotation: NewQuotation, itemIds: string[]): Promise<void> {
+  async sendItemsToCustomerPricing(quotationItems: any[], quotation?: NewQuotation): Promise<void> {
     try {
-      console.log(`📤 إرسال ${itemIds.length} بند إلى صفحة تسعير العملاء...`);
+      console.log(`📤 إرسال ${quotationItems.length} بند إلى صفحة تسعير العملاء...`);
 
       // البحث عن صفحة تسعير العملاء أو إنشاؤها
       const customerSheetName = 'تسعير_العملاء';
@@ -546,27 +547,28 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       // إنشاء البيانات للإدراج
       const rows = [];
       
-      for (let i = 0; i < quotation.items.length; i++) {
-        const item = quotation.items[i];
-        const itemId = itemIds[i];
+      for (const quotationItem of quotationItems) {
+        // جلب معلومات البند والطلب
+        const itemInfo = quotationItem.item || {};
+        const quotationInfo = quotationItem.quotation || quotation || {};
         
         const row = [
-          itemId,                           // A - Item Number
-          item.partNumber || '',            // B - Part Number
-          item.description,                 // C - Description
-          item.uom || 'EACH',              // D - UOM
-          item.quantity.toString(),         // E - Quantity
-          quotation.rfqNumber,             // F - RFQ Number
-          quotation.clientName,            // G - Client Name
-          quotation.requestDate,           // H - Request Date
-          quotation.expiryDate || '',      // I - Expiry Date
-          '',                              // J - Customer Unit Price (فارغ للتعبئة)
-          '',                              // K - Customer Total Price (فارغ للحساب التلقائي)
-          '',                              // L - Supplier Unit Price (مرجع من تسعير الموردين)
-          '',                              // M - Profit Margin % (فارغ للتعبئة)
-          '',                              // N - Currency (فارغ للتعبئة)
-          '',                              // O - Notes (فارغ للتعبئة)
-          'في انتظار تسعير الموردين'        // P - Status (في انتظار تسعير الموردين/جاهز للتسعير/معتمد/مرسل)
+          itemInfo.itemNumber || itemInfo.id || '',           // A - Item Number
+          itemInfo.partNumber || '',                          // B - Part Number
+          itemInfo.description || '',                         // C - Description
+          itemInfo.unit || 'EACH',                           // D - UOM
+          quotationItem.quantity?.toString() || '1',         // E - Quantity
+          quotationInfo.requestNumber || '',                 // F - RFQ Number
+          quotationInfo.clientName || '',                    // G - Client Name
+          quotationInfo.requestDate || '',                   // H - Request Date
+          quotationInfo.expiryDate || '',                    // I - Expiry Date
+          '',                                                // J - Customer Unit Price (فارغ للتعبئة)
+          '',                                                // K - Customer Total Price (فارغ للحساب التلقائي)
+          '',                                                // L - Supplier Unit Price (مرجع من تسعير الموردين)
+          '',                                                // M - Profit Margin % (فارغ للتعبئة)
+          '',                                                // N - Currency (فارغ للتعبئة)
+          '',                                                // O - Notes (فارغ للتعبئة)
+          'في انتظار تسعير الموردين'                        // P - Status
         ];
         rows.push(row);
       }
