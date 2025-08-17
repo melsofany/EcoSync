@@ -147,21 +147,21 @@ function ItemDetailedPricing({ item }: { item: any }) {
       </div>
 
       {/* معلومات البند الأساسية من API */}
-      {detailedPricing && (
+      {detailedPricing && typeof detailedPricing === 'object' && !Array.isArray(detailedPricing) && (
         <div className="bg-gray-50 border rounded-lg p-4">
           <h4 className="font-semibold mb-3 flex items-center gap-2">
             <Package className="h-4 w-4" />
-            تفاصيل البند الأساسية
+            تفاصيل البند الأساسية - مباشر من Google Sheets
           </h4>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">معرف البند:</label>
-              <p className="font-semibold text-blue-600">{detailedPricing.itemNumber || "غير محدد"}</p>
+              <p className="font-semibold text-blue-600">{detailedPricing.itemNumber || detailedPricing.itemId || "غير محدد"}</p>
             </div>
             <div>
-              <label className="text-sm font-medium">LINE ITEM:</label>
-              <p className="font-mono text-purple-600 bg-purple-50 px-2 py-1 rounded">
-                {detailedPricing.lineItem || "غير محدد"}
+              <label className="text-sm font-medium">🎯 LINE ITEM:</label>
+              <p className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
+                <strong>{detailedPricing.lineItem || "غير محدد"}</strong>
               </p>
             </div>
             <div>
@@ -185,6 +185,14 @@ function ItemDetailedPricing({ item }: { item: any }) {
               <p className="font-mono text-blue-600">{detailedPricing.rfqNumber || "غير محدد"}</p>
             </div>
           </div>
+          
+          {/* عرض البيانات الخام للتشخيص */}
+          <details className="mt-4">
+            <summary className="text-sm text-gray-500 cursor-pointer">عرض البيانات الخام من API</summary>
+            <pre className="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto">
+              {JSON.stringify(detailedPricing, null, 2)}
+            </pre>
+          </details>
         </div>
       )}
 
