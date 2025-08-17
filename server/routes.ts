@@ -4431,11 +4431,21 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
   app.get("/api/items-requiring-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
-      // استخدام قائمة فارغة مؤقتاً حتى إعداد Google Sheets
-      const items = [];
+      const items = await googleSheetsRealTimeData.getItemsReadyForSupplierPricing();
       res.json(items);
     } catch (error) {
       console.error("Get items requiring pricing error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Get items ready for supplier pricing (Phase 1: Supplier pricing)
+  app.get("/api/items-ready-for-supplier-pricing", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const items = await googleSheetsRealTimeData.getItemsReadyForSupplierPricing();
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching items ready for supplier pricing:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -4454,8 +4464,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get items ready for customer pricing (Phase 2: Customer pricing)
   app.get("/api/items-ready-for-customer-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
-      // استخدام قائمة فارغة مؤقتاً حتى إعداد Google Sheets
-      const items = [];
+      const items = await googleSheetsRealTimeData.getItemsReadyForCustomerPricing();
       res.json(items);
     } catch (error) {
       console.error("Error fetching items ready for customer pricing:", error);

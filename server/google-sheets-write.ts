@@ -461,8 +461,8 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       }));
       
       console.log(`📋 إرسال ${enrichedItems.length} بند إلى صفحات التسعير...`);
-      await this.sendItemsToSupplierPricing(enrichedItems);
-      await this.sendItemsToCustomerPricing(enrichedItems);
+      await this.sendItemsToSupplierPricing(enrichedItems, quotation, createdItemIds);
+      await this.sendItemsToCustomerPricing(enrichedItems, quotation, createdItemIds);
       console.log(`✅ تم إرسال البنود إلى كلا صفحتي التسعير بنجاح`);
       
       return { success: true, itemIds: createdItemIds };
@@ -475,7 +475,7 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
   /**
    * إرسال البنود إلى صفحة تسعير الموردين
    */
-  async sendItemsToSupplierPricing(quotationItems: any[], quotation?: NewQuotation): Promise<void> {
+  async sendItemsToSupplierPricing(quotationItems: any[], quotation?: NewQuotation, createdItemIds: string[] = []): Promise<void> {
     try {
       console.log(`📤 إرسال ${quotationItems.length} بند إلى صفحة تسعير الموردين...`);
 
@@ -499,12 +499,12 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         const quotationInfo = quotationItem.quotation || quotation || {};
         
         const row = [
-          itemInfo.itemNumber || itemInfo.id || '',           // A - Item Number
+          itemInfo.itemNumber || itemInfo.id || createdItemIds[0] || '',           // A - Item Number
           itemInfo.partNumber || '',                          // B - Part Number
           itemInfo.description || '',                         // C - Description
           itemInfo.unit || 'EACH',                           // D - UOM
           quotationItem.quantity?.toString() || '1',         // E - Quantity
-          quotationInfo.requestNumber || '',                 // F - RFQ Number
+          quotationInfo.rfqNumber || '',                     // F - RFQ Number
           quotationInfo.clientName || '',                    // G - Client Name
           quotationInfo.requestDate || '',                   // H - Request Date
           quotationInfo.expiryDate || '',                    // I - Expiry Date
@@ -542,7 +542,7 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
   /**
    * إرسال البنود إلى صفحة تسعير العملاء
    */
-  async sendItemsToCustomerPricing(quotationItems: any[], quotation?: NewQuotation): Promise<void> {
+  async sendItemsToCustomerPricing(quotationItems: any[], quotation?: NewQuotation, createdItemIds: string[] = []): Promise<void> {
     try {
       console.log(`📤 إرسال ${quotationItems.length} بند إلى صفحة تسعير العملاء...`);
 
@@ -566,12 +566,12 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         const quotationInfo = quotationItem.quotation || quotation || {};
         
         const row = [
-          itemInfo.itemNumber || itemInfo.id || '',           // A - Item Number
+          itemInfo.itemNumber || itemInfo.id || createdItemIds[0] || '',           // A - Item Number
           itemInfo.partNumber || '',                          // B - Part Number
           itemInfo.description || '',                         // C - Description
           itemInfo.unit || 'EACH',                           // D - UOM
           quotationItem.quantity?.toString() || '1',         // E - Quantity
-          quotationInfo.requestNumber || '',                 // F - RFQ Number
+          quotationInfo.rfqNumber || '',                     // F - RFQ Number
           quotationInfo.clientName || '',                    // G - Client Name
           quotationInfo.requestDate || '',                   // H - Request Date
           quotationInfo.expiryDate || '',                    // I - Expiry Date

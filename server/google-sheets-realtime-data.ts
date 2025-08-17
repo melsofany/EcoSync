@@ -499,6 +499,100 @@ export class GoogleSheetsRealtimeData {
       return [];
     }
   }
+
+  /**
+   * قراءة البيانات من صفحة تسعير الموردين
+   */
+  async getItemsReadyForSupplierPricing(): Promise<any[]> {
+    try {
+      if (!this.sheets) {
+        console.log('❌ Google Sheets غير مُهيأ');
+        return [];
+      }
+
+      const sheetName = 'تسعير_الموردين';
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A2:P1000`, // قراءة من A2 إلى P مع حد أقصى 1000 صف
+      });
+
+      const rows = response.data.values || [];
+      console.log(`📊 تم قراءة ${rows.length} صف من صفحة تسعير الموردين`);
+
+      // تحويل البيانات إلى تنسيق مناسب
+      const items = rows.map((row: any[], index: number) => ({
+        id: `supplier-${index + 2}`,
+        itemNumber: row[0] || '',
+        partNumber: row[1] || '',
+        description: row[2] || '',
+        uom: row[3] || '',
+        quantity: row[4] || '',
+        rfqNumber: row[5] || '',
+        clientName: row[6] || '',
+        requestDate: row[7] || '',
+        expiryDate: row[8] || '',
+        supplierName: row[9] || '',
+        unitPrice: row[10] || '',
+        totalPrice: row[11] || '',
+        currency: row[12] || '',
+        deliveryTime: row[13] || '',
+        notes: row[14] || '',
+        status: row[15] || 'جديد'
+      })).filter(item => item.itemNumber); // تصفية البنود الفارغة
+
+      return items;
+    } catch (error) {
+      console.error('❌ خطأ في قراءة صفحة تسعير الموردين:', (error as Error).message);
+      return [];
+    }
+  }
+
+  /**
+   * قراءة البيانات من صفحة تسعير العملاء
+   */
+  async getItemsReadyForCustomerPricing(): Promise<any[]> {
+    try {
+      if (!this.sheets) {
+        console.log('❌ Google Sheets غير مُهيأ');
+        return [];
+      }
+
+      const sheetName = 'تسعير_العملاء';
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A2:P1000`, // قراءة من A2 إلى P مع حد أقصى 1000 صف
+      });
+
+      const rows = response.data.values || [];
+      console.log(`📊 تم قراءة ${rows.length} صف من صفحة تسعير العملاء`);
+
+      // تحويل البيانات إلى تنسيق مناسب
+      const items = rows.map((row: any[], index: number) => ({
+        id: `customer-${index + 2}`,
+        itemNumber: row[0] || '',
+        partNumber: row[1] || '',
+        description: row[2] || '',
+        uom: row[3] || '',
+        quantity: row[4] || '',
+        rfqNumber: row[5] || '',
+        clientName: row[6] || '',
+        requestDate: row[7] || '',
+        expiryDate: row[8] || '',
+        customerUnitPrice: row[9] || '',
+        customerTotalPrice: row[10] || '',
+        supplierUnitPrice: row[11] || '',
+        profitMargin: row[12] || '',
+        currency: row[13] || '',
+        notes: row[14] || '',
+        status: row[15] || 'في انتظار تسعير الموردين'
+      })).filter(item => item.itemNumber); // تصفية البنود الفارغة
+
+      return items;
+    } catch (error) {
+      console.error('❌ خطأ في قراءة صفحة تسعير العملاء:', (error as Error).message);
+      return [];
+    }
+  }
 }
 
 export const googleSheetsRealtimeData = new GoogleSheetsRealtimeData();
