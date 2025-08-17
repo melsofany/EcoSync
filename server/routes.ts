@@ -4377,34 +4377,58 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Supplier pricing routes
   app.post("/api/supplier-pricing", requireAuth, requireRole(["manager", "data_entry", "purchasing"]), async (req: Request, res: Response) => {
     try {
+      console.log('📝 بيانات تسعير المورد المستلمة:', req.body);
+      
       const pricingData = {
         ...req.body,
         createdBy: req.session.user!.id,
+        totalPrice: (parseFloat(req.body.unitPrice) * parseFloat(req.body.quantity || "1")).toFixed(2),
+        status: "مُسعّر"
       };
 
-      const pricing = await storage.createSupplierPricing(pricingData);
-      await logActivity(req, "create_supplier_pricing", "pricing", pricing.id, `Added supplier pricing for item ${pricing.itemId}`);
+      // تحديث Google Sheets مباشرة بدلاً من استخدام storage
+      if (googleSheetsWriter) {
+        try {
+          await googleSheetsWriter.updateSupplierPricingRow(
+            req.body.itemId,
+            {
+              supplierName: pricingData.supplierName || "",
+              supplierContact: pricingData.supplierContact || "",
+              supplierPhone: pricingData.supplierPhone || "",
+              supplierEmail: pricingData.supplierEmail || "",
+              supplierAddress: pricingData.supplierAddress || "",
+              unitPrice: pricingData.unitPrice || "",
+              totalPrice: pricingData.totalPrice || "",
+              currency: pricingData.currency || "EGP",
+              vatIncluded: pricingData.vatIncluded || "لا",
+              vatRate: pricingData.vatRate || "14%",
+              priceBeforeVat: pricingData.priceBeforeVat || "",
+              vatAmount: pricingData.vatAmount || "",
+              deliveryTime: pricingData.deliveryTime || "",
+              paymentTerms: pricingData.paymentTerms || "",
+              warrantyPeriod: pricingData.warrantyPeriod || "",
+              notes: pricingData.notes || "",
+              status: "مُسعّر"
+            }
+          );
+          
+          await logActivity(req, "create_supplier_pricing", "pricing", req.body.itemId, 
+            `Added enhanced supplier pricing for item ${req.body.itemId} - Supplier: ${pricingData.supplierName}`);
 
-      // تحديث حالة طلبات التسعير المرتبطة بهذا الصنف تلقائياً
-      try {
-        // البحث عن الطلبات التي تحتوي على هذا الصنف وما زالت في حالة "sent_for_pricing"
-        const quotationItems = await storage.getQuotationItemsByItemId(pricing.itemId);
-        
-        for (const quotationItem of quotationItems) {
-          const quotation = await storage.getQuotationById(quotationItem.quotationId);
-          if (quotation && quotation.status === "sent_for_pricing") {
-            // تحديث حالة الطلب إلى "pricing_received" عند إضافة أول سعر مورد
-            await storage.updateQuotationStatus(quotation.id, "pricing_received");
-            await logActivity(req, "auto_update_quotation_status", "quotation", quotation.id, 
-              `Auto-updated quotation ${quotation.requestNumber} status to 'pricing_received' after supplier pricing added`);
-          }
+          console.log('✅ تم تحديث تسعير المورد بنجاح في Google Sheets');
+          res.status(201).json({ 
+            id: req.body.itemId,
+            message: "تم إضافة تسعير المورد بنجاح",
+            ...pricingData 
+          });
+        } catch (sheetsError) {
+          console.error('❌ خطأ في تحديث Google Sheets:', sheetsError);
+          res.status(500).json({ message: "فشل في حفظ البيانات في Google Sheets" });
         }
-      } catch (statusUpdateError) {
-        console.error("Error updating quotation status after supplier pricing:", statusUpdateError);
-        // لا نوقف العملية إذا فشل تحديث الحالة
+      } else {
+        console.error('❌ Google Sheets Writer غير متوفر');
+        res.status(500).json({ message: "خدمة Google Sheets غير متوفرة" });
       }
-
-      res.status(201).json(pricing);
     } catch (error) {
       console.error("Create supplier pricing error:", error);
       res.status(500).json({ message: "Internal server error" });

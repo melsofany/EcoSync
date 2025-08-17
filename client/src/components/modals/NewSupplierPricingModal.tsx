@@ -12,17 +12,37 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-// Form schema for supplier pricing
+// Form schema for supplier pricing with enhanced fields
 const supplierPricingSchema = z.object({
   itemId: z.string().min(1, "يجب اختيار صنف"),
   supplierId: z.string().min(1, "يجب اختيار مورد"),
+  
+  // Supplier information
+  supplierName: z.string().min(1, "اسم المورد مطلوب"),
+  supplierContact: z.string().optional(),
+  supplierPhone: z.string().optional(),
+  supplierEmail: z.string().optional(),
+  supplierAddress: z.string().optional(),
+  
+  // Pricing information
   unitPrice: z.string().min(1, "السعر مطلوب"),
   currency: z.string().default("EGP"),
+  
+  // VAT information
+  vatIncluded: z.enum(["نعم", "لا"]).default("لا"),
+  vatRate: z.string().default("14%"),
+  priceBeforeVat: z.string().optional(),
+  vatAmount: z.string().optional(),
+  
+  // Terms and conditions
+  paymentTerms: z.string().optional(),
+  warrantyPeriod: z.string().optional(),
+  deliveryTime: z.string().optional(),
+  
+  // Additional fields
   priceReceivedDate: z.string().min(1, "تاريخ ورود السعر مطلوب"),
   validityPeriod: z.coerce.number().optional(),
   minimumOrderQuantity: z.coerce.number().optional(),
-  deliveryTime: z.coerce.number().optional(),
-  paymentTerms: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -56,6 +76,18 @@ export default function NewSupplierPricingModal({
     defaultValues: {
       currency: "EGP",
       itemId: selectedItemId || "",
+      vatIncluded: "لا",
+      vatRate: "14%",
+      supplierName: "",
+      supplierContact: "",
+      supplierPhone: "",
+      supplierEmail: "",
+      supplierAddress: "",
+      priceBeforeVat: "",
+      vatAmount: "",
+      paymentTerms: "",
+      warrantyPeriod: "",
+      deliveryTime: "",
     },
   });
 
@@ -147,6 +179,132 @@ export default function NewSupplierPricingModal({
             </div>
           </div>
 
+          {/* Supplier Details Section */}
+          <div className="border rounded-lg p-4 space-y-4">
+            <h3 className="font-medium text-gray-800 border-b pb-2">تفاصيل المورد</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="supplierName">اسم المورد *</Label>
+                <Input
+                  id="supplierName"
+                  {...form.register("supplierName")}
+                  placeholder="اسم الشركة أو المورد"
+                />
+                {form.formState.errors.supplierName && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {form.formState.errors.supplierName.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="supplierContact">جهة الاتصال</Label>
+                <Input
+                  id="supplierContact"
+                  {...form.register("supplierContact")}
+                  placeholder="اسم الشخص المسؤول"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="supplierPhone">رقم الهاتف</Label>
+                <Input
+                  id="supplierPhone"
+                  {...form.register("supplierPhone")}
+                  placeholder="+20 123 456 7890"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="supplierEmail">البريد الإلكتروني</Label>
+                <Input
+                  id="supplierEmail"
+                  type="email"
+                  {...form.register("supplierEmail")}
+                  placeholder="supplier@example.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="supplierAddress">العنوان</Label>
+              <Textarea
+                id="supplierAddress"
+                {...form.register("supplierAddress")}
+                placeholder="عنوان المورد أو الشركة..."
+                rows={2}
+              />
+            </div>
+          </div>
+
+          {/* VAT Section */}
+          <div className="border rounded-lg p-4 space-y-4">
+            <h3 className="font-medium text-gray-800 border-b pb-2">ضريبة القيمة المضافة</h3>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="vatIncluded">هل السعر يشمل ضريبة القيمة المضافة؟</Label>
+                <Select
+                  value={form.watch("vatIncluded")}
+                  onValueChange={(value) => form.setValue("vatIncluded", value as "نعم" | "لا")}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="لا">لا - السعر بدون ضريبة</SelectItem>
+                    <SelectItem value="نعم">نعم - السعر شامل ضريبة</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="vatRate">معدل الضريبة</Label>
+                <Select
+                  value={form.watch("vatRate")}
+                  onValueChange={(value) => form.setValue("vatRate", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0%">معفى من الضريبة (0%)</SelectItem>
+                    <SelectItem value="14%">14% (المعدل الأساسي)</SelectItem>
+                    <SelectItem value="5%">5% (معدل مخفض)</SelectItem>
+                    <SelectItem value="10%">10% (معدل خاص)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="priceBeforeVat">السعر قبل الضريبة</Label>
+                <Input
+                  id="priceBeforeVat"
+                  type="number"
+                  step="0.01"
+                  {...form.register("priceBeforeVat")}
+                  placeholder="السعر بدون ضريبة"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="vatAmount">مبلغ الضريبة</Label>
+                <Input
+                  id="vatAmount"
+                  type="number"
+                  step="0.01"
+                  {...form.register("vatAmount")}
+                  placeholder="قيمة الضريبة المضافة"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="unitPrice">السعر *</Label>
@@ -196,45 +354,60 @@ export default function NewSupplierPricingModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="validityPeriod">فترة الصلاحية (أيام)</Label>
-              <Input
-                id="validityPeriod"
-                type="number"
-                {...form.register("validityPeriod")}
-                placeholder="30"
-              />
+          {/* Additional Terms Section */}
+          <div className="border rounded-lg p-4 space-y-4">
+            <h3 className="font-medium text-gray-800 border-b pb-2">الشروط والتفاصيل الإضافية</h3>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="paymentTerms">شروط الدفع</Label>
+                <Input
+                  id="paymentTerms"
+                  {...form.register("paymentTerms")}
+                  placeholder="كاش - تحويل بنكي - آجل 30 يوم"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="warrantyPeriod">فترة الضمان</Label>
+                <Input
+                  id="warrantyPeriod"
+                  {...form.register("warrantyPeriod")}
+                  placeholder="سنة واحدة - سنتين - بدون ضمان"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="deliveryTime">مدة التسليم</Label>
+                <Input
+                  id="deliveryTime"
+                  {...form.register("deliveryTime")}
+                  placeholder="7-10 أيام عمل"
+                />
+              </div>
             </div>
 
-            <div>
-              <Label htmlFor="minimumOrderQuantity">الحد الأدنى للطلب</Label>
-              <Input
-                id="minimumOrderQuantity"
-                type="number"
-                {...form.register("minimumOrderQuantity")}
-                placeholder="1"
-              />
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="validityPeriod">فترة الصلاحية (أيام)</Label>
+                <Input
+                  id="validityPeriod"
+                  type="number"
+                  {...form.register("validityPeriod")}
+                  placeholder="30"
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="deliveryTime">مدة التسليم (أيام)</Label>
-              <Input
-                id="deliveryTime"
-                type="number"
-                {...form.register("deliveryTime")}
-                placeholder="7"
-              />
+              <div>
+                <Label htmlFor="minimumOrderQuantity">الحد الأدنى للطلب</Label>
+                <Input
+                  id="minimumOrderQuantity"
+                  type="number"
+                  {...form.register("minimumOrderQuantity")}
+                  placeholder="1"
+                />
+              </div>
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="paymentTerms">شروط الدفع</Label>
-            <Input
-              id="paymentTerms"
-              {...form.register("paymentTerms")}
-              placeholder="كاش - تحويل بنكي - آجل 30 يوم"
-            />
           </div>
 
           <div>

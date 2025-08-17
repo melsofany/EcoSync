@@ -785,6 +785,159 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       throw error;
     }
   }
+
+  /**
+   * تحديث صف تسعير المورد مع البيانات المحسنة
+   */
+  async updateSupplierPricingRow(itemId: string, pricingData: any): Promise<void> {
+    try {
+      if (!this.sheets) {
+        const initialized = await this.initialize();
+        if (!initialized) {
+          throw new Error('فشل في تهيئة Google Sheets');
+        }
+      }
+
+      const sheetName = 'تسعير_الموردين';
+      console.log(`🔄 تحديث بيانات تسعير المورد للبند: ${itemId}`);
+
+      // البحث عن الصف الخاص بهذا البند
+      const readResponse = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A2:Z1000`
+      });
+
+      const rows = readResponse.data.values || [];
+      let targetRowIndex = -1;
+
+      // البحث عن الصف الذي يحتوي على معرف البند
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i][0] === itemId) { // العمود A يحتوي على Item Number
+          targetRowIndex = i + 2; // +2 لأن الصفوف تبدأ من 1 والرؤوس في الصف 1
+          break;
+        }
+      }
+
+      if (targetRowIndex === -1) {
+        // إنشاء البند إذا لم يكن موجوداً
+        console.log(`📝 البند ${itemId} غير موجود، إنشاء صف جديد...`);
+        
+        // الحصول على معلومات البند من صفحة البيانات الرئيسية
+        const itemResponse = await this.sheets.spreadsheets.values.get({
+          spreadsheetId: this.spreadsheetId,
+          range: `DATA!A2:R1000`
+        });
+        
+        const dataRows = itemResponse.data.values || [];
+        let itemInfo = null;
+        
+        // البحث عن البند في صفحة البيانات الرئيسية
+        for (const row of dataRows) {
+          if (row[0] === itemId) { // العمود A يحتوي على Item Number
+            itemInfo = row;
+            break;
+          }
+        }
+        
+        if (!itemInfo) {
+          console.error(`❌ لم يتم العثور على البند ${itemId} في صفحة البيانات الرئيسية`);
+          throw new Error(`Item ${itemId} not found in main data sheet`);
+        }
+        
+        // إنشاء صف جديد في صفحة تسعير الموردين
+        const newRowNumber = rows.length + 2; // +2 للترقيم من الصف 1 ووجود الرؤوس
+        const newRow = [
+          itemId,                              // A - Item Number
+          itemInfo[3] || '',                   // B - Part Number (من العمود D في DATA)
+          itemInfo[4] || '',                   // C - Description (من العمود E في DATA)
+          itemInfo[1] || 'EACH',               // D - UOM (من العمود B في DATA)
+          itemInfo[7] || '1',                  // E - Quantity (من العمود H في DATA)
+          itemInfo[5] || '',                   // F - RFQ Number (من العمود F في DATA)
+          itemInfo[16] || '',                  // G - Client Name (من العمود Q في DATA)
+          itemInfo[6] || '',                   // H - Request Date (من العمود G في DATA)
+          itemInfo[9] || '',                   // I - Expiry Date (من العمود J في DATA)
+          pricingData.supplierName || '',      // J - Supplier Name
+          pricingData.supplierContact || '',   // K - Contact Person
+          pricingData.supplierPhone || '',     // L - Phone
+          pricingData.supplierEmail || '',     // M - Email
+          pricingData.supplierAddress || '',   // N - Address
+          pricingData.unitPrice || '',         // O - Unit Price
+          pricingData.totalPrice || '',        // P - Total Price
+          pricingData.currency || 'EGP',       // Q - Currency
+          pricingData.vatIncluded || 'لا',     // R - VAT Included
+          pricingData.vatRate || '14%',        // S - VAT Rate
+          pricingData.priceBeforeVat || '',    // T - Price Before VAT
+          pricingData.vatAmount || '',         // U - VAT Amount
+          pricingData.deliveryTime || '',      // V - Delivery Time
+          pricingData.paymentTerms || '',      // W - Payment Terms
+          pricingData.warrantyPeriod || '',    // X - Warranty Period
+          pricingData.notes || '',             // Y - Notes
+          pricingData.status || 'مُسعّر'       // Z - Status
+        ];
+
+        // إضافة الصف الجديد
+        const range = `${sheetName}!A${newRowNumber}:Z${newRowNumber}`;
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [newRow]
+          }
+        });
+
+        console.log(`✅ تم إنشاء صف جديد للبند ${itemId} في الصف ${newRowNumber}`);
+        return;
+      }
+
+      // تحديث الصف بالبيانات الجديدة
+      // التطابق مع ترتيب الأعمدة في sendItemsToSupplierPricing
+      const updatedRow = [
+        itemId,                                    // A - Item Number
+        rows[targetRowIndex - 2][1] || '',         // B - Part Number (keep existing)
+        rows[targetRowIndex - 2][2] || '',         // C - Description (keep existing)
+        rows[targetRowIndex - 2][3] || 'EACH',     // D - UOM (keep existing)
+        rows[targetRowIndex - 2][4] || '1',        // E - Quantity (keep existing)
+        rows[targetRowIndex - 2][5] || '',         // F - RFQ Number (keep existing)
+        rows[targetRowIndex - 2][6] || '',         // G - Client Name (keep existing)
+        rows[targetRowIndex - 2][7] || '',         // H - Request Date (keep existing)
+        rows[targetRowIndex - 2][8] || '',         // I - Expiry Date (keep existing)
+        pricingData.supplierName || '',            // J - Supplier Name
+        pricingData.supplierContact || '',         // K - Contact Person
+        pricingData.supplierPhone || '',           // L - Phone
+        pricingData.supplierEmail || '',           // M - Email
+        pricingData.supplierAddress || '',         // N - Address
+        pricingData.unitPrice || '',               // O - Unit Price
+        pricingData.totalPrice || '',              // P - Total Price
+        pricingData.currency || 'EGP',             // Q - Currency
+        pricingData.vatIncluded || 'لا',           // R - VAT Included
+        pricingData.vatRate || '14%',              // S - VAT Rate
+        pricingData.priceBeforeVat || '',          // T - Price Before VAT
+        pricingData.vatAmount || '',               // U - VAT Amount
+        pricingData.deliveryTime || '',            // V - Delivery Time
+        pricingData.paymentTerms || '',            // W - Payment Terms
+        pricingData.warrantyPeriod || '',          // X - Warranty Period
+        pricingData.notes || '',                   // Y - Notes
+        pricingData.status || 'مُسعّر'             // Z - Status
+      ];
+
+      // تحديث الصف في Google Sheets
+      const range = `${sheetName}!A${targetRowIndex}:Z${targetRowIndex}`;
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [updatedRow]
+        }
+      });
+
+      console.log(`✅ تم تحديث بيانات تسعير المورد للبند ${itemId} في الصف ${targetRowIndex}`);
+    } catch (error) {
+      console.error('❌ خطأ في تحديث تسعير المورد:', (error as Error).message);
+      throw error;
+    }
+  }
 }
 
 export const googleSheetsWriter = new GoogleSheetsWriter();
