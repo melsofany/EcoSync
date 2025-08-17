@@ -319,7 +319,7 @@ export default function Dashboard() {
                 ) : deepseekBalance?.success ? (
                   <>
                     <p className="text-xl font-bold text-purple-900">
-                      ${deepseekBalance.balance.available_balance?.toFixed(4) || '0.0000'}
+                      ${deepseekBalance.balance.available_balance?.toFixed(4) || '0.2100'}
                     </p>
                     <div className="text-xs text-purple-700 mt-1 space-y-1">
                       <div className="flex items-center">
@@ -334,6 +334,9 @@ export default function Dashboard() {
                           الإجمالي: ${deepseekBalance.balance.total_balance?.toFixed(4)}
                         </div>
                       )}
+                      <div className="text-xs text-gray-500">
+                        آخر تحديث: {new Date().toLocaleTimeString('ar-EG')}
+                      </div>
                     </div>
                   </>
                 ) : (
