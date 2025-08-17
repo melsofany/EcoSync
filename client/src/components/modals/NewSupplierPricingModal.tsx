@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -123,12 +124,13 @@ export default function NewSupplierPricingModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>إضافة سعر مورد جديد</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {/* Basic Selection */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="itemId">الصنف *</Label>
@@ -179,246 +181,237 @@ export default function NewSupplierPricingModal({
             </div>
           </div>
 
-          {/* Supplier Details Section */}
-          <div className="border rounded-lg p-4 space-y-4">
-            <h3 className="font-medium text-gray-800 border-b pb-2">تفاصيل المورد</h3>
+          {/* Tabbed Content */}
+          <Tabs defaultValue="pricing" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="pricing">التسعير</TabsTrigger>
+              <TabsTrigger value="supplier">معلومات المورد</TabsTrigger>
+              <TabsTrigger value="terms">الشروط</TabsTrigger>
+            </TabsList>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="supplierName">اسم المورد *</Label>
-                <Input
-                  id="supplierName"
-                  {...form.register("supplierName")}
-                  placeholder="اسم الشركة أو المورد"
-                />
-                {form.formState.errors.supplierName && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {form.formState.errors.supplierName.message}
-                  </p>
-                )}
+            <TabsContent value="pricing" className="space-y-4 mt-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="unitPrice">السعر *</Label>
+                  <Input
+                    id="unitPrice"
+                    type="number"
+                    step="0.01"
+                    {...form.register("unitPrice")}
+                    placeholder="أدخل السعر"
+                  />
+                  {form.formState.errors.unitPrice && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {form.formState.errors.unitPrice.message}
+                    </p>
+                  )}
+                </div>
+                
+                <div>
+                  <Label htmlFor="currency">العملة</Label>
+                  <Select
+                    value={form.watch("currency")}
+                    onValueChange={(value) => form.setValue("currency", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="EGP">جنيه مصري (EGP)</SelectItem>
+                      <SelectItem value="USD">دولار أمريكي (USD)</SelectItem>
+                      <SelectItem value="EUR">يورو (EUR)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="priceReceivedDate">تاريخ ورود السعر *</Label>
+                  <Input
+                    id="priceReceivedDate"
+                    type="date"
+                    {...form.register("priceReceivedDate")}
+                  />
+                  {form.formState.errors.priceReceivedDate && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {form.formState.errors.priceReceivedDate.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* VAT Section */}
+              <div className="border rounded-lg p-3 space-y-3">
+                <h4 className="text-sm font-medium text-gray-700">ضريبة القيمة المضافة</h4>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label htmlFor="vatIncluded" className="text-xs">يشمل ضريبة؟</Label>
+                    <Select
+                      value={form.watch("vatIncluded")}
+                      onValueChange={(value) => form.setValue("vatIncluded", value as "نعم" | "لا")}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="لا">لا</SelectItem>
+                        <SelectItem value="نعم">نعم</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="vatRate" className="text-xs">المعدل</Label>
+                    <Select
+                      value={form.watch("vatRate")}
+                      onValueChange={(value) => form.setValue("vatRate", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0%">0%</SelectItem>
+                        <SelectItem value="14%">14%</SelectItem>
+                        <SelectItem value="5%">5%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="vatAmount" className="text-xs">مبلغ الضريبة</Label>
+                    <Input
+                      id="vatAmount"
+                      type="number"
+                      step="0.01"
+                      {...form.register("vatAmount")}
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="supplier" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="supplierName">اسم المورد *</Label>
+                  <Input
+                    id="supplierName"
+                    {...form.register("supplierName")}
+                    placeholder="اسم الشركة أو المورد"
+                  />
+                  {form.formState.errors.supplierName && (
+                    <p className="text-sm text-red-600 mt-1">
+                      {form.formState.errors.supplierName.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="supplierContact">جهة الاتصال</Label>
+                  <Input
+                    id="supplierContact"
+                    {...form.register("supplierContact")}
+                    placeholder="اسم الشخص المسؤول"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="supplierPhone">رقم الهاتف</Label>
+                  <Input
+                    id="supplierPhone"
+                    {...form.register("supplierPhone")}
+                    placeholder="+20 123 456 7890"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="supplierEmail">البريد الإلكتروني</Label>
+                  <Input
+                    id="supplierEmail"
+                    type="email"
+                    {...form.register("supplierEmail")}
+                    placeholder="supplier@example.com"
+                  />
+                </div>
               </div>
 
               <div>
-                <Label htmlFor="supplierContact">جهة الاتصال</Label>
-                <Input
-                  id="supplierContact"
-                  {...form.register("supplierContact")}
-                  placeholder="اسم الشخص المسؤول"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="supplierPhone">رقم الهاتف</Label>
-                <Input
-                  id="supplierPhone"
-                  {...form.register("supplierPhone")}
-                  placeholder="+20 123 456 7890"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="supplierEmail">البريد الإلكتروني</Label>
-                <Input
-                  id="supplierEmail"
-                  type="email"
-                  {...form.register("supplierEmail")}
-                  placeholder="supplier@example.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="supplierAddress">العنوان</Label>
-              <Textarea
-                id="supplierAddress"
-                {...form.register("supplierAddress")}
-                placeholder="عنوان المورد أو الشركة..."
-                rows={2}
-              />
-            </div>
-          </div>
-
-          {/* VAT Section */}
-          <div className="border rounded-lg p-4 space-y-4">
-            <h3 className="font-medium text-gray-800 border-b pb-2">ضريبة القيمة المضافة</h3>
-            
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="vatIncluded">هل السعر يشمل ضريبة القيمة المضافة؟</Label>
-                <Select
-                  value={form.watch("vatIncluded")}
-                  onValueChange={(value) => form.setValue("vatIncluded", value as "نعم" | "لا")}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="لا">لا - السعر بدون ضريبة</SelectItem>
-                    <SelectItem value="نعم">نعم - السعر شامل ضريبة</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="vatRate">معدل الضريبة</Label>
-                <Select
-                  value={form.watch("vatRate")}
-                  onValueChange={(value) => form.setValue("vatRate", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0%">معفى من الضريبة (0%)</SelectItem>
-                    <SelectItem value="14%">14% (المعدل الأساسي)</SelectItem>
-                    <SelectItem value="5%">5% (معدل مخفض)</SelectItem>
-                    <SelectItem value="10%">10% (معدل خاص)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="priceBeforeVat">السعر قبل الضريبة</Label>
-                <Input
-                  id="priceBeforeVat"
-                  type="number"
-                  step="0.01"
-                  {...form.register("priceBeforeVat")}
-                  placeholder="السعر بدون ضريبة"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="vatAmount">مبلغ الضريبة</Label>
-                <Input
-                  id="vatAmount"
-                  type="number"
-                  step="0.01"
-                  {...form.register("vatAmount")}
-                  placeholder="قيمة الضريبة المضافة"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="unitPrice">السعر *</Label>
-              <Input
-                id="unitPrice"
-                type="number"
-                step="0.01"
-                {...form.register("unitPrice")}
-                placeholder="أدخل السعر"
-              />
-              {form.formState.errors.unitPrice && (
-                <p className="text-sm text-red-600 mt-1">
-                  {form.formState.errors.unitPrice.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="currency">العملة</Label>
-              <Select
-                value={form.watch("currency")}
-                onValueChange={(value) => form.setValue("currency", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EGP">جنيه مصري</SelectItem>
-                  <SelectItem value="USD">دولار أمريكي</SelectItem>
-                  <SelectItem value="EUR">يورو</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="priceReceivedDate">تاريخ ورود السعر *</Label>
-              <Input
-                id="priceReceivedDate"
-                type="date"
-                {...form.register("priceReceivedDate")}
-              />
-              {form.formState.errors.priceReceivedDate && (
-                <p className="text-sm text-red-600 mt-1">
-                  {form.formState.errors.priceReceivedDate.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Additional Terms Section */}
-          <div className="border rounded-lg p-4 space-y-4">
-            <h3 className="font-medium text-gray-800 border-b pb-2">الشروط والتفاصيل الإضافية</h3>
-            
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="paymentTerms">شروط الدفع</Label>
-                <Input
-                  id="paymentTerms"
-                  {...form.register("paymentTerms")}
-                  placeholder="كاش - تحويل بنكي - آجل 30 يوم"
+                <Label htmlFor="supplierAddress">العنوان</Label>
+                <Textarea
+                  id="supplierAddress"
+                  {...form.register("supplierAddress")}
+                  placeholder="عنوان المورد أو الشركة..."
+                  rows={2}
                 />
               </div>
+            </TabsContent>
 
-              <div>
-                <Label htmlFor="warrantyPeriod">فترة الضمان</Label>
-                <Input
-                  id="warrantyPeriod"
-                  {...form.register("warrantyPeriod")}
-                  placeholder="سنة واحدة - سنتين - بدون ضمان"
-                />
+            <TabsContent value="terms" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="paymentTerms">شروط الدفع</Label>
+                  <Input
+                    id="paymentTerms"
+                    {...form.register("paymentTerms")}
+                    placeholder="مثل: 30 يوم من تاريخ الفاتورة"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="deliveryTime">مدة التوصيل</Label>
+                  <Input
+                    id="deliveryTime"
+                    {...form.register("deliveryTime")}
+                    placeholder="مثل: 7-10 أيام عمل"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="warrantyPeriod">فترة الضمان</Label>
+                  <Input
+                    id="warrantyPeriod"
+                    {...form.register("warrantyPeriod")}
+                    placeholder="مثل: سنة واحدة"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="validityPeriod">صالح لمدة (بالأيام)</Label>
+                  <Input
+                    id="validityPeriod"
+                    type="number"
+                    {...form.register("validityPeriod")}
+                    placeholder="30"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="minimumOrderQuantity">الحد الأدنى للطلب</Label>
+                  <Input
+                    id="minimumOrderQuantity"
+                    type="number"
+                    {...form.register("minimumOrderQuantity")}
+                    placeholder="1"
+                  />
+                </div>
               </div>
 
               <div>
-                <Label htmlFor="deliveryTime">مدة التسليم</Label>
-                <Input
-                  id="deliveryTime"
-                  {...form.register("deliveryTime")}
-                  placeholder="7-10 أيام عمل"
+                <Label htmlFor="notes">ملاحظات إضافية</Label>
+                <Textarea
+                  id="notes"
+                  {...form.register("notes")}
+                  placeholder="أي ملاحظات أو شروط خاصة..."
+                  rows={3}
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="validityPeriod">فترة الصلاحية (أيام)</Label>
-                <Input
-                  id="validityPeriod"
-                  type="number"
-                  {...form.register("validityPeriod")}
-                  placeholder="30"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="minimumOrderQuantity">الحد الأدنى للطلب</Label>
-                <Input
-                  id="minimumOrderQuantity"
-                  type="number"
-                  {...form.register("minimumOrderQuantity")}
-                  placeholder="1"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="notes">ملاحظات</Label>
-            <Textarea
-              id="notes"
-              {...form.register("notes")}
-              placeholder="أي ملاحظات إضافية حول السعر أو شروط التوريد"
-              rows={3}
-            />
-          </div>
+            </TabsContent>
+          </Tabs>
 
           <div className="flex justify-end space-x-3 space-x-reverse pt-4 border-t">
             <Button
