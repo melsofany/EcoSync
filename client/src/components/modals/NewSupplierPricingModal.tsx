@@ -119,7 +119,14 @@ export default function NewSupplierPricingModal({
   });
 
   const onSubmit = (data: SupplierPricingForm) => {
-    createPricingMutation.mutate(data);
+    // البحث عن البند المحدد لإرسال رقم البند الصحيح
+    const selectedItem = itemsRequiringPricing.find((item: any) => item.id === data.itemId);
+    const submissionData = {
+      ...data,
+      itemId: selectedItem?.itemNumber || data.itemId // استخدام رقم البند الصحيح
+    };
+    
+    createPricingMutation.mutate(submissionData);
   };
 
   return (
