@@ -484,8 +484,10 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       const supplierHeaders = [
         'Item Number', 'Part Number', 'Description', 'UOM', 'Quantity',
         'RFQ Number', 'Client Name', 'Request Date', 'Expiry Date',
-        'Supplier Name', 'Unit Price', 'Total Price', 'Currency',
-        'Delivery Time', 'Notes', 'Status'
+        'Supplier Name', 'Contact Person', 'Phone', 'Email', 'Address',
+        'Unit Price', 'Total Price', 'Currency', 
+        'VAT Included', 'VAT Rate', 'Price Before VAT', 'VAT Amount',
+        'Delivery Time', 'Payment Terms', 'Warranty Period', 'Notes', 'Status'
       ];
       
       await this.createPricingSheetIfNotExists(supplierSheetName, supplierHeaders);
@@ -508,20 +510,34 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
           quotationInfo.clientName || '',                    // G - Client Name
           quotationInfo.requestDate || '',                   // H - Request Date
           quotationInfo.expiryDate || '',                    // I - Expiry Date
+          // بيانات المورد المحسنة
           '',                                                // J - Supplier Name (فارغ للتعبئة)
-          '',                                                // K - Unit Price (فارغ للتعبئة)
-          '',                                                // L - Total Price (فارغ للحساب التلقائي)
-          '',                                                // M - Currency (فارغ للتعبئة)
-          '',                                                // N - Delivery Time (فارغ للتعبئة)
-          '',                                                // O - Notes (فارغ للتعبئة)
-          'جديد'                                             // P - Status (جديد/معتمد/مرفوض)
+          '',                                                // K - Contact Person (فارغ للتعبئة)
+          '',                                                // L - Phone (فارغ للتعبئة)
+          '',                                                // M - Email (فارغ للتعبئة)
+          '',                                                // N - Address (فارغ للتعبئة)
+          // بيانات التسعير
+          '',                                                // O - Unit Price (فارغ للتعبئة)
+          '',                                                // P - Total Price (فارغ للحساب التلقائي)
+          '',                                                // Q - Currency (فارغ للتعبئة)
+          // معلومات ضريبة القيمة المضافة
+          'لا',                                              // R - VAT Included (افتراضي: لا)
+          '14%',                                             // S - VAT Rate (افتراضي: 14%)
+          '',                                                // T - Price Before VAT (فارغ للحساب)
+          '',                                                // U - VAT Amount (فارغ للحساب)
+          // تفاصيل إضافية
+          '',                                                // V - Delivery Time (فارغ للتعبئة)
+          '',                                                // W - Payment Terms (فارغ للتعبئة)
+          '',                                                // X - Warranty Period (فارغ للتعبئة)
+          '',                                                // Y - Notes (فارغ للتعبئة)
+          'جديد'                                             // Z - Status (جديد/معتمد/مرفوض)
         ];
         rows.push(row);
       }
 
       // البحث عن آخر صف فارغ في صفحة تسعير الموردين
       const supplierLastRow = await this.findLastRowInSheet(supplierSheetName);
-      const supplierRange = `${supplierSheetName}!A${supplierLastRow + 1}:P${supplierLastRow + rows.length}`;
+      const supplierRange = `${supplierSheetName}!A${supplierLastRow + 1}:Z${supplierLastRow + rows.length}`;
 
       // إدراج البيانات
       await this.sheets.spreadsheets.values.update({
@@ -716,7 +732,7 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       // قراءة البيانات الحالية لمعرفة عدد الصفوف
       const readResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A2:P1000`
+        range: `${sheetName}!A2:Z1000`
       });
 
       const existingRows = readResponse.data.values || [];
@@ -728,7 +744,7 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       // مسح البيانات من الصف 2 إلى آخر صف
       await this.sheets.spreadsheets.values.clear({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A2:P${existingRows.length + 1}`
+        range: `${sheetName}!A2:Z${existingRows.length + 1}`
       });
 
       console.log(`🗑️ تم مسح ${existingRows.length} صف من صفحة تسعير الموردين`);

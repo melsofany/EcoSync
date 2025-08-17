@@ -7,6 +7,7 @@ A comprehensive web application for قرطبة للتوريدات (Qurtoba Suppl
 Preferred communication style: Simple, everyday language.
 Data source: Google Sheets ONLY - no database storage, all data must come from Google Sheets exclusively.
 UI Preferences: No unification buttons in main Items page - all unification operations should be separate/programmatic.
+Supplier Pricing Requirements: Enhanced supplier pricing form with detailed supplier information, VAT handling, and extended terms including contact details, payment terms, and warranty information.
 
 ## System Architecture
 
@@ -35,6 +36,7 @@ UI Preferences: No unification buttons in main Items page - all unification oper
 - **Item Catalog**: AI-enhanced item management with intelligent duplicate detection, focusing on part number normalization, description similarity, and keyword extraction.
 - **AI-Powered Item Unification**: Advanced Google Sheets integration for intelligent item consolidation. System processes data, analyzes part numbers and descriptions using AI similarity matching, then assigns unified item IDs to matching rows.
 - **Purchase Order Details System**: Complete purchase order item viewing system with accurate column mapping and Google Sheets real-time integration.
+- **Enhanced Supplier Pricing System**: Comprehensive supplier pricing form supporting detailed supplier information (name, contact, phone, email, address), VAT management (inclusive/exclusive pricing, VAT rates, automatic calculations), and extended terms (payment conditions, warranty periods, delivery specifications). Fully integrated with Google Sheets spanning columns A-Z.
 - **Purchase Order Processing**: Integration with the quotation system, including robust search capabilities.
 - **User Management**: Role-based access and activity monitoring.
 - **Client & Supplier Management**: Functionality for adding, editing, and deleting clients and suppliers with soft delete logic. Full supplier endpoint functionality with Google Sheets integration.

@@ -513,13 +513,13 @@ export class GoogleSheetsRealtimeData {
       const sheetName = 'تسعير_الموردين';
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A2:P1000`, // قراءة من A2 إلى P مع حد أقصى 1000 صف
+        range: `${sheetName}!A2:Y1000`, // توسيع النطاق إلى Y لاستيعاب البيانات الجديدة
       });
 
       const rows = response.data.values || [];
       console.log(`📊 تم قراءة ${rows.length} صف من صفحة تسعير الموردين`);
 
-      // تحويل البيانات إلى تنسيق مناسب
+      // تحويل البيانات إلى تنسيق مناسب مع الحقول الجديدة
       const items = rows.map((row: any[], index: number) => ({
         id: `supplier-${index + 2}`,
         itemNumber: row[0] || '',
@@ -531,13 +531,27 @@ export class GoogleSheetsRealtimeData {
         clientName: row[6] || '',
         requestDate: row[7] || '',
         expiryDate: row[8] || '',
+        // بيانات المورد المحسنة
         supplierName: row[9] || '',
-        unitPrice: row[10] || '',
-        totalPrice: row[11] || '',
-        currency: row[12] || '',
-        deliveryTime: row[13] || '',
-        notes: row[14] || '',
-        status: row[15] || 'جديد'
+        supplierContact: row[10] || '', // جهة الاتصال
+        supplierPhone: row[11] || '', // الهاتف
+        supplierEmail: row[12] || '', // البريد الإلكتروني
+        supplierAddress: row[13] || '', // العنوان
+        // بيانات التسعير
+        unitPrice: row[14] || '',
+        totalPrice: row[15] || '',
+        currency: row[16] || '',
+        // معلومات ضريبة القيمة المضافة
+        vatIncluded: row[17] || 'لا', // هل السعر يشمل ضريبة القيمة المضافة
+        vatRate: row[18] || '14%', // معدل ضريبة القيمة المضافة
+        priceBeforeVat: row[19] || '', // السعر قبل الضريبة
+        vatAmount: row[20] || '', // مبلغ الضريبة
+        // تفاصيل إضافية
+        deliveryTime: row[21] || '',
+        paymentTerms: row[22] || '', // شروط الدفع
+        warrantyPeriod: row[23] || '', // فترة الضمان
+        notes: row[24] || '',
+        status: row[25] || 'جديد'
       })).filter(item => item.itemNumber); // تصفية البنود الفارغة
 
       return items;
