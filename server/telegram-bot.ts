@@ -164,7 +164,7 @@ class QortobaAnalysisBot {
         message += `🔹 رقم الطلب: ${req.rfqNumber || 'غير محدد'}\n`;
         message += `📅 تاريخ الطلب: ${req.requestDate || 'غير محدد'}\n`;
         if (req.expiryDate) {
-          message += `🔴 تاريخ انتهاء العرض: <b><u>${req.expiryDate}</u></b>\n`;
+          message += `🚨 <b>تاريخ انتهاء العرض: ${req.expiryDate}</b> 🚨\n`;
         }
         message += `👤 العميل: ${req.clientName || 'غير محدد'}\n`;
         message += `\n`;
@@ -190,7 +190,7 @@ class QortobaAnalysisBot {
         message += `📋 RFQ: ${item.rfqNumber || 'غير محدد'}\n`;
         message += `📅 تاريخ الطلب: ${item.requestDate || 'غير محدد'}\n`;
         if (item.expiryDate) {
-          message += `🔴 تاريخ انتهاء العرض: <b><u>${item.expiryDate}</u></b>\n`;
+          message += `🚨 <b>تاريخ انتهاء العرض: ${item.expiryDate}</b> 🚨\n`;
         }
         message += `\n`;
       }
@@ -621,7 +621,7 @@ class QortobaAnalysisBot {
       message += `📅 تاريخ الطلب: ${item.requestDate}\n`;
     }
     if (item.expiryDate) {
-      message += `🔴 تاريخ انتهاء العرض: <b><u>${item.expiryDate}</u></b>\n`;
+      message += `🚨 <b>تاريخ انتهاء العرض: ${item.expiryDate}</b> 🚨\n`;
     }
     
     message += `\n`;
