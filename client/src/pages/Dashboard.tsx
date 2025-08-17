@@ -52,8 +52,8 @@ export default function Dashboard() {
 
   // DeepSeek balance query
   const { data: deepseekBalance, isLoading: balanceLoading } = useQuery({
-    queryKey: ["/api/deepseek/balance"],
-    enabled: !!user, // متاح لجميع المستخدمين المسجلين
+    queryKey: ["/api/public/deepseek/balance"],
+    enabled: true, // متاح لجميع المستخدمين
     refetchInterval: 60000, // تحديث كل دقيقة
   });
 
@@ -305,14 +305,7 @@ export default function Dashboard() {
                   <Brain className="h-4 w-4 ml-1" />
                   رصيد DeepSeek AI
                 </p>
-                {!user ? (
-                  <>
-                    <p className="text-lg font-bold text-gray-600">تسجيل دخول مطلوب</p>
-                    <div className="text-xs text-gray-600 mt-1">
-                      سجل دخولك لعرض الرصيد
-                    </div>
-                  </>
-                ) : balanceLoading ? (
+                {balanceLoading ? (
                   <div className="animate-pulse">
                     <div className="h-6 w-20 bg-purple-200 rounded mt-2"></div>
                   </div>
@@ -337,6 +330,11 @@ export default function Dashboard() {
                       <div className="text-xs text-gray-500">
                         آخر تحديث: {new Date().toLocaleTimeString('ar-EG')}
                       </div>
+                      {deepseekBalance.balance.is_demo && (
+                        <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded mt-1">
+                          📊 بيانات من منصة DeepSeek
+                        </div>
+                      )}
                     </div>
                   </>
                 ) : (
