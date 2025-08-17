@@ -297,55 +297,67 @@ export default function Dashboard() {
         </Card>
 
         {/* DeepSeek Balance - عرض رصيد الذكاء الاصطناعي */}
-        {(user?.role === "manager" || user?.role === "it_admin") && (
-          <Card className="card-hover border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-800 flex items-center">
-                    <Brain className="h-4 w-4 ml-1" />
-                    رصيد DeepSeek AI
-                  </p>
-                  {balanceLoading ? (
-                    <div className="animate-pulse">
-                      <div className="h-6 w-20 bg-purple-200 rounded mt-2"></div>
+        <Card className="card-hover border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-purple-800 flex items-center">
+                  <Brain className="h-4 w-4 ml-1" />
+                  رصيد DeepSeek AI
+                </p>
+                {!user ? (
+                  <>
+                    <p className="text-lg font-bold text-gray-600">تسجيل دخول مطلوب</p>
+                    <div className="text-xs text-gray-600 mt-1">
+                      سجل دخولك لعرض الرصيد
                     </div>
-                  ) : deepseekBalance?.success ? (
-                    <>
-                      <p className="text-xl font-bold text-purple-900">
-                        ${deepseekBalance.balance.available_balance?.toFixed(4) || '0.0000'}
-                      </p>
-                      <div className="text-xs text-purple-700 mt-1 space-y-1">
-                        <div className="flex items-center">
-                          <DollarSign className="h-3 w-3 ml-1" />
-                          <span>
-                            {deepseekBalance.balance.available_balance > 1 ? '✅ رصيد جيد' : 
-                             deepseekBalance.balance.available_balance > 0.1 ? '⚠️ رصيد منخفض' : '❌ يحتاج تعبئة'}
-                          </span>
+                  </>
+                ) : user.role !== "manager" && user.role !== "it_admin" ? (
+                  <>
+                    <p className="text-lg font-bold text-orange-600">🔒 غير مخول</p>
+                    <div className="text-xs text-orange-600 mt-1">
+                      متاح للمدير ومدير تقنية المعلومات فقط
+                    </div>
+                  </>
+                ) : balanceLoading ? (
+                  <div className="animate-pulse">
+                    <div className="h-6 w-20 bg-purple-200 rounded mt-2"></div>
+                  </div>
+                ) : deepseekBalance?.success ? (
+                  <>
+                    <p className="text-xl font-bold text-purple-900">
+                      ${deepseekBalance.balance.available_balance?.toFixed(4) || '0.0000'}
+                    </p>
+                    <div className="text-xs text-purple-700 mt-1 space-y-1">
+                      <div className="flex items-center">
+                        <DollarSign className="h-3 w-3 ml-1" />
+                        <span>
+                          {deepseekBalance.balance.available_balance > 1 ? '✅ رصيد جيد' : 
+                           deepseekBalance.balance.available_balance > 0.1 ? '⚠️ رصيد منخفض' : '❌ يحتاج تعبئة'}
+                        </span>
+                      </div>
+                      {deepseekBalance.balance.total_balance > 0 && (
+                        <div className="text-xs text-gray-600">
+                          الإجمالي: ${deepseekBalance.balance.total_balance?.toFixed(4)}
                         </div>
-                        {deepseekBalance.balance.total_balance > 0 && (
-                          <div className="text-xs text-gray-600">
-                            الإجمالي: ${deepseekBalance.balance.total_balance?.toFixed(4)}
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-lg font-bold text-red-600">❌ غير متاح</p>
-                      <div className="text-xs text-red-600 mt-1">
-                        تحقق من إعداد API Key
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center shadow-sm">
-                  <Brain className="h-6 w-6 text-purple-600" />
-                </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-lg font-bold text-red-600">❌ غير متاح</p>
+                    <div className="text-xs text-red-600 mt-1">
+                      تحقق من إعداد API Key
+                    </div>
+                  </>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center shadow-sm">
+                <Brain className="h-6 w-6 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Activity and Online Users */}
