@@ -100,14 +100,19 @@ export default function NewSupplierPricingModal({
     },
     onSuccess: () => {
       toast({
-        title: "تم إضافة السعر",
-        description: "تم إضافة سعر المورد بنجاح",
+        title: "تم تسعير البند بنجاح",
+        description: "تم إضافة سعر المورد وسيختفي البند من قائمة البنود المطلوبة للتسعير",
       });
       onClose();
       form.reset();
+      // تحديث جميع الكاشات المرتبطة لضمان اختفاء البند من الشاشة
       queryClient.invalidateQueries({ queryKey: ["/api/items-requiring-pricing"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/items-ready-for-supplier-pricing"] });
       queryClient.invalidateQueries({ queryKey: ["/api/pricing-history"] });
       queryClient.invalidateQueries({ queryKey: ["/api/supplier-pricing"] });
+      
+      // تحديث بيانات Google Sheets الفورية
+      queryClient.invalidateQueries({ queryKey: ["/api/items-ready-for-customer-pricing"] });
     },
     onError: (error: any) => {
       toast({

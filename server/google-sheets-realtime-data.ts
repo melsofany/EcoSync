@@ -552,7 +552,10 @@ export class GoogleSheetsRealtimeData {
         warrantyPeriod: row[23] || '', // فترة الضمان
         notes: row[24] || '',
         status: row[25] || 'جديد'
-      })).filter(item => item.itemNumber); // تصفية البنود الفارغة
+      })).filter(item => 
+        item.itemNumber && // البند يجب أن يحتوي على رقم
+        item.status !== "مُسعّر" // عدم إظهار البنود المُسعّرة
+      );
 
       return items;
     } catch (error) {
