@@ -70,6 +70,7 @@ class QortobaAnalysisBot {
 /latest - آخر 5 طلبات تسعير
 /analyze [PART_NO] - تحليل بند معين
 /pending - البنود المعلقة
+/test - اختبار تنسيق تاريخ انتهاء العرض
 
 💡 سيتم إرسال تحليل تلقائي لكل بند جديد
       `);
@@ -115,6 +116,19 @@ class QortobaAnalysisBot {
       }
       
       await this.sendPendingItems(chatId);
+    });
+
+    // Test command for expiry date formatting
+    this.bot.onText(/\/test/, async (msg) => {
+      const chatId = msg.chat.id;
+      const userId = msg.from?.id;
+      
+      if (!(await this.isAuthorizedUser(userId))) {
+        this.bot.sendMessage(chatId, '🚫 غير مصرح لك باستخدام هذا البوت');
+        return;
+      }
+      
+      await this.sendTestMessage(chatId);
     });
   }
 
@@ -164,7 +178,7 @@ class QortobaAnalysisBot {
         message += `🔹 رقم الطلب: ${req.rfqNumber || 'غير محدد'}\n`;
         message += `📅 تاريخ الطلب: ${req.requestDate || 'غير محدد'}\n`;
         if (req.expiryDate) {
-          message += `🚨 <b>تاريخ انتهاء العرض: ${req.expiryDate}</b> 🚨\n`;
+          message += `🔥 <u><b>تاريخ انتهاء العرض: ${req.expiryDate}</b></u> 🔥\n`;
         }
         message += `👤 العميل: ${req.clientName || 'غير محدد'}\n`;
         message += `\n`;
@@ -190,7 +204,7 @@ class QortobaAnalysisBot {
         message += `📋 RFQ: ${item.rfqNumber || 'غير محدد'}\n`;
         message += `📅 تاريخ الطلب: ${item.requestDate || 'غير محدد'}\n`;
         if (item.expiryDate) {
-          message += `🚨 <b>تاريخ انتهاء العرض: ${item.expiryDate}</b> 🚨\n`;
+          message += `🔥 <u><b>تاريخ انتهاء العرض: ${item.expiryDate}</b></u> 🔥\n`;
         }
         message += `\n`;
       }
@@ -280,6 +294,61 @@ class QortobaAnalysisBot {
     } catch (error) {
       console.error('DeepSeek analysis error:', error);
       return 'خطأ في التحليل - تعذر الاتصال بخدمة الذكاء الاصطناعي';
+    }
+  }
+
+  async sendTestMessage(chatId: number) {
+    try {
+      let message = '🧪 اختبار تنسيق تاريخ انتهاء العرض:\n\n';
+      
+      // Test with sample data
+      message += `🔹 رقم الطلب: RFQ-TEST-001\n`;
+      message += `📅 تاريخ الطلب: 2025-08-15\n`;
+      message += `🔥 <u><b>تاريخ انتهاء العرض: 2025-08-20</b></u> 🔥\n`;
+      message += `👤 العميل: عميل تجريبي\n\n`;
+      
+      message += `✨ هذا مثال على كيفية ظهور تاريخ انتهاء العرض في الرسائل\n`;
+      message += `🎯 التنسيق: نص غامق + خط سفلي + رموز نار لجذب الانتباه`;
+      
+      this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+    } catch (error) {
+      console.error('Error sending test message:', error);
+      this.bot.sendMessage(chatId, '❌ خطأ في إرسال الرسالة التجريبية');
+    }
+  }
+
+  // Send test message to all authorized users automatically
+  async sendTestToAllUsers() {
+    try {
+      // Load authorized users if empty
+      if (AUTHORIZED_USERS.length === 0) {
+        await this.loadAuthorizedUsers();
+      }
+
+      console.log(`📱 [TELEGRAM BOT] إرسال رسالة تجريبية لجميع المستخدمين المخولين`);
+      
+      let message = '🧪 اختبار التنسيق الجديد لتاريخ انتهاء العرض:\n\n';
+      
+      // Test with sample data
+      message += `🔹 رقم الطلب: RFQ-TEST-001\n`;
+      message += `📅 تاريخ الطلب: 2025-08-15\n`;
+      message += `🔥 <u><b>تاريخ انتهاء العرض: 2025-08-20</b></u> 🔥\n`;
+      message += `👤 العميل: عميل تجريبي\n\n`;
+      
+      message += `✅ تم تحديث تنسيق تاريخ انتهاء العرض في جميع رسائل البوت\n`;
+      message += `🎯 التنسيق: <u><b>غامق + خط سفلي</b></u> + رموز نار 🔥 للتمييز`;
+      
+      // Send to all authorized users
+      for (const userId of AUTHORIZED_USERS) {
+        try {
+          await this.bot.sendMessage(userId, message, { parse_mode: 'HTML' });
+          console.log(`📱 [TELEGRAM BOT] تم إرسال الرسالة التجريبية للمستخدم ${userId}`);
+        } catch (error) {
+          console.error(`فشل في الإرسال للمستخدم ${userId}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error('Error sending test to all users:', error);
     }
   }
 
@@ -621,7 +690,7 @@ class QortobaAnalysisBot {
       message += `📅 تاريخ الطلب: ${item.requestDate}\n`;
     }
     if (item.expiryDate) {
-      message += `🚨 <b>تاريخ انتهاء العرض: ${item.expiryDate}</b> 🚨\n`;
+      message += `🔥 <u><b>تاريخ انتهاء العرض: ${item.expiryDate}</b></u> 🔥\n`;
     }
     
     message += `\n`;

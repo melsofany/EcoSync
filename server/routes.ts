@@ -6264,6 +6264,27 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Test Telegram message formatting - إرسال رسالة تجريبية
+  app.post("/api/telegram/test", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('📱 إرسال رسالة تجريبية لاختبار تنسيق تاريخ انتهاء العرض...');
+      
+      const { telegramBot } = await import('./telegram-bot.js');
+      await telegramBot.sendTestToAllUsers();
+      
+      res.json({ 
+        success: true, 
+        message: 'تم إرسال الرسالة التجريبية لجميع المستخدمين المخولين' 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في إرسال الرسالة التجريبية:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'خطأ في إرسال الرسالة التجريبية'
+      });
+    }
+  });
+
   // Fix user bot access - temporary endpoint for troubleshooting
   app.post("/api/fix-user-bot-access", async (req: Request, res: Response) => {
     try {

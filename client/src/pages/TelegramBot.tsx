@@ -114,6 +114,33 @@ export default function TelegramBot() {
     },
   });
 
+  // Send test message mutation
+  const sendTestMessageMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/telegram/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "✅ تم الإرسال",
+        description: "تم إرسال الرسالة التجريبية لجميع المستخدمين المخولين",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ خطأ",
+        description: error.message || "فشل في إرسال الرسالة التجريبية",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Update user telegram ID mutation
   const updateTelegramUserMutation = useMutation({
     mutationFn: async ({ userId, telegramUserId }: { userId: string; telegramUserId: string }) => {
@@ -384,6 +411,25 @@ export default function TelegramBot() {
                   <>
                     <Send className="h-4 w-4 mr-2" />
                     تحليل البند
+                  </>
+                )}
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => sendTestMessageMutation.mutate()}
+                disabled={sendTestMessageMutation.isPending}
+                className="w-full mt-2"
+              >
+                {sendTestMessageMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                    جاري الإرسال...
+                  </>
+                ) : (
+                  <>
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    اختبار تنسيق تاريخ انتهاء العرض
                   </>
                 )}
               </Button>
