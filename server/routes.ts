@@ -226,13 +226,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ttl: 86400000 // 24 ساعة - زمن أطول للجلسة
     }),
     secret: process.env.SESSION_SECRET || 'qurtoba-supplies-secret-key-2025-extended',
-    resave: false, // عدم إجبار حفظ الجلسة لتحسين الأداء
-    saveUninitialized: false, // عدم حفظ الجلسات غير المهيأة
+    resave: true, // حفظ الجلسة لضمان الاستقرار
+    saveUninitialized: true, // حفظ الجلسات حتى لو لم تُهيأ
     rolling: true, // تجديد الجلسة مع كل طلب - مهم جداً
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: false, // السماح بالوصول من JavaScript لتحسين التوافق
-      maxAge: 7 * 24 * 60 * 60 * 1000, // أسبوع كامل - زمن أطول جداً
+      httpOnly: true, // تحسين الأمان
+      maxAge: 24 * 60 * 60 * 1000, // 24 ساعة - أطول مدة ممكنة
       sameSite: 'lax' // تحسين أمان الـ cookies
     },
     name: 'qurtoba.sid' // اسم مخصص للجلسة
@@ -967,7 +967,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         req.session.user = mockUser;
+        // حفظ الجلسة بقوة
+        await new Promise<void>((resolve, reject) => {
+          req.session.save((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
         console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
+        console.log(`🔐 تم حفظ الجلسة للمستخدم: ${username}`);
         return res.json({ user: mockUser });
       }
 
@@ -1011,7 +1019,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
 
         req.session.user = sessionUser;
+        // حفظ الجلسة بقوة
+        await new Promise<void>((resolve, reject) => {
+          req.session.save((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
         console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
+        console.log(`🔐 تم حفظ الجلسة للمستخدم: ${username}`);
         return res.json({ user: sessionUser });
 
       } catch (sheetsError) {

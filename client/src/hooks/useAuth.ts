@@ -5,10 +5,14 @@ import { useToast } from "@/hooks/use-toast";
 export function useAuth() {
   const { data: user, isLoading, error } = useQuery<User | null>({
     queryKey: ["/api/auth/me"],
-    retry: false,
+    retry: 1,
+    retryDelay: 2000,
     refetchInterval: false,
     refetchOnWindowFocus: false,
-    staleTime: 30 * 60 * 1000, // 30 دقيقة - فترة أطول للثبات
+    refetchOnReconnect: false,
+    refetchOnMount: true,
+    staleTime: 10 * 60 * 1000, // 10 دقائق
+    gcTime: 15 * 60 * 1000, // 15 دقيقة
   });
 
   return {
