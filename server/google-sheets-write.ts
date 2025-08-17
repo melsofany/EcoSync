@@ -787,6 +787,88 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
   }
 
   /**
+   * إعداد رؤوس ورقة تسعير الموردين مع جميع الحقول الجديدة
+   */
+  async setupSupplierPricingSheetHeaders(): Promise<void> {
+    try {
+      const sheetName = 'تسعير_الموردين';
+      const headers = [
+        'رقم البند',              // A - Item Number
+        'PART NO',              // B - Part Number  
+        'الوصف',                 // C - Description
+        'UOM',                  // D - Unit of Measure
+        'الكمية',                // E - Quantity
+        'رقم RFQ',              // F - RFQ Number
+        'اسم العميل',            // G - Client Name
+        'تاريخ الطلب',           // H - Request Date
+        'تاريخ الانتهاء',        // I - Expiry Date
+        'اسم المورد',            // J - Supplier Name
+        'الشخص المسؤول',         // K - Contact Person
+        'الهاتف',               // L - Phone
+        'البريد الإلكتروني',     // M - Email
+        'العنوان',              // N - Address
+        'سعر الوحدة',           // O - Unit Price
+        'السعر الإجمالي',        // P - Total Price
+        'العملة',               // Q - Currency
+        'يشمل ضريبة القيمة المضافة', // R - VAT Included
+        'معدل ضريبة القيمة المضافة', // S - VAT Rate
+        'السعر قبل الضريبة',     // T - Price Before VAT
+        'مبلغ الضريبة',          // U - VAT Amount
+        'مدة التسليم',          // V - Delivery Time
+        'شروط الدفع',           // W - Payment Terms
+        'فترة الضمان',          // X - Warranty Period
+        'ملاحظات',              // Y - Notes
+        'الحالة'                // Z - Status
+      ];
+
+      // التحقق من وجود الورقة وإنشاؤها إذا لم تكن موجودة
+      const sheetsResponse = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId
+      });
+
+      const existingSheet = sheetsResponse.data.sheets?.find(
+        sheet => sheet.properties?.title === sheetName
+      );
+
+      if (!existingSheet) {
+        // إنشاء الورقة الجديدة
+        await this.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: this.spreadsheetId,
+          resource: {
+            requests: [{
+              addSheet: {
+                properties: {
+                  title: sheetName,
+                  gridProperties: {
+                    rowCount: 1000,
+                    columnCount: 26
+                  }
+                }
+              }
+            }]
+          }
+        });
+        console.log(`✅ تم إنشاء ورقة ${sheetName} الجديدة`);
+      }
+
+      // إضافة الرؤوس
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A1:Z1`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [headers]
+        }
+      });
+
+      console.log(`✅ تم تحديث رؤوس ورقة ${sheetName} بنجاح مع جميع الحقول الجديدة`);
+    } catch (error) {
+      console.error('❌ خطأ في إعداد رؤوس ورقة تسعير الموردين:', error);
+      throw error;
+    }
+  }
+
+  /**
    * تحديث صف تسعير المورد مع البيانات المحسنة
    */
   async updateSupplierPricingRow(itemId: string, pricingData: any): Promise<void> {

@@ -222,6 +222,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database with default data
   await initializeDatabase();
   
+  // تحديث رؤوس ورقة تسعير الموردين مع الحقول الجديدة (بعد تهيئة Google Sheets)
+  setTimeout(async () => {
+    try {
+      await googleSheetsWriter.setupSupplierPricingSheetHeaders();
+      console.log('✅ تم تحديث رؤوس ورقة تسعير الموردين بنجاح');
+    } catch (error) {
+      console.error('❌ خطأ في تحديث رؤوس ورقة تسعير الموردين:', error);
+    }
+  }, 3000); // انتظار 3 ثوانٍ لضمان تهيئة Google Sheets
+  
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
   
