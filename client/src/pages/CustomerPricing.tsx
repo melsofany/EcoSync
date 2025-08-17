@@ -39,7 +39,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
         const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data`);
         const comprehensiveData = await comprehensiveResponse.json();
         setDetailedPricing(comprehensiveData);
-        console.log(`📊 Loaded ${comprehensiveData.length} records for item analysis`);
+        console.log(`📊 تم تحميل البيانات للبند ${item.id}:`, comprehensiveData);
       } catch (error) {
         console.error('Fetch error:', error);
       } finally {
@@ -160,7 +160,9 @@ function ItemDetailedPricing({ item }: { item: any }) {
             </div>
             <div>
               <label className="text-sm font-medium">LINE ITEM:</label>
-              <p className="font-mono text-purple-600">{detailedPricing.lineItem || "غير محدد"}</p>
+              <p className="font-mono text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                {detailedPricing.lineItem || "غير محدد"}
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium">رقم القطعة:</label>
@@ -169,6 +171,18 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <div className="col-span-3">
               <label className="text-sm font-medium">الوصف:</label>
               <p className="text-sm">{detailedPricing.description || "غير محدد"}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">الكمية:</label>
+              <p className="font-semibold">{detailedPricing.quantity || "1"}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">الوحدة:</label>
+              <p className="font-semibold">{detailedPricing.uom || "EACH"}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">رقم RFQ:</label>
+              <p className="font-mono text-blue-600">{detailedPricing.rfqNumber || "غير محدد"}</p>
             </div>
           </div>
         </div>
