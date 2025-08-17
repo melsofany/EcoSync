@@ -132,6 +132,7 @@ export class GoogleSheetsWriter {
    * مطابقة البند مع البنود الموجودة باستخدام AI
    */
   async findOrCreateItemId(description: string, partNumber?: string): Promise<string> {
+    console.log(`🔧 [DEBUG] تم استدعاء findOrCreateItemId للبند: "${description}" | Part: "${partNumber}"`);
     try {
       // قراءة البنود الموجودة
       const response = await this.sheets.spreadsheets.values.get({
@@ -151,12 +152,17 @@ export class GoogleSheetsWriter {
           rowIndex: index + 2
         }));
 
+      console.log(`🔍 بحث عن مطابقة للبند: ${description} | Part: ${partNumber || 'غير محدد'}`);
+      console.log(`📊 عدد البنود الموجودة للمقارنة: ${existingItems.length}`);
+      
       // مطابقة بـ AI باستخدام DeepSeek
       const matchResult = await this.findSimilarItemWithAI(description, partNumber, existingItems);
       
       if (matchResult.found) {
-        console.log(`🔍 تم العثور على بند مطابق: ${matchResult.itemId}`);
+        console.log(`🔍 ✅ تم العثور على بند مطابق: ${matchResult.itemId}`);
         return matchResult.itemId;
+      } else {
+        console.log(`🔍 ❌ لم يتم العثور على مطابقة، سيتم إنشاء بند جديد`);
       }
 
       // إنشاء معرف جديد
@@ -181,6 +187,19 @@ export class GoogleSheetsWriter {
         return await this.findSimilarItemSimple(description, partNumber, existingItems);
       }
 
+      // إذا لم توجد بنود للمقارنة
+      if (existingItems.length === 0) {
+        console.log('📋 لا توجد بنود موجودة للمقارنة');
+        return { found: false, itemId: '' };
+      }
+
+      // فلترة البنود الأكثر تشابهاً أولاً للمقارنة
+      const filteredItems = this.getRelevantItemsForAI(description, partNumber, existingItems, 15);
+      console.log(`🤖 مقارنة مع ${filteredItems.length} بند باستخدام DeepSeek AI (من أصل ${existingItems.length})`);
+      
+      // طباعة البنود المختارة للمقارنة
+      console.log(`📋 البنود المختارة للمقارنة:`, filteredItems.slice(0, 5).map(item => `${item.id}: ${item.description} | Part: ${item.partNumber || 'N/A'}`));
+
       const prompt = `
 قارن هذا البند الجديد مع البنود الموجودة:
 
@@ -189,7 +208,7 @@ export class GoogleSheetsWriter {
 - رقم القطعة: ${partNumber || 'غير محدد'}
 
 البنود الموجودة:
-${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.partNumber}`).join('\n')}
+${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.partNumber || 'غير محدد'}`).join('\n')}
 
 هل يوجد بند مطابق أو مشابه جداً؟ إذا كان الجواب نعم، أعطني معرف البند فقط.
 إذا كان الجواب لا، أجب بـ "لا يوجد".
@@ -215,21 +234,34 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         })
       });
 
+      if (!response.ok) {
+        console.error(`❌ خطأ في API DeepSeek: ${response.status} - ${response.statusText}`);
+        return await this.findSimilarItemSimple(description, partNumber, existingItems);
+      }
+
       const data = await response.json();
       const aiResult = data.choices?.[0]?.message?.content?.trim();
+      
+      console.log(`🤖 DeepSeek Response:`, JSON.stringify(data.choices?.[0]?.message, null, 2));
 
       console.log(`🤖 نتيجة AI: ${aiResult}`);
 
       // تحليل نتيجة AI
-      if (aiResult && aiResult !== 'لا يوجد' && aiResult.startsWith('P-')) {
-        const itemId = aiResult.split(':')[0].trim();
-        // التحقق من وجود المعرف في القائمة
-        const foundItem = existingItems.find(item => item.id === itemId);
-        if (foundItem) {
-          return { found: true, itemId };
+      if (aiResult && aiResult !== 'لا يوجد' && aiResult.includes('P-')) {
+        // استخراج معرف البند من النتيجة
+        const match = aiResult.match(/P-\d{7}/);
+        if (match) {
+          const itemId = match[0];
+          // التحقق من وجود المعرف في القائمة
+          const foundItem = existingItems.find(item => item.id === itemId);
+          if (foundItem) {
+            console.log(`✅ AI وجد مطابقة: ${itemId} - ${foundItem.description}`);
+            return { found: true, itemId };
+          }
         }
       }
 
+      console.log(`❌ AI لم يجد مطابقة مقبولة. نتيجة AI: "${aiResult}"`);
       return { found: false, itemId: '' };
     } catch (error) {
       console.error('❌ خطأ في مطابقة AI:', (error as Error).message);
@@ -293,6 +325,68 @@ ${existingItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
     const newId = `P-${nextNumber.toString().padStart(7, '0')}`;
     
     return newId;
+  }
+
+  /**
+   * فلترة البنود الأكثر تشابهاً للمقارنة مع AI
+   */
+  private getRelevantItemsForAI(description: string, partNumber: string | undefined, allItems: any[], maxItems: number = 15): any[] {
+    console.log(`🎯 بحث ذكي عن المطابقات للبند: "${description}" | Part: "${partNumber}"`);
+    console.log(`📊 إجمالي البنود المتاحة للبحث: ${allItems.length}`);
+    const relevantItems: Array<{item: any, score: number}> = [];
+    
+    // تحويل النص للبحث
+    const searchDesc = description.toLowerCase();
+    const searchPart = partNumber?.toLowerCase() || '';
+    
+    for (const item of allItems) {
+      let score = 0;
+      
+      // مطابقة رقم القطعة (أولوية عالية)
+      if (searchPart && item.partNumber) {
+        const itemPart = item.partNumber.toLowerCase();
+        if (itemPart === searchPart) {
+          score += 1000; // مطابقة كاملة
+        } else if (itemPart.includes(searchPart) || searchPart.includes(itemPart)) {
+          score += 500; // مطابقة جزئية
+        }
+      }
+      
+      // مطابقة الوصف
+      if (item.description) {
+        const itemDesc = item.description.toLowerCase();
+        
+        // البحث عن كلمات مشتركة
+        const descWords = searchDesc.split(/\s+/).filter(w => w.length > 2);
+        const itemWords = itemDesc.split(/\s+/).filter(w => w.length > 2);
+        
+        let commonWords = 0;
+        for (const word of descWords) {
+          if (itemWords.some(iw => iw.includes(word) || word.includes(iw))) {
+            commonWords++;
+            score += 10;
+          }
+        }
+        
+        // مكافأة إضافية للمطابقات الدقيقة للكلمات المهمة
+        const importantWords = ['contactor', 'schneider', 'lc1d', 'switch', 'relay'];
+        for (const word of importantWords) {
+          if (searchDesc.includes(word) && itemDesc.includes(word)) {
+            score += 50;
+          }
+        }
+      }
+      
+      if (score > 0) {
+        relevantItems.push({ item, score });
+      }
+    }
+    
+    // ترتيب حسب النقاط وإرجاع أفضل العناصر
+    return relevantItems
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxItems)
+      .map(ri => ri.item);
   }
 
   /**
