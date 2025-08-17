@@ -449,8 +449,21 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       console.log(`🆔 معرفات البنود المنشأة: ${createdItemIds.join(', ')}`);
       
       // إرسال البنود تلقائياً إلى صفحات التسعير
-      await this.sendItemsToSupplierPricing(quotation, createdItemIds);
-      await this.sendItemsToCustomerPricing(quotation, createdItemIds);
+      const enrichedItems = quotation.items.map((item, index) => ({
+        item: {
+          itemNumber: createdItemIds[index],
+          partNumber: item.partNumber,
+          description: item.description,
+          unit: item.uom || 'EACH'
+        },
+        quantity: item.quantity,
+        quotation: quotation
+      }));
+      
+      console.log(`📋 إرسال ${enrichedItems.length} بند إلى صفحات التسعير...`);
+      await this.sendItemsToSupplierPricing(enrichedItems);
+      await this.sendItemsToCustomerPricing(enrichedItems);
+      console.log(`✅ تم إرسال البنود إلى كلا صفحتي التسعير بنجاح`);
       
       return { success: true, itemIds: createdItemIds };
     } catch (error) {

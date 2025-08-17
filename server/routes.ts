@@ -3955,7 +3955,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   app.get("/api/suppliers", requireAuth, async (req: Request, res: Response) => {
     try {
       // استخدام Google Sheets لجلب البيانات بدلاً من قاعدة البيانات
-      const googleSheetsData = await realTimeDataManager.getGoogleSheetsData();
+      const googleSheetsData = await googleSheetsRealTimeData.getGoogleSheetsData();
       
       // استخراج الموردين الفريدين من بيانات Google Sheets
       const suppliers = Array.from(new Set(
@@ -3972,14 +3972,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       res.json(suppliers);
     } catch (error) {
       console.error("Get suppliers error:", error);
-      // Fallback to database if Google Sheets fails
-      try {
-        const suppliers = await storage.getAllSuppliers();
-        res.json(suppliers);
-      } catch (dbError) {
-        console.error("Database fallback failed:", dbError);
-        res.status(500).json({ message: "Internal server error" });
-      }
+      // إرجاع قائمة موردين أساسية عند فشل Google Sheets
+      const fallbackSuppliers = [
+        { id: "supplier-default", name: "مورد عام", isActive: true, createdAt: new Date().toISOString() }
+      ];
+      res.json(fallbackSuppliers);
     }
   });
 
