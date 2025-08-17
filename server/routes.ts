@@ -4592,8 +4592,19 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get detailed pricing information for an item
   app.get("/api/items/:itemId/detailed-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
-      const detailedPricing = await storage.getDetailedPricingForItem(req.params.itemId);
-      res.json(detailedPricing);
+      // Get item details from Google Sheets directly
+      const itemData = await googleSheetsRealTimeData.getItemDetailsById(req.params.itemId);
+      res.json(itemData || {
+        itemId: req.params.itemId,
+        itemNumber: req.params.itemId,
+        partNumber: '',
+        description: '',
+        lineItem: '',
+        uom: 'EACH',
+        quantity: 1,
+        rfqNumber: '',
+        clientName: ''
+      });
     } catch (error) {
       console.error("Error fetching detailed pricing:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -4603,8 +4614,21 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get comprehensive item data like Excel table (unified version)
   app.get("/api/items/:itemId/comprehensive-data", requireAuth, async (req: Request, res: Response) => {
     try {
-      const comprehensiveData = await storage.getItemComprehensiveDataUnified(req.params.itemId);
-      res.json(comprehensiveData);
+      // Get comprehensive data from Google Sheets directly
+      const itemData = await googleSheetsRealTimeData.getItemDetailsById(req.params.itemId);
+      res.json(itemData || {
+        itemId: req.params.itemId,
+        itemNumber: req.params.itemId,
+        lineItem: '',
+        partNumber: '',
+        description: '',
+        uom: 'EACH',
+        quantity: 1,
+        rfqNumber: '',
+        clientName: '',
+        requestDate: '',
+        expiryDate: ''
+      });
     } catch (error) {
       console.error("Error fetching comprehensive item data:", error);
       res.status(500).json({ message: "Internal server error" });

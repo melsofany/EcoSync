@@ -615,6 +615,59 @@ export class GoogleSheetsRealtimeData {
       return [];
     }
   }
+
+  /**
+   * الحصول على تفاصيل بند بواسطة معرف البند
+   */
+  async getItemDetailsById(itemId: string): Promise<any> {
+    try {
+      if (!this.sheets) {
+        console.log('❌ Google Sheets غير مُهيأ');
+        return null;
+      }
+
+      // البحث في الصفحة الرئيسية DATA
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A2:Z1000',
+      });
+
+      const rows = response.data.values || [];
+      console.log(`🔍 البحث عن البند ${itemId} في ${rows.length} صف`);
+
+      // البحث عن البند بالمعرف
+      for (const row of rows) {
+        if (row[0] === itemId) { // العمود A يحتوي على Item Number
+          const itemData = {
+            itemId: row[0] || '',
+            itemNumber: row[0] || '',
+            lineItem: row[2] || '', // العمود C - LINE ITEM
+            partNumber: row[3] || '', // العمود D - PART NO
+            description: row[4] || '', // العمود E - Description
+            uom: row[1] || 'EACH', // العمود B - UOM
+            quantity: row[7] || '1', // العمود H - Quantity
+            rfqNumber: row[5] || '', // العمود F - RFQ Number
+            clientName: row[16] || '', // العمود Q - Client Name
+            requestDate: row[6] || '', // العمود G - Request Date
+            expiryDate: row[9] || '', // العمود J - Expiry Date
+            // إضافة المزيد من التفاصيل
+            supplierPrice: row[11] || '', // العمود L - Supplier Unit Price
+            customerPrice: row[14] || '', // العمود O - Customer Unit Price
+            profitMargin: row[15] || '' // العمود P - Profit Margin
+          };
+          
+          console.log(`✅ تم العثور على البند ${itemId}:`, itemData);
+          return itemData;
+        }
+      }
+
+      console.log(`❌ لم يتم العثور على البند ${itemId}`);
+      return null;
+    } catch (error) {
+      console.error('❌ خطأ في الحصول على تفاصيل البند:', (error as Error).message);
+      return null;
+    }
+  }
 }
 
 export const googleSheetsRealtimeData = new GoogleSheetsRealtimeData();

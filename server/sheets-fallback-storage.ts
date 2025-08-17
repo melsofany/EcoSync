@@ -264,6 +264,46 @@ export class SheetsFallbackStorage {
   async getQuotationRequest(id: string) {
     return this.getQuotationById(id);
   }
+
+  // Add method to get pricing history for an item
+  async getPricingHistoryForItem(itemId: string) {
+    // For Google Sheets fallback, we'll return empty for now as this needs real-time data
+    return [];
+  }
+
+  // Add missing detailed pricing method
+  async getDetailedPricingForItem(itemId: string) {
+    // This should get detailed pricing information for an item
+    // For now return basic structure - real implementation should use Google Sheets
+    return {
+      itemId,
+      itemNumber: itemId,
+      partNumber: '',
+      description: '',
+      supplierPricing: [],
+      customerPricing: [],
+      profitMargin: 0
+    };
+  }
+
+  // Add missing comprehensive data method
+  async getItemComprehensiveDataUnified(itemId: string) {
+    // This should get comprehensive item data like Excel table
+    // For now return basic structure - real implementation should use Google Sheets
+    return {
+      itemId,
+      itemNumber: itemId,
+      lineItem: '',
+      partNumber: '',
+      description: '',
+      uom: 'EACH',
+      quantity: 1,
+      rfqNumber: '',
+      clientName: '',
+      requestDate: '',
+      expiryDate: ''
+    };
+  }
 }
 
 export const sheetsFallbackStorage = new SheetsFallbackStorage();
