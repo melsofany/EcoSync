@@ -95,7 +95,7 @@ export default function NewSupplierPricingModal({
   // Create pricing mutation
   const createPricingMutation = useMutation({
     mutationFn: async (data: SupplierPricingForm) => {
-      const response = await apiRequest("POST", "/api/supplier-pricing", data);
+      const response = await apiRequest("/api/supplier-pricing", "POST", data);
       return response.json();
     },
     onSuccess: () => {
