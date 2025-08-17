@@ -448,10 +448,222 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       console.log(`📊 طلب التسعير: ${quotation.rfqNumber} | العميل: ${quotation.clientName}`);
       console.log(`🆔 معرفات البنود المنشأة: ${createdItemIds.join(', ')}`);
       
+      // إرسال البنود تلقائياً إلى صفحات التسعير
+      await this.sendItemsToSupplierPricing(quotation, createdItemIds);
+      await this.sendItemsToCustomerPricing(quotation, createdItemIds);
+      
       return { success: true, itemIds: createdItemIds };
     } catch (error) {
       console.error('❌ خطأ في إدراج طلب التسعير:', (error as Error).message);
       return { success: false, itemIds: [] };
+    }
+  }
+
+  /**
+   * إرسال البنود إلى صفحة تسعير الموردين
+   */
+  async sendItemsToSupplierPricing(quotation: NewQuotation, itemIds: string[]): Promise<void> {
+    try {
+      console.log(`📤 إرسال ${itemIds.length} بند إلى صفحة تسعير الموردين...`);
+
+      // البحث عن صفحة تسعير الموردين أو إنشاؤها
+      const supplierSheetName = 'تسعير_الموردين';
+      const supplierHeaders = [
+        'Item Number', 'Part Number', 'Description', 'UOM', 'Quantity',
+        'RFQ Number', 'Client Name', 'Request Date', 'Expiry Date',
+        'Supplier Name', 'Unit Price', 'Total Price', 'Currency',
+        'Delivery Time', 'Notes', 'Status'
+      ];
+      
+      await this.createPricingSheetIfNotExists(supplierSheetName, supplierHeaders);
+      
+      // إنشاء البيانات للإدراج
+      const rows = [];
+      
+      for (let i = 0; i < quotation.items.length; i++) {
+        const item = quotation.items[i];
+        const itemId = itemIds[i];
+        
+        const row = [
+          itemId,                           // A - Item Number
+          item.partNumber || '',            // B - Part Number
+          item.description,                 // C - Description
+          item.uom || 'EACH',              // D - UOM
+          item.quantity.toString(),         // E - Quantity
+          quotation.rfqNumber,             // F - RFQ Number
+          quotation.clientName,            // G - Client Name
+          quotation.requestDate,           // H - Request Date
+          quotation.expiryDate || '',      // I - Expiry Date
+          '',                              // J - Supplier Name (فارغ للتعبئة)
+          '',                              // K - Unit Price (فارغ للتعبئة)
+          '',                              // L - Total Price (فارغ للحساب التلقائي)
+          '',                              // M - Currency (فارغ للتعبئة)
+          '',                              // N - Delivery Time (فارغ للتعبئة)
+          '',                              // O - Notes (فارغ للتعبئة)
+          'جديد'                           // P - Status (جديد/معتمد/مرفوض)
+        ];
+        rows.push(row);
+      }
+
+      // البحث عن آخر صف فارغ في صفحة تسعير الموردين
+      const supplierLastRow = await this.findLastRowInSheet(supplierSheetName);
+      const supplierRange = `${supplierSheetName}!A${supplierLastRow + 1}:P${supplierLastRow + rows.length}`;
+
+      // إدراج البيانات
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: supplierRange,
+        valueInputOption: 'RAW',
+        resource: {
+          values: rows
+        }
+      });
+
+      console.log(`✅ تم إرسال ${rows.length} بند إلى صفحة تسعير الموردين`);
+    } catch (error) {
+      console.error('❌ خطأ في إرسال البنود إلى تسعير الموردين:', error);
+    }
+  }
+
+  /**
+   * إرسال البنود إلى صفحة تسعير العملاء
+   */
+  async sendItemsToCustomerPricing(quotation: NewQuotation, itemIds: string[]): Promise<void> {
+    try {
+      console.log(`📤 إرسال ${itemIds.length} بند إلى صفحة تسعير العملاء...`);
+
+      // البحث عن صفحة تسعير العملاء أو إنشاؤها
+      const customerSheetName = 'تسعير_العملاء';
+      const customerHeaders = [
+        'Item Number', 'Part Number', 'Description', 'UOM', 'Quantity',
+        'RFQ Number', 'Client Name', 'Request Date', 'Expiry Date',
+        'Customer Unit Price', 'Customer Total Price', 'Supplier Unit Price',
+        'Profit Margin %', 'Currency', 'Notes', 'Status'
+      ];
+      
+      await this.createPricingSheetIfNotExists(customerSheetName, customerHeaders);
+      
+      // إنشاء البيانات للإدراج
+      const rows = [];
+      
+      for (let i = 0; i < quotation.items.length; i++) {
+        const item = quotation.items[i];
+        const itemId = itemIds[i];
+        
+        const row = [
+          itemId,                           // A - Item Number
+          item.partNumber || '',            // B - Part Number
+          item.description,                 // C - Description
+          item.uom || 'EACH',              // D - UOM
+          item.quantity.toString(),         // E - Quantity
+          quotation.rfqNumber,             // F - RFQ Number
+          quotation.clientName,            // G - Client Name
+          quotation.requestDate,           // H - Request Date
+          quotation.expiryDate || '',      // I - Expiry Date
+          '',                              // J - Customer Unit Price (فارغ للتعبئة)
+          '',                              // K - Customer Total Price (فارغ للحساب التلقائي)
+          '',                              // L - Supplier Unit Price (مرجع من تسعير الموردين)
+          '',                              // M - Profit Margin % (فارغ للتعبئة)
+          '',                              // N - Currency (فارغ للتعبئة)
+          '',                              // O - Notes (فارغ للتعبئة)
+          'في انتظار تسعير الموردين'        // P - Status (في انتظار تسعير الموردين/جاهز للتسعير/معتمد/مرسل)
+        ];
+        rows.push(row);
+      }
+
+      // البحث عن آخر صف فارغ في صفحة تسعير العملاء
+      const customerLastRow = await this.findLastRowInSheet(customerSheetName);
+      const customerRange = `${customerSheetName}!A${customerLastRow + 1}:P${customerLastRow + rows.length}`;
+
+      // إدراج البيانات
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: customerRange,
+        valueInputOption: 'RAW',
+        resource: {
+          values: rows
+        }
+      });
+
+      console.log(`✅ تم إرسال ${rows.length} بند إلى صفحة تسعير العملاء`);
+    } catch (error) {
+      console.error('❌ خطأ في إرسال البنود إلى تسعير العملاء:', error);
+    }
+  }
+
+  /**
+   * العثور على آخر صف في صفحة محددة
+   */
+  private async findLastRowInSheet(sheetName: string): Promise<number> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `${sheetName}!A:A`
+      });
+
+      const values = response.data.values || [];
+      
+      // العثور على آخر صف غير فارغ
+      let lastRow = 1; // البداية من الصف 2 (إذا كان الصف 1 يحتوي على العناوين)
+      
+      for (let i = 0; i < values.length; i++) {
+        if (values[i] && values[i][0] && values[i][0].trim()) {
+          lastRow = i + 1;
+        }
+      }
+
+      return lastRow;
+    } catch (error) {
+      console.error(`❌ خطأ في العثور على آخر صف في ${sheetName}:`, error);
+      return 1; // إرجاع الصف الثاني إذا فشل
+    }
+  }
+
+  /**
+   * إنشاء صفحة تسعير جديدة إذا لم تكن موجودة
+   */
+  private async createPricingSheetIfNotExists(sheetName: string, headers: string[]): Promise<void> {
+    try {
+      // التحقق من وجود الصفحة
+      const spreadsheet = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId
+      });
+
+      const sheetExists = spreadsheet.data.sheets.some((sheet: any) => 
+        sheet.properties.title === sheetName
+      );
+
+      if (!sheetExists) {
+        console.log(`📄 إنشاء صفحة جديدة: ${sheetName}`);
+        
+        // إنشاء الصفحة
+        await this.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: this.spreadsheetId,
+          resource: {
+            requests: [{
+              addSheet: {
+                properties: {
+                  title: sheetName
+                }
+              }
+            }]
+          }
+        });
+
+        // إضافة العناوين
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `${sheetName}!A1:${String.fromCharCode(64 + headers.length)}1`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [headers]
+          }
+        });
+
+        console.log(`✅ تم إنشاء صفحة ${sheetName} مع العناوين`);
+      }
+    } catch (error) {
+      console.error(`❌ خطأ في إنشاء صفحة ${sheetName}:`, error);
     }
   }
 }
