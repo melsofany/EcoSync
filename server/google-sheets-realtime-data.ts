@@ -513,11 +513,15 @@ export class GoogleSheetsRealtimeData {
       const sheetName = 'تسعير_الموردين';
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A2:Y1000`, // توسيع النطاق إلى Y لاستيعاب البيانات الجديدة
+        range: `${sheetName}!A2:AA1000`, // توسيع النطاق إلى AA لاستيعاب جميع الأعمدة
       });
 
       const rows = response.data.values || [];
       console.log(`📊 تم قراءة ${rows.length} صف من صفحة تسعير الموردين`);
+      
+      if (rows.length > 0) {
+        console.log(`🔍 مثال على صف: الحالة في العمود Z (فهرس 25): "${rows[0][25] || 'فارغ'}"`);
+      }
 
       // تحويل البيانات إلى تنسيق مناسب مع الحقول الجديدة
       const items = rows.map((row: any[], index: number) => ({
@@ -551,8 +555,9 @@ export class GoogleSheetsRealtimeData {
         paymentTerms: row[22] || '', // شروط الدفع
         warrantyPeriod: row[23] || '', // فترة الضمان
         notes: row[24] || '',
-        status: row[25] || 'جديد'
-      })).filter(item => 
+        status: row[25] || 'جديد',
+        employeeName: row[26] || ''
+      })).filter((item: any) => 
         item.itemNumber && // البند يجب أن يحتوي على رقم
         item.status !== "مُسعّر" // عدم إظهار البنود المُسعّرة
       );
@@ -602,7 +607,7 @@ export class GoogleSheetsRealtimeData {
         currency: row[13] || '',
         notes: row[14] || '',
         status: row[15] || 'في انتظار تسعير الموردين'
-      })).filter(item => item.itemNumber); // تصفية البنود الفارغة
+      })).filter((item: any) => item.itemNumber); // تصفية البنود الفارغة
 
       return items;
     } catch (error) {

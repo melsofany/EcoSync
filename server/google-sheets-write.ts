@@ -828,7 +828,7 @@ ${itemsList}
       });
 
       const existingSheet = sheetsResponse.data.sheets?.find(
-        sheet => sheet.properties?.title === sheetName
+        (sheet: any) => sheet.properties?.title === sheetName
       );
 
       if (!existingSheet) {
