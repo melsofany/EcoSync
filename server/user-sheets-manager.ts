@@ -102,7 +102,7 @@ export class UserSheetsManager {
       // مسح البيانات القديمة
       await this.sheets.spreadsheets.values.clear({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A:P'
+        range: 'USERS!A:P'
       });
 
       // إضافة العناوين
@@ -153,7 +153,7 @@ export class UserSheetsManager {
 
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A2:P2',
+        range: 'USERS!A2:P2',
         valueInputOption: 'RAW',
         resource: { values: [adminUser] }
       });
@@ -176,7 +176,7 @@ export class UserSheetsManager {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A2:P1000'
+        range: 'USERS!A2:P1000'
       });
 
       if (!response.data.values || response.data.values.length === 0) {
@@ -288,11 +288,11 @@ export class UserSheetsManager {
       // تحديث الحقول المحددة
       const updates = [
         {
-          range: `المستخدمين!K${rowIndex}`, // isOnline
+          range: `USERS!K${rowIndex}`, // isOnline
           values: [[isOnline ? 'TRUE' : 'FALSE']]
         },
         {
-          range: `المستخدمين!M${rowIndex}`, // lastActivityAt
+          range: `USERS!M${rowIndex}`, // lastActivityAt
           values: [[now]]
         }
       ];
@@ -393,7 +393,7 @@ export class UserSheetsManager {
 
       await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'المستخدمين!A:P',
+        range: 'USERS!A:P',
         valueInputOption: 'RAW',
         resource: { values: [newUser] }
       });
