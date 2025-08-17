@@ -129,7 +129,7 @@ export class GoogleSheetsWriter {
   }
 
   /**
-   * مطابقة البند مع البنود الموجودة باستخدام AI
+   * مطابقة البند مع البنود الموجودة بطريقة سريعة ومبسطة
    */
   async findOrCreateItemId(description: string, partNumber?: string): Promise<string> {
     console.log(`🔧 [DEBUG] تم استدعاء findOrCreateItemId للبند: "${description}" | Part: "${partNumber}"`);
@@ -155,8 +155,8 @@ export class GoogleSheetsWriter {
       console.log(`🔍 بحث عن مطابقة للبند: ${description} | Part: ${partNumber || 'غير محدد'}`);
       console.log(`📊 عدد البنود الموجودة للمقارنة: ${existingItems.length}`);
       
-      // مطابقة بـ AI باستخدام DeepSeek
-      const matchResult = await this.findSimilarItemWithAI(description, partNumber, existingItems);
+      // مطابقة سريعة بدون AI
+      const matchResult = await this.findSimilarItemFast(description, partNumber, existingItems);
       
       if (matchResult.found) {
         console.log(`🔍 ✅ تم العثور على بند مطابق: ${matchResult.itemId}`);
