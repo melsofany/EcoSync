@@ -257,14 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Middleware to log activity and track IP
   const logActivity = async (req: Request, action: string, entityType?: string, entityId?: string, details?: string) => {
     if (req.session.user) {
-      await storage.logActivity({
-        userId: req.session.user.id,
-        action,
-        entityType,
-        entityId,
-        details,
-        ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
-      });
+      await storage.logActivity(req.session.user.id, action, entityType || '', entityId || '', details || '');
     }
   };
 
@@ -4442,6 +4435,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             }
           );
           
+          console.log(`🔍 محاولة تسجيل النشاط للمستخدم: ${req.session.user?.username} (${req.session.user?.fullName})`);
           await logActivity(req, "create_supplier_pricing", "pricing", req.body.itemId, 
             `Added enhanced supplier pricing for item ${req.body.itemId} - Supplier: ${pricingData.supplierName}`);
 

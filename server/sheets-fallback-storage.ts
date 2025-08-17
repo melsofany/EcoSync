@@ -35,8 +35,15 @@ export class SheetsFallbackStorage {
   }
   
   async logActivity(userId: string, action: string, resourceType: string, resourceId: string, description: string) {
-    // Stub for activity logging
-    console.log(`📝 نشاط: ${action} - ${description}`);
+    // محاولة الحصول على اسم المستخدم من userId
+    try {
+      const users = await this.getAllUsers();
+      const user = users.find(u => u.id === userId);
+      const userName = user?.fullName || user?.username || userId;
+      console.log(`📝 نشاط: ${userName} - ${description}`);
+    } catch (error) {
+      console.log(`📝 نشاط: ${userId} - ${description}`);
+    }
   }
   
   private loadSheetsData() {
