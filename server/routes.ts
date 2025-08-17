@@ -4592,11 +4592,35 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get detailed pricing information for an item
   app.get("/api/items/:itemId/detailed-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
-      // Get item details from Google Sheets directly
-      const itemData = await googleSheetsRealTimeData.getItemDetailsById(req.params.itemId);
+      const itemId = req.params.itemId;
+      
+      // إذا كان المعرف يبدأ بـ customer- فنحتاج للحصول على رقم البند الحقيقي
+      if (itemId.startsWith('customer-')) {
+        const customerItems = await googleSheetsRealTimeData.getItemsReadyForCustomerPricing();
+        const targetItem = customerItems.find((item: any) => item.id === itemId);
+        
+        if (targetItem && targetItem.itemNumber) {
+          const itemData = await googleSheetsRealTimeData.getItemDetailsById(targetItem.itemNumber);
+          res.json(itemData || {
+            itemId: targetItem.itemNumber,
+            itemNumber: targetItem.itemNumber,
+            partNumber: targetItem.partNumber || '',
+            description: targetItem.description || '',
+            lineItem: '',
+            uom: targetItem.uom || 'EACH',
+            quantity: targetItem.quantity || 1,
+            rfqNumber: targetItem.rfqNumber || '',
+            clientName: targetItem.clientName || ''
+          });
+          return;
+        }
+      }
+      
+      // البحث المباشر للبنود العادية
+      const itemData = await googleSheetsRealTimeData.getItemDetailsById(itemId);
       res.json(itemData || {
-        itemId: req.params.itemId,
-        itemNumber: req.params.itemId,
+        itemId: itemId,
+        itemNumber: itemId,
         partNumber: '',
         description: '',
         lineItem: '',
@@ -4614,11 +4638,37 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Get comprehensive item data like Excel table (unified version)
   app.get("/api/items/:itemId/comprehensive-data", requireAuth, async (req: Request, res: Response) => {
     try {
-      // Get comprehensive data from Google Sheets directly
-      const itemData = await googleSheetsRealTimeData.getItemDetailsById(req.params.itemId);
+      const itemId = req.params.itemId;
+      
+      // إذا كان المعرف يبدأ بـ customer- فنحتاج للحصول على رقم البند الحقيقي
+      if (itemId.startsWith('customer-')) {
+        const customerItems = await googleSheetsRealTimeData.getItemsReadyForCustomerPricing();
+        const targetItem = customerItems.find((item: any) => item.id === itemId);
+        
+        if (targetItem && targetItem.itemNumber) {
+          const itemData = await googleSheetsRealTimeData.getItemDetailsById(targetItem.itemNumber);
+          res.json(itemData || {
+            itemId: targetItem.itemNumber,
+            itemNumber: targetItem.itemNumber,
+            lineItem: '',
+            partNumber: targetItem.partNumber || '',
+            description: targetItem.description || '',
+            uom: targetItem.uom || 'EACH',
+            quantity: targetItem.quantity || 1,
+            rfqNumber: targetItem.rfqNumber || '',
+            clientName: targetItem.clientName || '',
+            requestDate: targetItem.requestDate || '',
+            expiryDate: targetItem.expiryDate || ''
+          });
+          return;
+        }
+      }
+      
+      // البحث المباشر للبنود العادية
+      const itemData = await googleSheetsRealTimeData.getItemDetailsById(itemId);
       res.json(itemData || {
-        itemId: req.params.itemId,
-        itemNumber: req.params.itemId,
+        itemId: itemId,
+        itemNumber: itemId,
         lineItem: '',
         partNumber: '',
         description: '',
