@@ -676,19 +676,12 @@ export class GoogleSheetsRealtimeData {
         const rowPartNumber = row[3] || ''; // العمود D - PART NO
         const rowDescription = row[4] || ''; // العمود E - Description
 
-        // تحسين البحث - البحث بناءً على PART NO أولاً ثم RFQ
-        const partNumberMatch = targetItemData?.partNumber && 
-          (rowPartNumber === targetItemData.partNumber || 
-           rowDescription.includes(targetItemData.partNumber));
-
-        const itemNumberMatch = rowItemNumber === itemId;
-        
-        // مطابقة مرونة أكبر
-        if (partNumberMatch || itemNumberMatch) {
-          console.log(`🔍 تم العثور على مطابقة في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}`);
+        // البحث المحدد: مطابقة دقيقة لمعرف البند أولاً
+        if (rowItemNumber === itemId) {
+          console.log(`🎯 مطابقة دقيقة لمعرف البند في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}, LINE_ITEM=${row[2]}`);
           
-          // التحقق من RFQ إذا كان متاحاً، وإلا استخدم المطابقة الأولى
-          if (!rfqNumber || rowRfqNumber === rfqNumber || partNumberMatch) {
+          // إعطاء أولوية للمطابقة مع RFQ الصحيح إذا كان متاحاً
+          if (row[2] && row[2].trim() !== '') { // التأكد من وجود LINE ITEM
           
           const itemData = {
             itemId: itemId,
@@ -707,9 +700,39 @@ export class GoogleSheetsRealtimeData {
             profitMargin: row[15] || '' // العمود P - Profit Margin
           };
           
-            console.log(`✅ تم العثور على البند ${itemId}:`, itemData);
+            console.log(`✅ تم العثور على البند ${itemId} مع LINE ITEM:`, itemData);
             return itemData;
           }
+        }
+        
+        // البحث الثانوي بناءً على PART NO كبديل
+        const partNumberMatch = targetItemData?.partNumber && 
+          targetItemData.partNumber.trim() !== '' &&
+          (rowPartNumber === targetItemData.partNumber || 
+           rowDescription.includes(targetItemData.partNumber));
+
+        if (partNumberMatch && row[2] && row[2].trim() !== '') {
+          console.log(`🔍 مطابقة PART NO في الصف ${i + 2}: RFQ=${rowRfqNumber}, Part=${rowPartNumber}, LINE_ITEM=${row[2]}`);
+          
+          const itemData = {
+            itemId: itemId,
+            itemNumber: itemId,
+            lineItem: row[2] || '', // العمود C - LINE ITEM
+            partNumber: row[3] || '', // العمود D - PART NO
+            description: row[4] || '', // العمود E - Description
+            uom: row[1] || 'EACH', // العمود B - UOM
+            quantity: row[7] || '1', // العمود H - Quantity
+            rfqNumber: row[5] || '', // العمود F - RFQ Number
+            clientName: row[16] || '', // العمود Q - Client Name
+            requestDate: row[6] || '', // العمود G - Request Date
+            expiryDate: row[9] || '', // العمود J - Expiry Date
+            supplierPrice: row[11] || '', // العمود L - Supplier Unit Price
+            customerPrice: row[14] || '', // العمود O - Customer Unit Price
+            profitMargin: row[15] || '' // العمود P - Profit Margin
+          };
+          
+          console.log(`✅ تم العثور على البند ${itemId} عبر PART NO:`, itemData);
+          return itemData;
         }
       }
 
