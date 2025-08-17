@@ -53,7 +53,7 @@ export default function Dashboard() {
   // DeepSeek balance query
   const { data: deepseekBalance, isLoading: balanceLoading } = useQuery({
     queryKey: ["/api/deepseek/balance"],
-    enabled: user?.role === "manager" || user?.role === "it_admin",
+    enabled: !!user, // متاح لجميع المستخدمين المسجلين
     refetchInterval: 60000, // تحديث كل دقيقة
   });
 
@@ -310,13 +310,6 @@ export default function Dashboard() {
                     <p className="text-lg font-bold text-gray-600">تسجيل دخول مطلوب</p>
                     <div className="text-xs text-gray-600 mt-1">
                       سجل دخولك لعرض الرصيد
-                    </div>
-                  </>
-                ) : user.role !== "manager" && user.role !== "it_admin" ? (
-                  <>
-                    <p className="text-lg font-bold text-orange-600">🔒 غير مخول</p>
-                    <div className="text-xs text-orange-600 mt-1">
-                      متاح للمدير ومدير تقنية المعلومات فقط
                     </div>
                   </>
                 ) : balanceLoading ? (

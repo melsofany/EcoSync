@@ -6327,7 +6327,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Get DeepSeek API balance - عرض رصيد DeepSeek
-  app.get("/api/deepseek/balance", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+  app.get("/api/deepseek/balance", requireAuth, async (req: Request, res: Response) => {
     try {
       const apiKey = process.env.DEEPSEEK_API_KEY;
       if (!apiKey) {
