@@ -617,7 +617,7 @@ export class GoogleSheetsRealtimeData {
   }
 
   /**
-   * الحصول على تفاصيل بند بواسطة معرف البند
+   * الحصول على تفاصيل بند بواسطة معرف البند من صفحة تسعير العملاء وربطه بصفحة DATA
    */
   async getItemDetailsById(itemId: string): Promise<any> {
     try {
@@ -626,22 +626,64 @@ export class GoogleSheetsRealtimeData {
         return null;
       }
 
-      // البحث في الصفحة الرئيسية DATA
-      const response = await this.sheets.spreadsheets.values.get({
+      // أولاً: البحث في صفحة تسعير العملاء للحصول على رقم طلب التسعير
+      const customerPricingResponse = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'تسعير_العملاء!A2:Q1000',
+      });
+
+      const customerRows = customerPricingResponse.data.values || [];
+      let rfqNumber = '';
+      let targetItemData: any = null;
+
+      // البحث عن البند في صفحة تسعير العملاء
+      for (const row of customerRows) {
+        if (row[0] === itemId) { // العمود A - Item Number
+          rfqNumber = row[5] || ''; // العمود F - RFQ Number
+          targetItemData = {
+            itemNumber: row[0] || '',
+            partNumber: row[3] || '', // العمود D
+            description: row[4] || '', // العمود E
+            uom: row[1] || 'EACH',
+            quantity: row[7] || '1',
+            clientName: row[16] || ''
+          };
+          break;
+        }
+      }
+
+      if (!rfqNumber) {
+        console.log(`❌ لم يتم العثور على رقم طلب التسعير للبند ${itemId}`);
+        return null;
+      }
+
+      console.log(`🔍 البحث عن البند ${itemId} في طلب التسعير ${rfqNumber}`);
+
+      // ثانياً: البحث في صفحة DATA باستخدام رقم طلب التسعير والبند
+      const dataResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: 'DATA!A2:Z1000',
       });
 
-      const rows = response.data.values || [];
-      console.log(`🔍 البحث عن البند ${itemId} في ${rows.length} صف`);
+      const dataRows = dataResponse.data.values || [];
 
-      // البحث عن البند بالمعرف
-      for (const row of rows) {
-        if (row[0] === itemId) { // العمود A يحتوي على Item Number
+      // البحث عن السجل الذي يحتوي على رقم طلب التسعير والبند المطلوب
+      for (const row of dataRows) {
+        const rowRfqNumber = row[5] || ''; // العمود F - RFQ Number
+        const rowItemNumber = row[0] || ''; // العمود A - Item Number
+        const rowPartNumber = row[3] || ''; // العمود D - PART NO
+        const rowDescription = row[4] || ''; // العمود E - Description
+
+        // مطابقة بناءً على رقم طلب التسعير والبند
+        if (rowRfqNumber === rfqNumber && 
+            (rowItemNumber === itemId || 
+             rowPartNumber === targetItemData?.partNumber ||
+             rowDescription.includes(targetItemData?.partNumber))) {
+          
           const itemData = {
-            itemId: row[0] || '',
-            itemNumber: row[0] || '',
-            lineItem: row[2] || '', // العمود C - LINE ITEM
+            itemId: itemId,
+            itemNumber: itemId,
+            lineItem: row[2] || '', // العمود C - LINE ITEM (هذا ما نريده!)
             partNumber: row[3] || '', // العمود D - PART NO
             description: row[4] || '', // العمود E - Description
             uom: row[1] || 'EACH', // العمود B - UOM
@@ -650,18 +692,17 @@ export class GoogleSheetsRealtimeData {
             clientName: row[16] || '', // العمود Q - Client Name
             requestDate: row[6] || '', // العمود G - Request Date
             expiryDate: row[9] || '', // العمود J - Expiry Date
-            // إضافة المزيد من التفاصيل
             supplierPrice: row[11] || '', // العمود L - Supplier Unit Price
             customerPrice: row[14] || '', // العمود O - Customer Unit Price
             profitMargin: row[15] || '' // العمود P - Profit Margin
           };
           
-          console.log(`✅ تم العثور على البند ${itemId}:`, itemData);
+          console.log(`✅ تم العثور على البند ${itemId} في طلب التسعير ${rfqNumber}:`, itemData);
           return itemData;
         }
       }
 
-      console.log(`❌ لم يتم العثور على البند ${itemId}`);
+      console.log(`❌ لم يتم العثور على البند ${itemId} في صفحة DATA لطلب التسعير ${rfqNumber}`);
       return null;
     } catch (error) {
       console.error('❌ خطأ في الحصول على تفاصيل البند:', (error as Error).message);
