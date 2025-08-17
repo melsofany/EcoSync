@@ -155,8 +155,8 @@ export class GoogleSheetsWriter {
       console.log(`🔍 بحث عن مطابقة للبند: ${description} | Part: ${partNumber || 'غير محدد'}`);
       console.log(`📊 عدد البنود الموجودة للمقارنة: ${existingItems.length}`);
       
-      // مطابقة سريعة بدون AI
-      const matchResult = await this.findSimilarItemFast(description, partNumber, existingItems);
+      // مطابقة سريعة مع AI محسن
+      const matchResult = await this.findSimilarItemWithOptimizedAI(description, partNumber, existingItems);
       
       if (matchResult.found) {
         console.log(`🔍 ✅ تم العثور على بند مطابق: ${matchResult.itemId}`);
@@ -177,43 +177,121 @@ export class GoogleSheetsWriter {
     }
   }
 
+
+
   /**
-   * استخدام DeepSeek AI لمطابقة البنود
+   * نظام مطابقة محسن مع AI - أسرع وأدق
    */
-  private async findSimilarItemWithAI(description: string, partNumber: string | undefined, existingItems: any[]): Promise<{found: boolean, itemId: string}> {
+  private async findSimilarItemWithOptimizedAI(description: string, partNumber: string | undefined, existingItems: any[]): Promise<{found: boolean, itemId: string}> {
+    // أولاً: مطابقة دقيقة برقم القطعة
+    if (partNumber && partNumber.trim()) {
+      const normalizedPart = partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
+      const partMatch = existingItems.find(item => {
+        if (!item.partNumber) return false;
+        const itemPart = item.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
+        return itemPart === normalizedPart;
+      });
+      
+      if (partMatch) {
+        console.log(`🎯 مطابقة دقيقة برقم القطعة: ${partMatch.id}`);
+        return { found: true, itemId: partMatch.id };
+      }
+    }
+
+    // ثانياً: فلترة البنود المرشحة للمطابقة (أفضل 8 بنود فقط)
+    const candidateItems = this.getTopCandidateItems(description, partNumber, existingItems, 8);
+    
+    if (candidateItems.length === 0) {
+      console.log('📋 لا توجد بنود مرشحة للمقارنة');
+      return { found: false, itemId: '' };
+    }
+
+    console.log(`🤖 مقارنة AI مع ${candidateItems.length} بند مرشح فقط`);
+    
+    // ثالثاً: استخدام AI للمطابقة الذكية مع البنود المرشحة فقط
+    return await this.runOptimizedAIComparison(description, partNumber, candidateItems);
+  }
+
+  /**
+   * اختيار أفضل البنود المرشحة للمقارنة
+   */
+  private getTopCandidateItems(description: string, partNumber: string | undefined, allItems: any[], maxItems: number): any[] {
+    const candidates: Array<{item: any, score: number}> = [];
+    const searchDesc = description.toLowerCase();
+    const searchPart = partNumber?.toLowerCase() || '';
+    
+    for (const item of allItems) {
+      let score = 0;
+      
+      // نقاط المطابقة برقم القطعة
+      if (searchPart && item.partNumber) {
+        const itemPart = item.partNumber.toLowerCase();
+        if (itemPart.includes(searchPart) || searchPart.includes(itemPart)) {
+          score += 100;
+        }
+      }
+      
+      // نقاط المطابقة بالوصف
+      if (item.description) {
+        const itemDesc = item.description.toLowerCase();
+        const descWords = searchDesc.split(/\s+/).filter(w => w.length > 2);
+        
+        for (const word of descWords) {
+          if (itemDesc.includes(word)) {
+            score += 10;
+          }
+        }
+        
+        // نقاط إضافية للكلمات المهمة
+        const importantWords = ['contactor', 'schneider', 'lc1d', 'switch', 'relay', 'كونتاكتور', 'مرحل'];
+        for (const word of importantWords) {
+          if (searchDesc.includes(word) && itemDesc.includes(word)) {
+            score += 50;
+          }
+        }
+      }
+      
+      if (score > 0) {
+        candidates.push({ item, score });
+      }
+    }
+    
+    return candidates
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxItems)
+      .map(c => c.item);
+  }
+
+  /**
+   * تشغيل مقارنة AI محسنة مع البنود المرشحة
+   */
+  private async runOptimizedAIComparison(description: string, partNumber: string | undefined, candidateItems: any[]): Promise<{found: boolean, itemId: string}> {
     try {
       if (!process.env.DEEPSEEK_API_KEY) {
-        console.log('⚠️ DeepSeek API Key غير متوفر، سيتم استخدام المطابقة النصية البسيطة');
-        return await this.findSimilarItemSimple(description, partNumber, existingItems);
+        console.log('⚠️ DeepSeek API Key غير متوفر، استخدام المطابقة النصية');
+        return this.findSimilarItemSimple(description, partNumber, candidateItems);
       }
 
-      // إذا لم توجد بنود للمقارنة
-      if (existingItems.length === 0) {
-        console.log('📋 لا توجد بنود موجودة للمقارنة');
-        return { found: false, itemId: '' };
-      }
+      const itemsList = candidateItems.map(item => 
+        `${item.id}: ${item.description} | Part: ${item.partNumber || 'غير محدد'}`
+      ).join('\n');
 
-      // فلترة البنود الأكثر تشابهاً أولاً للمقارنة
-      const filteredItems = this.getRelevantItemsForAI(description, partNumber, existingItems, 15);
-      console.log(`🤖 مقارنة مع ${filteredItems.length} بند باستخدام DeepSeek AI (من أصل ${existingItems.length})`);
-      
-      // طباعة البنود المختارة للمقارنة
-      console.log(`📋 البنود المختارة للمقارنة:`, filteredItems.slice(0, 5).map(item => `${item.id}: ${item.description} | Part: ${item.partNumber || 'N/A'}`));
-
-      const prompt = `
-قارن هذا البند الجديد مع البنود الموجودة:
+      const prompt = `قارن هذا البند الجديد مع البنود الموجودة:
 
 البند الجديد:
+- Part Number: ${partNumber || 'غير محدد'}
 - الوصف: ${description}
-- رقم القطعة: ${partNumber || 'غير محدد'}
 
-البنود الموجودة:
-${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.partNumber || 'غير محدد'}`).join('\n')}
+البنود الموجودة للمقارنة:
+${itemsList}
 
-هل يوجد بند مطابق أو مشابه جداً؟ إذا كان الجواب نعم، أعطني معرف البند فقط.
-إذا كان الجواب لا، أجب بـ "لا يوجد".
+إذا وجدت مطابقة دقيقة، أرجع فقط معرف البند (مثل: P-0123456)
+إذا لم تجد مطابقة دقيقة، أرجع: "لا يوجد"
 
-الإجابة:`;
+قواعد المطابقة الصارمة:
+1. Part Number متطابق تماماً = مطابقة مؤكدة
+2. نفس النوع والمواصفات والشركة المصنعة = مطابقة مؤكدة  
+3. أي اختلاف في المواصفات = لا توجد مطابقة`;
 
       const response = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
@@ -223,50 +301,33 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         },
         body: JSON.stringify({
           model: 'deepseek-chat',
-          messages: [
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          max_tokens: 100,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 50,
           temperature: 0.1
         })
       });
 
       if (!response.ok) {
-        console.error(`❌ خطأ في API DeepSeek: ${response.status} - ${response.statusText}`);
-        return await this.findSimilarItemSimple(description, partNumber, existingItems);
+        console.log('❌ فشل في استدعاء DeepSeek API');
+        return this.findSimilarItemSimple(description, partNumber, candidateItems);
       }
 
       const data = await response.json();
-      const aiResult = data.choices?.[0]?.message?.content?.trim();
-      
-      console.log(`🤖 DeepSeek Response:`, JSON.stringify(data.choices?.[0]?.message, null, 2));
-
-      console.log(`🤖 نتيجة AI: ${aiResult}`);
+      const aiResult = data.choices[0].message.content.trim();
+      console.log(`🤖 نتيجة AI المحسنة: ${aiResult}`);
 
       // تحليل نتيجة AI
-      if (aiResult && aiResult !== 'لا يوجد' && aiResult.includes('P-')) {
-        // استخراج معرف البند من النتيجة
-        const match = aiResult.match(/P-\d{7}/);
-        if (match) {
-          const itemId = match[0];
-          // التحقق من وجود المعرف في القائمة
-          const foundItem = existingItems.find(item => item.id === itemId);
-          if (foundItem) {
-            console.log(`✅ AI وجد مطابقة: ${itemId} - ${foundItem.description}`);
-            return { found: true, itemId };
-          }
-        }
+      if (aiResult.startsWith('P-') && candidateItems.find(item => item.id === aiResult)) {
+        console.log(`✅ AI وجد مطابقة محققة: ${aiResult}`);
+        return { found: true, itemId: aiResult };
+      } else {
+        console.log(`❌ AI لم يجد مطابقة دقيقة: ${aiResult}`);
+        return { found: false, itemId: '' };
       }
 
-      console.log(`❌ AI لم يجد مطابقة مقبولة. نتيجة AI: "${aiResult}"`);
-      return { found: false, itemId: '' };
     } catch (error) {
-      console.error('❌ خطأ في مطابقة AI:', (error as Error).message);
-      // العودة للمطابقة البسيطة
-      return await this.findSimilarItemSimple(description, partNumber, existingItems);
+      console.error('❌ خطأ في AI المحسن:', error);
+      return this.findSimilarItemSimple(description, partNumber, candidateItems);
     }
   }
 
@@ -325,68 +386,6 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
     const newId = `P-${nextNumber.toString().padStart(7, '0')}`;
     
     return newId;
-  }
-
-  /**
-   * فلترة البنود الأكثر تشابهاً للمقارنة مع AI
-   */
-  private getRelevantItemsForAI(description: string, partNumber: string | undefined, allItems: any[], maxItems: number = 15): any[] {
-    console.log(`🎯 بحث ذكي عن المطابقات للبند: "${description}" | Part: "${partNumber}"`);
-    console.log(`📊 إجمالي البنود المتاحة للبحث: ${allItems.length}`);
-    const relevantItems: Array<{item: any, score: number}> = [];
-    
-    // تحويل النص للبحث
-    const searchDesc = description.toLowerCase();
-    const searchPart = partNumber?.toLowerCase() || '';
-    
-    for (const item of allItems) {
-      let score = 0;
-      
-      // مطابقة رقم القطعة (أولوية عالية)
-      if (searchPart && item.partNumber) {
-        const itemPart = item.partNumber.toLowerCase();
-        if (itemPart === searchPart) {
-          score += 1000; // مطابقة كاملة
-        } else if (itemPart.includes(searchPart) || searchPart.includes(itemPart)) {
-          score += 500; // مطابقة جزئية
-        }
-      }
-      
-      // مطابقة الوصف
-      if (item.description) {
-        const itemDesc = item.description.toLowerCase();
-        
-        // البحث عن كلمات مشتركة
-        const descWords = searchDesc.split(/\s+/).filter(w => w.length > 2);
-        const itemWords = itemDesc.split(/\s+/).filter(w => w.length > 2);
-        
-        let commonWords = 0;
-        for (const word of descWords) {
-          if (itemWords.some(iw => iw.includes(word) || word.includes(iw))) {
-            commonWords++;
-            score += 10;
-          }
-        }
-        
-        // مكافأة إضافية للمطابقات الدقيقة للكلمات المهمة
-        const importantWords = ['contactor', 'schneider', 'lc1d', 'switch', 'relay'];
-        for (const word of importantWords) {
-          if (searchDesc.includes(word) && itemDesc.includes(word)) {
-            score += 50;
-          }
-        }
-      }
-      
-      if (score > 0) {
-        relevantItems.push({ item, score });
-      }
-    }
-    
-    // ترتيب حسب النقاط وإرجاع أفضل العناصر
-    return relevantItems
-      .sort((a, b) => b.score - a.score)
-      .slice(0, maxItems)
-      .map(ri => ri.item);
   }
 
   /**
