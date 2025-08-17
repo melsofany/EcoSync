@@ -1992,6 +1992,45 @@ class QortobaAnalysisBot {
     
     return '';
   }
+
+  // Update bot token
+  async updateToken(newToken: string): Promise<void> {
+    try {
+      console.log('🔄 تحديث توكن البوت...');
+      
+      // إيقاف البوت الحالي
+      if (this.bot) {
+        await this.bot.stopPolling();
+        console.log('⏹️ تم إيقاف البوت القديم');
+      }
+      
+      // إنشاء بوت جديد بالتوكن الجديد
+      this.bot = new TelegramBot(newToken, { polling: true });
+      
+      // إعادة تحميل المستخدمين المخولين
+      await this.loadAuthorizedUsers();
+      
+      // إعادة تسجيل جميع المعالجات
+      this.setupCommands();
+      
+      console.log('✅ تم تحديث توكن البوت وإعادة تشغيله بنجاح');
+      
+      // إرسال رسالة تأكيد للمستخدمين المخولين
+      const testMessage = `🔄 تم تحديث البوت بنجاح!\n\n✅ البوت يعمل الآن بالتوكن الجديد\n🤖 جميع الوظائف متاحة\n📱 يمكنك استخدام الأوامر كالمعتاد`;
+      
+      for (const userId of this.authorizedUsers) {
+        try {
+          await this.bot.sendMessage(userId, testMessage);
+        } catch (error) {
+          console.error(`خطأ في إرسال رسالة التأكيد للمستخدم ${userId}:`, error);
+        }
+      }
+      
+    } catch (error) {
+      console.error('❌ خطأ في تحديث توكن البوت:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

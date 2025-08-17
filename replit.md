@@ -51,7 +51,7 @@ UI Preferences: No unification buttons in main Items page - all unification oper
 
 ### AI Services
 - **DeepSeek API**: Used for AI-powered item analysis and duplicate detection.
-- **Telegram Bot Integration**: Fully operational @Req_item_bot with comprehensive analysis notifications and advanced image search system, supporting sales representatives with item analysis for quotations.
+- **Telegram Bot Integration**: Fully operational @Req_item_bot with comprehensive analysis notifications, advanced image search system, enhanced expiry date formatting (🔥 bold + underline), test message functionality, and dynamic token management supporting sales representatives with item analysis for quotations.
 
 ### Development & Build Tools
 - **Vite**: Frontend development and build tool.

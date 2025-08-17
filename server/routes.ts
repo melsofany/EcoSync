@@ -6285,6 +6285,47 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Update bot token - تحديث توكن البوت
+  app.post("/api/telegram/update-token", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const { token } = req.body;
+      
+      if (!token || typeof token !== 'string' || !token.match(/^\d+:[A-Za-z0-9_-]+$/)) {
+        return res.status(400).json({ error: 'توكن البوت غير صحيح' });
+      }
+
+      console.log('🔄 تحديث توكن البوت...');
+      
+      // حفظ التوكن الجديد في متغير البيئة (مؤقت)
+      process.env.TELEGRAM_BOT_TOKEN = token;
+      
+      // إعادة تهيئة البوت بالتوكن الجديد
+      try {
+        const { telegramBot } = await import('./telegram-bot.js');
+        await telegramBot.updateToken(token);
+        
+        console.log('✅ تم تحديث توكن البوت بنجاح');
+        
+        res.json({ 
+          success: true, 
+          message: 'تم تحديث توكن البوت وإعادة تشغيل البوت بنجاح' 
+        });
+      } catch (botError) {
+        console.error('❌ خطأ في إعادة تهيئة البوت:', botError);
+        res.status(500).json({ 
+          success: false,
+          error: 'تم حفظ التوكن ولكن فشل في إعادة تشغيل البوت. تحقق من صحة التوكن.'
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في تحديث توكن البوت:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'خطأ في تحديث توكن البوت'
+      });
+    }
+  });
+
   // Fix user bot access - temporary endpoint for troubleshooting
   app.post("/api/fix-user-bot-access", async (req: Request, res: Response) => {
     try {

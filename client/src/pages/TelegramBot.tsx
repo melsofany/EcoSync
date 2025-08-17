@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { Bot, Send, CheckCircle, XCircle, Users, MessageSquare, Settings, UserPlus, Edit, Trash2, Plus, Building } from "lucide-react";
+import { Bot, Send, CheckCircle, XCircle, Users, MessageSquare, Settings, UserPlus, Edit, Trash2, Plus, Building, Key } from "lucide-react";
 
 interface BotStatus {
   status: string;
@@ -36,6 +36,8 @@ export default function TelegramBot() {
   const [telegramUserId, setTelegramUserId] = useState("");
   const [showExternalUserDialog, setShowExternalUserDialog] = useState(false);
   const [externalTelegramUserId, setExternalTelegramUserId] = useState("");
+  const [showTokenDialog, setShowTokenDialog] = useState(false);
+  const [newBotToken, setNewBotToken] = useState("");
   const [newUserData, setNewUserData] = useState({
     firstName: "",
     lastName: "",
@@ -136,6 +138,37 @@ export default function TelegramBot() {
       toast({
         title: "❌ خطأ",
         description: error.message || "فشل في إرسال الرسالة التجريبية",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update bot token mutation
+  const updateBotTokenMutation = useMutation({
+    mutationFn: async (token: string) => {
+      const response = await fetch("/api/telegram/update-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "✅ تم التحديث",
+        description: "تم تحديث توكن البوت بنجاح وإعادة تشغيل البوت",
+      });
+      setShowTokenDialog(false);
+      setNewBotToken("");
+      queryClient.invalidateQueries({ queryKey: ["/api/telegram/status"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ خطأ",
+        description: error.message || "فشل في تحديث توكن البوت",
         variant: "destructive",
       });
     },
@@ -354,6 +387,16 @@ export default function TelegramBot() {
                     <p className="text-red-600 text-sm">{botStatus.error}</p>
                   </div>
                 )}
+
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowTokenDialog(true)}
+                  className="w-full mt-4"
+                >
+                  <Key className="h-4 w-4 mr-2" />
+                  تغيير توكن البوت
+                </Button>
               </div>
             )}
           </CardContent>
@@ -765,6 +808,90 @@ export default function TelegramBot() {
                     phone: ""
                   });
                 }}
+              >
+                إلغاء
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bot Token Update Dialog */}
+      <Dialog open={showTokenDialog} onOpenChange={setShowTokenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5" />
+              تحديث توكن البوت
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="font-medium text-yellow-800">تحذير هام</span>
+              </div>
+              <p className="text-sm text-yellow-700">
+                تغيير توكن البوت سيؤدي إلى إعادة تشغيل البوت وقطع الاتصال مؤقتاً.
+                تأكد من صحة التوكن الجديد قبل الحفظ.
+              </p>
+            </div>
+
+            <div>
+              <Label htmlFor="newToken">توكن البوت الجديد</Label>
+              <Input
+                id="newToken"
+                type="password"
+                value={newBotToken}
+                onChange={(e) => setNewBotToken(e.target.value)}
+                placeholder="1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789"
+                className="font-mono"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                يمكن الحصول على التوكن من @BotFather في تليجرام
+              </p>
+            </div>
+
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <h4 className="font-medium text-blue-800 mb-2">كيفية الحصول على توكن جديد:</h4>
+              <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                <li>اذهب إلى @BotFather في تليجرام</li>
+                <li>أرسل الأمر /mybots</li>
+                <li>اختر البوت الخاص بك</li>
+                <li>اختر "API Token"</li>
+                <li>انسخ التوكن والصقه هنا</li>
+              </ol>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => {
+                  if (newBotToken.trim()) {
+                    updateBotTokenMutation.mutate(newBotToken.trim());
+                  }
+                }}
+                disabled={!newBotToken.trim() || updateBotTokenMutation.isPending}
+                className="flex-1"
+              >
+                {updateBotTokenMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    جاري التحديث...
+                  </>
+                ) : (
+                  <>
+                    <Key className="h-4 w-4 mr-2" />
+                    تحديث التوكن
+                  </>
+                )}
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowTokenDialog(false);
+                  setNewBotToken("");
+                }}
+                disabled={updateBotTokenMutation.isPending}
               >
                 إلغاء
               </Button>
