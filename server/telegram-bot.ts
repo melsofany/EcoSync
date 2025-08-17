@@ -162,12 +162,15 @@ class QortobaAnalysisBot {
       
       for (const req of latestQuotations) {
         message += `🔹 رقم الطلب: ${req.rfqNumber || 'غير محدد'}\n`;
-        message += `📅 التاريخ: ${req.requestDate || 'غير محدد'}\n`;
+        message += `📅 تاريخ الطلب: ${req.requestDate || 'غير محدد'}\n`;
+        if (req.expiryDate) {
+          message += `🔴 تاريخ انتهاء العرض: <b><u>${req.expiryDate}</u></b>\n`;
+        }
         message += `👤 العميل: ${req.clientName || 'غير محدد'}\n`;
         message += `\n`;
       }
       
-      this.bot.sendMessage(chatId, message || '✅ لا توجد طلبات تسعير');
+      this.bot.sendMessage(chatId, message || '✅ لا توجد طلبات تسعير', { parse_mode: 'HTML' });
     } catch (error) {
       console.error('Error sending latest quotations:', error);
       this.bot.sendMessage(chatId, '❌ خطأ في جلب البيانات');
@@ -185,10 +188,14 @@ class QortobaAnalysisBot {
         message += `🔧 رقم القطعة: ${item.partNumber || 'غير محدد'}\n`;
         message += `📝 الوصف: ${item.description || 'غير محدد'}\n`;
         message += `📋 RFQ: ${item.rfqNumber || 'غير محدد'}\n`;
-        message += `📅 ${item.requestDate || 'غير محدد'}\n\n`;
+        message += `📅 تاريخ الطلب: ${item.requestDate || 'غير محدد'}\n`;
+        if (item.expiryDate) {
+          message += `🔴 تاريخ انتهاء العرض: <b><u>${item.expiryDate}</u></b>\n`;
+        }
+        message += `\n`;
       }
       
-      this.bot.sendMessage(chatId, message || '✅ لا توجد بنود معلقة');
+      this.bot.sendMessage(chatId, message || '✅ لا توجد بنود معلقة', { parse_mode: 'HTML' });
     } catch (error) {
       console.error('Error sending pending items:', error);
       this.bot.sendMessage(chatId, '❌ خطأ في جلب البنود المعلقة');
@@ -292,12 +299,12 @@ class QortobaAnalysisBot {
         message += '\n\n... (مقطوع للطول)';
       }
       
-      await this.bot.sendMessage(chatId, message);
+      await this.bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
       
     } catch (error) {
       console.error('Error sending analysis result:', error);
       // Fallback to minimal message
-      await this.bot.sendMessage(chatId, `🔧 ${item.partNumber}\n📝 ${item.description}\n\n❌ خطأ في التحليل`);
+      await this.bot.sendMessage(chatId, `🔧 ${item.partNumber}\n📝 ${item.description}\n\n❌ خطأ في التحليل`, { parse_mode: 'HTML' });
     }
   }
 
@@ -411,8 +418,8 @@ class QortobaAnalysisBot {
       // Send to all authorized users
       for (const userId of AUTHORIZED_USERS) {
         try {
-          // Send text message first
-          await this.bot.sendMessage(userId, message);
+          // Send text message first with HTML parsing
+          await this.bot.sendMessage(userId, message, { parse_mode: 'HTML' });
           console.log(`📱 [TELEGRAM BOT] تم إرسال التحليل للمستخدم ${userId} للبند: ${itemData.partNumber}`);
           
           // Try to find and send item image only for specific known products
@@ -609,12 +616,12 @@ class QortobaAnalysisBot {
       message += `📄 رقم RFQ: ${item.rfqNumber}\n`;
     }
     
-    // Add dates if available (no red color formatting)
+    // Add dates if available (with red color for expiry date)
     if (item.requestDate) {
       message += `📅 تاريخ الطلب: ${item.requestDate}\n`;
     }
     if (item.expiryDate) {
-      message += `⏰ تاريخ انتهاء العرض: ${item.expiryDate}\n`;
+      message += `🔴 تاريخ انتهاء العرض: <b><u>${item.expiryDate}</u></b>\n`;
     }
     
     message += `\n`;
