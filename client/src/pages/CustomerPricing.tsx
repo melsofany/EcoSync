@@ -146,8 +146,36 @@ function ItemDetailedPricing({ item }: { item: any }) {
         </div>
       </div>
 
+      {/* معلومات البند الأساسية من API */}
+      {detailedPricing && (
+        <div className="bg-gray-50 border rounded-lg p-4">
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            تفاصيل البند الأساسية
+          </h4>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-sm font-medium">معرف البند:</label>
+              <p className="font-semibold text-blue-600">{detailedPricing.itemNumber || "غير محدد"}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">LINE ITEM:</label>
+              <p className="font-mono text-purple-600">{detailedPricing.lineItem || "غير محدد"}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">رقم القطعة:</label>
+              <p className="font-semibold text-green-600">{detailedPricing.partNumber || "غير محدد"}</p>
+            </div>
+            <div className="col-span-3">
+              <label className="text-sm font-medium">الوصف:</label>
+              <p className="text-sm">{detailedPricing.description || "غير محدد"}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* جدول البيانات التفصيلية للبند */}
-      {detailedPricing && detailedPricing.length > 0 && (
+      {detailedPricing && Array.isArray(detailedPricing) && detailedPricing.length > 0 && (
         <div className="bg-white border rounded-lg p-4">
           <h4 className="font-semibold mb-3 flex items-center gap-2">
             <Package className="h-4 w-4" />
@@ -222,11 +250,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       </div>
                     </td>
                     <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium break-words">
-                      <div className="max-w-[120px]" title={record.part_number}>
-                        {record.part_number}
+                      <div className="max-w-[120px]" title={record.partNumber || record.part_number}>
+                        {record.partNumber || record.part_number || '-'}
                       </div>
                     </td>
-                    <td className="border border-gray-300 p-2 text-right font-mono text-blue-600">{record.line_item}</td>
+                    <td className="border border-gray-300 p-2 text-right font-mono text-blue-600">{record.lineItem || record.line_item || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.uom}</td>
                   </tr>
                 ))}
@@ -507,7 +535,7 @@ export default function CustomerPricing() {
                           <div className="text-right">
                             <p className="font-medium">{item.description}</p>
                             <p className="text-sm text-muted-foreground">
-                              {item.kItemId} | رقم البند: {item.itemNumber} | الوحدة: {item.unit}
+                              معرف البند: {item.itemNumber || "غير محدد"} | رقم القطعة: {item.partNumber || "غير محدد"} | الوحدة: {item.uom || "غير محدد"}
                             </p>
                           </div>
                         </div>
