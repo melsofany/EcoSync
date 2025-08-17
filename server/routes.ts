@@ -20,6 +20,9 @@ import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 import { GoogleSheetsRealtimeData } from "./google-sheets-realtime-data";
 import { GoogleSheetsWriter } from "./google-sheets-write";
 
+// إنشاء instance من Google Sheets Realtime Data
+const googleSheetsRealTimeData = new GoogleSheetsRealtimeData();
+
 // دالة مساعدة معممة للتحقق من صحة البيانات الرقمية (تتجنب القيم الافتراضية الخاطئة)
 const isValidNumericValue = (value: any): boolean => {
   return value !== null && value !== undefined && value !== '' && !isNaN(parseFloat(value)) && parseFloat(value) !== 0;
