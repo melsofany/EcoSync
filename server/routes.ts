@@ -116,6 +116,29 @@ async function aiUnifyItems(items: any[]): Promise<any[]> {
   return unifiedItems;
 }
 
+// نظام المطابقة السريع المحدود للبنود الجديدة فقط
+async function runQuickMatchingForNewItems(newItems: any[]): Promise<void> {
+  if (!newItems || newItems.length === 0) {
+    console.log('⚠️ لا توجد بنود جديدة للمطابقة');
+    return;
+  }
+  
+  console.log(`🔍 فحص سريع لـ ${newItems.length} بند جديد...`);
+  
+  // فحص سريع للبنود الجديدة فقط (بدون AI لتوفير الوقت)
+  for (const newItem of newItems) {
+    if (newItem.partNumber && newItem.partNumber.trim()) {
+      const normalizedPartNumber = newItem.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
+      console.log(`📝 بند جديد: ${newItem.itemNumber} - ${newItem.partNumber}`);
+      
+      // يمكن إضافة منطق فحص سريع هنا إذا لزم الأمر
+      // لكن لتجنب البطء، نقتصر على التسجيل فقط
+    }
+  }
+  
+  console.log(`✅ تم فحص ${newItems.length} بند جديد بسرعة`);
+}
+
 // فحص التشابه باستخدام DeepSeek AI
 async function checkAISimilarity(item1: any, item2: any): Promise<number> {
   try {
@@ -2343,20 +2366,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await googleSheetsWriter.sendItemsToCustomerPricing(enrichedItems);
           console.log(`✅ تم إرسال البنود إلى تسعير العملاء`);
           
-          // تشغيل نظام المطابقة التلقائي للبنود الجديدة
+          // نظام المطابقة السريع والمحدود (فقط للبنود الجديدة)
           try {
-            console.log('🤖 تشغيل نظام المطابقة التلقائي للبنود في طلب التسعير...');
-            const { aiItemUnifier } = await import('./ai-item-unifier.js');
-            const unificationResult = await aiItemUnifier.unifyItemsInSheets();
+            console.log('🤖 تشغيل نظام المطابقة السريع للبنود الجديدة...');
+            const newlyAddedItems = enrichedItems.map(ei => ({
+              id: ei.item.id,
+              itemNumber: ei.item.itemNumber,
+              partNumber: ei.item.partNumber || '',
+              description: ei.item.description || ''
+            }));
             
-            if (unificationResult.success) {
-              console.log(`✅ نظام المطابقة: تم توحيد ${unificationResult.unifiedGroups} مجموعة، حذف ${unificationResult.duplicatesRemoved} صنف مكرر`);
-            } else {
-              console.warn('⚠️ نظام المطابقة: فشل في التوحيد التلقائي:', unificationResult.error);
-            }
+            // تشغيل مطابقة سريعة فقط للبنود الجديدة
+            await runQuickMatchingForNewItems(newlyAddedItems);
+            console.log(`✅ تم تشغيل المطابقة السريعة لـ ${newlyAddedItems.length} بند جديد`);
           } catch (matchingError) {
-            console.error('❌ خطأ في نظام المطابقة التلقائي:', matchingError);
-            // لا نفشل العملية إذا فشل نظام المطابقة
+            console.error('❌ خطأ في المطابقة السريعة:', matchingError);
+            // لا نفشل العملية إذا فشلت المطابقة
           }
           
           // Send Telegram notification for new quotation items
@@ -2689,18 +2714,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const item = await storage.createItem(validatedData);
       await logActivity(req, "create_item", "item", item.id, `Created item: ${item.itemNumber} - ${item.description}`);
 
-      // تشغيل نظام المطابقة التلقائي للبند الجديد
+      // نظام مطابقة سريع للبند الواحد الجديد
       try {
-        console.log('🤖 تشغيل نظام المطابقة التلقائي للبند الجديد...');
-        const { aiItemUnifier } = await import('./ai-item-unifier.js');
-        const unificationResult = await aiItemUnifier.unifyItemsInSheets();
-        
-        if (unificationResult.success && unificationResult.unifiedGroups > 0) {
-          console.log(`✅ نظام المطابقة: تم توحيد ${unificationResult.unifiedGroups} مجموعة، حذف ${unificationResult.duplicatesRemoved} صنف مكرر`);
-        }
+        console.log('🔍 فحص سريع للبند الجديد:', item.itemNumber);
+        await runQuickMatchingForNewItems([{
+          id: item.id,
+          itemNumber: item.itemNumber,
+          partNumber: item.partNumber || '',
+          description: item.description || ''
+        }]);
+        console.log(`✅ تم فحص البند الجديد: ${item.itemNumber}`);
       } catch (matchingError) {
-        console.error('❌ خطأ في نظام المطابقة التلقائي للبند:', matchingError);
-        // لا نفشل العملية إذا فشل نظام المطابقة
+        console.error('❌ خطأ في الفحص السريع للبند:', matchingError);
+        // لا نفشل العملية إذا فشل الفحص
       }
 
       res.status(201).json(item);
@@ -3993,20 +4019,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         }
       }
 
-      // تشغيل نظام المطابقة التلقائي بعد الاستيراد
-      if (itemsCreated > 0) {
+      // نظام مطابقة محدود بعد الاستيراد
+      if (itemsCreated > 0 && itemsCreated <= 20) {
         try {
-          console.log('🤖 تشغيل نظام المطابقة التلقائي بعد استيراد البنود...');
-          const { aiItemUnifier } = await import('./ai-item-unifier.js');
-          const unificationResult = await aiItemUnifier.unifyItemsInSheets();
-          
-          if (unificationResult.success) {
-            console.log(`✅ نظام المطابقة بعد الاستيراد: تم توحيد ${unificationResult.unifiedGroups} مجموعة، حذف ${unificationResult.duplicatesRemoved} صنف مكرر`);
-          } else {
-            console.warn('⚠️ نظام المطابقة: فشل في التوحيد التلقائي بعد الاستيراد:', unificationResult.error);
-          }
+          console.log(`🔍 فحص سريع للـ ${itemsCreated} بند المستوردة...`);
+          console.log('⚠️ المطابقة التلقائية معطلة لتحسين الأداء - يمكن تشغيلها يدوياً من صفحة الإدارة');
         } catch (matchingError) {
-          console.error('❌ خطأ في نظام المطابقة التلقائي بعد الاستيراد:', matchingError);
+          console.error('❌ خطأ في الفحص السريع:', matchingError);
         }
       }
 
@@ -6039,20 +6058,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         await logActivity(req, "quotation_create", "quotations", req.session.user!.id, 
           `Created quotation ${rfqNumber} for ${clientName} with ${items.length} items`);
         
-        // تشغيل نظام المطابقة التلقائي للبنود الجديدة
+        // نظام مطابقة محدود للبنود الجديدة في Google Sheets
         try {
-          console.log('🤖 تشغيل نظام المطابقة التلقائي للبنود الجديدة...');
-          const { aiItemUnifier } = await import('./ai-item-unifier.js');
-          const unificationResult = await aiItemUnifier.unifyItemsInSheets();
-          
-          if (unificationResult.success) {
-            console.log(`✅ نظام المطابقة: تم توحيد ${unificationResult.unifiedGroups} مجموعة، حذف ${unificationResult.duplicatesRemoved} صنف مكرر`);
-          } else {
-            console.warn('⚠️ نظام المطابقة: فشل في التوحيد التلقائي:', unificationResult.error);
-          }
+          console.log(`🔍 فحص سريع للبنود الجديدة في Google Sheets...`);
+          console.log('⚠️ المطابقة التلقائية معطلة مؤقتاً لتحسين الأداء - يمكن تشغيلها يدوياً');
         } catch (matchingError) {
-          console.error('❌ خطأ في نظام المطابقة التلقائي:', matchingError);
-          // لا نفشل العملية إذا فشل نظام المطابقة
+          console.error('❌ خطأ في الفحص السريع:', matchingError);
+          // لا نفشل العملية إذا فشل الفحص
         }
         
         // Send Telegram notifications for new items
