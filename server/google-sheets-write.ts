@@ -465,11 +465,6 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       await this.sendItemsToCustomerPricing(enrichedItems);
       console.log(`✅ تم إرسال البنود إلى كلا صفحتي التسعير بنجاح`);
       
-      // حفظ طلب التسعير في شيت منفصل للطلبات
-      console.log(`🔄 بدء حفظ طلب التسعير ${quotation.rfqNumber} في شيت طلبات التسعير...`);
-      await this.saveQuotationToQuotationsSheet(quotation, createdItemIds);
-      console.log(`✅ تم الانتهاء من حفظ طلب التسعير ${quotation.rfqNumber}`);
-      
       return { success: true, itemIds: createdItemIds };
     } catch (error) {
       console.error('❌ خطأ في إدراج طلب التسعير:', (error as Error).message);
@@ -687,57 +682,5 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
     }
   }
 
-  /**
-   * حفظ طلب التسعير في شيت طلبات التسعير
-   */
-  private async saveQuotationToQuotationsSheet(quotation: NewQuotation, itemIds: string[]): Promise<void> {
-    try {
-      const quotationsSheetName = 'طلبات_التسعير';
-      const headers = [
-        'RFQ Number', 'Client Name', 'Request Date', 'Expiry Date', 
-        'Responsible Employee', 'Items Count', 'Item IDs', 'Status', 
-        'Created Date', 'Notes'
-      ];
-      
-      // إنشاء الشيت إذا لم يكن موجوداً
-      await this.createPricingSheetIfNotExists(quotationsSheetName, headers);
-      
-      // العثور على الصف التالي الفارغ
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: `${quotationsSheetName}!A:A`
-      });
-      
-      const values = response.data.values || [];
-      const nextRow = values.length + 1;
-      
-      // تحضير البيانات
-      const rowData = [
-        quotation.rfqNumber,
-        quotation.clientName,
-        quotation.requestDate,
-        quotation.expiryDate,
-        quotation.responsibleEmployee,
-        quotation.items.length.toString(),
-        itemIds.join(', '),
-        'جديد',
-        new Date().toISOString().split('T')[0],
-        quotation.items.map(item => item.notes || '').join(' | ')
-      ];
-      
-      // إدراج البيانات
-      await this.sheets.spreadsheets.values.update({
-        spreadsheetId: this.spreadsheetId,
-        range: `${quotationsSheetName}!A${nextRow}:J${nextRow}`,
-        valueInputOption: 'RAW',
-        resource: {
-          values: [rowData]
-        }
-      });
-      
-      console.log(`📋 تم حفظ طلب التسعير ${quotation.rfqNumber} في شيت طلبات التسعير`);
-    } catch (error) {
-      console.error('❌ خطأ في حفظ طلب التسعير في الشيت:', error);
-    }
-  }
+
 }
