@@ -247,6 +247,7 @@ export default function SupplierPricing() {
                     <TableHead>تاريخ ورود السعر</TableHead>
                     <TableHead>فترة الصلاحية</TableHead>
                     <TableHead>شروط الدفع</TableHead>
+                    <TableHead>اسم الموظف</TableHead>
                     <TableHead>حالة أمر الشراء</TableHead>
                     <TableHead>الحالة</TableHead>
                   </TableRow>
@@ -263,6 +264,7 @@ export default function SupplierPricing() {
                         {pricing.validityPeriod ? `${pricing.validityPeriod} يوم` : "غير محدد"}
                       </TableCell>
                       <TableCell>{pricing.paymentTerms || "غير محدد"}</TableCell>
+                      <TableCell>{pricing.employeeName || "غير محدد"}</TableCell>
                       <TableCell>{getPOStatusBadge(pricing)}</TableCell>
                       <TableCell>
                         <Badge 

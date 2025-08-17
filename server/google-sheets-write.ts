@@ -568,7 +568,7 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         'Item Number', 'Part Number', 'Description', 'UOM', 'Quantity',
         'RFQ Number', 'Client Name', 'Request Date', 'Expiry Date',
         'Customer Unit Price', 'Customer Total Price', 'Supplier Unit Price',
-        'Profit Margin %', 'Currency', 'Notes', 'Status'
+        'Profit Margin %', 'Currency', 'Notes', 'Status', 'Employee Name'
       ];
       
       await this.createPricingSheetIfNotExists(customerSheetName, customerHeaders);
@@ -597,14 +597,15 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
           '',                                                // M - Profit Margin % (فارغ للتعبئة)
           '',                                                // N - Currency (فارغ للتعبئة)
           '',                                                // O - Notes (فارغ للتعبئة)
-          'في انتظار تسعير الموردين'                        // P - Status
+          'في انتظار تسعير الموردين',                       // P - Status
+          ''                                                 // Q - Employee Name (فارغ للتعبئة عند التسعير)
         ];
         rows.push(row);
       }
 
       // البحث عن آخر صف فارغ في صفحة تسعير العملاء
       const customerLastRow = await this.findLastRowInSheet(customerSheetName);
-      const customerRange = `${customerSheetName}!A${customerLastRow + 1}:P${customerLastRow + rows.length}`;
+      const customerRange = `${customerSheetName}!A${customerLastRow + 1}:Q${customerLastRow + rows.length}`;
 
       // إدراج البيانات
       await this.sheets.spreadsheets.values.update({
@@ -764,7 +765,7 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       // قراءة البيانات الحالية لمعرفة عدد الصفوف
       const readResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A2:P1000`
+        range: `${sheetName}!A2:Q1000`
       });
 
       const existingRows = readResponse.data.values || [];
@@ -776,7 +777,7 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
       // مسح البيانات من الصف 2 إلى آخر صف
       await this.sheets.spreadsheets.values.clear({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A2:P${existingRows.length + 1}`
+        range: `${sheetName}!A2:Q${existingRows.length + 1}`
       });
 
       console.log(`🗑️ تم مسح ${existingRows.length} صف من صفحة تسعير العملاء`);
@@ -818,7 +819,8 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         'شروط الدفع',           // W - Payment Terms
         'فترة الضمان',          // X - Warranty Period
         'ملاحظات',              // Y - Notes
-        'الحالة'                // Z - Status
+        'الحالة',               // Z - Status
+        'اسم الموظف'            // AA - Employee Name
       ];
 
       // التحقق من وجود الورقة وإنشاؤها إذا لم تكن موجودة
@@ -851,10 +853,30 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         console.log(`✅ تم إنشاء ورقة ${sheetName} الجديدة`);
       }
 
+      // تحديث خصائص الورقة لتشمل العمود الجديد
+      if (existingSheet) {
+        await this.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: this.spreadsheetId,
+          resource: {
+            requests: [{
+              updateSheetProperties: {
+                properties: {
+                  sheetId: existingSheet.properties?.sheetId,
+                  gridProperties: {
+                    columnCount: 27 // A إلى AA (27 عمود)
+                  }
+                },
+                fields: 'gridProperties.columnCount'
+              }
+            }]
+          }
+        });
+      }
+
       // إضافة الرؤوس
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A1:Z1`,
+        range: `${sheetName}!A1:AA1`,
         valueInputOption: 'RAW',
         resource: {
           values: [headers]
@@ -954,11 +976,12 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
           pricingData.paymentTerms || '',      // W - Payment Terms
           pricingData.warrantyPeriod || '',    // X - Warranty Period
           pricingData.notes || '',             // Y - Notes
-          pricingData.status || 'مُسعّر'       // Z - Status
+          pricingData.status || 'مُسعّر',      // Z - Status
+          pricingData.employeeName || ''       // AA - Employee Name
         ];
 
         // إضافة الصف الجديد
-        const range = `${sheetName}!A${newRowNumber}:Z${newRowNumber}`;
+        const range = `${sheetName}!A${newRowNumber}:AA${newRowNumber}`;
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
           range,
@@ -1000,11 +1023,12 @@ ${filteredItems.map(item => `- ${item.id}: ${item.description} | Part: ${item.pa
         pricingData.paymentTerms || '',            // W - Payment Terms
         pricingData.warrantyPeriod || '',          // X - Warranty Period
         pricingData.notes || '',                   // Y - Notes
-        pricingData.status || 'مُسعّر'             // Z - Status
+        pricingData.status || 'مُسعّر',            // Z - Status
+        pricingData.employeeName || ''             // AA - Employee Name
       ];
 
       // تحديث الصف في Google Sheets
-      const range = `${sheetName}!A${targetRowIndex}:Z${targetRowIndex}`;
+      const range = `${sheetName}!A${targetRowIndex}:AA${targetRowIndex}`;
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
         range,

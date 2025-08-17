@@ -292,22 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
-  // إنشاء ورقة تسعير الموردين الجديدة
-  app.post("/api/create-supplier-pricing-sheet", requireAuth, requireRole(["manager", "data_entry", "purchasing"]), async (req: Request, res: Response) => {
-    try {
-      await googleSheetsWriter.setupSupplierPricingSheetHeaders();
-      res.json({ 
-        message: "تم إنشاء ورقة تسعير الموردين بنجاح مع جميع الحقول المطلوبة",
-        success: true 
-      });
-    } catch (error) {
-      console.error('❌ خطأ في إنشاء ورقة تسعير الموردين:', error);
-      res.status(500).json({ 
-        message: "خطأ في إنشاء ورقة تسعير الموردين", 
-        error: (error as Error).message 
-      });
-    }
-  });
+
 
   // Public DeepSeek balance endpoint (without auth)
   app.get("/api/public/deepseek/balance", async (req: Request, res: Response) => {
@@ -2881,6 +2866,23 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // إنشاء ورقة تسعير الموردين الجديدة
+  app.post("/api/create-supplier-pricing-sheet", requireAuth, requireRole(["manager", "data_entry", "purchasing"]), async (req: Request, res: Response) => {
+    try {
+      await googleSheetsWriter.setupSupplierPricingSheetHeaders();
+      res.json({ 
+        message: "تم إنشاء ورقة تسعير الموردين بنجاح مع جميع الحقول المطلوبة",
+        success: true 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في إنشاء ورقة تسعير الموردين:', error);
+      res.status(500).json({ 
+        message: "خطأ في إنشاء ورقة تسعير الموردين", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   // Purchase order routes - reading directly from Google Sheets
   app.get("/api/purchase-orders", async (req: Request, res: Response) => {
     try {
@@ -4435,7 +4437,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
               paymentTerms: pricingData.paymentTerms || "",
               warrantyPeriod: pricingData.warrantyPeriod || "",
               notes: pricingData.notes || "",
-              status: "مُسعّر"
+              status: "مُسعّر",
+              employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
             }
           );
           
@@ -4564,12 +4567,37 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Customer pricing endpoints
-  app.post("/api/customer-pricing", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
+  app.post("/api/customer-pricing", requireAuth, requireRole(['manager', 'data_entry', 'purchasing']), async (req: Request, res: Response) => {
     try {
-      const pricingData = { ...req.body, createdBy: req.session.user!.id };
-      const pricing = await storage.createCustomerPricing(pricingData);
-      await logActivity(req, "create_customer_pricing", "pricing", pricing.id, `Added customer pricing for item ${pricing.itemId}`);
-      res.json(pricing);
+      const pricingData = req.body;
+      
+      // استخدام النظام المحسن لتحديث تسعير العملاء مع اسم الموظف
+      const { CustomerPricingUpdater } = await import('./customer-pricing-update.js');
+      const customerPricingUpdater = new CustomerPricingUpdater();
+      
+      await customerPricingUpdater.updateCustomerPricing(
+        pricingData.itemId,
+        {
+          customerUnitPrice: pricingData.customerUnitPrice || "",
+          customerTotalPrice: pricingData.customerTotalPrice || "",
+          supplierUnitPrice: pricingData.supplierUnitPrice || "",
+          profitMargin: pricingData.profitMargin || "",
+          currency: pricingData.currency || "EGP",
+          notes: pricingData.notes || "",
+          status: pricingData.status || "مُسعّر",
+          employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
+        }
+      );
+      
+      await logActivity(req, "create_customer_pricing", "pricing", pricingData.itemId, 
+        `Added customer pricing for item ${pricingData.itemId} by ${req.session.user?.fullName || req.session.user?.username}`);
+      
+      res.status(201).json({ 
+        id: pricingData.itemId,
+        message: "تم إضافة تسعير العميل بنجاح مع تسجيل اسم الموظف",
+        ...pricingData,
+        employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
+      });
     } catch (error) {
       console.error("Error creating customer pricing:", error);
       res.status(500).json({ message: "Internal server error" });
