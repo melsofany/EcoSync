@@ -648,6 +648,7 @@ export class GoogleSheetsRealtimeData {
             quantity: row[7] || '1',
             clientName: row[16] || ''
           };
+          console.log(`📋 تم العثور على البند في صفحة تسعير العملاء: ${itemId}, RFQ: ${rfqNumber}`);
           break;
         }
       }
@@ -668,17 +669,26 @@ export class GoogleSheetsRealtimeData {
       const dataRows = dataResponse.data.values || [];
 
       // البحث عن السجل الذي يحتوي على رقم طلب التسعير والبند المطلوب
-      for (const row of dataRows) {
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
         const rowRfqNumber = row[5] || ''; // العمود F - RFQ Number
         const rowItemNumber = row[0] || ''; // العمود A - Item Number
         const rowPartNumber = row[3] || ''; // العمود D - PART NO
         const rowDescription = row[4] || ''; // العمود E - Description
 
-        // مطابقة بناءً على رقم طلب التسعير والبند
-        if (rowRfqNumber === rfqNumber && 
-            (rowItemNumber === itemId || 
-             rowPartNumber === targetItemData?.partNumber ||
-             rowDescription.includes(targetItemData?.partNumber))) {
+        // تحسين البحث - البحث بناءً على PART NO أولاً ثم RFQ
+        const partNumberMatch = targetItemData?.partNumber && 
+          (rowPartNumber === targetItemData.partNumber || 
+           rowDescription.includes(targetItemData.partNumber));
+
+        const itemNumberMatch = rowItemNumber === itemId;
+        
+        // مطابقة مرونة أكبر
+        if (partNumberMatch || itemNumberMatch) {
+          console.log(`🔍 تم العثور على مطابقة في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}`);
+          
+          // التحقق من RFQ إذا كان متاحاً، وإلا استخدم المطابقة الأولى
+          if (!rfqNumber || rowRfqNumber === rfqNumber || partNumberMatch) {
           
           const itemData = {
             itemId: itemId,
@@ -697,8 +707,9 @@ export class GoogleSheetsRealtimeData {
             profitMargin: row[15] || '' // العمود P - Profit Margin
           };
           
-          console.log(`✅ تم العثور على البند ${itemId} في طلب التسعير ${rfqNumber}:`, itemData);
-          return itemData;
+            console.log(`✅ تم العثور على البند ${itemId}:`, itemData);
+            return itemData;
+          }
         }
       }
 
