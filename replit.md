@@ -37,9 +37,10 @@ UI Preferences: No unification buttons in main Items page - all unification oper
 - **Purchase Order Details System**: Complete purchase order item viewing system with accurate column mapping and Google Sheets real-time integration.
 - **Purchase Order Processing**: Integration with the quotation system, including robust search capabilities.
 - **User Management**: Role-based access and activity monitoring.
-- **Client & Supplier Management**: Functionality for adding, editing, and deleting clients and suppliers with soft delete logic.
+- **Client & Supplier Management**: Functionality for adding, editing, and deleting clients and suppliers with soft delete logic. Full supplier endpoint functionality with Google Sheets integration.
 - **Data Import/Export**: IT admin-only functionality for importing quotation requests from .xlsx/.xls files (with dual header fix, data preview, and error handling) and exporting various system data to .xlsx.
 - **Customer Pricing**: Simplified interface for customer pricing integrated with supplier pricing.
+- **Quotation Requests Management**: Complete quotation request system with automatic saving to dedicated Google Sheets tab ('طلبات_التسعير'), automatic item distribution to both supplier and customer pricing sheets, and full integration with AI item matching.
 - **Database Backup**: Comprehensive backup system for IT administrators, generating executable SQL files for complete system restoration.
 - **RDP Server Integration**: System for deploying on Windows RDP servers with external network access, including SSH-based connection, network diagnostics, and webhook integration for GitHub updates.
 
