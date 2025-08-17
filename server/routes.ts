@@ -6326,6 +6326,50 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Get DeepSeek API balance - عرض رصيد DeepSeek
+  app.get("/api/deepseek/balance", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const apiKey = process.env.DEEPSEEK_API_KEY;
+      if (!apiKey) {
+        return res.status(400).json({ error: 'DeepSeek API key غير مُعد' });
+      }
+
+      console.log('💰 جلب رصيد DeepSeek API...');
+      
+      const response = await fetch('https://api.deepseek.com/user/balance', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`DeepSeek API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      res.json({
+        success: true,
+        balance: {
+          total_balance: data.total_balance || 0,
+          granted_balance: data.granted_balance || 0,
+          topped_up_balance: data.topped_up_balance || 0,
+          available_balance: data.available_balance || 0,
+          currency: data.currency || 'USD',
+          last_updated: new Date().toISOString()
+        }
+      });
+    } catch (error: any) {
+      console.error('❌ خطأ في جلب رصيد DeepSeek:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error.message || 'فشل في جلب رصيد DeepSeek'
+      });
+    }
+  });
+
   // Fix user bot access - temporary endpoint for troubleshooting
   app.post("/api/fix-user-bot-access", async (req: Request, res: Response) => {
     try {
