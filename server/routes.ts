@@ -292,6 +292,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
   });
 
+  // إنشاء ورقة تسعير الموردين الجديدة
+  app.post("/api/create-supplier-pricing-sheet", requireAuth, requireRole(["manager", "data_entry", "purchasing"]), async (req: Request, res: Response) => {
+    try {
+      await googleSheetsWriter.setupSupplierPricingSheetHeaders();
+      res.json({ 
+        message: "تم إنشاء ورقة تسعير الموردين بنجاح مع جميع الحقول المطلوبة",
+        success: true 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في إنشاء ورقة تسعير الموردين:', error);
+      res.status(500).json({ 
+        message: "خطأ في إنشاء ورقة تسعير الموردين", 
+        error: (error as Error).message 
+      });
+    }
+  });
+
   // Public DeepSeek balance endpoint (without auth)
   app.get("/api/public/deepseek/balance", async (req: Request, res: Response) => {
     try {
