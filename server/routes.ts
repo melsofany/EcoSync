@@ -2343,6 +2343,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await googleSheetsWriter.sendItemsToCustomerPricing(enrichedItems);
           console.log(`✅ تم إرسال البنود إلى تسعير العملاء`);
           
+          // تشغيل نظام المطابقة التلقائي للبنود الجديدة
+          try {
+            console.log('🤖 تشغيل نظام المطابقة التلقائي للبنود في طلب التسعير...');
+            const { aiItemUnifier } = await import('./ai-item-unifier.js');
+            const unificationResult = await aiItemUnifier.unifyItemsInSheets();
+            
+            if (unificationResult.success) {
+              console.log(`✅ نظام المطابقة: تم توحيد ${unificationResult.unifiedGroups} مجموعة، حذف ${unificationResult.duplicatesRemoved} صنف مكرر`);
+            } else {
+              console.warn('⚠️ نظام المطابقة: فشل في التوحيد التلقائي:', unificationResult.error);
+            }
+          } catch (matchingError) {
+            console.error('❌ خطأ في نظام المطابقة التلقائي:', matchingError);
+            // لا نفشل العملية إذا فشل نظام المطابقة
+          }
+          
           // Send Telegram notification for new quotation items
           const { telegramBot } = await import("./telegram-bot");
           for (const quotationItem of quotationItems) {
@@ -2672,6 +2688,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const item = await storage.createItem(validatedData);
       await logActivity(req, "create_item", "item", item.id, `Created item: ${item.itemNumber} - ${item.description}`);
+
+      // تشغيل نظام المطابقة التلقائي للبند الجديد
+      try {
+        console.log('🤖 تشغيل نظام المطابقة التلقائي للبند الجديد...');
+        const { aiItemUnifier } = await import('./ai-item-unifier.js');
+        const unificationResult = await aiItemUnifier.unifyItemsInSheets();
+        
+        if (unificationResult.success && unificationResult.unifiedGroups > 0) {
+          console.log(`✅ نظام المطابقة: تم توحيد ${unificationResult.unifiedGroups} مجموعة، حذف ${unificationResult.duplicatesRemoved} صنف مكرر`);
+        }
+      } catch (matchingError) {
+        console.error('❌ خطأ في نظام المطابقة التلقائي للبند:', matchingError);
+        // لا نفشل العملية إذا فشل نظام المطابقة
+      }
 
       res.status(201).json(item);
     } catch (error) {
@@ -3960,6 +3990,23 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           errorCount++;
           console.error(`❌ Error creating quotation for ${customRequestNumber}:`, error);
           errors.push(`Quotation ${customRequestNumber}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      // تشغيل نظام المطابقة التلقائي بعد الاستيراد
+      if (itemsCreated > 0) {
+        try {
+          console.log('🤖 تشغيل نظام المطابقة التلقائي بعد استيراد البنود...');
+          const { aiItemUnifier } = await import('./ai-item-unifier.js');
+          const unificationResult = await aiItemUnifier.unifyItemsInSheets();
+          
+          if (unificationResult.success) {
+            console.log(`✅ نظام المطابقة بعد الاستيراد: تم توحيد ${unificationResult.unifiedGroups} مجموعة، حذف ${unificationResult.duplicatesRemoved} صنف مكرر`);
+          } else {
+            console.warn('⚠️ نظام المطابقة: فشل في التوحيد التلقائي بعد الاستيراد:', unificationResult.error);
+          }
+        } catch (matchingError) {
+          console.error('❌ خطأ في نظام المطابقة التلقائي بعد الاستيراد:', matchingError);
         }
       }
 
@@ -5991,6 +6038,22 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       if (insertResult.success) {
         await logActivity(req, "quotation_create", "quotations", req.session.user!.id, 
           `Created quotation ${rfqNumber} for ${clientName} with ${items.length} items`);
+        
+        // تشغيل نظام المطابقة التلقائي للبنود الجديدة
+        try {
+          console.log('🤖 تشغيل نظام المطابقة التلقائي للبنود الجديدة...');
+          const { aiItemUnifier } = await import('./ai-item-unifier.js');
+          const unificationResult = await aiItemUnifier.unifyItemsInSheets();
+          
+          if (unificationResult.success) {
+            console.log(`✅ نظام المطابقة: تم توحيد ${unificationResult.unifiedGroups} مجموعة، حذف ${unificationResult.duplicatesRemoved} صنف مكرر`);
+          } else {
+            console.warn('⚠️ نظام المطابقة: فشل في التوحيد التلقائي:', unificationResult.error);
+          }
+        } catch (matchingError) {
+          console.error('❌ خطأ في نظام المطابقة التلقائي:', matchingError);
+          // لا نفشل العملية إذا فشل نظام المطابقة
+        }
         
         // Send Telegram notifications for new items
         try {
