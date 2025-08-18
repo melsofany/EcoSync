@@ -37,9 +37,9 @@ function ItemDetailedPricing({ item }: { item: any }) {
       try {
         console.log(`🚀 جاري جلب البيانات للبند: ${item.id}`);
         
-        // Test direct API call with cache busting
-        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data?_t=${Date.now()}`, {
-          method: 'GET',
+        // Use POST to completely avoid caching
+        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache',
@@ -74,8 +74,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
         console.log(`📊 البيانات بعد التحليل:`, comprehensiveData);
         console.log(`🎯 LINE ITEM من البيانات:`, comprehensiveData?.lineItem);
         
-        // Force update with fresh data
-        setDetailedPricing({...comprehensiveData});
+        // Force complete re-render with new data
+        setDetailedPricing(null); // Clear first
+        setTimeout(() => {
+          setDetailedPricing({...comprehensiveData}); // Then set new data
+        }, 10);
         
         // إجبار refresh لضمان تحديث الواجهة
         setTimeout(() => {

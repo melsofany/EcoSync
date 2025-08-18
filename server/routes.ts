@@ -4636,15 +4636,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Get comprehensive item data like Excel table (unified version)
-  app.get("/api/items/:itemId/comprehensive-data", requireAuth, async (req: Request, res: Response) => {
+  // Support both GET and POST to avoid caching issues
+  const comprehensiveDataHandler = async (req: Request, res: Response) => {
     try {
       const itemId = req.params.itemId;
       
-      // منع التخزين المؤقت لضمان إرسال البيانات الحقيقية
+      // منع التخزين المؤقت نهائياً
       res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Cache-Control': 'no-cache, no-store, must-revalidate, private',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'ETag': 'false',
+        'Last-Modified': new Date().toUTCString()
       });
       
       // إذا كان المعرف يبدأ بـ customer- فنحتاج للحصول على رقم البند الحقيقي
@@ -4695,7 +4698,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.error("Error fetching comprehensive item data:", error);
       res.status(500).json({ message: "Internal server error" });
     }
-  });
+  };
+
+  // Support both GET and POST methods
+  app.get("/api/items/:itemId/comprehensive-data", requireAuth, comprehensiveDataHandler);
+  app.post("/api/items/:itemId/comprehensive-data", requireAuth, comprehensiveDataHandler);
 
 
 
