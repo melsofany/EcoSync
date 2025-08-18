@@ -102,7 +102,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <div className="text-center">
             <label className="font-medium block">LINE ITEM:</label>
             <p className="text-purple-700 font-mono font-bold" dir="ltr">
-              {comprehensiveData?.lineItem || item.lineItem || ""}
+              {detailedPricing?.lineItem || (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[0].line_item : "") || item.lineItem || ""}
             </p>
           </div>
           <div>
