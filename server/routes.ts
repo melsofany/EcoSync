@@ -17,12 +17,12 @@ import multer from "multer";
 import { promises as fs, readFileSync, writeFileSync } from "fs";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
-import { GoogleSheetsRealtimeData } from "./google-sheets-realtime-data";
+import { GoogleSheetsRealtimeData, googleSheetsRealtimeData } from "./google-sheets-realtime-data";
 import { GoogleSheetsWriter } from "./google-sheets-write";
 import { updateUserFullName, updateAhmedYoussefName } from "./update-user-fullname";
 
-// إنشاء instance من Google Sheets Realtime Data
-const googleSheetsRealTimeData = new GoogleSheetsRealtimeData();
+// استخدام الـ instance المُصدر من google-sheets-realtime-data.ts
+const googleSheetsRealTimeData = googleSheetsRealtimeData;
 
 // إنشاء instance من Google Sheets Writer
 const googleSheetsWriter = new GoogleSheetsWriter();
@@ -2292,7 +2292,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/quotations", requireAuth, async (req: Request, res: Response) => {
     try {
       const { googleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
+      
+      // قراءة البيانات الخام مباشرة لفحص المشكلة
+      console.log('🔍 [API] محاولة قراءة البيانات الخام من Google Sheets...');
+      const rawData = await googleSheetsRealtimeData.readDataSheet();
+      console.log(`📊 [API] تم قراءة ${rawData.length} صف خام من Google Sheets`);
+      
+      // البحث عن 25R000057 في البيانات الخام
+      let found25R000057 = false;
+      for (let i = 0; i < rawData.length; i++) {
+        if (rawData[i] && rawData[i][5] === '25R000057') { // العمود F - RFQ NUMBER
+          found25R000057 = true;
+          console.log(`✅ [API] 25R000057 موجود في الصف ${i + 2} - العميل: ${rawData[i][15]}, الموظف: ${rawData[i][16]}`);
+          break;
+        }
+      }
+      if (!found25R000057) {
+        console.log('❌ [API] 25R000057 غير موجود في البيانات الخام');
+      }
+      
       const quotations = await googleSheetsRealtimeData.getAllQuotations();
+      
+      // تسجيل تفاصيل البيانات المُرجعة
+      console.log(`📊 عدد الطلبات المُرجعة من getAllQuotations: ${quotations.length}`);
+      
+      // البحث عن 25R000057
+      const target = quotations.find((q: any) => q.requestNumber === '25R000057');
+      if (target) {
+        console.log('✅ 25R000057 موجود في البيانات المُرجعة');
+      } else {
+        console.log('❌ 25R000057 غير موجود في البيانات المُرجعة');
+      }
+      
       res.json(quotations);
     } catch (error) {
       console.error("Get quotations error:", error);

@@ -125,6 +125,7 @@ export default function Quotations() {
     const displayNumber = quotation.customRequestNumber || quotation.requestNumber;
     return (
       (!filters.requestNumber || displayNumber.includes(filters.requestNumber)) &&
+      (!filters.clientName || quotation.clientName?.toLowerCase().includes(filters.clientName.toLowerCase())) &&
       (!filters.status || filters.status === "all" || quotation.status === filters.status) &&
       (!filters.date || quotation.requestDate?.startsWith(filters.date))
     );

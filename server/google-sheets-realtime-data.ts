@@ -54,14 +54,29 @@ export class GoogleSheetsRealtimeData {
         throw new Error('Google Sheets not initialized');
       }
 
+      console.log('🔍 بدء قراءة البيانات من DATA!A2:AA...');
+      
       // قراءة البيانات من صفحة DATA بدءاً من الصف 2
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z10000', // قراءة من A2 إلى Z مع حد أقصى 10000 صف (يشمل العمود Q)
+        range: 'DATA!A2:AA', // قراءة كل البيانات من A2 إلى AA بدون حد للصفوف
       });
 
       const rows = response.data.values || [];
-      console.log(`📊 تم قراءة ${rows.length} صف من Google Sheets`);
+      console.log(`📊 readDataSheet: تم قراءة ${rows.length} صف من Google Sheets`);
+      
+      // البحث عن 25R000057 في البيانات المقروءة
+      let found25R000057 = false;
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i][5] === '25R000057') {
+          found25R000057 = true;
+          console.log(`✅ 25R000057 موجود في الصف ${i + 2} من البيانات المقروءة`);
+          break;
+        }
+      }
+      if (!found25R000057) {
+        console.log('❌ 25R000057 غير موجود في البيانات المقروءة من readDataSheet');
+      }
 
       return rows;
     } catch (error) {
@@ -213,14 +228,98 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
-  async getAllItems() {
+  async getAllItemsRaw() {
+    // نسخة جديدة تقرأ كل الصفوف بدون أي تصفية
     try {
       const rows = await this.readDataSheet();
+      console.log(`📊 getAllItemsRaw: معالجة ${rows.length} صف بدون تصفية`);
+      
       const items = [];
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const item = {
+          id: `item-sheets-${i + 1}`,
+          itemNumber: row[0] || '', // العمود A
+          uom: row[1] || '', // العمود B
+          lineItem: row[2] || '', // العمود C
+          partNumber: row[3] || '', // العمود D
+          description: row[4] || '', // العمود E
+          rfqNumber: row[5] || '', // العمود F
+          requestDate: row[6] || '', // العمود G
+          quantity: row[7] || '', // العمود H
+          price: row[8] || '', // العمود I
+          responseDate: row[9] || '', // العمود J
+          poNumber: row[10] || '', // العمود K
+          poDate: row[11] || '', // العمود L
+          poQuantity: row[12] || '', // العمود M
+          poPrice: row[13] || '', // العمود N
+          totalValue: row[14] || '', // العمود O
+          clientName: row[15] || '', // العمود P
+          responsibleEmployee: row[16] || '', // العمود Q
+          isActive: true,
+          createdAt: new Date().toISOString()
+        };
+        items.push(item);
+      }
+      
+      console.log(`✅ getAllItemsRaw: تم معالجة ${items.length} صنف من ${rows.length} صف`);
+      return items;
+    } catch (error) {
+      console.error('❌ خطأ في getAllItemsRaw:', (error as Error).message);
+      return [];
+    }
+  }
+  
+  async getAllItems() {
+    try {
+      console.log('🚀 getAllItems: بدء قراءة البيانات...');
+      const rows = await this.readDataSheet();
+      console.log(`📊 getAllItems: تم قراءة ${rows.length} صف من readDataSheet`);
+      
+      // فحص البيانات الخام
+      if (rows.length > 0) {
+        console.log(`📋 عينة من الصف الأول: ${JSON.stringify(rows[0].slice(0, 6))}`);
+        console.log(`📋 عينة من الصف الأخير: ${JSON.stringify(rows[rows.length - 1].slice(0, 6))}`);
+        
+        // عد الصفوف ذات البيانات الفعلية
+        let rowsWithData = 0;
+        let emptyRows = 0;
+        for (let i = 0; i < rows.length; i++) {
+          if (rows[i] && rows[i].length > 0 && rows[i].some(cell => cell && cell.toString().trim() !== '')) {
+            rowsWithData++;
+          } else {
+            emptyRows++;
+          }
+        }
+        console.log(`📊 صفوف بها بيانات: ${rowsWithData}, صفوف فارغة: ${emptyRows}`);
+      }
+      
+      // البحث عن 25R000057 في الصفوف المقروءة
+      let found25R000057InRows = false;
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i][5] === '25R000057') { // العمود F - RFQ NUMBER
+          found25R000057InRows = true;
+          console.log(`✅ 25R000057 موجود في الصف ${i + 2} من البيانات الخام`);
+          console.log(`📋 البيانات: العميل=${rows[i][15]}, الموظف=${rows[i][16]}`);
+          break;
+        }
+      }
+      if (!found25R000057InRows) {
+        console.log('❌ 25R000057 غير موجود في البيانات الخام من readDataSheet');
+      }
+      
+      const items = [];
+      let skippedRows = 0;
+      let processedRows = 0;
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
-        if (row.length < 2) continue; // تخطي الصفوف الفارغة
+        // إزالة شرط التخطي - معالجة كل الصفوف
+        // if (row.length < 2) {
+        //   skippedRows++;
+        //   continue; // تخطي الصفوف الفارغة
+        // }
+        processedRows++;
 
         const item = {
           id: `item-sheets-${i + 1}`,
@@ -264,6 +363,22 @@ export class GoogleSheetsRealtimeData {
       }
 
       console.log(`📦 تم استخراج ${items.length} صنف من Google Sheets`);
+      console.log(`📊 تفاصيل المعالجة: ${processedRows} صف معالج، ${skippedRows} صف تم تخطيه من إجمالي ${rows.length} صف`);
+      
+      // التحقق مما حدث مع الصفوف المتبقية
+      const missingRows = rows.length - processedRows - skippedRows;
+      if (missingRows > 0) {
+        console.log(`⚠️ هناك ${missingRows} صف لم يتم معالجته!`);
+      }
+      
+      // التحقق من وجود 25R000057 في الأصناف المعالجة
+      const item25R000057 = items.find(item => item.rfqNumber === '25R000057');
+      if (item25R000057) {
+        console.log(`✅ 25R000057 موجود في الأصناف المعالجة: ${item25R000057.clientName}`);
+      } else {
+        console.log(`❌ 25R000057 غير موجود في الأصناف المعالجة`);
+      }
+      
       return items;
     } catch (error) {
       console.error('❌ خطأ في استخراج الأصناف:', (error as Error).message);
@@ -273,12 +388,38 @@ export class GoogleSheetsRealtimeData {
 
   async getAllQuotations() {
     try {
-      const items = await this.getAllItems();
+      console.log('🔄 getAllQuotations: بدء قراءة طلبات التسعير...');
+      
+      // قراءة البيانات الخام مباشرة للمقارنة
+      const rawData = await this.readDataSheet();
+      console.log(`📊 getAllQuotations: قراءة ${rawData.length} صف خام مباشرة`);
+      
+      // استخدام getAllItemsRaw للحصول على كل الصفوف بدون تصفية
+      console.log('⚡ getAllQuotations: استدعاء getAllItemsRaw()...');
+      const items = await this.getAllItemsRaw();
+      console.log(`📊 getAllQuotations: تم استلام ${items.length} صنف من getAllItemsRaw`);
+      
+      // المقارنة بين البيانات الخام والأصناف
+      if (rawData.length !== items.length) {
+        console.log(`⚠️ تحذير: هناك فرق بين البيانات الخام (${rawData.length}) والأصناف المعالجة (${items.length})`);
+        console.log(`⚠️ الفرق: ${rawData.length - items.length} صف لم يتم معالجته كصنف`);
+      }
+      
       const quotationsMap = new Map();
 
       // تجميع الأصناف حسب RFQ NUMBER
+      let skippedItems = 0;
+      let rfq25R000057Found = false;
       for (const item of items) {
-        if (!item.rfqNumber) continue;
+        if (!item.rfqNumber) {
+          skippedItems++;
+          continue;
+        }
+        
+        if (item.rfqNumber === '25R000057') {
+          rfq25R000057Found = true;
+          console.log('🎯 وُجد 25R000057 في الأصناف!');
+        }
 
         if (!quotationsMap.has(item.rfqNumber)) {
           quotationsMap.set(item.rfqNumber, {
@@ -312,6 +453,16 @@ export class GoogleSheetsRealtimeData {
 
       const quotations = Array.from(quotationsMap.values());
       console.log(`📋 تم استخراج ${quotations.length} طلب تسعير من Google Sheets`);
+      console.log(`📊 تفاصيل المعالجة: ${skippedItems} صنف بدون RFQ، 25R000057 ${rfq25R000057Found ? 'موجود ✅' : 'غير موجود ❌'}`);
+      
+      // البحث عن 25R000057 في الطلبات النهائية
+      const targetQuotation = quotations.find(q => q.requestNumber === '25R000057');
+      if (targetQuotation) {
+        console.log('✅ 25R000057 موجود في الطلبات النهائية');
+      } else {
+        console.log('❌ 25R000057 غير موجود في الطلبات النهائية');
+      }
+      
       return quotations;
     } catch (error) {
       console.error('❌ خطأ في استخراج طلبات التسعير:', (error as Error).message);
@@ -400,7 +551,7 @@ export class GoogleSheetsRealtimeData {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z1000'
+        range: 'DATA!A2:AA'
       });
 
       const rows = response.data.values || [];
@@ -437,7 +588,7 @@ export class GoogleSheetsRealtimeData {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z1000'
+        range: 'DATA!A2:AA'
       });
 
       const rows = response.data.values || [];
@@ -472,7 +623,7 @@ export class GoogleSheetsRealtimeData {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z1000'
+        range: 'DATA!A2:AA'
       });
 
       const rows = response.data.values || [];
@@ -513,7 +664,7 @@ export class GoogleSheetsRealtimeData {
       const sheetName = 'تسعير_الموردين';
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A2:AA1000`, // توسيع النطاق إلى AA لاستيعاب جميع الأعمدة
+        range: `${sheetName}!A2:AA`, // قراءة كل البيانات بدون حد للصفوف
       });
 
       const rows = response.data.values || [];
@@ -582,7 +733,7 @@ export class GoogleSheetsRealtimeData {
       const sheetName = 'تسعير_العملاء';
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: `${sheetName}!A2:P1000`, // قراءة من A2 إلى P مع حد أقصى 1000 صف
+        range: `${sheetName}!A2:P`, // قراءة كل البيانات بدون حد للصفوف
       });
 
       const rows = response.data.values || [];
@@ -615,7 +766,7 @@ export class GoogleSheetsRealtimeData {
         try {
           const dataResponse = await this.sheets.spreadsheets.values.get({
             spreadsheetId: this.spreadsheetId,
-            range: 'DATA!A2:G2000', // قراءة البيانات من صفحة DATA
+            range: 'DATA!A2:AA', // قراءة كل البيانات من صفحة DATA
           });
 
           const dataRows = dataResponse.data.values || [];
@@ -724,7 +875,7 @@ export class GoogleSheetsRealtimeData {
       // أولاً: البحث في صفحة تسعير العملاء للحصول على البيانات الكاملة
       const customerPricingResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'تسعير_العملاء!A2:Q1000',
+        range: 'تسعير_العملاء!A2:Q',
       });
 
       const customerRows = customerPricingResponse.data.values || [];
@@ -816,7 +967,7 @@ export class GoogleSheetsRealtimeData {
           try {
             const supplierResponse = await this.sheets.spreadsheets.values.get({
               spreadsheetId: this.spreadsheetId,
-              range: 'تسعير_الموردين!A2:Z1000',
+              range: 'تسعير_الموردين!A2:Z',
             });
             
             const supplierRows = supplierResponse.data.values || [];
@@ -897,7 +1048,7 @@ export class GoogleSheetsRealtimeData {
       try {
         const supplierResponse = await this.sheets.spreadsheets.values.get({
           spreadsheetId: this.spreadsheetId,
-          range: 'تسعير_الموردين!A2:Z1000', // قراءة ورقة تسعير الموردين
+          range: 'تسعير_الموردين!A2:Z', // قراءة كل البيانات بدون حد للصفوف
         });
         
         const supplierRows = supplierResponse.data.values || [];
