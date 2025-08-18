@@ -75,8 +75,8 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <label className="font-medium">معرف البند:</label>
             <p className="text-blue-600">{comprehensiveData?.itemNumber || item.itemNumber}</p>
           </div>
-          <div>
-            <label className="font-medium">LINE ITEM:</label>
+          <div className="text-center">
+            <label className="font-medium block">LINE ITEM:</label>
             <p className="text-purple-700 font-mono font-bold" dir="ltr">
               {comprehensiveData?.lineItem || item.lineItem || ""}
             </p>

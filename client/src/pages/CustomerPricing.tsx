@@ -233,8 +233,8 @@ function ItemDetailedPricing({ item }: { item: any }) {
               <label className="text-sm font-medium">معرف البند:</label>
               <p className="font-semibold text-blue-600">{detailedPricing.itemNumber || detailedPricing.itemId || "غير محدد"}</p>
             </div>
-            <div>
-              <label className="text-sm font-medium">LINE ITEM:</label>
+            <div className="text-center">
+              <label className="text-sm font-medium block">LINE ITEM:</label>
               <p className="font-mono text-purple-600 font-bold">{detailedPricing?.lineItem || ""}</p>
             </div>
             <div>
