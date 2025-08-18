@@ -679,23 +679,24 @@ export class GoogleSheetsRealtimeData {
         
         if (rowItemNumber === itemId) {
           const rowData = {
-            itemNumber: row[0] || '',
-            uom: row[1] || '',
-            line_item: row[2] || '',
-            part_no: row[3] || '',
-            description: row[4] || '',
-            rfq_number: row[5] || '',
-            client_name: row[6] || '',
-            po_number: row[7] || '',
-            po_date: row[8] || '',
-            po_quantity: row[9] || '',
-            po_price: row[10] || '',
-            po_total: row[11] || '',
-            customer_price: row[12] || '',
-            rfq_date: row[13] || '',
-            rfq_qty: row[14] || '',
-            res_date: row[15] || '',
-            category: row[16] || 'ELEC',
+            itemNumber: row[0] || '',     // العمود A
+            uom: row[1] || '',            // العمود B
+            line_item: row[2] || '',      // العمود C
+            part_no: row[3] || '',        // العمود D
+            description: row[4] || '',    // العمود E
+            rfq_number: row[5] || '',     // العمود F
+            rfq_date: row[6] || '',       // العمود G - DATE/RFQ
+            rfq_qty: row[7] || '',        // العمود H - QTY
+            client_name: row[8] || '',    // العمود I
+            po_number: row[9] || '',      // العمود J
+            po_date: row[10] || '',       // العمود K
+            po_quantity: row[11] || '',   // العمود L
+            po_price: row[12] || '',      // العمود M
+            po_total: row[13] || '',      // العمود N
+            customer_price: row[14] || '', // العمود O
+            res_date: row[15] || '',      // العمود P
+            category: row[16] || 'ELEC',  // العمود Q
+            employee_name: row[17] || '', // العمود R - الموظف المسؤول
           };
           itemRows.push(rowData);
           console.log(`📌 وجدت البند ${itemId} في الصف ${i + 2}: RFQ="${row[5]}", LINE_ITEM="${row[2]}"`);
