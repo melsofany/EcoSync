@@ -693,9 +693,6 @@ export class GoogleSheetsRealtimeData {
         }
       }
       
-      let lineItemFound = '';
-      let exactMatchFound = false;
-      
       for (let i = 0; i < dataRows.length; i++) {
         const row = dataRows[i];
         const rowRfqNumber = (row[5] || '').trim(); // العمود F - RFQ Number
@@ -703,51 +700,31 @@ export class GoogleSheetsRealtimeData {
         const rowPartNumber = row[3] || ''; // العمود D - PART NO
         const rowDescription = row[4] || ''; // العمود E - Description
         
-        // طباعة السجلات التي تحتوي على P-0000016
-        if (rowItemNumber === 'P-0000016') {
-          console.log(`📌 وجدت P-0000016 في الصف ${i + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), LINE_ITEM="${row[2]||'فارغ'}"`);
+        // طباعة السجلات التي تحتوي على البند المطلوب
+        if (rowItemNumber === itemId) {
+          console.log(`📌 وجدت ${itemId} في الصف ${i + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), LINE_ITEM="${row[2]||'فارغ'}"`);
         }
 
         // البحث المحدد: مطابقة دقيقة لمعرف البند ورقم الطلب
-        // أولاً نحاول المطابقة الدقيقة
         if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
-          console.log(`🎯 مطابقة دقيقة للبند والطلب في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}, LINE_ITEM=${row[2]}`);
+          console.log(`🎯 مطابقة دقيقة للبند والطلب في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}, LINE_ITEM="${row[2]||''}"`);
           
-          // التأكد من وجود LINE ITEM
-          if (row[2] && row[2].trim() !== '') { // التأكد من وجود LINE ITEM
-            exactMatchFound = true;
-            lineItemFound = row[2];
-            
-            // دمج البيانات: البيانات الأساسية من صفحة تسعير العملاء + LINE ITEM من DATA
-            const mergedData = {
-              ...customerItemData,
-              itemId: itemId,
-              lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM
-            };
-            
+          // دمج البيانات: البيانات الأساسية من صفحة تسعير العملاء + LINE ITEM من DATA
+          const mergedData = {
+            ...customerItemData,
+            itemId: itemId,
+            lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM (حتى لو كان فارغاً)
+          };
+          
+          if (row[2] && row[2].trim() !== '') {
             console.log(`✅ تم العثور على LINE ITEM للبند ${itemId} في الطلب ${rfqNumber}:`, row[2]);
-            console.log(`📊 البيانات المدمجة:`, mergedData);
-            return mergedData;
+          } else {
+            console.log(`⚠️ التطابق موجود لكن LINE ITEM فارغ للبند ${itemId} في الطلب ${rfqNumber}`);
           }
+          
+          console.log(`📊 البيانات المدمجة:`, mergedData);
+          return mergedData;
         }
-        
-        // إذا لم نجد تطابق دقيق، نحفظ أول LINE ITEM متاح للبند
-        if (!lineItemFound && rowItemNumber === itemId && row[2] && row[2].trim() !== '') {
-          lineItemFound = row[2];
-          console.log(`💡 تم العثور على LINE ITEM للبند ${itemId} (من طلب آخر ${rowRfqNumber}): ${row[2]}`);
-        }
-      }
-      
-      // إذا لم نجد مطابقة دقيقة لكن وجدنا LINE ITEM من طلب آخر
-      if (lineItemFound && !exactMatchFound) {
-        console.log(`✅ استخدام LINE ITEM من طلب آخر للبند ${itemId}: ${lineItemFound}`);
-        const dataWithLineItem = {
-          ...customerItemData,
-          itemId: itemId,
-          lineItem: lineItemFound,
-        };
-        console.log(`📊 البيانات المُرجعة (مع LINE ITEM من طلب آخر):`, dataWithLineItem);
-        return dataWithLineItem;
       }
       
       // إذا لم نجد أي LINE ITEM على الإطلاق
