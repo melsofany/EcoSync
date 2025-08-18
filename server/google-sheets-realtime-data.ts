@@ -693,6 +693,9 @@ export class GoogleSheetsRealtimeData {
         }
       }
       
+      let lineItemFound = '';
+      let exactMatchFound = false;
+      
       for (let i = 0; i < dataRows.length; i++) {
         const row = dataRows[i];
         const rowRfqNumber = (row[5] || '').trim(); // العمود F - RFQ Number
@@ -712,30 +715,50 @@ export class GoogleSheetsRealtimeData {
           
           // التأكد من وجود LINE ITEM
           if (row[2] && row[2].trim() !== '') { // التأكد من وجود LINE ITEM
-          
-          // دمج البيانات: البيانات الأساسية من صفحة تسعير العملاء + LINE ITEM من DATA
-          const mergedData = {
-            ...customerItemData,
-            itemId: itemId,
-            lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM
-          };
-          
+            exactMatchFound = true;
+            lineItemFound = row[2];
+            
+            // دمج البيانات: البيانات الأساسية من صفحة تسعير العملاء + LINE ITEM من DATA
+            const mergedData = {
+              ...customerItemData,
+              itemId: itemId,
+              lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM
+            };
+            
             console.log(`✅ تم العثور على LINE ITEM للبند ${itemId} في الطلب ${rfqNumber}:`, row[2]);
             console.log(`📊 البيانات المدمجة:`, mergedData);
             return mergedData;
           }
         }
+        
+        // إذا لم نجد تطابق دقيق، نحفظ أول LINE ITEM متاح للبند
+        if (!lineItemFound && rowItemNumber === itemId && row[2] && row[2].trim() !== '') {
+          lineItemFound = row[2];
+          console.log(`💡 تم العثور على LINE ITEM للبند ${itemId} (من طلب آخر ${rowRfqNumber}): ${row[2]}`);
+        }
       }
       
-      // إذا لم نجد مطابقة دقيقة، نُرجع البيانات بدون LINE ITEM
-      console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId} في الطلب ${rfqNumber} بالتحديد`);
+      // إذا لم نجد مطابقة دقيقة لكن وجدنا LINE ITEM من طلب آخر
+      if (lineItemFound && !exactMatchFound) {
+        console.log(`✅ استخدام LINE ITEM من طلب آخر للبند ${itemId}: ${lineItemFound}`);
+        const dataWithLineItem = {
+          ...customerItemData,
+          itemId: itemId,
+          lineItem: lineItemFound,
+        };
+        console.log(`📊 البيانات المُرجعة (مع LINE ITEM من طلب آخر):`, dataWithLineItem);
+        return dataWithLineItem;
+      }
+      
+      // إذا لم نجد أي LINE ITEM على الإطلاق
+      console.log(`⚠️ لم يتم العثور على أي LINE ITEM للبند ${itemId}`);
       console.log(`📝 سيتم إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM`);
       
       // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM
       const dataWithoutLineItem = {
         ...customerItemData,
         itemId: itemId,
-        lineItem: '', // لا يوجد LINE ITEM للطلب المحدد
+        lineItem: '', // لا يوجد LINE ITEM
       };
       
       console.log(`📊 البيانات المُرجعة (بدون LINE ITEM):`, dataWithoutLineItem);
