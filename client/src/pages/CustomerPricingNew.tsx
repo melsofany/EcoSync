@@ -198,10 +198,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <Package className="h-5 w-5" />
             جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
           </h4>
-          <p className="text-blue-100 text-sm mt-1">
-            عرض جميع البيانات لـ PART NO: {item.partNumber}
-            {comprehensiveData && ` (${comprehensiveData.length} سجل في قاعدة البيانات)`}
-          </p>
+
 
         </div>
         <div className="overflow-x-auto">
