@@ -712,89 +712,19 @@ export class GoogleSheetsRealtimeData {
         }
       }
       
-      // البحث الثاني: محاولة المطابقة المرنة إذا لم نجد مطابقة دقيقة
-      console.log(`⚠️ لم يتم العثور على مطابقة دقيقة للبند ${itemId} في الطلب ${rfqNumber}`);
+      // إذا لم نجد مطابقة دقيقة، نُرجع البيانات بدون LINE ITEM
+      console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId} في الطلب ${rfqNumber} بالتحديد`);
+      console.log(`📝 سيتم إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM`);
       
-      // البحث عن مطابقة مرنة
-      for (let i = 0; i < dataRows.length; i++) {
-        const row = dataRows[i];
-        const rowRfqNumber = row[5] || ''; // العمود F - RFQ Number
-        const rowItemNumber = row[0] || ''; // العمود A - Item Number
-        const rowPartNumber = row[3] || ''; // العمود D - PART NO
-        
-        // مطابقة مرنة: البند نفسه مع احتمالية اختلاف في رقم الطلب
-        const rfqFlexMatch = (
-          (rfqNumber && rowRfqNumber && rowRfqNumber.includes(rfqNumber)) || // الطلب الكامل يحتوي على الجزء
-          (rfqNumber && rowRfqNumber && rfqNumber.includes(rowRfqNumber)) || // الجزء يحتوي على الطلب الكامل
-          (rfqNumber && rowRfqNumber && rfqNumber.replace(/[^\d]/g, '') && 
-           rowRfqNumber.includes(rfqNumber.replace(/[^\d]/g, ''))) // مطابقة الأرقام فقط
-        );
-        
-        if (rowItemNumber === itemId && rfqFlexMatch && row[2] && row[2].trim() !== '') {
-          console.log(`🔍 مطابقة مرنة للبند في الصف ${i + 2}: RFQ=${rowRfqNumber} (البحث عن: ${rfqNumber}), Item=${rowItemNumber}, LINE_ITEM=${row[2]}`);
-          
-          const itemData = {
-            itemId: itemId,
-            itemNumber: itemId,
-            lineItem: row[2] || '', // العمود C - LINE ITEM
-            partNumber: row[3] || '', // العمود D - PART NO
-            description: row[4] || '', // العمود E - Description
-            uom: row[1] || 'EACH', // العمود B - UOM
-            quantity: row[7] || '1', // العمود H - Quantity
-            rfqNumber: row[5] || '', // العمود F - RFQ Number
-            clientName: row[16] || '', // العمود Q - Client Name
-            requestDate: row[6] || '', // العمود G - Request Date
-            expiryDate: row[9] || '', // العمود J - Expiry Date
-            supplierPrice: row[11] || '', // العمود L - Supplier Unit Price
-            customerPrice: row[14] || '', // العمود O - Customer Unit Price
-            profitMargin: row[15] || '' // العمود P - Profit Margin
-          };
-          
-          console.log(`⚠️ تم العثور على البند ${itemId} مع مطابقة مرنة للطلب (${rowRfqNumber} بدلاً من ${rfqNumber})`, itemData);
-          return itemData;
-        }
-      }
+      // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM
+      const dataWithoutLineItem = {
+        ...customerItemData,
+        itemId: itemId,
+        lineItem: '', // لا يوجد LINE ITEM للطلب المحدد
+      };
       
-      // إذا لم نجد مطابقة مرنة، نبحث عن البند فقط
-      console.log(`⚠️ لم يتم العثور على مطابقة مرنة للبند ${itemId} في الطلب ${rfqNumber}`);
-      
-      // البحث الثالث: البحث عن البند فقط (كإجراء احتياطي أخير)
-      for (let i = 0; i < dataRows.length; i++) {
-        const row = dataRows[i];
-        const rowItemNumber = row[0] || ''; // العمود A - Item Number
-        const rowRfqNumber = row[5] || ''; // العمود F - RFQ Number
-        
-        // مطابقة البند فقط إذا لم نجد مطابقة مع الطلب
-        if (rowItemNumber === itemId && row[2] && row[2].trim() !== '') {
-          console.log(`⚠️ تحذير: مطابقة البند فقط (طلب مختلف) في الصف ${i + 2}:`);
-          console.log(`  - البند المطلوب: ${itemId} في الطلب: ${rfqNumber}`);
-          console.log(`  - البند الموجود: ${rowItemNumber} في الطلب: ${rowRfqNumber}`);
-          console.log(`  - LINE ITEM: ${row[2]}`);
-          
-          const itemData = {
-            itemId: itemId,
-            itemNumber: itemId,
-            lineItem: row[2] || '', // العمود C - LINE ITEM
-            partNumber: row[3] || '', // العمود D - PART NO
-            description: row[4] || '', // العمود E - Description
-            uom: row[1] || 'EACH', // العمود B - UOM
-            quantity: row[7] || '1', // العمود H - Quantity
-            rfqNumber: row[5] || '', // العمود F - RFQ Number
-            clientName: row[16] || '', // العمود Q - Client Name
-            requestDate: row[6] || '', // العمود G - Request Date
-            expiryDate: row[9] || '', // العمود J - Expiry Date
-            supplierPrice: row[11] || '', // العمود L - Supplier Unit Price
-            customerPrice: row[14] || '', // العمود O - Customer Unit Price
-            profitMargin: row[15] || '' // العمود P - Profit Margin
-          };
-          
-          console.log(`⚠️ تم إرجاع البند من طلب مختلف كإجراء احتياطي`);
-          return itemData; // إرجاع البيانات كإجراء احتياطي
-        }
-      }
-
-      console.log(`❌ لم يتم العثور على البند ${itemId} في صفحة DATA`);
-      return null;
+      console.log(`📊 البيانات المُرجعة (بدون LINE ITEM):`, dataWithoutLineItem);
+      return dataWithoutLineItem;
     } catch (error) {
       console.error('❌ خطأ في الحصول على تفاصيل البند:', (error as Error).message);
       return null;
