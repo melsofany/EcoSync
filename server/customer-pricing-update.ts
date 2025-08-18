@@ -8,7 +8,83 @@ export class CustomerPricingUpdater {
   }
 
   /**
-   * تحديث تسعير العميل مع إضافة اسم الموظف
+   * تحديث سعر العميل في العمود I في ورقة DATA
+   */
+  async updateCustomerPricingInDataSheet(itemId: string, rfqNumber: string, pricingData: {
+    customerUnitPrice?: string;
+    employeeName: string;
+  }): Promise<void> {
+    try {
+      const sheetName = 'DATA';
+      console.log(`🔄 تحديث سعر العميل للبند ${itemId} مع RFQ ${rfqNumber} في ورقة DATA`);
+
+      // قراءة البيانات الحالية من ورقة DATA
+      const response = await this.googleSheets.sheets.spreadsheets.values.get({
+        spreadsheetId: this.googleSheets.spreadsheetId,
+        range: `${sheetName}!A:Q`
+      });
+
+      const rows = response.data.values || [];
+      
+      // البحث عن الصف المطابق بناءً على معرف البند ورقم RFQ
+      let targetRowIndex = -1;
+      for (let i = 1; i < rows.length; i++) { // البداية من الصف 2 (تخطي الرؤوس)
+        const itemNumber = rows[i][0]; // العمود A - معرف البند
+        const rfqCol = rows[i][5]; // العمود F - RFQ
+        
+        if (itemNumber === itemId && rfqCol === rfqNumber) {
+          targetRowIndex = i + 1; // +1 للحصول على رقم الصف الفعلي
+          console.log(`✅ وجد الصف ${targetRowIndex} للبند ${itemId} مع RFQ ${rfqNumber}`);
+          break;
+        }
+      }
+
+      if (targetRowIndex === -1) {
+        console.error(`❌ لم يتم العثور على البند ${itemId} مع RFQ ${rfqNumber} في ورقة DATA`);
+        throw new Error(`Item ${itemId} with RFQ ${rfqNumber} not found in DATA sheet`);
+      }
+
+      // تحديث العمود I (سعر العميل) والعمود Q (اسم الموظف)
+      const updateRequests = [];
+      
+      // تحديث العمود I - سعر العميل
+      if (pricingData.customerUnitPrice) {
+        updateRequests.push({
+          range: `${sheetName}!I${targetRowIndex}`,
+          values: [[pricingData.customerUnitPrice]]
+        });
+      }
+      
+      // تحديث العمود Q - اسم الموظف
+      if (pricingData.employeeName) {
+        updateRequests.push({
+          range: `${sheetName}!Q${targetRowIndex}`,
+          values: [[pricingData.employeeName]]
+        });
+      }
+
+      // تنفيذ التحديثات
+      if (updateRequests.length > 0) {
+        await this.googleSheets.sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId: this.googleSheets.spreadsheetId,
+          resource: {
+            valueInputOption: 'RAW',
+            data: updateRequests
+          }
+        });
+        
+        console.log(`✅ تم تحديث سعر العميل (${pricingData.customerUnitPrice}) في العمود I، الصف ${targetRowIndex}`);
+        console.log(`✅ تم تحديث اسم الموظف (${pricingData.employeeName}) في العمود Q، الصف ${targetRowIndex}`);
+      }
+
+    } catch (error) {
+      console.error(`❌ خطأ في تحديث سعر العميل في ورقة DATA:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * تحديث تسعير العميل مع إضافة اسم الموظف (الوظيفة القديمة للتوافق)
    */
   async updateCustomerPricing(itemId: string, pricingData: {
     customerUnitPrice?: string;

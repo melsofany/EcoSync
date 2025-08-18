@@ -4742,16 +4742,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const { CustomerPricingUpdater } = await import('./customer-pricing-update.js');
       const customerPricingUpdater = new CustomerPricingUpdater();
       
-      await customerPricingUpdater.updateCustomerPricing(
+      // تحديث السعر في العمود I في ورقة DATA
+      await customerPricingUpdater.updateCustomerPricingInDataSheet(
         pricingData.itemId,
+        pricingData.rfqNumber || "",
         {
           customerUnitPrice: pricingData.customerUnitPrice || "",
-          customerTotalPrice: pricingData.customerTotalPrice || "",
-          supplierUnitPrice: pricingData.supplierUnitPrice || "",
-          profitMargin: pricingData.profitMargin || "",
-          currency: pricingData.currency || "EGP",
-          notes: pricingData.notes || "",
-          status: pricingData.status || "مُسعّر",
           employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
         }
       );

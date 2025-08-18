@@ -420,7 +420,8 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
         body: JSON.stringify({
-          itemId: item.id,
+          itemId: item.itemNumber || item.id,  // Use itemNumber (P-0000016) not id
+          rfqNumber: item.requestNumber || item.rfqNumber,  // Add RFQ number
           quotationId: item.quotationId,
           costPrice: Number(formData.supplierPrice) || Number(item.supplierPrice || 0),
           profitMargin: profitMargin / 100,
