@@ -228,16 +228,12 @@ function ItemDetailedPricing({ item }: { item: any }) {
             تفاصيل البند الأساسية - مباشر من Google Sheets
           </h4>
           
-          {/* LINE ITEM في صف منفصل */}
-          <div className="mb-4">
-            <label className="text-sm font-medium block mb-2">🎯 LINE ITEM:</label>
-            <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
-              {detailedPricing?.lineItem ? (
-                <div className="text-center text-xl font-bold">{detailedPricing.lineItem}</div>
-              ) : (
-                <div className="text-center text-gray-500">لا يوجد LINE ITEM</div>
-              )}
-            </div>
+          {/* LINE ITEM في المنتصف */}
+          <div className="text-center mb-4">
+            <label className="text-sm font-medium">LINE ITEM</label>
+            <p className="font-mono text-purple-600 text-lg font-bold">
+              {detailedPricing?.lineItem || ""}
+            </p>
           </div>
 
           {/* باقي التفاصيل في شبكة */}
