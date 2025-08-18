@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ProfileImageUploader } from "@/components/ProfileImageUploader";
 import { 
   Select, 
   SelectContent, 
@@ -86,7 +87,7 @@ export default function SimpleUserPermissions() {
     role: 'data_entry',
     isActive: true,
     canAccessBot: false,
-    profileImage: null as File | null
+    profileImage: '' // Base64 string
   });
 
   // نموذج تغيير كلمة المرور
@@ -106,8 +107,8 @@ export default function SimpleUserPermissions() {
     queryKey: ['/api/permissions']
   });
 
-  const users = usersData?.users || [];
-  const permissions = permissionsData?.permissions || [];
+  const users = (usersData as any)?.users || usersData || [];
+  const permissions = (permissionsData as any)?.permissions || permissionsData || [];
   const currentUser = users.find((u: User) => u.id === selectedUserId);
 
   // تحديث الصلاحيات عند اختيار مستخدم جديد
@@ -175,26 +176,19 @@ export default function SimpleUserPermissions() {
   // إضافة مستخدم جديد
   const addUserMutation = useMutation({
     mutationFn: async () => {
-      // إنشاء FormData لرفع الصورة مع البيانات
-      const formData = new FormData();
-      formData.append('username', newUser.username);
-      formData.append('fullName', newUser.fullName);
-      formData.append('email', newUser.email);
-      formData.append('phone', newUser.phone);
-      formData.append('password', newUser.password);
-      formData.append('role', newUser.role);
-      formData.append('isActive', newUser.isActive.toString());
-      formData.append('canAccessBot', newUser.canAccessBot.toString());
-      
-      if (newUser.profileImage) {
-        formData.append('profileImage', newUser.profileImage);
-      }
-
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        body: formData,
+      // إرسال البيانات كـ JSON مع Base64
+      const response = await apiRequest('/api/users', 'POST', {
+        username: newUser.username,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        phone: newUser.phone,
+        password: newUser.password,
+        role: newUser.role,
+        isActive: newUser.isActive,
+        canAccessBot: newUser.canAccessBot,
+        profileImage: newUser.profileImage // Base64 string
       });
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -211,7 +205,7 @@ export default function SimpleUserPermissions() {
         role: 'data_entry',
         isActive: true,
         canAccessBot: false,
-        profileImage: null
+        profileImage: ''
       });
       queryClient.invalidateQueries({ queryKey: ['/api/sheets-users'] });
     },
@@ -486,28 +480,13 @@ export default function SimpleUserPermissions() {
                       </Select>
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="profileImage">صورة المستخدم</Label>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          id="profileImage"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            setNewUser(prev => ({ ...prev, profileImage: file || null }));
-                          }}
-                          className="flex-1"
-                        />
-                        {newUser.profileImage && (
-                          <div className="flex items-center gap-2 text-sm text-green-600">
-                            <Camera className="h-4 w-4" />
-                            تم اختيار الصورة
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500">
-                        اختر صورة للمستخدم (اختياري)
-                      </p>
+                      <Label htmlFor="profileImage">صورة المستخدم (اختياري)</Label>
+                      <ProfileImageUploader
+                        currentImage={newUser.profileImage}
+                        onImageChange={(base64: string) => {
+                          setNewUser(prev => ({ ...prev, profileImage: base64 }));
+                        }}
+                      />
                     </div>
                   </div>
                   <DialogFooter>

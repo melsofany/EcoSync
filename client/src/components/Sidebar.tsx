@@ -73,7 +73,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     fullName: 'مدير النظام',
     email: 'admin@qurtoba.com',
     role: 'manager',
-    profileImage: null
+    profileImage: null,
+    isActive: true,
+    isOnline: true,
+    lastLoginAt: null,
+    lastActivityAt: null,
+    canAccessBot: false,
+    phone: '',
+    permissions: {},
+    ipAddress: '',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
   
 
@@ -89,11 +99,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           title: "الشاشة الرئيسية",
           href: "/",
           icon: LayoutDashboard,
-        },
-        {
-          title: "إدارة المستخدمين",
-          href: "/user-management",
-          icon: Users,
         },
         {
           title: "إدارة الصلاحيات",
