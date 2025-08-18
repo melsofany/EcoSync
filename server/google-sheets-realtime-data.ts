@@ -626,41 +626,60 @@ export class GoogleSheetsRealtimeData {
         return null;
       }
 
-      // أولاً: البحث في صفحة تسعير العملاء للحصول على رقم طلب التسعير
+      // أولاً: البحث في صفحة تسعير العملاء للحصول على البيانات الكاملة
       const customerPricingResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: 'تسعير_العملاء!A2:Q1000',
       });
 
       const customerRows = customerPricingResponse.data.values || [];
-      let rfqNumber = '';
-      let targetItemData: any = null;
+      let customerItemData: any = null;
 
       // البحث عن البند في صفحة تسعير العملاء
       for (const row of customerRows) {
         if (row[0] === itemId) { // العمود A - Item Number
-          rfqNumber = row[5] || ''; // العمود F - RFQ Number
-          targetItemData = {
+          // استخراج جميع البيانات من صفحة تسعير العملاء
+          customerItemData = {
             itemNumber: row[0] || '',
-            partNumber: row[3] || '', // العمود D
-            description: row[4] || '', // العمود E
-            uom: row[1] || 'EACH',
-            quantity: row[7] || '1',
-            clientName: row[16] || ''
+            lineItem: row[2] || '', // العمود C - LINE ITEM (إذا كان موجوداً)
+            partNumber: row[1] || '', // العمود B - Part Number
+            description: row[2] || '', // العمود C - Description
+            uom: row[3] || 'EACH', // العمود D - UOM
+            quantity: row[4] || '1', // العمود E - Quantity
+            rfqNumber: row[5] || '', // العمود F - RFQ Number
+            clientName: row[6] || '', // العمود G - Client Name
+            requestDate: row[7] || '', // العمود H - Request Date
+            expiryDate: row[8] || '', // العمود I - Expiry Date
+            customerUnitPrice: row[9] || '', // العمود J - Customer Unit Price
+            customerTotalPrice: row[10] || '', // العمود K - Customer Total Price
+            supplierUnitPrice: row[11] || '', // العمود L - Supplier Unit Price
+            profitMargin: row[12] || '', // العمود M - Profit Margin
+            currency: row[13] || '', // العمود N - Currency
+            notes: row[14] || '', // العمود O - Notes
+            status: row[15] || '', // العمود P - Status
+            employeeName: row[16] || '' // العمود Q - Employee Name
           };
-          console.log(`📋 تم العثور على البند في صفحة تسعير العملاء: ${itemId}, RFQ: ${rfqNumber}`);
+          console.log(`📋 تم العثور على البند في صفحة تسعير العملاء: ${itemId}, RFQ: ${customerItemData.rfqNumber}`);
           break;
         }
       }
 
-      if (!rfqNumber) {
-        console.log(`❌ لم يتم العثور على رقم طلب التسعير للبند ${itemId}`);
+      if (!customerItemData) {
+        console.log(`❌ لم يتم العثور على البند ${itemId} في صفحة تسعير العملاء`);
         return null;
       }
+      
+      const rfqNumber = customerItemData.rfqNumber;
 
-      console.log(`🔍 البحث عن البند ${itemId} في طلب التسعير ${rfqNumber}`);
+      // إذا كان LINE ITEM موجود في صفحة تسعير العملاء، نستخدمه مباشرة
+      if (customerItemData.lineItem && customerItemData.lineItem.trim() !== '') {
+        console.log(`✅ تم العثور على LINE ITEM في صفحة تسعير العملاء: ${customerItemData.lineItem}`);
+        return customerItemData;
+      }
 
-      // ثانياً: البحث في صفحة DATA باستخدام رقم طلب التسعير والبند
+      console.log(`🔍 البحث عن LINE ITEM في صفحة DATA للبند ${itemId} في طلب التسعير ${rfqNumber}`);
+
+      // ثانياً: البحث في صفحة DATA للحصول على LINE ITEM إذا لم يكن موجوداً
       const dataResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: 'DATA!A2:Z1000',
@@ -684,25 +703,16 @@ export class GoogleSheetsRealtimeData {
           // التأكد من وجود LINE ITEM
           if (row[2] && row[2].trim() !== '') { // التأكد من وجود LINE ITEM
           
-          const itemData = {
+          // دمج البيانات من صفحة DATA مع البيانات من صفحة تسعير العملاء
+          const mergedData = {
+            ...customerItemData,
             itemId: itemId,
-            itemNumber: itemId,
-            lineItem: row[2] || '', // العمود C - LINE ITEM (هذا ما نريده!)
-            partNumber: row[3] || '', // العمود D - PART NO
-            description: row[4] || '', // العمود E - Description
-            uom: row[1] || 'EACH', // العمود B - UOM
-            quantity: row[7] || '1', // العمود H - Quantity
-            rfqNumber: row[5] || '', // العمود F - RFQ Number
-            clientName: row[16] || '', // العمود Q - Client Name
-            requestDate: row[6] || '', // العمود G - Request Date
-            expiryDate: row[9] || '', // العمود J - Expiry Date
-            supplierPrice: row[11] || '', // العمود L - Supplier Unit Price
-            customerPrice: row[14] || '', // العمود O - Customer Unit Price
-            profitMargin: row[15] || '' // العمود P - Profit Margin
+            lineItem: row[2] || '', // العمود C - LINE ITEM من DATA
+            // إضافة أي بيانات إضافية من DATA إذا لزم الأمر
           };
           
-            console.log(`✅ تم العثور على البند ${itemId} في الطلب ${rfqNumber} مع LINE ITEM:`, itemData);
-            return itemData;
+            console.log(`✅ تم العثور على البند ${itemId} في الطلب ${rfqNumber} مع LINE ITEM من DATA:`, mergedData);
+            return mergedData;
           }
         }
       }
