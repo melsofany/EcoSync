@@ -84,7 +84,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
           <div>
             <label className="font-medium">الوحدة:</label>
-            <p className="text-blue-600">{item.unit}</p>
+            <p className="text-blue-600">{comprehensiveData?.uom || item.uom || item.unit || "EACH"}</p>
           </div>
         </div>
       </div>
@@ -256,7 +256,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     </td>
                     <td className="border border-gray-300 p-2 text-center font-semibold text-blue-600">{row.part_no || item.partNumber || "-"}</td>
                     <td className="border border-gray-300 p-2 text-center font-bold text-blue-800">{row.line_item || item.lineItem || ""}</td>
-                    <td className="border border-gray-300 p-2 text-center">{row.uom || item.unit}</td>
+                    <td className="border border-gray-300 p-2 text-center">{row.uom || item.uom || item.unit || "EACH"}</td>
                   </tr>
                 ))
               ) : (
@@ -280,7 +280,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                   </td>
                   <td className="border p-2 text-center">{item.partNumber || "-"}</td>
                   <td className="border p-2 text-center text-blue-600">{item.lineItem || ""}</td>
-                  <td className="border p-2 text-center">{item.unit}</td>
+                  <td className="border p-2 text-center">{item.uom || item.unit || "EACH"}</td>
                 </tr>
               )}
             </tbody>
