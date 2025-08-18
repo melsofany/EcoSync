@@ -37,14 +37,15 @@ function ItemDetailedPricing({ item }: { item: any }) {
       try {
         console.log(`🚀 جاري جلب البيانات للبند: ${item.id}`);
         
-        // Use POST to completely avoid caching
-        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data`, {
+        // Force new request with unique timestamp
+        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data?t=${Date.now()}_${Math.random()}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache'
           },
+          body: JSON.stringify({ timestamp: Date.now() }),
           credentials: 'include',
           cache: 'no-store'
         });
