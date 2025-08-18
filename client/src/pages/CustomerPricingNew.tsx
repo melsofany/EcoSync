@@ -18,7 +18,7 @@ import { formatCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 
 // Component to show detailed pricing info for an item
-function ItemDetailedPricing({ item }: { item: any }) {
+function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: () => void }) {
   const [detailedPricing, setDetailedPricing] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPricingForm, setShowPricingForm] = useState(false);
@@ -179,7 +179,10 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 ...item,
                 supplierPrice: comprehensiveData?.supplierUnitPrice || item.supplierPrice
               }} 
-              onSuccess={() => setShowPricingForm(false)} 
+              onSuccess={() => {
+                setShowPricingForm(false);
+                onItemPriced(); // Call the parent callback
+              }} 
             />
           </div>
         )}
@@ -560,6 +563,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
 export default function CustomerPricing() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  const [pricedItems, setPricedItems] = useState<Set<string>>(new Set()); // Track priced items
 
   const { data: itemsNeedingPricing = [], isLoading } = useQuery({
     queryKey: ["/api/items-ready-for-customer-pricing"],
@@ -584,20 +588,22 @@ export default function CustomerPricing() {
     return "secondary"; // آمن
   };
 
-  // ترتيب البنود: الأقرب للانتهاء أولاً
+  // تصفية البنود المُسعرة وترتيب البنود: الأقرب للانتهاء أولاً
   const itemsArray = Array.isArray(itemsNeedingPricing) 
-    ? itemsNeedingPricing.sort((a: any, b: any) => {
-        const aDays = getDaysRemaining(a.expiryDate);
-        const bDays = getDaysRemaining(b.expiryDate);
-        
-        // البنود بدون تاريخ انتهاء في النهاية
-        if (aDays === null && bDays === null) return 0;
-        if (aDays === null) return 1;
-        if (bDays === null) return -1;
-        
-        // ترتيب تصاعدي حسب الأيام المتبقية
-        return aDays - bDays;
-      })
+    ? itemsNeedingPricing
+        .filter((item: any) => !pricedItems.has(item.id)) // Filter out priced items
+        .sort((a: any, b: any) => {
+          const aDays = getDaysRemaining(a.expiryDate);
+          const bDays = getDaysRemaining(b.expiryDate);
+          
+          // البنود بدون تاريخ انتهاء في النهاية
+          if (aDays === null && bDays === null) return 0;
+          if (aDays === null) return 1;
+          if (bDays === null) return -1;
+          
+          // ترتيب تصاعدي حسب الأيام المتبقية
+          return aDays - bDays;
+        })
     : [];
 
   const toggleItem = (itemId: string) => {
@@ -702,7 +708,15 @@ export default function CustomerPricing() {
                       </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="px-4 pb-4">
-                      <ItemDetailedPricing item={item} />
+                      <ItemDetailedPricing 
+                        item={item} 
+                        onItemPriced={() => {
+                          // Add the item to priced items set
+                          setPricedItems(prev => new Set(prev).add(item.id));
+                          // Close the collapsible
+                          toggleItem(item.id);
+                        }}
+                      />
                     </CollapsibleContent>
                   </Collapsible>
                 );
