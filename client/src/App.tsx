@@ -75,8 +75,8 @@ function Router() {
         <Route path="/clients" component={Clients} />
         <Route path="/suppliers" component={Suppliers} />
         <Route path="/supplier-pricing" component={SupplierPricing} />
-        <Route path="/customer-pricing" component={CustomerPricingSimple} />
-        <Route path="/customer-pricing-old" component={CustomerPricing} />
+        <Route path="/customer-pricing" component={CustomerPricing} />
+        <Route path="/customer-pricing-simple" component={CustomerPricingSimple} />
         <Route path="/purchase-orders" component={PurchaseOrders} />
         <Route path="/create-purchase-order" component={CreatePurchaseOrder} />
         <Route path="/reports" component={Reports} />

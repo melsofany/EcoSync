@@ -37,57 +37,35 @@ function ItemDetailedPricing({ item }: { item: any }) {
       try {
         console.log(`🚀 جاري جلب البيانات للبند: ${item.id}`);
         
-        // Mobile-friendly cache bypass with unique ID
-        const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
-        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data?mobile=${uniqueId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate, private',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          },
-          credentials: 'include',
-          cache: 'no-cache'
-        });
+        // استخدام نفس الطريقة الناجحة من الصفحة البسيطة
+        const response = await fetch(
+          `/api/items/${item.id}/comprehensive-data?r=${Math.random()}`,
+          { 
+            credentials: "include",
+            headers: { "Cache-Control": "no-cache" }
+          }
+        );
         
-        console.log(`📞 استجابة API - حالة:`, testResponse.status);
-        console.log(`📞 استجابة API - headers:`, Object.fromEntries(testResponse.headers.entries()));
+        console.log(`📞 استجابة API - حالة:`, response.status);
         
-        if (!testResponse.ok) {
-          console.error(`❌ خطأ في API: ${testResponse.status}`);
-          const errorText = await testResponse.text();
-          console.error(`❌ نص الخطأ:`, errorText);
+        if (!response.ok) {
+          console.error(`❌ خطأ في API: ${response.status}`);
+          setDetailedPricing(null);
           return;
         }
         
-        const rawText = await testResponse.text();
-        console.log(`📄 النص الخام من API:`, rawText);
+        const comprehensiveData = await response.json();
+        console.log(`📄 البيانات من API:`, comprehensiveData);
         
-        let comprehensiveData;
-        try {
-          comprehensiveData = JSON.parse(rawText);
-        } catch (parseError) {
-          console.error('❌ خطأ في تحليل JSON:', parseError);
-          console.error('❌ النص الذي فشل في التحليل:', rawText);
-          return;
-        }
-        
-        console.log(`📊 البيانات بعد التحليل:`, comprehensiveData);
-        console.log(`🎯 LINE ITEM من البيانات:`, comprehensiveData?.lineItem);
-        
-        // تعيين البيانات مباشرة
-        setDetailedPricing(comprehensiveData);
-        
-        // تسجيل البيانات النهائية
-        console.log('✅ تم تعيين البيانات في State:', comprehensiveData);
-        console.log('✅ LINE ITEM النهائي:', comprehensiveData?.lineItem);
-        
-        // فحص البيانات
-        if (comprehensiveData?.lineItem) {
-          console.log('✅✅✅ LINE ITEM موجود:', comprehensiveData.lineItem);
-        } else {
-          console.error('❌❌❌ LINE ITEM غير موجود في البيانات');
+        // تعيين البيانات مباشرة كما في الصفحة البسيطة الناجحة
+        if (comprehensiveData) {
+          setDetailedPricing(comprehensiveData);
+          console.log('✅ تم تعيين البيانات بنجاح');
+          if (comprehensiveData.lineItem) {
+            console.log('✅ LINE ITEM موجود:', comprehensiveData.lineItem);
+          } else {
+            console.log('⚠️ LINE ITEM غير موجود');
+          }
         }
       } catch (error) {
         console.error('Fetch error:', error);
@@ -211,21 +189,20 @@ function ItemDetailedPricing({ item }: { item: any }) {
               <label className="text-sm font-medium">🎯 LINE ITEM:</label>
               <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
                 <div>
-                  {/* عرض LINE ITEM بوضوح للهواتف */}
-                  <div style={{
-                    color: detailedPricing?.lineItem ? '#008000' : '#ff0000', 
-                    fontSize: '18px', 
-                    fontWeight: 'bold', 
-                    padding: '12px', 
-                    backgroundColor: detailedPricing?.lineItem ? '#d4f4dd' : '#ffdddd', 
-                    borderRadius: '8px', 
-                    border: detailedPricing?.lineItem ? '2px solid #008000' : '2px solid #ff0000',
-                    wordBreak: 'break-all',
-                    minHeight: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
+                  {/* عرض LINE ITEM بوضوح كما في الصفحة الناجحة */}
+                  <div 
+                    className="p-4 text-center text-xl font-mono rounded-lg"
+                    style={{
+                      backgroundColor: detailedPricing?.lineItem ? "#d4f4dd" : "#ffdddd",
+                      color: detailedPricing?.lineItem ? "#008000" : "#ff0000",
+                      border: `3px solid ${detailedPricing?.lineItem ? "#008000" : "#ff0000"}`,
+                      wordBreak: 'break-all',
+                      minHeight: '60px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
                     {detailedPricing?.lineItem || 'غير محدد'}
                   </div>
                   
