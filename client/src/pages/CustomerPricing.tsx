@@ -37,16 +37,18 @@ function ItemDetailedPricing({ item }: { item: any }) {
       try {
         console.log(`🚀 جاري جلب البيانات للبند: ${item.id}`);
         
-        // Force GET request with timestamp to avoid cache completely
-        const timestamp = Date.now();
-        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data?_t=${timestamp}`, {
+        // Mobile-friendly cache bypass with unique ID
+        const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data?mobile=${uniqueId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+            'Cache-Control': 'no-cache, no-store, must-revalidate, private',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           },
-          credentials: 'include'
+          credentials: 'include',
+          cache: 'no-cache'
         });
         
         console.log(`📞 استجابة API - حالة:`, testResponse.status);
@@ -209,8 +211,21 @@ function ItemDetailedPricing({ item }: { item: any }) {
               <label className="text-sm font-medium">🎯 LINE ITEM:</label>
               <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
                 <div>
-                  {/* عرض LINE ITEM بوضوح */}
-                  <div style={{color: detailedPricing?.lineItem ? 'green' : 'red', fontSize: '20px', fontWeight: 'bold', padding: '15px', backgroundColor: detailedPricing?.lineItem ? '#d4f4dd' : '#ffdddd', borderRadius: '8px', border: '2px solid ' + (detailedPricing?.lineItem ? 'green' : 'red')}}>
+                  {/* عرض LINE ITEM بوضوح للهواتف */}
+                  <div style={{
+                    color: detailedPricing?.lineItem ? '#008000' : '#ff0000', 
+                    fontSize: '18px', 
+                    fontWeight: 'bold', 
+                    padding: '12px', 
+                    backgroundColor: detailedPricing?.lineItem ? '#d4f4dd' : '#ffdddd', 
+                    borderRadius: '8px', 
+                    border: detailedPricing?.lineItem ? '2px solid #008000' : '2px solid #ff0000',
+                    wordBreak: 'break-all',
+                    minHeight: '50px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
                     {detailedPricing?.lineItem || 'غير محدد'}
                   </div>
                   
