@@ -32,17 +32,26 @@ function ItemDetailedPricing({ item }: { item: any }) {
         return;
       }
       
+      // Reset state first
+      setDetailedPricing(null);
       setIsLoading(true);
       
       try {
         console.log(`🚀 جاري جلب البيانات للبند: ${item.id}`);
         
-        // استخدام نفس الطريقة الناجحة من الصفحة البسيطة
+        // Use the same successful method from simple page
+        const timestamp = Date.now();
+        const randomId = Math.random().toString(36).substring(7);
         const response = await fetch(
-          `/api/items/${item.id}/comprehensive-data?r=${Math.random()}`,
+          `/api/items/${item.id}/comprehensive-data?t=${timestamp}&r=${randomId}`,
           { 
-            credentials: "include",
-            headers: { "Cache-Control": "no-cache" }
+            method: 'GET',
+            credentials: 'include',
+            headers: { 
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            },
+            cache: 'no-cache'
           }
         );
         
@@ -51,29 +60,46 @@ function ItemDetailedPricing({ item }: { item: any }) {
         if (!response.ok) {
           console.error(`❌ خطأ في API: ${response.status}`);
           setDetailedPricing(null);
+          setIsLoading(false);
           return;
         }
         
-        const comprehensiveData = await response.json();
-        console.log(`📄 البيانات من API:`, comprehensiveData);
+        const data = await response.json();
+        console.log(`📄 البيانات الكاملة من API:`, data);
         
-        // تعيين البيانات مباشرة كما في الصفحة البسيطة الناجحة
-        if (comprehensiveData) {
-          setDetailedPricing(comprehensiveData);
-          console.log('✅ تم تعيين البيانات بنجاح');
-          if (comprehensiveData.lineItem) {
-            console.log('✅ LINE ITEM موجود:', comprehensiveData.lineItem);
-          } else {
-            console.log('⚠️ LINE ITEM غير موجود');
-          }
+        // Force state update with new object
+        const newData = {
+          ...data,
+          lineItem: data.lineItem || '',
+          itemId: data.itemId || data.itemNumber || '',
+          partNumber: data.partNumber || '',
+          description: data.description || '',
+          quantity: data.quantity || '1',
+          uom: data.uom || 'EACH'
+        };
+        
+        setDetailedPricing(newData);
+        
+        // Log success
+        console.log('✅ تم تعيين البيانات في State:', newData);
+        if (newData.lineItem) {
+          console.log('✅✅✅ LINE ITEM موجود:', newData.lineItem);
+        } else {
+          console.error('❌❌❌ LINE ITEM غير موجود في البيانات');
         }
+        
+        setIsLoading(false);
       } catch (error) {
-        console.error('Fetch error:', error);
-      } finally {
+        console.error('❌ خطأ في جلب البيانات:', error);
+        setDetailedPricing(null);
         setIsLoading(false);
       }
     };
 
+    // Clear previous data when item changes
+    setDetailedPricing(null);
+    
+    // Fetch new data
     fetchPricingData();
   }, [item?.id]);
 
@@ -174,7 +200,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
       </div>
 
       {/* معلومات البند الأساسية من API */}
-      {detailedPricing && (
+      {detailedPricing ? (
         <div className="bg-gray-50 border rounded-lg p-4">
           <h4 className="font-semibold mb-3 flex items-center gap-2">
             <Package className="h-4 w-4" />
@@ -262,6 +288,14 @@ function ItemDetailedPricing({ item }: { item: any }) {
               </pre>
             </details>
           </div>
+        </div>
+      ) : isLoading ? (
+        <div className="bg-gray-50 border rounded-lg p-4 text-center">
+          <div className="text-gray-500">جاري تحميل بيانات LINE ITEM...</div>
+        </div>
+      ) : (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+          <div className="text-yellow-700">لا توجد بيانات LINE ITEM متاحة</div>
         </div>
       )}
 
