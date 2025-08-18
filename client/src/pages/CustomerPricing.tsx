@@ -74,11 +74,19 @@ function ItemDetailedPricing({ item }: { item: any }) {
         console.log(`📊 البيانات بعد التحليل:`, comprehensiveData);
         console.log(`🎯 LINE ITEM من البيانات:`, comprehensiveData?.lineItem);
         
-        // Set data immediately without delay
+        // تعيين البيانات مباشرة
         setDetailedPricing(comprehensiveData);
         
-        // Log final state
-        console.log('✅ تم تعيين البيانات في State');
+        // تسجيل البيانات النهائية
+        console.log('✅ تم تعيين البيانات في State:', comprehensiveData);
+        console.log('✅ LINE ITEM النهائي:', comprehensiveData?.lineItem);
+        
+        // فحص البيانات
+        if (comprehensiveData?.lineItem) {
+          console.log('✅✅✅ LINE ITEM موجود:', comprehensiveData.lineItem);
+        } else {
+          console.error('❌❌❌ LINE ITEM غير موجود في البيانات');
+        }
       } catch (error) {
         console.error('Fetch error:', error);
       } finally {
@@ -201,12 +209,9 @@ function ItemDetailedPricing({ item }: { item: any }) {
               <label className="text-sm font-medium">🎯 LINE ITEM:</label>
               <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
                 <div>
-                  {/* Display final result */}
-                  <div style={{color: 'blue', fontSize: '18px', fontWeight: 'bold', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', marginBottom: '10px'}}>
-                    TESTING: {JSON.stringify(detailedPricing)}
-                  </div>
-                  <div style={{color: detailedPricing?.lineItem ? 'green' : 'red', fontSize: '18px', fontWeight: 'bold', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', marginBottom: '10px'}}>
-                    LINE ITEM: {detailedPricing?.lineItem || 'لا يوجد LINE ITEM'}
+                  {/* عرض LINE ITEM بوضوح */}
+                  <div style={{color: detailedPricing?.lineItem ? 'green' : 'red', fontSize: '20px', fontWeight: 'bold', padding: '15px', backgroundColor: detailedPricing?.lineItem ? '#d4f4dd' : '#ffdddd', borderRadius: '8px', border: '2px solid ' + (detailedPricing?.lineItem ? 'green' : 'red')}}>
+                    {detailedPricing?.lineItem || 'غير محدد'}
                   </div>
                   
                   {/* Debug info */}
