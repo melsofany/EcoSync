@@ -23,6 +23,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
   const [detailedPricing, setDetailedPricing] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPricingForm, setShowPricingForm] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // Force re-render
 
   // Fetch comprehensive data using AI matching
   React.useEffect(() => {
@@ -68,9 +69,21 @@ function ItemDetailedPricing({ item }: { item: any }) {
         console.log(`📄 البيانات الكاملة من API:`, data);
         
         // Force state update with new object
+        // Store LINE ITEM directly in DOM as fallback
+        const lineItemValue = data.lineItem || '';
+        
+        // Update DOM directly for mobile browsers
+        const lineItemElement = document.getElementById('line-item-display');
+        if (lineItemElement && lineItemValue) {
+          lineItemElement.textContent = lineItemValue;
+          lineItemElement.style.backgroundColor = '#d4f4dd';
+          lineItemElement.style.color = '#008000';
+          lineItemElement.style.border = '3px solid #008000';
+        }
+        
         const newData = {
           ...data,
-          lineItem: data.lineItem || '',
+          lineItem: lineItemValue,
           itemId: data.itemId || data.itemNumber || '',
           partNumber: data.partNumber || '',
           description: data.description || '',
@@ -79,6 +92,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
         };
         
         setDetailedPricing(newData);
+        setRefreshKey(prev => prev + 1); // Force re-render
         
         // Log success
         console.log('✅ تم تعيين البيانات في State:', newData);
@@ -99,8 +113,15 @@ function ItemDetailedPricing({ item }: { item: any }) {
     // Clear previous data when item changes
     setDetailedPricing(null);
     
-    // Fetch new data
+    // Fetch new data immediately
     fetchPricingData();
+    
+    // Also fetch after a short delay for mobile browsers
+    const timer = setTimeout(() => {
+      fetchPricingData();
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [item?.id]);
 
   if (isLoading) {
@@ -108,7 +129,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" key={`pricing-${item?.id}-${refreshKey}`}>
       {/* Basic supplier pricing info - show data from item passed as prop */}
       <div className="bg-muted/30 rounded-lg p-4">
         <h4 className="font-semibold mb-3 flex items-center gap-2">
@@ -215,9 +236,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
               <label className="text-sm font-medium">🎯 LINE ITEM:</label>
               <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
                 <div>
-                  {/* عرض LINE ITEM بوضوح كما في الصفحة الناجحة */}
+                  {/* عرض LINE ITEM مع تحديث مباشر */}
                   <div 
+                    id="line-item-display"
                     className="p-4 text-center text-xl font-mono rounded-lg"
+                    key={`line-${refreshKey}-${detailedPricing?.lineItem}`}
                     style={{
                       backgroundColor: detailedPricing?.lineItem ? "#d4f4dd" : "#ffdddd",
                       color: detailedPricing?.lineItem ? "#008000" : "#ff0000",
@@ -226,11 +249,19 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       minHeight: '60px',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
+                      fontSize: '18px',
+                      fontWeight: 'bold'
                     }}
                   >
-                    {detailedPricing?.lineItem || 'غير محدد'}
+                    {detailedPricing?.lineItem || 'جاري التحميل...'}
                   </div>
+                  {/* عرض بديل للتأكد */}
+                  {detailedPricing?.lineItem && (
+                    <div className="mt-2 text-center text-green-600 font-bold">
+                      ✓ LINE ITEM: {detailedPricing.lineItem}
+                    </div>
+                  )}
                   
                   {/* Debug info */}
                   <div style={{fontSize: '12px', backgroundColor: '#ffffcc', padding: '10px', borderRadius: '5px'}}>
