@@ -46,13 +46,18 @@ function ItemDetailedPricing({ item }: { item: any }) {
         });
         const comprehensiveResult = await comprehensiveResponse.json();
         console.log('Comprehensive data received:', comprehensiveResult);
+        console.log('allDataRows:', comprehensiveResult.allDataRows);
+        
         // Check if allDataRows exists, otherwise use single row
         if (comprehensiveResult.allDataRows && comprehensiveResult.allDataRows.length > 0) {
+          console.log('Setting comprehensiveData with allDataRows, count:', comprehensiveResult.allDataRows.length);
           setComprehensiveData(comprehensiveResult.allDataRows);
         } else if (comprehensiveResult.lineItem) {
           // Single row backwards compatibility
+          console.log('Setting comprehensiveData with single row');
           setComprehensiveData([comprehensiveResult]);
         } else {
+          console.log('No data found, setting empty array');
           setComprehensiveData([]);
         }
       } catch (error) {
@@ -81,7 +86,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
         <div className="grid grid-cols-4 gap-4 text-sm">
           <div>
             <label className="font-medium">معرف البند:</label>
-            <p className="text-blue-600">{comprehensiveData?.itemNumber || item.itemNumber}</p>
+            <p className="text-blue-600">{item.itemNumber}</p>
           </div>
           <div className="text-center">
             <label className="font-medium block">LINE ITEM:</label>
