@@ -128,7 +128,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <div>
             <label className="text-sm font-medium">سعر المورد:</label>
             <p className="font-semibold text-green-600">
-              {formatCurrency(Number(item.supplierPrice || 0))}
+              {formatCurrency(Number(comprehensiveData?.supplierUnitPrice || item.supplierPrice || 0))}
             </p>
           </div>
           <div>
@@ -150,7 +150,10 @@ function ItemDetailedPricing({ item }: { item: any }) {
         {showPricingForm && (
           <div className="mt-4">
             <CustomerPricingForm 
-              item={item} 
+              item={{
+                ...item,
+                supplierPrice: comprehensiveData?.supplierUnitPrice || item.supplierPrice
+              }} 
               onSuccess={() => setShowPricingForm(false)} 
             />
           </div>
