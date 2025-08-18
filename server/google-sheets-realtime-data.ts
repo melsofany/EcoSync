@@ -752,8 +752,9 @@ export class GoogleSheetsRealtimeData {
         if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
           console.log(`🎯 مطابقة كاملة! البند ${itemId} مع RFQ ${rfqNumber} في الصف ${i + 2}`);
           
-          // البحث عن سعر المورد في ورقة تسعير الموردين
+          // البحث عن سعر المورد واسم المورد في ورقة تسعير الموردين
           let supplierPrice = '';
+          let supplierName = '';
           try {
             const supplierResponse = await this.sheets.spreadsheets.values.get({
               spreadsheetId: this.spreadsheetId,
@@ -783,17 +784,18 @@ export class GoogleSheetsRealtimeData {
               const supplierRow = supplierRows[idx];
               const supplierItemNumber = (supplierRow[0] || '').trim();
               const supplierRfqNumber = (supplierRow[5] || '').trim(); // العمود F - RFQ Number الصحيح
-              const supplierName = supplierRow[9] || ''; // العمود J - اسم المورد
+              const rowSupplierName = supplierRow[9] || ''; // العمود J - اسم المورد
               const supplierUnitPrice = supplierRow[14] || ''; // العمود O - سعر المورد
               
               // طباعة كل سجل يحتوي على البند المطلوب
               if (supplierItemNumber === itemId) {
                 foundCount++;
-                console.log(`📌 وجدت ${itemId} في ورقة تسعير الموردين، الصف ${idx + 2}: RFQ="${supplierRfqNumber}" (يُبحث عن "${rfqNumber}"), المورد="${supplierName}", السعر="${supplierUnitPrice}"`);
+                console.log(`📌 وجدت ${itemId} في ورقة تسعير الموردين، الصف ${idx + 2}: RFQ="${supplierRfqNumber}" (يُبحث عن "${rfqNumber}"), المورد="${rowSupplierName}", السعر="${supplierUnitPrice}"`);
               }
               
               if (supplierItemNumber === itemId && supplierRfqNumber === rfqNumber) {
                 supplierPrice = supplierUnitPrice;
+                supplierName = rowSupplierName;
                 console.log(`💰 تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice} من المورد: ${supplierName}`);
                 break;
               }
@@ -811,6 +813,7 @@ export class GoogleSheetsRealtimeData {
             itemId: itemId,
             lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM
             supplierUnitPrice: supplierPrice || customerItemData.supplierUnitPrice, // سعر المورد من ورقة تسعير الموردين
+            supplierName: supplierName, // اسم المورد من ورقة تسعير الموردين
           };
           
           if (row[2] && row[2].trim() !== '') {
@@ -828,10 +831,11 @@ export class GoogleSheetsRealtimeData {
       console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId} مع طلب التسعير ${rfqNumber}`);
       console.log(`📝 البند موجود في Google Sheets لكن مع أرقام طلبات تسعير مختلفة`);
       
-      // البحث في ورقة تسعير الموردين للحصول على سعر المورد من العمود O
+      // البحث في ورقة تسعير الموردين للحصول على سعر المورد واسم المورد
       console.log(`🔍 البحث عن سعر المورد في ورقة تسعير الموردين`);
       
       let supplierPrice = '';
+      let supplierName = '';
       try {
         const supplierResponse = await this.sheets.spreadsheets.values.get({
           spreadsheetId: this.spreadsheetId,
@@ -873,7 +877,8 @@ export class GoogleSheetsRealtimeData {
           
           if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
             supplierPrice = rowSupplierPrice;
-            console.log(`✅ تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice} من المورد: ${rowSupplierName}`);
+            supplierName = rowSupplierName;
+            console.log(`✅ تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice} من المورد: ${supplierName}`);
             break;
           }
         }
@@ -885,12 +890,13 @@ export class GoogleSheetsRealtimeData {
         console.error('❌ خطأ في البحث عن سعر المورد:', error);
       }
       
-      // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM لكن مع سعر المورد من ورقة تسعير الموردين
+      // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM لكن مع سعر المورد واسم المورد من ورقة تسعير الموردين
       const dataWithoutLineItem = {
         ...customerItemData,
         itemId: itemId,
         lineItem: '', // لا يوجد LINE ITEM لهذا التطابق المحدد
         supplierUnitPrice: supplierPrice || customerItemData.supplierUnitPrice, // استخدام سعر المورد من ورقة تسعير الموردين إن وجد
+        supplierName: supplierName, // اسم المورد من ورقة تسعير الموردين
       };
       
       console.log(`📊 البيانات المُرجعة (بدون LINE ITEM):`, dataWithoutLineItem);

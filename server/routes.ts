@@ -4670,7 +4670,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             rfqNumber: targetItem.rfqNumber || '',
             clientName: targetItem.clientName || '',
             requestDate: targetItem.requestDate || '',
-            expiryDate: targetItem.expiryDate || ''
+            expiryDate: targetItem.expiryDate || '',
+            supplierName: '',
+            supplierUnitPrice: ''
           };
           
           console.log(`🚀 [comprehensive-data] البيانات النهائية المُرسلة:`, JSON.stringify(responseData, null, 2));

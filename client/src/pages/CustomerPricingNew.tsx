@@ -133,7 +133,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
           <div>
             <label className="text-sm font-medium">المورد:</label>
-            <p className="text-sm">{item.supplierName || ""}</p>
+            <p className="text-sm">{comprehensiveData?.supplierName || item.supplierName || ""}</p>
           </div>
         </div>
         
