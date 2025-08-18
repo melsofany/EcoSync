@@ -70,19 +70,16 @@ function ItemDetailedPricing({ item }: { item: any }) {
           تفاصيل البند
         </h4>
         
-        {/* LINE ITEM في المنتصف */}
-        <div className="text-center mb-4">
-          <label className="font-medium text-sm">LINE ITEM</label>
-          <p className="text-purple-700 font-mono text-lg font-bold" dir="ltr">
-            {comprehensiveData?.lineItem || item.lineItem || ""}
-          </p>
-        </div>
-        
-        {/* باقي معلومات البند */}
-        <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-4 gap-4 text-sm">
           <div>
             <label className="font-medium">معرف البند:</label>
             <p className="text-blue-600">{comprehensiveData?.itemNumber || item.itemNumber}</p>
+          </div>
+          <div>
+            <label className="font-medium">LINE ITEM:</label>
+            <p className="text-purple-700 font-mono font-bold" dir="ltr">
+              {comprehensiveData?.lineItem || item.lineItem || ""}
+            </p>
           </div>
           <div>
             <label className="font-medium">PART NO:</label>

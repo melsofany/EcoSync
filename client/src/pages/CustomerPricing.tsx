@@ -227,20 +227,15 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <Package className="h-4 w-4" />
             تفاصيل البند الأساسية - مباشر من Google Sheets
           </h4>
-          
-          {/* LINE ITEM في المنتصف */}
-          <div className="text-center mb-4">
-            <label className="text-sm font-medium">LINE ITEM</label>
-            <p className="font-mono text-purple-600 text-lg font-bold">
-              {detailedPricing?.lineItem || ""}
-            </p>
-          </div>
 
-          {/* باقي التفاصيل في شبكة */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium">معرف البند:</label>
               <p className="font-semibold text-blue-600">{detailedPricing.itemNumber || detailedPricing.itemId || "غير محدد"}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">LINE ITEM:</label>
+              <p className="font-mono text-purple-600 font-bold">{detailedPricing?.lineItem || ""}</p>
             </div>
             <div>
               <label className="text-sm font-medium">رقم القطعة:</label>
@@ -250,7 +245,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
               <label className="text-sm font-medium">الوحدة:</label>
               <p className="font-semibold">{detailedPricing.uom || "EACH"}</p>
             </div>
-            <div className="col-span-3">
+            <div className="col-span-4">
               <label className="text-sm font-medium">الوصف:</label>
               <p className="text-sm">{detailedPricing.description || "غير محدد"}</p>
             </div>
