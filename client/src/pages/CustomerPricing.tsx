@@ -46,7 +46,16 @@ function ItemDetailedPricing({ item }: { item: any }) {
         const comprehensiveData = await comprehensiveResponse.json();
         console.log(`📊 البيانات المستلمة من API:`, comprehensiveData);
         console.log(`🎯 LINE ITEM من API:`, comprehensiveData?.lineItem);
+        console.log(`🎯 نوع lineItem:`, typeof comprehensiveData?.lineItem);
+        console.log(`🎯 طول lineItem:`, comprehensiveData?.lineItem?.length);
+        console.log(`🎯 lineItem بالـ JSON:`, JSON.stringify(comprehensiveData?.lineItem));
         
+        // تنظيف البيانات إذا كانت تحتوي على مسافات أو أحرف خفية
+        if (comprehensiveData && comprehensiveData.lineItem) {
+          comprehensiveData.lineItem = comprehensiveData.lineItem.toString().trim();
+        }
+        
+        console.log(`🎯 LINE ITEM بعد التنظيف:`, comprehensiveData?.lineItem);
         setDetailedPricing(comprehensiveData);
       } catch (error) {
         console.error('Fetch error:', error);
@@ -155,7 +164,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
       </div>
 
       {/* معلومات البند الأساسية من API */}
-      {detailedPricing && typeof detailedPricing === 'object' && !Array.isArray(detailedPricing) && (
+      {detailedPricing && (
         <div className="bg-gray-50 border rounded-lg p-4">
           <h4 className="font-semibold mb-3 flex items-center gap-2">
             <Package className="h-4 w-4" />
@@ -168,13 +177,24 @@ function ItemDetailedPricing({ item }: { item: any }) {
             </div>
             <div>
               <label className="text-sm font-medium">🎯 LINE ITEM:</label>
-              <p className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
+              <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
                 <strong>
-                  {detailedPricing?.lineItem && detailedPricing.lineItem.trim() !== '' 
-                    ? detailedPricing.lineItem 
-                    : "غير محدد"}
+                  {(() => {
+                    console.log('🎯 عرض LINE ITEM - القيمة:', detailedPricing?.lineItem);
+                    console.log('🎯 عرض LINE ITEM - النوع:', typeof detailedPricing?.lineItem);
+                    console.log('🎯 عرض LINE ITEM - فارغ؟', !detailedPricing?.lineItem);
+                    
+                    const lineItem = detailedPricing?.lineItem;
+                    if (lineItem && typeof lineItem === 'string' && lineItem.trim() !== '') {
+                      return lineItem.trim();
+                    } else if (lineItem && typeof lineItem !== 'string') {
+                      return String(lineItem).trim();
+                    } else {
+                      return "غير محدد";
+                    }
+                  })()}
                 </strong>
-              </p>
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium">رقم القطعة:</label>
