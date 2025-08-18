@@ -24,6 +24,10 @@ export function UserAvatar({ user, size = "md", className = "" }: UserAvatarProp
 
   const isValidImageUrl = (url: string | null | undefined) => {
     if (!url) return false;
+    // دعم صور Base64
+    if (url.startsWith('data:image/')) {
+      return true;
+    }
     // Allow local object storage URLs
     if (url.startsWith('/objects/') || url.startsWith('/public-objects/')) {
       return true;

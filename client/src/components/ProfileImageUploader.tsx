@@ -41,61 +41,34 @@ export function ProfileImageUploader({ currentImage, onImageChange, className }:
     setIsUploading(true);
 
     try {
-      // Get upload URL from server
-      const uploadResponse = await fetch('/api/profile-image/upload', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to get upload URL');
-      }
-
-      const { uploadURL } = await uploadResponse.json();
-
-      // Upload file directly to storage
-      const uploadFileResponse = await fetch(uploadURL, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
-
-      if (!uploadFileResponse.ok) {
-        throw new Error('Failed to upload file');
-      }
-
-      // Create object path for the uploaded file
-      const objectPath = `/objects/uploads/${Date.now()}-${file.name}`;
+      // تحويل الصورة إلى Base64
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        
+        // عرض الصورة مباشرة
+        setPreviewUrl(base64String);
+        onImageChange(base64String);
+        
+        toast({
+          title: "تم رفع الصورة",
+          description: "تم تحميل الصورة بنجاح",
+        });
+        
+        setIsUploading(false);
+      };
       
-      // Set image ACL and get the final URL
-      const aclResponse = await fetch('/api/profile-image/set-acl', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          imageUrl: uploadURL 
-        }),
-      });
-
-      if (!aclResponse.ok) {
-        throw new Error('Failed to set image permissions');
-      }
-
-      const { objectPath: finalPath } = await aclResponse.json();
+      reader.onerror = () => {
+        toast({
+          title: "خطأ في قراءة الملف",
+          description: "فشل في قراءة الصورة المحددة",
+          variant: "destructive",
+        });
+        setIsUploading(false);
+      };
       
-      // Use the object path for internal storage
-      setPreviewUrl(finalPath);
-      onImageChange(finalPath);
-
-      toast({
-        title: "تم رفع الصورة بنجاح",
-        description: "تم حفظ صورة الملف الشخصي",
-      });
-
+      reader.readAsDataURL(file);
+      
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -103,10 +76,7 @@ export function ProfileImageUploader({ currentImage, onImageChange, className }:
         description: "حدث خطأ أثناء رفع الصورة، يرجى المحاولة مرة أخرى",
         variant: "destructive",
       });
-    } finally {
       setIsUploading(false);
-      // Reset input
-      event.target.value = '';
     }
   };
 

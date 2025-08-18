@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { ProfileImageUploader } from "@/components/ProfileImageUploader";
 import { Users, UserPlus, Shield, Database, CheckCircle, XCircle } from "lucide-react";
 
 const userFormSchema = z.object({
@@ -23,7 +24,8 @@ const userFormSchema = z.object({
   phone: z.string().optional(),
   role: z.enum(["manager", "it_admin", "data_entry", "purchasing", "accounting"], {
     required_error: "يرجى اختيار دور المستخدم"
-  })
+  }),
+  profileImage: z.string().optional()
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -161,9 +163,12 @@ export default function UserManagement() {
   const createUserMutation = useMutation({
     mutationFn: async (userData: UserFormData) => {
       const permissions = getRolePermissions(userData.role);
-      const response = await apiRequest("/api/users/create", "POST", {
+      // استخدام endpoint الجديد الذي يدعم الصور Base64
+      const response = await apiRequest("/api/users", "POST", {
         ...userData,
-        permissions
+        permissions,
+        isActive: true,
+        canAccessBot: false
       });
       return response;
     },
@@ -193,7 +198,8 @@ export default function UserManagement() {
       fullName: "",
       email: "",
       phone: "",
-      role: "data_entry"
+      role: "data_entry",
+      profileImage: ""
     }
   });
 
@@ -202,7 +208,9 @@ export default function UserManagement() {
   };
 
   // Check if response has success property or is direct data
-  const users = usersData?.success ? (usersData.users || []) : (usersData || []);
+  const users = Array.isArray(usersData) ? usersData : 
+                (usersData as any)?.success ? ((usersData as any).users || []) : 
+                (usersData || []);
   
   // معالجة خطأ Unauthorized
   const isUnauthorized = error && (error as any).status === 401;
@@ -361,6 +369,23 @@ export default function UserManagement() {
                             <SelectItem value="accounting">محاسبة</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="profileImage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>الصورة الشخصية (اختياري)</FormLabel>
+                        <FormControl>
+                          <ProfileImageUploader
+                            currentImage={field.value}
+                            onImageChange={field.onChange}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

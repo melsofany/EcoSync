@@ -1271,58 +1271,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // إضافة مستخدم جديد
   // إنشاء مستخدم جديد مع دعم رفع الصور
-  app.post("/api/users", requireAuth, requireRole(['it_admin', 'manager']), upload.single('profileImage'), async (req: Request, res: Response) => {
-    try {
-      const { username, password, fullName, email, phone, role, isActive, canAccessBot } = req.body;
-      
-      if (!username || !password || !fullName || !role) {
-        return res.status(400).json({
-          success: false,
-          message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
-        });
-      }
+  app.post("/api/users", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response, next: any) => {
+    // التحقق من نوع المحتوى
+    if (req.headers['content-type']?.includes('multipart/form-data')) {
+      // معالجة رفع الملف
+      upload.single('profileImage')(req, res, async (err) => {
+        if (err) {
+          return res.status(400).json({
+            success: false,
+            message: err.message
+          });
+        }
+        
+        try {
+          const { username, password, fullName, email, phone, role, isActive, canAccessBot } = req.body;
+          
+          if (!username || !password || !fullName || !role) {
+            return res.status(400).json({
+              success: false,
+              message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
+            });
+          }
 
-      console.log(`👤 إنشاء مستخدم جديد: ${username}`);
-      
-      // معالجة الصورة الشخصية
-      let profileImagePath = '';
-      if (req.file) {
-        profileImagePath = `/uploads/profiles/${req.file.filename}`;
-        console.log(`📸 تم رفع صورة المستخدم: ${profileImagePath}`);
-      }
-      
-      const newUser = await usersGoogleSheetsManager.addUser({
-        username,
-        password,
-        fullName,
-        email,
-        phone,
-        role,
-        isActive: isActive === 'true',
-        canAccessBot: canAccessBot === 'true',
-        profileImage: profileImagePath
+          console.log(`👤 إنشاء مستخدم جديد: ${username}`);
+          
+          // معالجة الصورة الشخصية - تحويلها إلى Base64
+          let profileImageBase64 = '';
+          if (req.file) {
+            try {
+              const imageBuffer = await fs.readFile(req.file.path);
+              profileImageBase64 = `data:${req.file.mimetype};base64,${imageBuffer.toString('base64')}`;
+              console.log(`📸 تم تحويل صورة المستخدم إلى Base64 (${Math.round(profileImageBase64.length / 1024)}KB)`);
+              
+              // حذف الملف المؤقت بعد تحويله
+              await fs.unlink(req.file.path);
+            } catch (error) {
+              console.error('❌ خطأ في معالجة الصورة:', error);
+            }
+          }
+          
+          const newUser = await usersGoogleSheetsManager.addUser({
+            username,
+            password,
+            fullName,
+            email,
+            phone,
+            role,
+            isActive: isActive === 'true' || isActive === true,
+            canAccessBot: canAccessBot === 'true' || canAccessBot === true,
+            profileImage: profileImageBase64
+          });
+          
+          if (newUser) {
+            console.log(`✅ تم إنشاء المستخدم: ${newUser.username}`);
+            const { password: _, ...userWithoutPassword } = newUser;
+            res.json({
+              success: true,
+              message: `تم إنشاء المستخدم ${newUser.username} بنجاح`,
+              user: userWithoutPassword
+            });
+          } else {
+            res.status(400).json({
+              success: false,
+              message: "فشل في إنشاء المستخدم"
+            });
+          }
+        } catch (error: any) {
+          console.error('❌ خطأ في إنشاء المستخدم:', error);
+          res.status(500).json({
+            success: false,
+            message: error.message || "خطأ داخلي في الخادم"
+          });
+        }
       });
-      
-      if (newUser) {
-        console.log(`✅ تم إنشاء المستخدم: ${newUser.username}`);
-        const { password: _, ...userWithoutPassword } = newUser;
-        res.json({
-          success: true,
-          message: `تم إنشاء المستخدم ${newUser.username} بنجاح`,
-          user: userWithoutPassword
+    } else {
+      // معالجة JSON مع Base64
+      try {
+        const { username, password, fullName, email, phone, role, isActive, canAccessBot, profileImage } = req.body;
+        
+        if (!username || !password || !fullName || !role) {
+          return res.status(400).json({
+            success: false,
+            message: "البيانات المطلوبة: اسم المستخدم، كلمة المرور، الاسم الكامل، والدور"
+          });
+        }
+
+        console.log(`👤 إنشاء مستخدم جديد: ${username}`);
+        
+        // استخدام Base64 المرسل مباشرة
+        let profileImageBase64 = profileImage || '';
+        if (profileImageBase64) {
+          console.log(`📸 استقبال صورة Base64 للمستخدم (${Math.round(profileImageBase64.length / 1024)}KB)`);
+        }
+        
+        const newUser = await usersGoogleSheetsManager.addUser({
+          username,
+          password,
+          fullName,
+          email,
+          phone,
+          role,
+          isActive: isActive === 'true' || isActive === true,
+          canAccessBot: canAccessBot === 'true' || canAccessBot === true,
+          profileImage: profileImageBase64
         });
-      } else {
-        res.status(400).json({
+        
+        if (newUser) {
+          console.log(`✅ تم إنشاء المستخدم: ${newUser.username}`);
+          const { password: _, ...userWithoutPassword } = newUser;
+          res.json({
+            success: true,
+            message: `تم إنشاء المستخدم ${newUser.username} بنجاح`,
+            user: userWithoutPassword
+          });
+        } else {
+          res.status(400).json({
+            success: false,
+            message: "فشل في إنشاء المستخدم"
+          });
+        }
+      } catch (error: any) {
+        console.error('❌ خطأ في إنشاء المستخدم:', error);
+        res.status(500).json({
           success: false,
-          message: "فشل في إنشاء المستخدم"
+          message: error.message || "خطأ داخلي في الخادم"
         });
       }
-    } catch (error: any) {
-      console.error('❌ خطأ في إنشاء المستخدم:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || "خطأ داخلي في الخادم"
-      });
     }
   });
 
@@ -1383,15 +1457,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // إنشاء رابط الصورة
-      const imageUrl = `/uploads/profiles/${req.file.filename}`;
+      // تحويل الصورة إلى Base64
+      const imageBuffer = await fs.readFile(req.file.path);
+      const imageBase64 = `data:${req.file.mimetype};base64,${imageBuffer.toString('base64')}`;
       
-      console.log(`📸 تم رفع صورة المستخدم: ${req.file.filename}`);
+      console.log(`📸 تم تحويل صورة المستخدم إلى Base64 (${Math.round(imageBase64.length / 1024)}KB)`);
+      
+      // حذف الملف المؤقت
+      await fs.unlink(req.file.path);
       
       res.json({
         success: true,
         message: "تم رفع الصورة بنجاح",
-        imageUrl: imageUrl
+        imageBase64: imageBase64
       });
     } catch (error: any) {
       console.error('❌ خطأ في رفع صورة المستخدم:', error);
@@ -2184,18 +2262,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = users.find(u => u.id === userId);
       
       if (user && user.profileImage) {
-        // إزالة الشرطة المائلة من البداية إذا كانت موجودة
-        const cleanImagePath = user.profileImage.startsWith('/') ? user.profileImage.substring(1) : user.profileImage;
-        const imagePath = path.join(process.cwd(), 'public', cleanImagePath);
-        
-        console.log(`🔍 البحث عن الصورة في: ${imagePath}`);
-        
-        res.sendFile(imagePath, (err) => {
-          if (err) {
-            console.error(`❌ خطأ في إرسال الصورة للمستخدم ${userId}:`, err);
-            res.status(404).json({ message: 'لا توجد صورة للمستخدم' });
-          }
-        });
+        // التحقق إذا كانت الصورة Base64
+        if (user.profileImage.startsWith('data:image')) {
+          // إرسال Base64 مباشرة
+          res.json({ 
+            success: true,
+            imageBase64: user.profileImage 
+          });
+        } else {
+          // محاولة قراءة الصورة من الملف (للتوافق مع النظام القديم)
+          const cleanImagePath = user.profileImage.startsWith('/') ? user.profileImage.substring(1) : user.profileImage;
+          const imagePath = path.join(process.cwd(), 'public', cleanImagePath);
+          
+          console.log(`🔍 البحث عن الصورة في: ${imagePath}`);
+          
+          res.sendFile(imagePath, (err) => {
+            if (err) {
+              console.error(`❌ خطأ في إرسال الصورة للمستخدم ${userId}:`, err);
+              res.status(404).json({ message: 'لا توجد صورة للمستخدم' });
+            }
+          });
+        }
       } else {
         console.log(`❌ لا توجد صورة للمستخدم ${userId}`);
         res.status(404).json({ message: 'لا توجد صورة للمستخدم' });
@@ -2203,6 +2290,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('خطأ في جلب صورة المستخدم:', error);
       res.status(500).json({ message: 'خطأ داخلي في الخادم' });
+    }
+  });
+
+  // تحديث صورة المستخدم
+  app.patch('/api/users/:userId/avatar', requireAuth, upload.single('profileImage'), async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      
+      // التحقق من الصلاحيات
+      if (req.session.user!.id !== userId && req.session.user!.role !== 'manager' && req.session.user!.role !== 'it_admin') {
+        return res.status(403).json({
+          success: false,
+          message: 'غير مصرح لك بتحديث صورة هذا المستخدم'
+        });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'لم يتم تحديد صورة'
+        });
+      }
+      
+      // تحويل الصورة إلى Base64
+      const imageBuffer = await fs.readFile(req.file.path);
+      const imageBase64 = `data:${req.file.mimetype};base64,${imageBuffer.toString('base64')}`;
+      
+      console.log(`📸 تحديث صورة المستخدم ${userId} - الحجم: ${Math.round(imageBase64.length / 1024)}KB`);
+      
+      // حذف الملف المؤقت
+      await fs.unlink(req.file.path);
+      
+      // تحديث الصورة في Google Sheets
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const userIndex = users.findIndex(u => u.id === userId);
+      
+      if (userIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          message: 'المستخدم غير موجود'
+        });
+      }
+      
+      const rowNumber = userIndex + 2; // +2 لأن الصف الأول عناوين
+      
+      await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        range: `USERS!G${rowNumber}`, // G: PROFILE_IMAGE
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[imageBase64]]
+        }
+      });
+      
+      // تحديث وقت التعديل
+      await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        range: `USERS!P${rowNumber}`, // P: UPDATED_AT
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[new Date().toISOString()]]
+        }
+      });
+      
+      res.json({
+        success: true,
+        message: 'تم تحديث الصورة بنجاح',
+        imageBase64: imageBase64
+      });
+      
+    } catch (error: any) {
+      console.error('❌ خطأ في تحديث صورة المستخدم:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'خطأ في تحديث الصورة'
+      });
     }
   });
 
