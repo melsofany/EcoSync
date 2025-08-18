@@ -255,7 +255,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                       {row.description || item.description}
                     </td>
                     <td className="border border-gray-300 p-2 text-center font-semibold text-blue-600">{row.part_no || item.partNumber || "-"}</td>
-                    <td className="border border-gray-300 p-2 text-center font-bold text-blue-800">{row.line_item || item.lineItem}</td>
+                    <td className="border border-gray-300 p-2 text-center font-bold text-blue-800">{row.line_item || item.lineItem || ""}</td>
                     <td className="border border-gray-300 p-2 text-center">{row.uom || item.unit}</td>
                   </tr>
                 ))
@@ -279,7 +279,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                     {item.description}
                   </td>
                   <td className="border p-2 text-center">{item.partNumber || "-"}</td>
-                  <td className="border p-2 text-center text-blue-600">{item.lineItem}</td>
+                  <td className="border p-2 text-center text-blue-600">{item.lineItem || ""}</td>
                   <td className="border p-2 text-center">{item.unit}</td>
                 </tr>
               )}
