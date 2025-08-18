@@ -1048,7 +1048,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: user.email,
           role: user.role,
           permissions: typeof user.permissions === 'string' ? 
-            JSON.parse(user.permissions || '{}') : 
+            (user.permissions.includes('perm-') ? 
+              user.permissions.split(',').map(p => p.trim()) : 
+              (user.permissions.startsWith('{') ? JSON.parse(user.permissions || '{}') : [])) : 
             (user.permissions || []),
           isActive: user.isActive
         };
