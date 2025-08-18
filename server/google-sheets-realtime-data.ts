@@ -761,21 +761,39 @@ export class GoogleSheetsRealtimeData {
             });
             
             const supplierRows = supplierResponse.data.values || [];
+            console.log(`🔍 البحث عن سعر المورد للبند ${itemId} مع RFQ ${rfqNumber} في ${supplierRows.length} صف`);
             
-            for (const supplierRow of supplierRows) {
+            // طباعة أول 5 صفوف للتحقق من البنية
+            if (supplierRows.length > 0) {
+              console.log('📊 أمثلة من ورقة تسعير الموردين:');
+              for (let j = 0; j < Math.min(5, supplierRows.length); j++) {
+                const row = supplierRows[j];
+                console.log(`  الصف ${j + 2}: A="${row[0]||''}" (البند), O="${row[14]||''}" (السعر), P="${row[15]||''}" (RFQ)`);
+              }
+            }
+            
+            let foundCount = 0;
+            for (let idx = 0; idx < supplierRows.length; idx++) {
+              const supplierRow = supplierRows[idx];
               const supplierItemNumber = (supplierRow[0] || '').trim();
               const supplierRfqNumber = (supplierRow[15] || '').trim(); // العمود P
               const supplierUnitPrice = supplierRow[14] || ''; // العمود O
               
+              // طباعة كل سجل يحتوي على البند المطلوب
+              if (supplierItemNumber === itemId) {
+                foundCount++;
+                console.log(`📌 وجدت ${itemId} في ورقة تسعير الموردين، الصف ${idx + 2}: RFQ="${supplierRfqNumber}" (يُبحث عن "${rfqNumber}"), السعر="${supplierUnitPrice}"`);
+              }
+              
               if (supplierItemNumber === itemId && supplierRfqNumber === rfqNumber) {
                 supplierPrice = supplierUnitPrice;
-                console.log(`💰 تم العثور على سعر المورد من العمود O: ${supplierPrice}`);
+                console.log(`💰 تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice}`);
                 break;
               }
             }
             
             if (!supplierPrice) {
-              console.log(`⚠️ لم يتم العثور على سعر المورد في ورقة تسعير الموردين`);
+              console.log(`⚠️ لم يتم العثور على سعر المورد في ورقة تسعير الموردين (وجدت ${foundCount} سجل للبند بدون تطابق RFQ)`);
             }
           } catch (error) {
             console.error('❌ خطأ في البحث عن سعر المورد:', error);
@@ -814,22 +832,40 @@ export class GoogleSheetsRealtimeData {
         });
         
         const supplierRows = supplierResponse.data.values || [];
+        console.log(`🔍 البحث عن سعر المورد للبند ${itemId} مع RFQ ${rfqNumber} في ${supplierRows.length} صف`);
         
+        // طباعة أول 5 صفوف للتحقق من البنية
+        if (supplierRows.length > 0) {
+          console.log('📊 أمثلة من ورقة تسعير الموردين:');
+          for (let j = 0; j < Math.min(5, supplierRows.length); j++) {
+            const row = supplierRows[j];
+            console.log(`  الصف ${j + 2}: A="${row[0]||''}" (البند), O="${row[14]||''}" (السعر), P="${row[15]||''}" (RFQ)`);
+          }
+        }
+        
+        let foundCount = 0;
         // البحث عن البند في ورقة تسعير الموردين
-        for (const row of supplierRows) {
+        for (let idx = 0; idx < supplierRows.length; idx++) {
+          const row = supplierRows[idx];
           const rowItemNumber = (row[0] || '').trim(); // العمود A - Item Number
           const rowRfqNumber = (row[15] || '').trim(); // العمود P - RFQ Number
           const rowSupplierPrice = row[14] || ''; // العمود O - سعر المورد
           
+          // طباعة كل سجل يحتوي على البند المطلوب
+          if (rowItemNumber === itemId) {
+            foundCount++;
+            console.log(`📌 وجدت ${itemId} في ورقة تسعير الموردين، الصف ${idx + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), السعر="${rowSupplierPrice}"`);
+          }
+          
           if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
             supplierPrice = rowSupplierPrice;
-            console.log(`✅ تم العثور على سعر المورد من العمود O: ${supplierPrice}`);
+            console.log(`✅ تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice}`);
             break;
           }
         }
         
         if (!supplierPrice) {
-          console.log(`⚠️ لم يتم العثور على سعر المورد في ورقة تسعير الموردين`);
+          console.log(`⚠️ لم يتم العثور على سعر المورد في ورقة تسعير الموردين (وجدت ${foundCount} سجل للبند بدون تطابق RFQ)`);
         }
       } catch (error) {
         console.error('❌ خطأ في البحث عن سعر المورد:', error);
