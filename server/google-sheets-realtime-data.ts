@@ -782,18 +782,19 @@ export class GoogleSheetsRealtimeData {
             for (let idx = 0; idx < supplierRows.length; idx++) {
               const supplierRow = supplierRows[idx];
               const supplierItemNumber = (supplierRow[0] || '').trim();
-              const supplierRfqNumber = (supplierRow[15] || '').trim(); // العمود P
-              const supplierUnitPrice = supplierRow[14] || ''; // العمود O
+              const supplierRfqNumber = (supplierRow[5] || '').trim(); // العمود F - RFQ Number الصحيح
+              const supplierName = supplierRow[9] || ''; // العمود J - اسم المورد
+              const supplierUnitPrice = supplierRow[14] || ''; // العمود O - سعر المورد
               
               // طباعة كل سجل يحتوي على البند المطلوب
               if (supplierItemNumber === itemId) {
                 foundCount++;
-                console.log(`📌 وجدت ${itemId} في ورقة تسعير الموردين، الصف ${idx + 2}: RFQ="${supplierRfqNumber}" (يُبحث عن "${rfqNumber}"), السعر="${supplierUnitPrice}"`);
+                console.log(`📌 وجدت ${itemId} في ورقة تسعير الموردين، الصف ${idx + 2}: RFQ="${supplierRfqNumber}" (يُبحث عن "${rfqNumber}"), المورد="${supplierName}", السعر="${supplierUnitPrice}"`);
               }
               
               if (supplierItemNumber === itemId && supplierRfqNumber === rfqNumber) {
                 supplierPrice = supplierUnitPrice;
-                console.log(`💰 تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice}`);
+                console.log(`💰 تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice} من المورد: ${supplierName}`);
                 break;
               }
             }
@@ -860,18 +861,19 @@ export class GoogleSheetsRealtimeData {
         for (let idx = 0; idx < supplierRows.length; idx++) {
           const row = supplierRows[idx];
           const rowItemNumber = (row[0] || '').trim(); // العمود A - Item Number
-          const rowRfqNumber = (row[15] || '').trim(); // العمود P - RFQ Number
+          const rowRfqNumber = (row[5] || '').trim(); // العمود F - RFQ Number الصحيح
+          const rowSupplierName = row[9] || ''; // العمود J - اسم المورد
           const rowSupplierPrice = row[14] || ''; // العمود O - سعر المورد
           
           // طباعة كل سجل يحتوي على البند المطلوب
           if (rowItemNumber === itemId) {
             foundCount++;
-            console.log(`📌 وجدت ${itemId} في ورقة تسعير الموردين، الصف ${idx + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), السعر="${rowSupplierPrice}"`);
+            console.log(`📌 وجدت ${itemId} في ورقة تسعير الموردين، الصف ${idx + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), المورد="${rowSupplierName}", السعر="${rowSupplierPrice}"`);
           }
           
           if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
             supplierPrice = rowSupplierPrice;
-            console.log(`✅ تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice}`);
+            console.log(`✅ تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice} من المورد: ${rowSupplierName}`);
             break;
           }
         }
