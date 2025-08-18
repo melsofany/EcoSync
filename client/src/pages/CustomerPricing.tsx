@@ -37,17 +37,16 @@ function ItemDetailedPricing({ item }: { item: any }) {
       try {
         console.log(`🚀 جاري جلب البيانات للبند: ${item.id}`);
         
-        // Force new request with unique timestamp
-        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data?t=${Date.now()}_${Math.random()}`, {
-          method: 'POST',
+        // Force GET request with timestamp to avoid cache completely
+        const timestamp = Date.now();
+        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data?_t=${timestamp}`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             'Pragma': 'no-cache'
           },
-          body: JSON.stringify({ timestamp: Date.now() }),
-          credentials: 'include',
-          cache: 'no-store'
+          credentials: 'include'
         });
         
         console.log(`📞 استجابة API - حالة:`, testResponse.status);
@@ -75,20 +74,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
         console.log(`📊 البيانات بعد التحليل:`, comprehensiveData);
         console.log(`🎯 LINE ITEM من البيانات:`, comprehensiveData?.lineItem);
         
-        // Force complete re-render with new data
-        setDetailedPricing(null); // Clear first
-        setTimeout(() => {
-          setDetailedPricing({...comprehensiveData}); // Then set new data
-        }, 10);
+        // Set data immediately without delay
+        setDetailedPricing(comprehensiveData);
         
-        // إجبار refresh لضمان تحديث الواجهة
-        setTimeout(() => {
-          console.log('🔄 Force refresh البيانات');
-          setDetailedPricing(prev => ({
-            ...comprehensiveData,
-            _forceUpdate: Date.now()
-          }));
-        }, 200);
+        // Log final state
+        console.log('✅ تم تعيين البيانات في State');
       } catch (error) {
         console.error('Fetch error:', error);
       } finally {
