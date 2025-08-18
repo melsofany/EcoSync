@@ -47,10 +47,12 @@ function ItemDetailedPricing({ item }: { item: any }) {
         const comprehensiveResult = await comprehensiveResponse.json();
         console.log('Comprehensive data received:', comprehensiveResult);
         console.log('allDataRows:', comprehensiveResult.allDataRows);
+        console.log('allDataRows length:', comprehensiveResult.allDataRows ? comprehensiveResult.allDataRows.length : 0);
         
         // Check if allDataRows exists, otherwise use single row
         if (comprehensiveResult.allDataRows && comprehensiveResult.allDataRows.length > 0) {
           console.log('Setting comprehensiveData with allDataRows, count:', comprehensiveResult.allDataRows.length);
+          console.log('First row data:', comprehensiveResult.allDataRows[0]);
           setComprehensiveData(comprehensiveResult.allDataRows);
         } else if (comprehensiveResult.lineItem) {
           // Single row backwards compatibility
@@ -69,6 +71,15 @@ function ItemDetailedPricing({ item }: { item: any }) {
 
     fetchDetailedPricing();
   }, [item?.id]);
+
+  // Debug log for comprehensiveData
+  React.useEffect(() => {
+    console.log('comprehensiveData state updated:', comprehensiveData);
+    console.log('comprehensiveData length:', comprehensiveData.length);
+    if (comprehensiveData.length > 0) {
+      console.log('First row in state:', comprehensiveData[0]);
+    }
+  }, [comprehensiveData]);
 
   if (isLoading) {
     return <div className="bg-muted/30 rounded-lg p-4 text-center">جاري تحميل التفاصيل...</div>;

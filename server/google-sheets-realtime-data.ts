@@ -679,24 +679,24 @@ export class GoogleSheetsRealtimeData {
         
         if (rowItemNumber === itemId) {
           const rowData = {
-            itemNumber: row[0] || '',     // العمود A
-            uom: row[1] || '',            // العمود B
-            line_item: row[2] || '',      // العمود C
-            part_no: row[3] || '',        // العمود D
-            description: row[4] || '',    // العمود E
-            rfq_number: row[5] || '',     // العمود F
-            rfq_date: row[6] || '',       // العمود G - DATE/RFQ
-            rfq_qty: row[7] || '',        // العمود H - QTY
-            client_name: row[8] || '',    // العمود I
-            po_number: row[9] || '',      // العمود J
-            po_date: row[10] || '',       // العمود K
-            po_quantity: row[11] || '',   // العمود L
-            po_price: row[12] || '',      // العمود M
-            po_total: row[13] || '',      // العمود N
-            customer_price: row[14] || '', // العمود O
-            res_date: row[15] || '',      // العمود P
-            category: row[16] || 'ELEC',  // العمود Q
-            employee_name: row[17] || '', // العمود R - الموظف المسؤول
+            itemNumber: row[0] || '',       // العمود A - معرف البند
+            uom: row[1] || '',              // العمود B - UOM
+            line_item: row[2] || '',        // العمود C - LINE ITEM
+            part_no: row[3] || '',          // العمود D - PART NO
+            description: row[4] || '',      // العمود E - DESCRIPTION
+            rfq_number: row[5] || '',       // العمود F - RFQ
+            rfq_date: row[6] || '',         // العمود G - DATE/RFQ
+            rfq_qty: row[7] || '',          // العمود H - QTY
+            customer_price: row[8] || '',   // العمود I - PRICE RFQ
+            res_date: row[9] || '',         // العمود J - RES. DATE
+            po_number: row[10] || '',       // العمود K - PO
+            po_date: row[11] || '',         // العمود L - DATE/PO
+            po_quantity: row[12] || '',     // العمود M - Quantity/PO
+            po_price: row[13] || '',        // العمود N - PRICE/PO
+            po_total: row[14] || '',        // العمود O - TOTAL PO
+            client_name: row[15] || '',     // العمود P - العميل
+            employee_name: row[16] || '',   // العمود Q - الموظف المسؤول
+            category: 'ELEC',               // Default category
           };
           itemRows.push(rowData);
           console.log(`📌 وجدت البند ${itemId} في الصف ${i + 2}: RFQ="${row[5]}", LINE_ITEM="${row[2]}"`);
