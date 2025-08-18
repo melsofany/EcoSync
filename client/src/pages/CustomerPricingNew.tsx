@@ -37,6 +37,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           credentials: 'include'
         });
         const data = await response.json();
+        console.log('detailedPricing data:', data);
         setDetailedPricing(data);
 
         // Also fetch comprehensive data with cache busting
@@ -107,11 +108,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
           <div>
             <label className="font-medium">PART NO:</label>
-            <p className="text-blue-600">{comprehensiveData?.partNumber || item.partNumber || ""}</p>
+            <p className="text-blue-600">{detailedPricing?.partNumber || item.partNumber || ""}</p>
           </div>
           <div>
             <label className="font-medium">الوحدة:</label>
-            <p className="text-blue-600">{comprehensiveData?.uom || item.uom || item.unit || "EACH"}</p>
+            <p className="text-blue-600">{detailedPricing?.uom || item.uom || item.unit || "EACH"}</p>
           </div>
         </div>
       </div>
@@ -125,19 +126,19 @@ function ItemDetailedPricing({ item }: { item: any }) {
         <div className="grid grid-cols-4 gap-4 text-sm">
           <div>
             <label className="font-medium">رقم طلب التسعير:</label>
-            <p className="text-yellow-700 font-bold">{comprehensiveData?.rfqNumber || item.requestNumber || ""}</p>
+            <p className="text-yellow-700 font-bold">{detailedPricing?.rfqNumber || item.requestNumber || ""}</p>
           </div>
           <div>
             <label className="font-medium">تاريخ الطلب:</label>
-            <p className="text-yellow-700">{comprehensiveData?.requestDate || item.requestDate || ""}</p>
+            <p className="text-yellow-700">{detailedPricing?.requestDate || item.requestDate || ""}</p>
           </div>
           <div>
             <label className="font-medium">تاريخ انتهاء العرض:</label>
-            <p className="text-yellow-700">{comprehensiveData?.expiryDate || item.expiryDate || ""}</p>
+            <p className="text-yellow-700">{detailedPricing?.expiryDate || item.expiryDate || ""}</p>
           </div>
           <div>
             <label className="font-medium">الكمية المطلوبة:</label>
-            <p className="text-yellow-700 font-bold">{comprehensiveData?.quantity || item.quantity || ""}</p>
+            <p className="text-yellow-700 font-bold">{detailedPricing?.quantity || item.quantity || ""}</p>
           </div>
         </div>
       </div>
@@ -152,12 +153,12 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <div>
             <label className="text-sm font-medium">سعر المورد:</label>
             <p className="font-semibold text-green-600">
-              {formatCurrency(Number(comprehensiveData?.supplierUnitPrice || item.supplierPrice || 0))}
+              {formatCurrency(Number(detailedPricing?.supplierUnitPrice || item.supplierPrice || 0))}
             </p>
           </div>
           <div>
             <label className="text-sm font-medium">المورد:</label>
-            <p className="text-sm">{comprehensiveData?.supplierName || item.supplierName || ""}</p>
+            <p className="text-sm">{detailedPricing?.supplierName || item.supplierName || ""}</p>
           </div>
         </div>
         
