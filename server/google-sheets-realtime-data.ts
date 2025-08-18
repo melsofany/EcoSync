@@ -730,6 +730,9 @@ export class GoogleSheetsRealtimeData {
         }
       }
       
+      let foundLineItem = ''; // لحفظ أول LINE ITEM نجده
+      let foundInRow = 0;
+      
       for (let i = 0; i < dataRows.length; i++) {
         const row = dataRows[i];
         const rowRfqNumber = (row[5] || '').trim(); // العمود F - RFQ Number
@@ -737,74 +740,72 @@ export class GoogleSheetsRealtimeData {
         const rowPartNumber = row[3] || ''; // العمود D - PART NO
         const rowDescription = row[4] || ''; // العمود E - Description
         
-        // طباعة السجلات التي تحتوي على البند المطلوب
+        // إذا وجدنا نفس رقم البند
         if (rowItemNumber === itemId) {
-          console.log(`📌 وجدت ${itemId} في الصف ${i + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), LINE_ITEM="${row[2]||'فارغ'}"`);
-        }
-
-        // البحث المحدد: مطابقة دقيقة لمعرف البند ورقم الطلب
-        if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
-          console.log(`🎯 مطابقة دقيقة للبند والطلب في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}, LINE_ITEM="${row[2]||''}"`);
+          console.log(`📌 وجدت ${itemId} في الصف ${i + 2}: RFQ="${rowRfqNumber}", LINE_ITEM="${row[2]||'فارغ'}"`);
           
-          // دمج البيانات: البيانات الأساسية من صفحة تسعير العملاء + LINE ITEM من DATA
-          const mergedData = {
-            ...customerItemData,
-            itemId: itemId,
-            lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM (حتى لو كان فارغاً)
-          };
-          
-          if (row[2] && row[2].trim() !== '') {
-            console.log(`✅ تم العثور على LINE ITEM للبند ${itemId} في الطلب ${rfqNumber}:`, row[2]);
-          } else {
-            console.log(`⚠️ التطابق موجود لكن LINE ITEM فارغ للبند ${itemId} في الطلب ${rfqNumber}`);
+          // حفظ أول LINE ITEM نجده لنفس البند (حتى لو كان RFQ مختلف)
+          if (!foundLineItem && row[2] && row[2].trim() !== '') {
+            foundLineItem = row[2];
+            foundInRow = i + 2;
+            console.log(`💾 حفظ LINE ITEM من الصف ${foundInRow}: ${foundLineItem}`);
           }
           
-          console.log(`📊 البيانات المدمجة:`, mergedData);
-          return mergedData;
+          // إذا تطابق RFQ أيضاً، نستخدمه مباشرة ونخرج
+          if (rowRfqNumber === rfqNumber) {
+            console.log(`🎯 مطابقة كاملة! البند ${itemId} مع RFQ ${rfqNumber}`);
+            
+            const mergedData = {
+              ...customerItemData,
+              itemId: itemId,
+              lineItem: row[2] || foundLineItem || '', // استخدم LINE ITEM من نفس الصف أو الاحتياطي
+            };
+            
+            if (row[2] && row[2].trim() !== '') {
+              console.log(`✅ تم استخدام LINE ITEM من نفس RFQ: ${row[2]}`);
+            } else if (foundLineItem) {
+              console.log(`✅ تم استخدام LINE ITEM من صف آخر: ${foundLineItem}`);
+            }
+            
+            console.log(`📊 البيانات المدمجة:`, mergedData);
+            return mergedData;
+          }
         }
       }
       
-      // إذا لم نجد أي LINE ITEM على الإطلاق - نُنشئ واحد تلقائياً
-      console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId} في طلب ${rfqNumber}`);
+      // إذا لم نجد تطابق كامل، نستخدم LINE ITEM المحفوظ
+      if (foundLineItem) {
+        console.log(`⚠️ لم يتم العثور على تطابق كامل، استخدام LINE ITEM من الصف ${foundInRow}: ${foundLineItem}`);
+        
+        const mergedData = {
+          ...customerItemData,
+          itemId: itemId,
+          lineItem: foundLineItem,
+        };
+        
+        console.log(`📊 البيانات المدمجة مع LINE ITEM من صف آخر:`, mergedData);
+        return mergedData;
+      }
       
-      // إنشاء LINE ITEM تلقائي بناءً على البيانات المتاحة
-      const autoLineItem = this.generateAutoLineItem(itemId, customerItemData.partNumber, customerItemData.description);
-      console.log(`🔧 تم إنشاء LINE ITEM تلقائي: ${autoLineItem}`);
+      // إذا لم نجد أي LINE ITEM على الإطلاق
+      console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId}`);
       
-      // إرجاع البيانات من صفحة تسعير العملاء مع LINE ITEM المُنشأ تلقائياً
-      const dataWithAutoLineItem = {
+      // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM
+      const dataWithoutLineItem = {
         ...customerItemData,
         itemId: itemId,
-        lineItem: autoLineItem, // LINE ITEM مُنشأ تلقائياً
+        lineItem: '', // لا يوجد LINE ITEM
       };
       
-      console.log(`📊 البيانات المُرجعة (مع LINE ITEM التلقائي):`, dataWithAutoLineItem);
-      return dataWithAutoLineItem;
+      console.log(`📊 البيانات المُرجعة (بدون LINE ITEM):`, dataWithoutLineItem);
+      return dataWithoutLineItem;
     } catch (error) {
       console.error('❌ خطأ في الحصول على تفاصيل البند:', (error as Error).message);
       return null;
     }
   }
 
-  /**
-   * إنشاء LINE ITEM تلقائي بناءً على البيانات المتاحة
-   */
-  private generateAutoLineItem(itemNumber: string, partNumber: string, description: string): string {
-    // إزالة P- من رقم البند للحصول على الرقم فقط
-    const itemNum = itemNumber.replace('P-', '');
-    
-    // استخراج أول كلمة من الوصف كفئة
-    const category = description ? description.split(' ')[0].toUpperCase() : 'GENERAL';
-    
-    // استخدام رقم الجزء أو رقم البند
-    const partCode = partNumber || itemNum;
-    
-    // إنشاء LINE ITEM بتنسيق مشابه للموجود في النظام
-    // Format: XXXX.XXX.CATEGORY.PARTCODE
-    const lineItem = `1000.001.${category}.${partCode}`;
-    
-    return lineItem;
-  }
+
 }
 
 export const googleSheetsRealtimeData = new GoogleSheetsRealtimeData();
