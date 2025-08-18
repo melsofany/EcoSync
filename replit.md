@@ -32,7 +32,7 @@ Supplier Pricing Requirements: Enhanced supplier pricing form with detailed supp
 - **Deployment**: Comprehensive deployment packages for Windows RDP, Linux servers, and Railway.app cloud deployment, including Docker Compose setup, automated deployment scripts, and GitHub integration with CI/CD pipelines.
 
 ### Feature Specifications
-- **Quotation Management**: Full lifecycle from request to completion with accurate data import.
+- **Quotation Management**: Full lifecycle from request to completion with accurate data import. **FIXED (Jan 19, 2025):** Resolved critical issue where only 1031 quotations were displayed instead of 1533. Root cause was getAllItems() filtering out rows with RFQ data (17 columns) and only processing rows without RFQ (15 columns). Solution: Created getAllItemsRaw() method that processes all 8895 rows without filtering, ensuring all quotations including 25R000057 are properly displayed.
 - **Item Catalog**: AI-enhanced item management with intelligent duplicate detection, focusing on part number normalization, description similarity, and keyword extraction.
 - **AI-Powered Item Unification**: Advanced Google Sheets integration for intelligent item consolidation. System processes data, analyzes part numbers and descriptions using AI similarity matching, then assigns unified item IDs to matching rows. **Updated:** Automatic AI matching has been optimized with quick matching for new items only to improve performance. Full AI matching is available manually from the admin interface to avoid long processing times during regular operations.
 - **Purchase Order Details System**: Complete purchase order item viewing system with accurate column mapping and Google Sheets real-time integration.
