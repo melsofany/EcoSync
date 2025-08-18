@@ -227,62 +227,32 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <Package className="h-4 w-4" />
             تفاصيل البند الأساسية - مباشر من Google Sheets
           </h4>
+          
+          {/* LINE ITEM في صف منفصل */}
+          <div className="mb-4">
+            <label className="text-sm font-medium block mb-2">🎯 LINE ITEM:</label>
+            <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
+              {detailedPricing?.lineItem ? (
+                <div className="text-center text-xl font-bold">{detailedPricing.lineItem}</div>
+              ) : (
+                <div className="text-center text-gray-500">لا يوجد LINE ITEM</div>
+              )}
+            </div>
+          </div>
+
+          {/* باقي التفاصيل في شبكة */}
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium">معرف البند:</label>
               <p className="font-semibold text-blue-600">{detailedPricing.itemNumber || detailedPricing.itemId || "غير محدد"}</p>
             </div>
             <div>
-              <label className="text-sm font-medium">🎯 LINE ITEM:</label>
-              <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
-                <div>
-                  {/* عرض LINE ITEM مع تحديث مباشر */}
-                  <div 
-                    id="line-item-display"
-                    className="p-4 text-center text-xl font-mono rounded-lg"
-                    key={`line-${refreshKey}-${detailedPricing?.lineItem}`}
-                    style={{
-                      backgroundColor: detailedPricing?.lineItem ? "#d4f4dd" : "#ffdddd",
-                      color: detailedPricing?.lineItem ? "#008000" : "#ff0000",
-                      border: `3px solid ${detailedPricing?.lineItem ? "#008000" : "#ff0000"}`,
-                      wordBreak: 'break-all',
-                      minHeight: '60px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '18px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {detailedPricing?.lineItem || 'جاري التحميل...'}
-                  </div>
-                  {/* عرض بديل للتأكد */}
-                  {detailedPricing?.lineItem && (
-                    <div className="mt-2 text-center text-green-600 font-bold">
-                      ✓ LINE ITEM: {detailedPricing.lineItem}
-                    </div>
-                  )}
-                  
-                  {/* Debug info */}
-                  <div style={{fontSize: '12px', backgroundColor: '#ffffcc', padding: '10px', borderRadius: '5px'}}>
-                    <div><strong>معرف البند:</strong> {detailedPricing?.itemId || 'غير محدد'}</div>
-                    <div><strong>LINE ITEM الخام:</strong> "{detailedPricing?.lineItem}"</div>
-                    <div><strong>نوع البيانات:</strong> {typeof detailedPricing?.lineItem}</div>
-                    <div><strong>عدد المفاتيح:</strong> {detailedPricing ? Object.keys(detailedPricing).length : 0}</div>
-                    <div><strong>المفاتيح:</strong> {detailedPricing ? Object.keys(detailedPricing).join(', ') : 'لا توجد'}</div>
-                    <details style={{marginTop: '10px'}}>
-                      <summary>عرض البيانات الكاملة</summary>
-                      <pre style={{backgroundColor: 'white', padding: '5px', fontSize: '10px', overflow: 'auto'}}>
-                        {JSON.stringify(detailedPricing, null, 2)}
-                      </pre>
-                    </details>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div>
               <label className="text-sm font-medium">رقم القطعة:</label>
               <p className="font-semibold text-green-600">{detailedPricing.partNumber || "غير محدد"}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">الوحدة:</label>
+              <p className="font-semibold">{detailedPricing.uom || "EACH"}</p>
             </div>
             <div className="col-span-3">
               <label className="text-sm font-medium">الوصف:</label>
@@ -291,10 +261,6 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <div>
               <label className="text-sm font-medium">الكمية:</label>
               <p className="font-semibold">{detailedPricing.quantity || "1"}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium">الوحدة:</label>
-              <p className="font-semibold">{detailedPricing.uom || "EACH"}</p>
             </div>
             <div>
               <label className="text-sm font-medium">رقم RFQ:</label>

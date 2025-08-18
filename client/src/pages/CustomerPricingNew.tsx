@@ -69,14 +69,26 @@ function ItemDetailedPricing({ item }: { item: any }) {
           <Package className="h-4 w-4" />
           تفاصيل البند
         </h4>
-        <div className="grid grid-cols-4 gap-4 text-sm">
+        
+        {/* LINE ITEM في صف منفصل */}
+        <div className="mb-4">
+          <label className="font-medium block mb-2 text-sm">🎯 LINE ITEM:</label>
+          <div className="bg-purple-100 border-2 border-purple-300 rounded-lg px-4 py-3">
+            {comprehensiveData?.lineItem || item.lineItem ? (
+              <p className="text-purple-700 font-mono text-center text-xl font-bold" dir="ltr">
+                {comprehensiveData?.lineItem || item.lineItem}
+              </p>
+            ) : (
+              <p className="text-gray-500 text-center">لا يوجد LINE ITEM</p>
+            )}
+          </div>
+        </div>
+        
+        {/* باقي معلومات البند */}
+        <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
             <label className="font-medium">معرف البند:</label>
             <p className="text-blue-600">{comprehensiveData?.itemNumber || item.itemNumber}</p>
-          </div>
-          <div>
-            <label className="font-medium">LINE ITEM:</label>
-            <p className="text-blue-600 font-mono" dir="ltr">{comprehensiveData?.lineItem || item.lineItem || ""}</p>
           </div>
           <div>
             <label className="font-medium">PART NO:</label>
