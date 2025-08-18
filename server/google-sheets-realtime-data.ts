@@ -714,7 +714,7 @@ export class GoogleSheetsRealtimeData {
       // ثانياً: البحث في صفحة DATA للحصول على LINE ITEM إذا لم يكن موجوداً
       const dataResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z3000', // زيادة النطاق لقراءة المزيد من الصفوف
+        range: 'DATA!A2:Z80000', // قراءة أول 80,000 صف
       });
 
       const dataRows = dataResponse.data.values || [];
