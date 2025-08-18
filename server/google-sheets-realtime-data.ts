@@ -654,6 +654,63 @@ export class GoogleSheetsRealtimeData {
   }
 
   /**
+   * الحصول على كل الصفوف المتعلقة بالبند من ورقة DATA
+   */
+  async getAllDataRowsForItem(itemId: string): Promise<any[]> {
+    try {
+      if (!this.sheets) {
+        console.error('❌ Google Sheets غير مهيأ');
+        return [];
+      }
+
+      console.log(`🔍 البحث عن كل الصفوف للبند ${itemId} في ورقة DATA`);
+
+      const dataResponse = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A2:Z80000',
+      });
+
+      const dataRows = dataResponse.data.values || [];
+      const itemRows = [];
+      
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        const rowItemNumber = (row[0] || '').trim();
+        
+        if (rowItemNumber === itemId) {
+          const rowData = {
+            itemNumber: row[0] || '',
+            uom: row[1] || '',
+            line_item: row[2] || '',
+            part_no: row[3] || '',
+            description: row[4] || '',
+            rfq_number: row[5] || '',
+            client_name: row[6] || '',
+            po_number: row[7] || '',
+            po_date: row[8] || '',
+            po_quantity: row[9] || '',
+            po_price: row[10] || '',
+            po_total: row[11] || '',
+            customer_price: row[12] || '',
+            rfq_date: row[13] || '',
+            rfq_qty: row[14] || '',
+            res_date: row[15] || '',
+            category: row[16] || 'ELEC',
+          };
+          itemRows.push(rowData);
+          console.log(`📌 وجدت البند ${itemId} في الصف ${i + 2}: RFQ="${row[5]}", LINE_ITEM="${row[2]}"`);
+        }
+      }
+      
+      console.log(`✅ تم العثور على ${itemRows.length} صف للبند ${itemId}`);
+      return itemRows;
+    } catch (error) {
+      console.error('❌ خطأ في الحصول على صفوف البند:', error);
+      return [];
+    }
+  }
+
+  /**
    * الحصول على تفاصيل بند بواسطة معرف البند من صفحة تسعير العملاء وربطه بصفحة DATA
    */
   async getItemDetailsById(itemId: string): Promise<any> {

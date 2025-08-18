@@ -4656,26 +4656,33 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         const targetItem = customerItems.find((item: any) => item.id === itemId);
         
         if (targetItem && targetItem.itemNumber) {
+          // جلب بيانات البند الأساسية
           const itemData = await googleSheetsRealTimeData.getItemDetailsById(targetItem.itemNumber);
-          console.log(`🚀 [comprehensive-data] إرسال البيانات للواجهة - البند ${targetItem.itemNumber}:`, JSON.stringify(itemData, null, 2));
           
-          const responseData = itemData || {
-            itemId: targetItem.itemNumber,
-            itemNumber: targetItem.itemNumber,
-            lineItem: '',
-            partNumber: targetItem.partNumber || '',
-            description: targetItem.description || '',
-            uom: targetItem.uom || 'EACH',
-            quantity: targetItem.quantity || 1,
-            rfqNumber: targetItem.rfqNumber || '',
-            clientName: targetItem.clientName || '',
-            requestDate: targetItem.requestDate || '',
-            expiryDate: targetItem.expiryDate || '',
-            supplierName: '',
-            supplierUnitPrice: ''
+          // جلب كل الصفوف من ورقة DATA
+          const allDataRows = await googleSheetsRealTimeData.getAllDataRowsForItem(targetItem.itemNumber);
+          console.log(`🚀 [comprehensive-data] تم جلب ${allDataRows.length} صف من ورقة DATA للبند ${targetItem.itemNumber}`);
+          
+          const responseData = {
+            ...(itemData || {
+              itemId: targetItem.itemNumber,
+              itemNumber: targetItem.itemNumber,
+              lineItem: '',
+              partNumber: targetItem.partNumber || '',
+              description: targetItem.description || '',
+              uom: targetItem.uom || 'EACH',
+              quantity: targetItem.quantity || 1,
+              rfqNumber: targetItem.rfqNumber || '',
+              clientName: targetItem.clientName || '',
+              requestDate: targetItem.requestDate || '',
+              expiryDate: targetItem.expiryDate || '',
+              supplierName: '',
+              supplierUnitPrice: ''
+            }),
+            allDataRows: allDataRows // إضافة كل الصفوف من ورقة DATA
           };
           
-          console.log(`🚀 [comprehensive-data] البيانات النهائية المُرسلة:`, JSON.stringify(responseData, null, 2));
+          console.log(`🚀 [comprehensive-data] البيانات النهائية المُرسلة: ${allDataRows.length} صف من DATA`);
           res.status(200).json(responseData);
           return;
         }
@@ -4683,18 +4690,23 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       // البحث المباشر للبنود العادية
       const itemData = await googleSheetsRealTimeData.getItemDetailsById(itemId);
-      res.status(200).json(itemData || {
-        itemId: itemId,
-        itemNumber: itemId,
-        lineItem: '',
-        partNumber: '',
-        description: '',
-        uom: 'EACH',
-        quantity: 1,
-        rfqNumber: '',
-        clientName: '',
-        requestDate: '',
-        expiryDate: ''
+      const allDataRows = await googleSheetsRealTimeData.getAllDataRowsForItem(itemId);
+      
+      res.status(200).json({
+        ...(itemData || {
+          itemId: itemId,
+          itemNumber: itemId,
+          lineItem: '',
+          partNumber: '',
+          description: '',
+          uom: 'EACH',
+          quantity: 1,
+          rfqNumber: '',
+          clientName: '',
+          requestDate: '',
+          expiryDate: ''
+        }),
+        allDataRows: allDataRows
       });
     } catch (error) {
       console.error("Error fetching comprehensive item data:", error);

@@ -46,7 +46,15 @@ function ItemDetailedPricing({ item }: { item: any }) {
         });
         const comprehensiveResult = await comprehensiveResponse.json();
         console.log('Comprehensive data received:', comprehensiveResult);
-        setComprehensiveData(comprehensiveResult);
+        // Check if allDataRows exists, otherwise use single row
+        if (comprehensiveResult.allDataRows && comprehensiveResult.allDataRows.length > 0) {
+          setComprehensiveData(comprehensiveResult.allDataRows);
+        } else if (comprehensiveResult.lineItem) {
+          // Single row backwards compatibility
+          setComprehensiveData([comprehensiveResult]);
+        } else {
+          setComprehensiveData([]);
+        }
       } catch (error) {
         console.error('Error fetching detailed pricing:', error);
       } finally {
