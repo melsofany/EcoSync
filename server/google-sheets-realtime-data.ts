@@ -606,8 +606,45 @@ export class GoogleSheetsRealtimeData {
         profitMargin: row[12] || '',
         currency: row[13] || '',
         notes: row[14] || '',
-        status: row[15] || 'في انتظار تسعير الموردين'
+        status: row[15] || 'في انتظار تسعير الموردين',
+        lineItem: '' // سيتم ملؤه من صفحة DATA
       })).filter((item: any) => item.itemNumber); // تصفية البنود الفارغة
+
+      // الآن نحتاج لجلب LINE ITEM من صفحة DATA لكل بند
+      if (items.length > 0) {
+        try {
+          const dataResponse = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.spreadsheetId,
+            range: 'DATA!A2:G2000', // قراءة البيانات من صفحة DATA
+          });
+
+          const dataRows = dataResponse.data.values || [];
+          console.log(`📊 تم قراءة ${dataRows.length} صف من صفحة DATA للبحث عن LINE ITEM`);
+
+          // مطابقة كل بند مع LINE ITEM من صفحة DATA
+          for (const item of items) {
+            // البحث عن تطابق دقيق بين Item Number (العمود A) و RFQ Number (العمود F)
+            for (const dataRow of dataRows) {
+              const dataItemNumber = dataRow[0]; // العمود A - Item Number
+              const dataLineItem = dataRow[2]; // العمود C - LINE ITEM
+              const dataRfqNumber = dataRow[5]; // العمود F - RFQ Number
+
+              if (dataItemNumber === item.itemNumber && dataRfqNumber === item.rfqNumber) {
+                item.lineItem = dataLineItem || '';
+                console.log(`✅ تم العثور على LINE ITEM للبند ${item.itemNumber} في RFQ ${item.rfqNumber}: ${dataLineItem}`);
+                break;
+              }
+            }
+            
+            if (!item.lineItem) {
+              console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${item.itemNumber} في RFQ ${item.rfqNumber}`);
+            }
+          }
+        } catch (dataError) {
+          console.error('⚠️ خطأ في قراءة LINE ITEM من صفحة DATA:', (dataError as Error).message);
+          // نستمر بدون LINE ITEM في حالة الخطأ
+        }
+      }
 
       return items;
     } catch (error) {
