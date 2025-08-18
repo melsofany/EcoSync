@@ -208,8 +208,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
               <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
                 <div>
                   {/* Display final result */}
+                  <div style={{color: 'blue', fontSize: '18px', fontWeight: 'bold', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', marginBottom: '10px'}}>
+                    TESTING: {JSON.stringify(detailedPricing)}
+                  </div>
                   <div style={{color: detailedPricing?.lineItem ? 'green' : 'red', fontSize: '18px', fontWeight: 'bold', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', marginBottom: '10px'}}>
-                    {detailedPricing?.lineItem ? detailedPricing.lineItem : 'لا يوجد LINE ITEM'}
+                    LINE ITEM: {detailedPricing?.lineItem || 'لا يوجد LINE ITEM'}
                   </div>
                   
                   {/* Debug info */}
