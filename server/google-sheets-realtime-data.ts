@@ -752,10 +752,40 @@ export class GoogleSheetsRealtimeData {
         if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
           console.log(`🎯 مطابقة كاملة! البند ${itemId} مع RFQ ${rfqNumber} في الصف ${i + 2}`);
           
+          // البحث عن سعر المورد في ورقة تسعير الموردين
+          let supplierPrice = '';
+          try {
+            const supplierResponse = await this.sheets.spreadsheets.values.get({
+              spreadsheetId: this.spreadsheetId,
+              range: 'تسعير_الموردين!A2:Z1000',
+            });
+            
+            const supplierRows = supplierResponse.data.values || [];
+            
+            for (const supplierRow of supplierRows) {
+              const supplierItemNumber = (supplierRow[0] || '').trim();
+              const supplierRfqNumber = (supplierRow[15] || '').trim(); // العمود P
+              const supplierUnitPrice = supplierRow[14] || ''; // العمود O
+              
+              if (supplierItemNumber === itemId && supplierRfqNumber === rfqNumber) {
+                supplierPrice = supplierUnitPrice;
+                console.log(`💰 تم العثور على سعر المورد من العمود O: ${supplierPrice}`);
+                break;
+              }
+            }
+            
+            if (!supplierPrice) {
+              console.log(`⚠️ لم يتم العثور على سعر المورد في ورقة تسعير الموردين`);
+            }
+          } catch (error) {
+            console.error('❌ خطأ في البحث عن سعر المورد:', error);
+          }
+          
           const mergedData = {
             ...customerItemData,
             itemId: itemId,
             lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM
+            supplierUnitPrice: supplierPrice || customerItemData.supplierUnitPrice, // سعر المورد من ورقة تسعير الموردين
           };
           
           if (row[2] && row[2].trim() !== '') {
@@ -773,11 +803,44 @@ export class GoogleSheetsRealtimeData {
       console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId} مع طلب التسعير ${rfqNumber}`);
       console.log(`📝 البند موجود في Google Sheets لكن مع أرقام طلبات تسعير مختلفة`);
       
-      // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM
+      // البحث في ورقة تسعير الموردين للحصول على سعر المورد من العمود O
+      console.log(`🔍 البحث عن سعر المورد في ورقة تسعير الموردين`);
+      
+      let supplierPrice = '';
+      try {
+        const supplierResponse = await this.sheets.spreadsheets.values.get({
+          spreadsheetId: this.spreadsheetId,
+          range: 'تسعير_الموردين!A2:Z1000', // قراءة ورقة تسعير الموردين
+        });
+        
+        const supplierRows = supplierResponse.data.values || [];
+        
+        // البحث عن البند في ورقة تسعير الموردين
+        for (const row of supplierRows) {
+          const rowItemNumber = (row[0] || '').trim(); // العمود A - Item Number
+          const rowRfqNumber = (row[15] || '').trim(); // العمود P - RFQ Number
+          const rowSupplierPrice = row[14] || ''; // العمود O - سعر المورد
+          
+          if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
+            supplierPrice = rowSupplierPrice;
+            console.log(`✅ تم العثور على سعر المورد من العمود O: ${supplierPrice}`);
+            break;
+          }
+        }
+        
+        if (!supplierPrice) {
+          console.log(`⚠️ لم يتم العثور على سعر المورد في ورقة تسعير الموردين`);
+        }
+      } catch (error) {
+        console.error('❌ خطأ في البحث عن سعر المورد:', error);
+      }
+      
+      // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM لكن مع سعر المورد من ورقة تسعير الموردين
       const dataWithoutLineItem = {
         ...customerItemData,
         itemId: itemId,
         lineItem: '', // لا يوجد LINE ITEM لهذا التطابق المحدد
+        supplierUnitPrice: supplierPrice || customerItemData.supplierUnitPrice, // استخدام سعر المورد من ورقة تسعير الموردين إن وجد
       };
       
       console.log(`📊 البيانات المُرجعة (بدون LINE ITEM):`, dataWithoutLineItem);
