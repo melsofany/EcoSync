@@ -714,7 +714,7 @@ export class GoogleSheetsRealtimeData {
       // ثانياً: البحث في صفحة DATA للحصول على LINE ITEM إذا لم يكن موجوداً
       const dataResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z1000',
+        range: 'DATA!A2:Z3000', // زيادة النطاق لقراءة المزيد من الصفوف
       });
 
       const dataRows = dataResponse.data.values || [];
@@ -727,6 +727,12 @@ export class GoogleSheetsRealtimeData {
         console.log('🔍 أمثلة من البيانات في صفحة DATA:');
         for (let j = 0; j < Math.min(5, dataRows.length); j++) {
           console.log(`  الصف ${j + 2}: A="${dataRows[j][0]||''}", B="${dataRows[j][1]||''}", C="${dataRows[j][2]||''}", F="${dataRows[j][5]||''}"`);
+        }
+        
+        // طباعة الصف 191 تحديداً إذا كان موجوداً
+        if (dataRows.length >= 190) {
+          const row189 = dataRows[189]; // الصف 191 في Google Sheets (الفهرس 189 في المصفوفة)
+          console.log(`📍 الصف 191 تحديداً: A="${row189?.[0]||''}", B="${row189?.[1]||''}", C="${row189?.[2]||''}", D="${row189?.[3]||''}", E="${row189?.[4]||''}", F="${row189?.[5]||''}"`);
         }
       }
       
