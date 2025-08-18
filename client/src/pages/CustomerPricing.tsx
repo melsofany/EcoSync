@@ -71,7 +71,17 @@ function ItemDetailedPricing({ item }: { item: any }) {
         console.log(`📊 البيانات بعد التحليل:`, comprehensiveData);
         console.log(`🎯 LINE ITEM من البيانات:`, comprehensiveData?.lineItem);
         
-        setDetailedPricing(comprehensiveData);
+        // Force update with fresh data
+        setDetailedPricing({...comprehensiveData});
+        
+        // إجبار refresh لضمان تحديث الواجهة
+        setTimeout(() => {
+          console.log('🔄 Force refresh البيانات');
+          setDetailedPricing(prev => ({
+            ...comprehensiveData,
+            _forceUpdate: Date.now()
+          }));
+        }, 200);
       } catch (error) {
         console.error('Fetch error:', error);
       } finally {
@@ -193,11 +203,26 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <div>
               <label className="text-sm font-medium">🎯 LINE ITEM:</label>
               <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
-                <strong style={{color: 'red', fontSize: '16px'}}>
-                  {detailedPricing?.lineItem || 'لا يوجد lineItem في البيانات'}
-                </strong>
-                <div style={{fontSize: '12px', marginTop: '5px'}}>
-                  <div>البيانات: {JSON.stringify(detailedPricing)}</div>
+                <div>
+                  {/* Display final result */}
+                  <div style={{color: detailedPricing?.lineItem ? 'green' : 'red', fontSize: '18px', fontWeight: 'bold', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', marginBottom: '10px'}}>
+                    {detailedPricing?.lineItem ? detailedPricing.lineItem : 'لا يوجد LINE ITEM'}
+                  </div>
+                  
+                  {/* Debug info */}
+                  <div style={{fontSize: '12px', backgroundColor: '#ffffcc', padding: '10px', borderRadius: '5px'}}>
+                    <div><strong>معرف البند:</strong> {detailedPricing?.itemId || 'غير محدد'}</div>
+                    <div><strong>LINE ITEM الخام:</strong> "{detailedPricing?.lineItem}"</div>
+                    <div><strong>نوع البيانات:</strong> {typeof detailedPricing?.lineItem}</div>
+                    <div><strong>عدد المفاتيح:</strong> {detailedPricing ? Object.keys(detailedPricing).length : 0}</div>
+                    <div><strong>المفاتيح:</strong> {detailedPricing ? Object.keys(detailedPricing).join(', ') : 'لا توجد'}</div>
+                    <details style={{marginTop: '10px'}}>
+                      <summary>عرض البيانات الكاملة</summary>
+                      <pre style={{backgroundColor: 'white', padding: '5px', fontSize: '10px', overflow: 'auto'}}>
+                        {JSON.stringify(detailedPricing, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
                 </div>
               </div>
             </div>
