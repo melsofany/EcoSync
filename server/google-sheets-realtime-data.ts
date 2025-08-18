@@ -768,7 +768,13 @@ export class GoogleSheetsRealtimeData {
               console.log('📊 أمثلة من ورقة تسعير الموردين:');
               for (let j = 0; j < Math.min(5, supplierRows.length); j++) {
                 const row = supplierRows[j];
-                console.log(`  الصف ${j + 2}: A="${row[0]||''}" (البند), O="${row[14]||''}" (السعر), P="${row[15]||''}" (RFQ)`);
+                console.log(`  الصف ${j + 2}:`);
+                console.log(`    A="${row[0]||''}" (البند)`);
+                console.log(`    F="${row[5]||''}" (RFQ المحتمل)`);
+                console.log(`    J="${row[9]||''}" (اسم المورد)`);
+                console.log(`    O="${row[14]||''}" (السعر)`);
+                console.log(`    P="${row[15]||''}" (العمود P)`);
+                console.log(`    Q="${row[16]||''}" (العمود Q)`);
               }
             }
             
@@ -839,7 +845,13 @@ export class GoogleSheetsRealtimeData {
           console.log('📊 أمثلة من ورقة تسعير الموردين:');
           for (let j = 0; j < Math.min(5, supplierRows.length); j++) {
             const row = supplierRows[j];
-            console.log(`  الصف ${j + 2}: A="${row[0]||''}" (البند), O="${row[14]||''}" (السعر), P="${row[15]||''}" (RFQ)`);
+            console.log(`  الصف ${j + 2}:`);
+            console.log(`    A="${row[0]||''}" (البند)`);
+            console.log(`    F="${row[5]||''}" (RFQ المحتمل)`);
+            console.log(`    J="${row[9]||''}" (اسم المورد)`);
+            console.log(`    O="${row[14]||''}" (السعر)`);
+            console.log(`    P="${row[15]||''}" (العمود P)`);
+            console.log(`    Q="${row[16]||''}" (العمود Q)`);
           }
         }
         
