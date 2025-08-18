@@ -708,44 +708,37 @@ export class GoogleSheetsRealtimeData {
       
       const rfqNumber = customerItemData.rfqNumber;
 
-      // LINE ITEM دائماً يأتي من صفحة DATA وليس من صفحة تسعير العملاء
-      console.log(`🔍 البحث عن LINE ITEM في صفحة DATA للبند ${itemId} في طلب التسعير ${rfqNumber}`);
+      // LINE ITEM الآن يأتي من صفحة تسعير الموردين من العمود O
+      console.log(`🔍 البحث عن LINE ITEM في صفحة تسعير الموردين للبند ${itemId} في طلب التسعير ${rfqNumber}`);
 
-      // ثانياً: البحث في صفحة DATA للحصول على LINE ITEM إذا لم يكن موجوداً
-      const dataResponse = await this.sheets.spreadsheets.values.get({
+      // ثانياً: البحث في صفحة تسعير الموردين للحصول على LINE ITEM
+      const supplierResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z80000', // قراءة أول 80,000 صف
+        range: 'تسعير الموردين!A2:Z80000', // قراءة أول 80,000 صف من ورقة تسعير الموردين
       });
 
-      const dataRows = dataResponse.data.values || [];
+      const supplierRows = supplierResponse.data.values || [];
 
       // البحث عن السجل الذي يحتوي على رقم طلب التسعير والبند المطلوب
-      console.log(`📊 عدد الصفوف في صفحة DATA: ${dataRows.length}`);
+      console.log(`📊 عدد الصفوف في صفحة تسعير الموردين: ${supplierRows.length}`);
       
       // طباعة أول 5 صفوف للتحقق من البنية
-      if (dataRows.length > 0) {
-        console.log('🔍 أمثلة من البيانات في صفحة DATA:');
-        for (let j = 0; j < Math.min(5, dataRows.length); j++) {
-          console.log(`  الصف ${j + 2}: A="${dataRows[j][0]||''}", B="${dataRows[j][1]||''}", C="${dataRows[j][2]||''}", F="${dataRows[j][5]||''}"`);
-        }
-        
-        // طباعة الصف 191 تحديداً إذا كان موجوداً
-        if (dataRows.length >= 190) {
-          const row189 = dataRows[189]; // الصف 191 في Google Sheets (الفهرس 189 في المصفوفة)
-          console.log(`📍 الصف 191 تحديداً: A="${row189?.[0]||''}", B="${row189?.[1]||''}", C="${row189?.[2]||''}", D="${row189?.[3]||''}", E="${row189?.[4]||''}", F="${row189?.[5]||''}"`);
+      if (supplierRows.length > 0) {
+        console.log('🔍 أمثلة من البيانات في صفحة تسعير الموردين:');
+        for (let j = 0; j < Math.min(5, supplierRows.length); j++) {
+          console.log(`  الصف ${j + 2}: A="${supplierRows[j][0]||''}", O="${supplierRows[j][14]||''}" (LINE ITEM), P="${supplierRows[j][15]||''}" (RFQ)`);
         }
       }
       
-      for (let i = 0; i < dataRows.length; i++) {
-        const row = dataRows[i];
-        const rowRfqNumber = (row[5] || '').trim(); // العمود F - RFQ Number
+      for (let i = 0; i < supplierRows.length; i++) {
+        const row = supplierRows[i];
+        const rowRfqNumber = (row[15] || '').trim(); // العمود P - RFQ Number في ورقة تسعير الموردين
         const rowItemNumber = (row[0] || '').trim(); // العمود A - Item Number
-        const rowPartNumber = row[3] || ''; // العمود D - PART NO
-        const rowDescription = row[4] || ''; // العمود E - Description
+        const rowLineItem = row[14] || ''; // العمود O - LINE ITEM في ورقة تسعير الموردين
         
         // طباعة السجلات التي تحتوي على البند المطلوب للتتبع
         if (rowItemNumber === itemId) {
-          console.log(`📌 وجدت ${itemId} في الصف ${i + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), LINE_ITEM="${row[2]||'فارغ'}"`);
+          console.log(`📌 وجدت ${itemId} في الصف ${i + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), LINE_ITEM="${rowLineItem||'فارغ'}"`);
         }
 
         // البحث عن مطابقة كاملة: رقم البند + رقم طلب التسعير
@@ -755,11 +748,11 @@ export class GoogleSheetsRealtimeData {
           const mergedData = {
             ...customerItemData,
             itemId: itemId,
-            lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM
+            lineItem: rowLineItem, // العمود O من صفحة تسعير الموردين - LINE ITEM
           };
           
-          if (row[2] && row[2].trim() !== '') {
-            console.log(`✅ تم العثور على LINE ITEM: ${row[2]}`);
+          if (rowLineItem && rowLineItem.trim() !== '') {
+            console.log(`✅ تم العثور على LINE ITEM من ورقة تسعير الموردين: ${rowLineItem}`);
           } else {
             console.log(`⚠️ التطابق موجود لكن LINE ITEM فارغ في الصف ${i + 2}`);
           }
@@ -770,8 +763,8 @@ export class GoogleSheetsRealtimeData {
       }
       
       // لم نجد مطابقة كاملة (رقم البند + رقم طلب التسعير)
-      console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId} مع طلب التسعير ${rfqNumber}`);
-      console.log(`📝 البند موجود في Google Sheets لكن مع أرقام طلبات تسعير مختلفة`);
+      console.log(`⚠️ لم يتم العثور على LINE ITEM في ورقة تسعير الموردين للبند ${itemId} مع طلب التسعير ${rfqNumber}`);
+      console.log(`📝 البند موجود في Google Sheets لكن قد يكون في صفوف أخرى أو مع أرقام طلبات تسعير مختلفة`);
       
       // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM
       const dataWithoutLineItem = {
