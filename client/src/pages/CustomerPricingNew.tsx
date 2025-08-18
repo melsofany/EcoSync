@@ -424,11 +424,16 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
           rfqNumber: item.requestNumber || item.rfqNumber,  // Add RFQ number
           quotationId: item.quotationId,
           costPrice: Number(formData.supplierPrice) || Number(item.supplierPrice || 0),
-          profitMargin: profitMargin / 100,
-          sellingPrice: Number(formData.sellingPrice),
+          customerUnitPrice: formData.sellingPrice,  // This is what server expects
+          customerTotalPrice: String(totalAmount),  // Total price for customer
+          supplierUnitPrice: formData.supplierPrice || item.supplierPrice || "",
+          profitMargin: String(profitMargin),
+          currency: "EGP",
+          notes: formData.notes,
+          status: "مُسعّر",
+          sellingPrice: Number(formData.sellingPrice),  // Keep for backward compatibility
           quantity: Number(formData.quantity),
           totalAmount: totalAmount,
-          notes: formData.notes,
         }),
       });
 
