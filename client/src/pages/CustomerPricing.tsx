@@ -37,13 +37,16 @@ function ItemDetailedPricing({ item }: { item: any }) {
       try {
         console.log(`🚀 جاري جلب البيانات للبند: ${item.id}`);
         
-        // Test direct API call
-        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data`, {
+        // Test direct API call with cache busting
+        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data?_t=${Date.now()}`, {
           method: 'GET',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           },
-          credentials: 'include'
+          credentials: 'include',
+          cache: 'no-store'
         });
         
         console.log(`📞 استجابة API - حالة:`, testResponse.status);

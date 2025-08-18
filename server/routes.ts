@@ -4640,6 +4640,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       const itemId = req.params.itemId;
       
+      // منع التخزين المؤقت لضمان إرسال البيانات الحقيقية
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       // إذا كان المعرف يبدأ بـ customer- فنحتاج للحصول على رقم البند الحقيقي
       if (itemId.startsWith('customer-')) {
         const customerItems = await googleSheetsRealTimeData.getItemsReadyForCustomerPricing();
@@ -4647,7 +4654,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         
         if (targetItem && targetItem.itemNumber) {
           const itemData = await googleSheetsRealTimeData.getItemDetailsById(targetItem.itemNumber);
-          res.json(itemData || {
+          console.log(`🚀 [comprehensive-data] إرسال البيانات للواجهة - البند ${targetItem.itemNumber}:`, JSON.stringify(itemData, null, 2));
+          
+          const responseData = itemData || {
             itemId: targetItem.itemNumber,
             itemNumber: targetItem.itemNumber,
             lineItem: '',
@@ -4659,7 +4668,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             clientName: targetItem.clientName || '',
             requestDate: targetItem.requestDate || '',
             expiryDate: targetItem.expiryDate || ''
-          });
+          };
+          
+          console.log(`🚀 [comprehensive-data] البيانات النهائية المُرسلة:`, JSON.stringify(responseData, null, 2));
+          res.json(responseData);
           return;
         }
       }
