@@ -35,27 +35,42 @@ function ItemDetailedPricing({ item }: { item: any }) {
       setIsLoading(true);
       
       try {
-        // Fetch comprehensive data with AI matching for all related items
-        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data`);
+        console.log(`🚀 جاري جلب البيانات للبند: ${item.id}`);
         
-        if (!comprehensiveResponse.ok) {
-          console.error(`❌ خطأ في API: ${comprehensiveResponse.status}`);
+        // Test direct API call
+        const testResponse = await fetch(`/api/items/${item.id}/comprehensive-data`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+        
+        console.log(`📞 استجابة API - حالة:`, testResponse.status);
+        console.log(`📞 استجابة API - headers:`, Object.fromEntries(testResponse.headers.entries()));
+        
+        if (!testResponse.ok) {
+          console.error(`❌ خطأ في API: ${testResponse.status}`);
+          const errorText = await testResponse.text();
+          console.error(`❌ نص الخطأ:`, errorText);
           return;
         }
         
-        const comprehensiveData = await comprehensiveResponse.json();
-        console.log(`📊 البيانات المستلمة من API:`, comprehensiveData);
-        console.log(`🎯 LINE ITEM من API:`, comprehensiveData?.lineItem);
-        console.log(`🎯 نوع lineItem:`, typeof comprehensiveData?.lineItem);
-        console.log(`🎯 طول lineItem:`, comprehensiveData?.lineItem?.length);
-        console.log(`🎯 lineItem بالـ JSON:`, JSON.stringify(comprehensiveData?.lineItem));
+        const rawText = await testResponse.text();
+        console.log(`📄 النص الخام من API:`, rawText);
         
-        // تنظيف البيانات إذا كانت تحتوي على مسافات أو أحرف خفية
-        if (comprehensiveData && comprehensiveData.lineItem) {
-          comprehensiveData.lineItem = comprehensiveData.lineItem.toString().trim();
+        let comprehensiveData;
+        try {
+          comprehensiveData = JSON.parse(rawText);
+        } catch (parseError) {
+          console.error('❌ خطأ في تحليل JSON:', parseError);
+          console.error('❌ النص الذي فشل في التحليل:', rawText);
+          return;
         }
         
-        console.log(`🎯 LINE ITEM بعد التنظيف:`, comprehensiveData?.lineItem);
+        console.log(`📊 البيانات بعد التحليل:`, comprehensiveData);
+        console.log(`🎯 LINE ITEM من البيانات:`, comprehensiveData?.lineItem);
+        
         setDetailedPricing(comprehensiveData);
       } catch (error) {
         console.error('Fetch error:', error);
@@ -178,22 +193,12 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <div>
               <label className="text-sm font-medium">🎯 LINE ITEM:</label>
               <div className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
-                <strong>
-                  {(() => {
-                    console.log('🎯 عرض LINE ITEM - القيمة:', detailedPricing?.lineItem);
-                    console.log('🎯 عرض LINE ITEM - النوع:', typeof detailedPricing?.lineItem);
-                    console.log('🎯 عرض LINE ITEM - فارغ؟', !detailedPricing?.lineItem);
-                    
-                    const lineItem = detailedPricing?.lineItem;
-                    if (lineItem && typeof lineItem === 'string' && lineItem.trim() !== '') {
-                      return lineItem.trim();
-                    } else if (lineItem && typeof lineItem !== 'string') {
-                      return String(lineItem).trim();
-                    } else {
-                      return "غير محدد";
-                    }
-                  })()}
+                <strong style={{color: 'red', fontSize: '16px'}}>
+                  {detailedPricing?.lineItem || 'لا يوجد lineItem في البيانات'}
                 </strong>
+                <div style={{fontSize: '12px', marginTop: '5px'}}>
+                  <div>البيانات: {JSON.stringify(detailedPricing)}</div>
+                </div>
               </div>
             </div>
             <div>
