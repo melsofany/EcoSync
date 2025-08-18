@@ -640,10 +640,9 @@ export class GoogleSheetsRealtimeData {
         if (row[0] === itemId) { // العمود A - Item Number
           // استخراج جميع البيانات من صفحة تسعير العملاء
           customerItemData = {
-            itemNumber: row[0] || '',
-            lineItem: row[2] || '', // العمود C - LINE ITEM (إذا كان موجوداً)
+            itemNumber: row[0] || '', // العمود A - Item Number
             partNumber: row[1] || '', // العمود B - Part Number
-            description: row[2] || '', // العمود C - Description
+            description: row[2] || '', // العمود C - Description (التوصيف)
             uom: row[3] || 'EACH', // العمود D - UOM
             quantity: row[4] || '1', // العمود E - Quantity
             rfqNumber: row[5] || '', // العمود F - RFQ Number
@@ -658,6 +657,7 @@ export class GoogleSheetsRealtimeData {
             notes: row[14] || '', // العمود O - Notes
             status: row[15] || '', // العمود P - Status
             employeeName: row[16] || '' // العمود Q - Employee Name
+            // LINE ITEM غير موجود هنا - سيتم جلبه من صفحة DATA
           };
           console.log(`📋 تم العثور على البند في صفحة تسعير العملاء: ${itemId}, RFQ: ${customerItemData.rfqNumber}`);
           break;
@@ -671,12 +671,7 @@ export class GoogleSheetsRealtimeData {
       
       const rfqNumber = customerItemData.rfqNumber;
 
-      // إذا كان LINE ITEM موجود في صفحة تسعير العملاء، نستخدمه مباشرة
-      if (customerItemData.lineItem && customerItemData.lineItem.trim() !== '') {
-        console.log(`✅ تم العثور على LINE ITEM في صفحة تسعير العملاء: ${customerItemData.lineItem}`);
-        return customerItemData;
-      }
-
+      // LINE ITEM دائماً يأتي من صفحة DATA وليس من صفحة تسعير العملاء
       console.log(`🔍 البحث عن LINE ITEM في صفحة DATA للبند ${itemId} في طلب التسعير ${rfqNumber}`);
 
       // ثانياً: البحث في صفحة DATA للحصول على LINE ITEM إذا لم يكن موجوداً
@@ -703,15 +698,15 @@ export class GoogleSheetsRealtimeData {
           // التأكد من وجود LINE ITEM
           if (row[2] && row[2].trim() !== '') { // التأكد من وجود LINE ITEM
           
-          // دمج البيانات من صفحة DATA مع البيانات من صفحة تسعير العملاء
+          // دمج البيانات: البيانات الأساسية من صفحة تسعير العملاء + LINE ITEM من DATA
           const mergedData = {
             ...customerItemData,
             itemId: itemId,
-            lineItem: row[2] || '', // العمود C - LINE ITEM من DATA
-            // إضافة أي بيانات إضافية من DATA إذا لزم الأمر
+            lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM
           };
           
-            console.log(`✅ تم العثور على البند ${itemId} في الطلب ${rfqNumber} مع LINE ITEM من DATA:`, mergedData);
+            console.log(`✅ تم العثور على LINE ITEM للبند ${itemId} في الطلب ${rfqNumber}:`, row[2]);
+            console.log(`📊 البيانات المدمجة:`, mergedData);
             return mergedData;
           }
         }
