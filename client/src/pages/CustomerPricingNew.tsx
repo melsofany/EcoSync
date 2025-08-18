@@ -39,11 +39,13 @@ function ItemDetailedPricing({ item }: { item: any }) {
         const data = await response.json();
         setDetailedPricing(data);
 
-        // Also fetch comprehensive data
-        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data`, {
-          credentials: 'include'
+        // Also fetch comprehensive data with cache busting
+        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data?t=${Date.now()}`, {
+          credentials: 'include',
+          headers: { 'Cache-Control': 'no-cache' }
         });
         const comprehensiveResult = await comprehensiveResponse.json();
+        console.log('Comprehensive data received:', comprehensiveResult);
         setComprehensiveData(comprehensiveResult);
       } catch (error) {
         console.error('Error fetching detailed pricing:', error);
@@ -70,15 +72,15 @@ function ItemDetailedPricing({ item }: { item: any }) {
         <div className="grid grid-cols-4 gap-4 text-sm">
           <div>
             <label className="font-medium">معرف البند:</label>
-            <p className="text-blue-600">{item.itemNumber}</p>
+            <p className="text-blue-600">{comprehensiveData?.itemNumber || item.itemNumber}</p>
           </div>
           <div>
             <label className="font-medium">LINE ITEM:</label>
-            <p className="text-blue-600 font-mono" dir="ltr">{item.lineItem || "غير محدد"}</p>
+            <p className="text-blue-600 font-mono" dir="ltr">{comprehensiveData?.lineItem || item.lineItem || "غير محدد"}</p>
           </div>
           <div>
             <label className="font-medium">PART NO:</label>
-            <p className="text-blue-600">{item.partNumber || "غير محدد"}</p>
+            <p className="text-blue-600">{comprehensiveData?.partNumber || item.partNumber || "غير محدد"}</p>
           </div>
           <div>
             <label className="font-medium">الوحدة:</label>
