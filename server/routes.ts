@@ -4671,14 +4671,14 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           };
           
           console.log(`🚀 [comprehensive-data] البيانات النهائية المُرسلة:`, JSON.stringify(responseData, null, 2));
-          res.json(responseData);
+          res.status(200).json(responseData);
           return;
         }
       }
       
       // البحث المباشر للبنود العادية
       const itemData = await googleSheetsRealTimeData.getItemDetailsById(itemId);
-      res.json(itemData || {
+      res.status(200).json(itemData || {
         itemId: itemId,
         itemNumber: itemId,
         lineItem: '',
