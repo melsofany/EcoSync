@@ -676,11 +676,11 @@ export class GoogleSheetsRealtimeData {
         const rowPartNumber = row[3] || ''; // العمود D - PART NO
         const rowDescription = row[4] || ''; // العمود E - Description
 
-        // البحث المحدد: مطابقة دقيقة لمعرف البند أولاً
-        if (rowItemNumber === itemId) {
-          console.log(`🎯 مطابقة دقيقة لمعرف البند في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}, LINE_ITEM=${row[2]}`);
+        // البحث المحدد: مطابقة دقيقة لمعرف البند ورقم الطلب معاً
+        if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
+          console.log(`🎯 مطابقة دقيقة للبند والطلب في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}, LINE_ITEM=${row[2]}`);
           
-          // إعطاء أولوية للمطابقة مع RFQ الصحيح إذا كان متاحاً
+          // التأكد من وجود LINE ITEM
           if (row[2] && row[2].trim() !== '') { // التأكد من وجود LINE ITEM
           
           const itemData = {
@@ -700,19 +700,24 @@ export class GoogleSheetsRealtimeData {
             profitMargin: row[15] || '' // العمود P - Profit Margin
           };
           
-            console.log(`✅ تم العثور على البند ${itemId} مع LINE ITEM:`, itemData);
+            console.log(`✅ تم العثور على البند ${itemId} في الطلب ${rfqNumber} مع LINE ITEM:`, itemData);
             return itemData;
           }
         }
+      }
+      
+      // إذا لم نجد مطابقة دقيقة للبند والطلب، نبحث بطرق أخرى
+      console.log(`⚠️ لم يتم العثور على مطابقة دقيقة للبند ${itemId} في الطلب ${rfqNumber}`);
+      
+      // البحث الثانوي: البحث عن البند فقط (كإجراء احتياطي)
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        const rowItemNumber = row[0] || ''; // العمود A - Item Number
+        const rowPartNumber = row[3] || ''; // العمود D - PART NO
         
-        // البحث الثانوي بناءً على PART NO كبديل
-        const partNumberMatch = targetItemData?.partNumber && 
-          targetItemData.partNumber.trim() !== '' &&
-          (rowPartNumber === targetItemData.partNumber || 
-           rowDescription.includes(targetItemData.partNumber));
-
-        if (partNumberMatch && row[2] && row[2].trim() !== '') {
-          console.log(`🔍 مطابقة PART NO في الصف ${i + 2}: RFQ=${rowRfqNumber}, Part=${rowPartNumber}, LINE_ITEM=${row[2]}`);
+        // مطابقة البند فقط إذا لم نجد مطابقة مع الطلب
+        if (rowItemNumber === itemId && row[2] && row[2].trim() !== '') {
+          console.log(`🔍 مطابقة البند فقط (بدون مطابقة الطلب) في الصف ${i + 2}: Item=${rowItemNumber}, LINE_ITEM=${row[2]}`);
           
           const itemData = {
             itemId: itemId,
@@ -731,8 +736,8 @@ export class GoogleSheetsRealtimeData {
             profitMargin: row[15] || '' // العمود P - Profit Margin
           };
           
-          console.log(`✅ تم العثور على البند ${itemId} عبر PART NO:`, itemData);
-          return itemData;
+          console.log(`⚠️ تم العثور على البند ${itemId} في طلب آخر (ليس ${rfqNumber})`, itemData);
+          return itemData; // إرجاع البيانات كإجراء احتياطي
         }
       }
 
