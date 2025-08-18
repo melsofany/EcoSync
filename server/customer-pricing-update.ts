@@ -44,7 +44,7 @@ export class CustomerPricingUpdater {
         throw new Error(`Item ${itemId} with RFQ ${rfqNumber} not found in DATA sheet`);
       }
 
-      // تحديث العمود I (سعر العميل) والعمود Q (اسم الموظف)
+      // تحديث العمود I (سعر العميل) والعمود S (اسم الموظف)
       const updateRequests = [];
       
       // تحديث العمود I - سعر العميل
@@ -55,10 +55,10 @@ export class CustomerPricingUpdater {
         });
       }
       
-      // تحديث العمود Q - اسم الموظف
+      // تحديث العمود S - اسم الموظف
       if (pricingData.employeeName) {
         updateRequests.push({
-          range: `${sheetName}!Q${targetRowIndex}`,
+          range: `${sheetName}!S${targetRowIndex}`,
           values: [[pricingData.employeeName]]
         });
       }
@@ -74,7 +74,7 @@ export class CustomerPricingUpdater {
         });
         
         console.log(`✅ تم تحديث سعر العميل (${pricingData.customerUnitPrice}) في العمود I، الصف ${targetRowIndex}`);
-        console.log(`✅ تم تحديث اسم الموظف (${pricingData.employeeName}) في العمود Q، الصف ${targetRowIndex}`);
+        console.log(`✅ تم تحديث اسم الموظف (${pricingData.employeeName}) في العمود S، الصف ${targetRowIndex}`);
       }
 
     } catch (error) {
