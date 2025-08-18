@@ -764,23 +764,46 @@ export class GoogleSheetsRealtimeData {
         }
       }
       
-      // إذا لم نجد أي LINE ITEM على الإطلاق
-      console.log(`⚠️ لم يتم العثور على أي LINE ITEM للبند ${itemId}`);
-      console.log(`📝 سيتم إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM`);
+      // إذا لم نجد أي LINE ITEM على الإطلاق - نُنشئ واحد تلقائياً
+      console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId} في طلب ${rfqNumber}`);
       
-      // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM
-      const dataWithoutLineItem = {
+      // إنشاء LINE ITEM تلقائي بناءً على البيانات المتاحة
+      const autoLineItem = this.generateAutoLineItem(itemId, customerItemData.partNumber, customerItemData.description);
+      console.log(`🔧 تم إنشاء LINE ITEM تلقائي: ${autoLineItem}`);
+      
+      // إرجاع البيانات من صفحة تسعير العملاء مع LINE ITEM المُنشأ تلقائياً
+      const dataWithAutoLineItem = {
         ...customerItemData,
         itemId: itemId,
-        lineItem: '', // لا يوجد LINE ITEM
+        lineItem: autoLineItem, // LINE ITEM مُنشأ تلقائياً
       };
       
-      console.log(`📊 البيانات المُرجعة (بدون LINE ITEM):`, dataWithoutLineItem);
-      return dataWithoutLineItem;
+      console.log(`📊 البيانات المُرجعة (مع LINE ITEM التلقائي):`, dataWithAutoLineItem);
+      return dataWithAutoLineItem;
     } catch (error) {
       console.error('❌ خطأ في الحصول على تفاصيل البند:', (error as Error).message);
       return null;
     }
+  }
+
+  /**
+   * إنشاء LINE ITEM تلقائي بناءً على البيانات المتاحة
+   */
+  private generateAutoLineItem(itemNumber: string, partNumber: string, description: string): string {
+    // إزالة P- من رقم البند للحصول على الرقم فقط
+    const itemNum = itemNumber.replace('P-', '');
+    
+    // استخراج أول كلمة من الوصف كفئة
+    const category = description ? description.split(' ')[0].toUpperCase() : 'GENERAL';
+    
+    // استخدام رقم الجزء أو رقم البند
+    const partCode = partNumber || itemNum;
+    
+    // إنشاء LINE ITEM بتنسيق مشابه للموجود في النظام
+    // Format: XXXX.XXX.CATEGORY.PARTCODE
+    const lineItem = `1000.001.${category}.${partCode}`;
+    
+    return lineItem;
   }
 }
 
