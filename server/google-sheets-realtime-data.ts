@@ -676,9 +676,17 @@ export class GoogleSheetsRealtimeData {
         const rowPartNumber = row[3] || ''; // العمود D - PART NO
         const rowDescription = row[4] || ''; // العمود E - Description
 
-        // البحث المحدد: مطابقة دقيقة لمعرف البند ورقم الطلب معاً
-        if (rowItemNumber === itemId && rowRfqNumber === rfqNumber) {
-          console.log(`🎯 مطابقة دقيقة للبند والطلب في الصف ${i + 2}: RFQ=${rowRfqNumber}, Item=${rowItemNumber}, Part=${rowPartNumber}, LINE_ITEM=${row[2]}`);
+        // البحث المحدد: مطابقة دقيقة لمعرف البند مع مرونة في رقم الطلب
+        const rfqMatch = (
+          rowRfqNumber === rfqNumber || // مطابقة دقيقة
+          (rfqNumber && rowRfqNumber && rowRfqNumber.includes(rfqNumber)) || // الطلب الكامل يحتوي على الجزء
+          (rfqNumber && rowRfqNumber && rfqNumber.includes(rowRfqNumber)) || // الجزء يحتوي على الطلب الكامل
+          (rfqNumber && rowRfqNumber && rfqNumber.replace(/[^\d]/g, '') && 
+           rowRfqNumber.includes(rfqNumber.replace(/[^\d]/g, ''))) // مطابقة الأرقام فقط
+        );
+        
+        if (rowItemNumber === itemId && rfqMatch) {
+          console.log(`🎯 مطابقة للبند والطلب في الصف ${i + 2}: RFQ=${rowRfqNumber} (البحث عن: ${rfqNumber}), Item=${rowItemNumber}, Part=${rowPartNumber}, LINE_ITEM=${row[2]}`);
           
           // التأكد من وجود LINE ITEM
           if (row[2] && row[2].trim() !== '') { // التأكد من وجود LINE ITEM
@@ -706,8 +714,8 @@ export class GoogleSheetsRealtimeData {
         }
       }
       
-      // إذا لم نجد مطابقة دقيقة للبند والطلب، نبحث بطرق أخرى
-      console.log(`⚠️ لم يتم العثور على مطابقة دقيقة للبند ${itemId} في الطلب ${rfqNumber}`);
+      // إذا لم نجد مطابقة للبند والطلب، نبحث بطرق أخرى
+      console.log(`⚠️ لم يتم العثور على مطابقة للبند ${itemId} في الطلب ${rfqNumber}`);
       
       // البحث الثانوي: البحث عن البند فقط (كإجراء احتياطي)
       for (let i = 0; i < dataRows.length; i++) {
