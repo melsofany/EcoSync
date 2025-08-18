@@ -101,19 +101,19 @@ function ItemDetailedPricing({ item }: { item: any }) {
         <div className="grid grid-cols-4 gap-4 text-sm">
           <div>
             <label className="font-medium">رقم طلب التسعير:</label>
-            <p className="text-yellow-700 font-bold">{item.requestNumber}</p>
+            <p className="text-yellow-700 font-bold">{comprehensiveData?.rfqNumber || item.requestNumber || ""}</p>
           </div>
           <div>
             <label className="font-medium">تاريخ الطلب:</label>
-            <p className="text-yellow-700">{item.requestDate || ""}</p>
+            <p className="text-yellow-700">{comprehensiveData?.requestDate || item.requestDate || ""}</p>
           </div>
           <div>
             <label className="font-medium">تاريخ انتهاء العرض:</label>
-            <p className="text-yellow-700">{item.expiryDate || ""}</p>
+            <p className="text-yellow-700">{comprehensiveData?.expiryDate || item.expiryDate || ""}</p>
           </div>
           <div>
             <label className="font-medium">الكمية المطلوبة:</label>
-            <p className="text-yellow-700 font-bold">{item.quantity}</p>
+            <p className="text-yellow-700 font-bold">{comprehensiveData?.quantity || item.quantity || ""}</p>
           </div>
         </div>
       </div>
