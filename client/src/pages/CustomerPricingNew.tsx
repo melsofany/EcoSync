@@ -204,99 +204,97 @@ function ItemDetailedPricing({ item }: { item: any }) {
         </div>
       )}
 
-      {/* جدول البيانات المرتبطة مشابه للإكسيل */}
-      <div className="bg-white rounded-lg border shadow-lg">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-lg">
-          <h4 className="font-bold text-lg flex items-center gap-2">
-            <Package className="h-5 w-5" />
+      {/* جدول بيانات بتصميم Google Sheets */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-300">
+        <div className="bg-gray-50 border-b border-gray-300 px-4 py-2">
+          <h4 className="font-medium text-gray-700 text-sm flex items-center gap-2">
+            <Package className="h-4 w-4" />
             جدول البيانات التفصيلية للبند
           </h4>
-
-
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs border-collapse">
+          <table className="w-full text-xs" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
             <thead>
-              <tr className="bg-blue-600 text-white">
-                <th className="border border-gray-400 p-2 text-center font-bold">TOTAL PO</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">PRICE/PO</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">Quantity/PO</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">DATE/PO</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">PO</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">Category</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">RES.DATE</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">PRICE/RFQ</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">QTY</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">DATE/RFQ</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">RFQ</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">DESCRIPTION</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">PART NO</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">LINE ITEM</th>
-                <th className="border border-gray-400 p-2 text-center font-bold">UOM</th>
+              <tr>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">TOTAL PO</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">PRICE/PO</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">Quantity/PO</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">DATE/PO</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">PO</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">Category</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">RES.DATE</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">PRICE/RFQ</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">QTY</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">DATE/RFQ</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">RFQ</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">DESCRIPTION</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">PART NO</th>
+                <th className="bg-gray-100 border-b-2 border-r border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">LINE ITEM</th>
+                <th className="bg-gray-100 border-b-2 border-gray-300 px-3 py-2 text-center font-medium text-gray-700 sticky top-0">UOM</th>
               </tr>
             </thead>
             <tbody>
               {/* عرض البيانات الشاملة من قاعدة البيانات */}
               {comprehensiveData && comprehensiveData.length > 0 ? (
                 comprehensiveData.map((row: any, index: number) => (
-                  <tr key={index} className={`hover:bg-blue-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${row.po_number ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-yellow-500'}`}>
-                    <td className="border border-gray-300 p-2 text-center font-bold text-green-700">
+                  <tr key={index} className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-900">
                       {row.po_total ? formatCurrency(Number(row.po_total)) : "-"}
                     </td>
-                    <td className="border border-gray-300 p-2 text-center font-bold text-green-700">
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-900">
                       {row.po_price ? formatCurrency(Number(row.po_price)) : "-"}
                     </td>
-                    <td className="border border-gray-300 p-2 text-center text-green-700 font-semibold">{row.po_quantity || "-"}</td>
-                    <td className="border border-gray-300 p-2 text-center text-green-700">
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-900">{row.po_quantity || "-"}</td>
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-700">
                       {row.po_date ? row.po_date.split('T')[0] : "-"}
                     </td>
-                    <td className="border border-gray-300 p-2 text-center font-bold text-blue-700">
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center font-medium text-blue-600">
                       {row.po_number || "-"}
                     </td>
-                    <td className="border border-gray-300 p-2 text-center font-semibold">{row.category || "ELEC"}</td>
-                    <td className="border border-gray-300 p-2 text-center">
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-700">{row.category || "ELEC"}</td>
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-700">
                       {row.res_date ? row.res_date.split('T')[0] : "-"}
                     </td>
-                    <td className="border border-gray-300 p-2 text-center font-bold text-red-600">
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center font-medium text-green-600">
                       {row.customer_price ? formatCurrency(Number(row.customer_price)) : formatCurrency(Number(item.supplierPrice || 0))}
                     </td>
-                    <td className="border border-gray-300 p-2 text-center font-semibold">{row.rfq_qty || item.quantity}</td>
-                    <td className="border border-gray-300 p-2 text-center">
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-900">{row.rfq_qty || item.quantity}</td>
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-700">
                       {row.rfq_date ? row.rfq_date.split('T')[0] : "-"}
                     </td>
-                    <td className="border border-gray-300 p-2 text-center font-bold text-purple-700">
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center font-medium text-purple-600">
                       {row.rfq_number || item.requestNumber}
                     </td>
-                    <td className="border border-gray-300 p-2 text-left max-w-xs truncate font-medium" title={row.description}>
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-right text-gray-900" title={row.description}>
                       {row.description || item.description}
                     </td>
-                    <td className="border border-gray-300 p-2 text-center font-semibold text-blue-600">{row.part_no || item.partNumber || "-"}</td>
-                    <td className="border border-gray-300 p-2 text-center font-bold text-blue-800">{row.line_item || item.lineItem || ""}</td>
-                    <td className="border border-gray-300 p-2 text-center">{row.uom || item.uom || item.unit || "EACH"}</td>
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center text-gray-700">{row.part_no || item.partNumber || "-"}</td>
+                    <td className="border-b border-r border-gray-200 px-3 py-2 text-center font-medium text-blue-600">{row.line_item || item.lineItem || ""}</td>
+                    <td className="border-b border-gray-200 px-3 py-2 text-center text-gray-700">{row.uom || item.uom || item.unit || "EACH"}</td>
                   </tr>
                 ))
               ) : (
                 /* صف RFQ الأساسي إذا لم توجد بيانات شاملة */
-                <tr className="hover:bg-gray-50 bg-yellow-50">
-                  <td className="border p-2 text-center">-</td>
-                  <td className="border p-2 text-center">-</td>
-                  <td className="border p-2 text-center">-</td>
-                  <td className="border p-2 text-center">-</td>
-                  <td className="border p-2 text-center">-</td>
-                  <td className="border p-2 text-center">{item.category || "ELEC"}</td>
-                  <td className="border p-2 text-center">{item.expiryDate?.split('T')[0] || "-"}</td>
-                  <td className="border p-2 text-center font-bold text-red-600">
+                <tr className="hover:bg-blue-50 transition-colors bg-white">
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">-</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">-</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">-</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">-</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">-</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">{item.category || "ELEC"}</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">{item.expiryDate?.split('T')[0] || "-"}</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center font-medium text-green-600">
                     {formatCurrency(Number(item.supplierPrice || 0))}
                   </td>
-                  <td className="border p-2 text-center">{item.quantity}</td>
-                  <td className="border p-2 text-center">{item.requestDate?.split('T')[0] || "-"}</td>
-                  <td className="border p-2 text-center font-bold text-purple-600">{item.requestNumber}</td>
-                  <td className="border p-2 text-right max-w-xs truncate" title={item.description}>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">{item.quantity}</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">{item.requestDate?.split('T')[0] || "-"}</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center font-medium text-purple-600">{item.requestNumber}</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-right" title={item.description}>
                     {item.description}
                   </td>
-                  <td className="border p-2 text-center">{item.partNumber || "-"}</td>
-                  <td className="border p-2 text-center text-blue-600">{item.lineItem || ""}</td>
-                  <td className="border p-2 text-center">{item.uom || item.unit || "EACH"}</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center">{item.partNumber || "-"}</td>
+                  <td className="border-b border-r border-gray-200 px-3 py-2 text-center font-medium text-blue-600">{item.lineItem || ""}</td>
+                  <td className="border-b border-gray-200 px-3 py-2 text-center">{item.uom || item.unit || "EACH"}</td>
                 </tr>
               )}
             </tbody>
