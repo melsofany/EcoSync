@@ -683,12 +683,27 @@ export class GoogleSheetsRealtimeData {
       const dataRows = dataResponse.data.values || [];
 
       // البحث عن السجل الذي يحتوي على رقم طلب التسعير والبند المطلوب
+      console.log(`📊 عدد الصفوف في صفحة DATA: ${dataRows.length}`);
+      
+      // طباعة أول 5 صفوف للتحقق من البنية
+      if (dataRows.length > 0) {
+        console.log('🔍 أمثلة من البيانات في صفحة DATA:');
+        for (let j = 0; j < Math.min(5, dataRows.length); j++) {
+          console.log(`  الصف ${j + 2}: A="${dataRows[j][0]||''}", B="${dataRows[j][1]||''}", C="${dataRows[j][2]||''}", F="${dataRows[j][5]||''}"`);
+        }
+      }
+      
       for (let i = 0; i < dataRows.length; i++) {
         const row = dataRows[i];
-        const rowRfqNumber = row[5] || ''; // العمود F - RFQ Number
-        const rowItemNumber = row[0] || ''; // العمود A - Item Number
+        const rowRfqNumber = (row[5] || '').trim(); // العمود F - RFQ Number
+        const rowItemNumber = (row[0] || '').trim(); // العمود A - Item Number
         const rowPartNumber = row[3] || ''; // العمود D - PART NO
         const rowDescription = row[4] || ''; // العمود E - Description
+        
+        // طباعة السجلات التي تحتوي على P-0000016
+        if (rowItemNumber === 'P-0000016') {
+          console.log(`📌 وجدت P-0000016 في الصف ${i + 2}: RFQ="${rowRfqNumber}" (يُبحث عن "${rfqNumber}"), LINE_ITEM="${row[2]||'فارغ'}"`);
+        }
 
         // البحث المحدد: مطابقة دقيقة لمعرف البند ورقم الطلب
         // أولاً نحاول المطابقة الدقيقة
