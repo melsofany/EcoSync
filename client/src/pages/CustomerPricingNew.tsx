@@ -76,11 +76,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
           <div>
             <label className="font-medium">LINE ITEM:</label>
-            <p className="text-blue-600 font-mono" dir="ltr">{comprehensiveData?.lineItem || item.lineItem || "غير محدد"}</p>
+            <p className="text-blue-600 font-mono" dir="ltr">{comprehensiveData?.lineItem || item.lineItem || ""}</p>
           </div>
           <div>
             <label className="font-medium">PART NO:</label>
-            <p className="text-blue-600">{comprehensiveData?.partNumber || item.partNumber || "غير محدد"}</p>
+            <p className="text-blue-600">{comprehensiveData?.partNumber || item.partNumber || ""}</p>
           </div>
           <div>
             <label className="font-medium">الوحدة:</label>
@@ -102,11 +102,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
           <div>
             <label className="font-medium">تاريخ الطلب:</label>
-            <p className="text-yellow-700">{item.requestDate || "تاريخ غير محدد"}</p>
+            <p className="text-yellow-700">{item.requestDate || ""}</p>
           </div>
           <div>
             <label className="font-medium">تاريخ انتهاء العرض:</label>
-            <p className="text-yellow-700">{item.expiryDate || "تاريخ غير محدد"}</p>
+            <p className="text-yellow-700">{item.expiryDate || ""}</p>
           </div>
           <div>
             <label className="font-medium">الكمية المطلوبة:</label>
@@ -130,7 +130,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
           <div>
             <label className="text-sm font-medium">المورد:</label>
-            <p className="text-sm">{item.supplierName || "غير محدد"}</p>
+            <p className="text-sm">{item.supplierName || ""}</p>
           </div>
         </div>
         
