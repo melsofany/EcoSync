@@ -196,7 +196,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-lg">
           <h4 className="font-bold text-lg flex items-center gap-2">
             <Package className="h-5 w-5" />
-            جدول البيانات التفصيلية للبند - مطابق لنموذج Excel
+            جدول البيانات التفصيلية للبند
           </h4>
 
 
