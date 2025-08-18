@@ -19,6 +19,7 @@ import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 import { GoogleSheetsRealtimeData } from "./google-sheets-realtime-data";
 import { GoogleSheetsWriter } from "./google-sheets-write";
+import { updateUserFullName, updateAhmedYoussefName } from "./update-user-fullname";
 
 // إنشاء instance من Google Sheets Realtime Data
 const googleSheetsRealTimeData = new GoogleSheetsRealtimeData();
@@ -6491,6 +6492,50 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       res.status(500).json({
         success: false,
         message: "خطأ في تهيئة الأوراق"
+      });
+    }
+  });
+
+  // Update user full name
+  app.post("/api/update-user-fullname", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { username, fullName } = req.body;
+      
+      if (!username || !fullName) {
+        return res.status(400).json({
+          success: false,
+          message: "Username and fullName are required"
+        });
+      }
+      
+      const result = await updateUserFullName(username, fullName);
+      
+      res.json({
+        success: result,
+        message: result ? "تم تحديث الاسم بنجاح" : "فشل تحديث الاسم"
+      });
+    } catch (error) {
+      console.error('❌ خطأ في تحديث اسم المستخدم:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في تحديث الاسم"
+      });
+    }
+  });
+
+  // Initialize Ahmed Youssef name on startup (one-time update)
+  app.post("/api/update-ahmed-youssef", async (req: Request, res: Response) => {
+    try {
+      const result = await updateAhmedYoussefName();
+      res.json({
+        success: result,
+        message: result ? "تم تحديث اسم Ahmed إلى Ahmed Youssef" : "فشل تحديث الاسم"
+      });
+    } catch (error) {
+      console.error('❌ خطأ في تحديث اسم Ahmed:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في تحديث الاسم"
       });
     }
   });
