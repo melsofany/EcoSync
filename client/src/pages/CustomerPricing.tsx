@@ -37,9 +37,17 @@ function ItemDetailedPricing({ item }: { item: any }) {
       try {
         // Fetch comprehensive data with AI matching for all related items
         const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data`);
+        
+        if (!comprehensiveResponse.ok) {
+          console.error(`❌ خطأ في API: ${comprehensiveResponse.status}`);
+          return;
+        }
+        
         const comprehensiveData = await comprehensiveResponse.json();
+        console.log(`📊 البيانات المستلمة من API:`, comprehensiveData);
+        console.log(`🎯 LINE ITEM من API:`, comprehensiveData?.lineItem);
+        
         setDetailedPricing(comprehensiveData);
-        console.log(`📊 تم تحميل البيانات للبند ${item.id}:`, comprehensiveData);
       } catch (error) {
         console.error('Fetch error:', error);
       } finally {
@@ -161,7 +169,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <div>
               <label className="text-sm font-medium">🎯 LINE ITEM:</label>
               <p className="font-mono text-purple-600 bg-purple-100 px-3 py-2 rounded-lg border-2 border-purple-300">
-                <strong>{detailedPricing.lineItem || "غير محدد"}</strong>
+                <strong>
+                  {detailedPricing?.lineItem && detailedPricing.lineItem.trim() !== '' 
+                    ? detailedPricing.lineItem 
+                    : "غير محدد"}
+                </strong>
               </p>
             </div>
             <div>
@@ -187,12 +199,22 @@ function ItemDetailedPricing({ item }: { item: any }) {
           </div>
           
           {/* عرض البيانات الخام للتشخيص */}
-          <details className="mt-4">
-            <summary className="text-sm text-gray-500 cursor-pointer">عرض البيانات الخام من API</summary>
-            <pre className="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto">
-              {JSON.stringify(detailedPricing, null, 2)}
-            </pre>
-          </details>
+          <div className="mt-4 bg-blue-50 border border-blue-200 rounded p-3">
+            <h5 className="font-semibold text-blue-800 mb-2">تشخيص البيانات:</h5>
+            <div className="text-sm space-y-1">
+              <p><strong>نوع البيانات:</strong> {typeof detailedPricing}</p>
+              <p><strong>هل البيانات array؟</strong> {Array.isArray(detailedPricing) ? 'نعم' : 'لا'}</p>
+              <p><strong>LINE ITEM الخام:</strong> "{detailedPricing?.lineItem}"</p>
+              <p><strong>طول LINE ITEM:</strong> {detailedPricing?.lineItem?.length || 0}</p>
+              <p><strong>keys المتاحة:</strong> {Object.keys(detailedPricing || {}).join(', ')}</p>
+            </div>
+            <details className="mt-2">
+              <summary className="text-sm text-gray-600 cursor-pointer">عرض البيانات الخام كاملة</summary>
+              <pre className="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto">
+                {JSON.stringify(detailedPricing, null, 2)}
+              </pre>
+            </details>
+          </div>
         </div>
       )}
 
