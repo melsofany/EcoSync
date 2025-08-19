@@ -5031,6 +5031,54 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // حفظ أمر الشراء في Google Sheets
+  app.post("/api/purchase-orders/google-sheets", requireAuth, requireRole(['manager', 'purchasing', 'data_entry']), async (req: Request, res: Response) => {
+    try {
+      console.log('📝 استلام طلب حفظ أمر الشراء في Google Sheets');
+      
+      const { poNumber, poDate, items } = req.body;
+      
+      if (!poNumber || !poDate || !items || items.length === 0) {
+        return res.status(400).json({ 
+          message: "البيانات المطلوبة غير مكتملة" 
+        });
+      }
+      
+      // التأكد من تهيئة GoogleSheetsWriter
+      if (!googleSheetsWriter) {
+        await googleSheetsWriter.initialize();
+      }
+      
+      // حفظ البيانات في Google Sheets
+      await googleSheetsWriter.savePurchaseOrderToSheets({
+        poNumber,
+        poDate,
+        items: items.map((item: any) => ({
+          itemNumber: item.itemNumber,
+          lineItem: item.lineItem,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice
+        }))
+      });
+      
+      // تسجيل النشاط
+      await logActivity(req, "create_purchase_order_sheets", "purchase_order", poNumber, 
+        `تم إنشاء أمر الشراء ${poNumber} في Google Sheets`);
+      
+      res.status(201).json({ 
+        success: true,
+        message: `تم حفظ أمر الشراء ${poNumber} بنجاح`,
+        poNumber 
+      });
+      
+    } catch (error) {
+      console.error("❌ خطأ في حفظ أمر الشراء في Google Sheets:", error);
+      res.status(500).json({ 
+        message: (error as Error).message || "خطأ في حفظ أمر الشراء" 
+      });
+    }
+  });
+
   app.get("/api/purchase-orders/:id/items", async (req: Request, res: Response) => {
     try {
       const poId = req.params.id;

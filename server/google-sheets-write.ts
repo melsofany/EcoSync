@@ -1043,6 +1043,109 @@ ${itemsList}
       throw error;
     }
   }
+
+  /**
+   * حفظ بيانات أمر الشراء في Google Sheets
+   * يحفظ رقم أمر الشراء في العمود K، التاريخ في L، الكمية في M، السعر في N
+   */
+  async savePurchaseOrderToSheets(poData: {
+    poNumber: string;
+    poDate: string;
+    items: Array<{
+      itemNumber?: string;
+      lineItem?: string;
+      quantity: number;
+      unitPrice: number;
+    }>;
+  }): Promise<void> {
+    try {
+      if (!this.sheets) {
+        await this.initialize();
+      }
+
+      if (!this.sheets) {
+        throw new Error('فشل في تهيئة Google Sheets');
+      }
+
+      console.log(`📝 حفظ أمر الشراء ${poData.poNumber} في Google Sheets`);
+      console.log(`📋 عدد البنود: ${poData.items.length}`);
+
+      for (const item of poData.items) {
+        if (!item.lineItem && !item.itemNumber) {
+          console.log('⚠️ تخطي بند بدون LINE ITEM أو رقم صنف');
+          continue;
+        }
+
+        // البحث عن البند في ورقة DATA
+        const searchValue = item.lineItem || item.itemNumber || '';
+        console.log(`🔍 البحث عن البند: ${searchValue}`);
+
+        // قراءة العمود C (LINE ITEM) للعثور على البند
+        const response = await this.sheets.spreadsheets.values.get({
+          spreadsheetId: this.spreadsheetId,
+          range: 'DATA!C:C', // العمود C يحتوي على LINE ITEM
+        });
+
+        const values = response.data.values || [];
+        let targetRow = -1;
+
+        // البحث عن الصف المطابق
+        for (let i = 1; i < values.length; i++) { // تخطي الصف الأول (العناوين)
+          if (values[i] && values[i][0] && 
+              (values[i][0].toString().trim() === searchValue.trim())) {
+            targetRow = i + 1; // +1 لأن Google Sheets يبدأ من 1
+            break;
+          }
+        }
+
+        if (targetRow === -1) {
+          console.log(`⚠️ لم يتم العثور على البند ${searchValue} في ورقة DATA`);
+          continue;
+        }
+
+        console.log(`✅ تم العثور على البند في الصف ${targetRow}`);
+
+        // تحديث البيانات في الأعمدة K, L, M, N
+        const updates = [
+          {
+            range: `DATA!K${targetRow}`, // رقم أمر الشراء
+            values: [[poData.poNumber]]
+          },
+          {
+            range: `DATA!L${targetRow}`, // تاريخ أمر الشراء
+            values: [[poData.poDate]]
+          },
+          {
+            range: `DATA!M${targetRow}`, // الكمية
+            values: [[item.quantity.toString()]]
+          },
+          {
+            range: `DATA!N${targetRow}`, // السعر
+            values: [[item.unitPrice.toString()]]
+          }
+        ];
+
+        // تحديث كل عمود
+        for (const update of updates) {
+          await this.sheets.spreadsheets.values.update({
+            spreadsheetId: this.spreadsheetId,
+            range: update.range,
+            valueInputOption: 'RAW',
+            resource: {
+              values: update.values
+            }
+          });
+        }
+
+        console.log(`✅ تم حفظ بيانات البند ${searchValue} في الصف ${targetRow}`);
+      }
+
+      console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber} بنجاح`);
+    } catch (error) {
+      console.error('❌ خطأ في حفظ أمر الشراء:', (error as Error).message);
+      throw error;
+    }
+  }
 }
 
 export const googleSheetsWriter = new GoogleSheetsWriter();
