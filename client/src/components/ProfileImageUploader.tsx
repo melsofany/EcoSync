@@ -41,33 +41,73 @@ export function ProfileImageUploader({ currentImage, onImageChange, className }:
     setIsUploading(true);
 
     try {
-      // تحويل الصورة إلى Base64
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = reader.result as string;
-        
-        // عرض الصورة مباشرة
-        setPreviewUrl(base64String);
-        onImageChange(base64String);
-        
-        toast({
-          title: "تم رفع الصورة",
-          description: "تم تحميل الصورة بنجاح",
+      // تصغير الصورة قبل تحويلها إلى Base64
+      const resizeImage = (file: File, maxWidth: number, maxHeight: number): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+
+              // حساب الأبعاد الجديدة مع الحفاظ على النسبة
+              if (width > height) {
+                if (width > maxWidth) {
+                  height = (height * maxWidth) / width;
+                  width = maxWidth;
+                }
+              } else {
+                if (height > maxHeight) {
+                  width = (width * maxHeight) / height;
+                  height = maxHeight;
+                }
+              }
+
+              canvas.width = width;
+              canvas.height = height;
+
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                reject(new Error('Could not get canvas context'));
+                return;
+              }
+
+              ctx.drawImage(img, 0, 0, width, height);
+
+              // تحويل إلى Base64 بجودة مضغوطة
+              const base64 = canvas.toDataURL('image/jpeg', 0.7);
+              
+              // التحقق من حجم الناتج
+              if (base64.length > 45000) {
+                // إذا كان كبيراً جداً، قلل الجودة أكثر
+                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.5);
+                resolve(compressedBase64);
+              } else {
+                resolve(base64);
+              }
+            };
+            img.onerror = reject;
+            img.src = e.target?.result as string;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
         });
-        
-        setIsUploading(false);
       };
+
+      const base64String = await resizeImage(file, 200, 200);
       
-      reader.onerror = () => {
-        toast({
-          title: "خطأ في قراءة الملف",
-          description: "فشل في قراءة الصورة المحددة",
-          variant: "destructive",
-        });
-        setIsUploading(false);
-      };
+      // عرض الصورة
+      setPreviewUrl(base64String);
+      onImageChange(base64String);
       
-      reader.readAsDataURL(file);
+      toast({
+        title: "تم رفع الصورة",
+        description: "تم تحميل وضغط الصورة بنجاح",
+      });
+      
+      setIsUploading(false);
       
     } catch (error) {
       console.error('Upload error:', error);

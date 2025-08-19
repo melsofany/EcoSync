@@ -372,10 +372,18 @@ export class UserSheetsManager {
       const now = new Date().toISOString();
       const userId = `user-${Date.now()}`;
       
+      // معالجة الصورة - التحقق من الحجم
+      let processedImage = userData.profileImage || '';
+      if (processedImage && processedImage.length > 45000) {
+        console.warn(`⚠️ الصورة كبيرة جداً (${processedImage.length} حرف) - سيتم تجاهلها`);
+        processedImage = ''; // تجاهل الصورة الكبيرة جداً
+      }
+      
       console.log('🖼️ معالجة صورة المستخدم:', {
-        hasImage: !!userData.profileImage,
-        imageLength: userData.profileImage ? userData.profileImage.length : 0,
-        imageType: userData.profileImage ? (userData.profileImage.startsWith('data:image/') ? 'Base64' : 'Unknown') : 'None'
+        hasImage: !!processedImage,
+        imageLength: processedImage ? processedImage.length : 0,
+        imageType: processedImage ? (processedImage.startsWith('data:image/') ? 'Base64' : 'Unknown') : 'None',
+        willBeSaved: processedImage.length > 0 && processedImage.length <= 45000
       });
 
       const newUser = [
@@ -385,7 +393,7 @@ export class UserSheetsManager {
         userData.fullName,
         userData.email || '',
         userData.phone || '',
-        userData.profileImage || '',
+        processedImage,
         userData.role,
         JSON.stringify(userData.permissions || {}),
         userData.isActive !== false ? 'TRUE' : 'FALSE',
@@ -413,6 +421,7 @@ export class UserSheetsManager {
         fullName: userData.fullName,
         email: userData.email,
         phone: userData.phone,
+        profileImage: processedImage, // إضافة الصورة المُعالجة هنا
         role: userData.role,
         permissions: JSON.stringify(userData.permissions || {}),
         isActive: true,
