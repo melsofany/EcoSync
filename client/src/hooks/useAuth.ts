@@ -8,12 +8,22 @@ export function useAuth() {
     retry: 1,
     retryDelay: 2000,
     refetchInterval: false,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true, // تحديث عند العودة للنافذة
     refetchOnReconnect: false,
     refetchOnMount: true,
-    staleTime: 10 * 60 * 1000, // 10 دقائق
-    gcTime: 15 * 60 * 1000, // 15 دقيقة
+    staleTime: 5 * 60 * 1000, // 5 دقائق
+    gcTime: 10 * 60 * 1000, // 10 دقائق
   });
+
+  // سجل البيانات المستلمة
+  if (user) {
+    console.log('🔐 بيانات المستخدم من API:', {
+      id: user.id,
+      username: user.username,
+      fullName: user.fullName,
+      role: user.role
+    });
+  }
 
   return {
     user,
@@ -30,7 +40,17 @@ export function useLogin() {
   return useMutation({
     mutationFn: login,
     onSuccess: (user) => {
+      // مسح الكاش القديم أولاً
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      // ثم تعيين البيانات الجديدة
       queryClient.setQueryData(["/api/auth/me"], user);
+      
+      console.log('✅ تحديث بيانات المستخدم بعد تسجيل الدخول:', {
+        username: user.username,
+        fullName: user.fullName,
+        role: user.role
+      });
+      
       toast({
         title: "تم تسجيل الدخول بنجاح",
         description: `مرحباً ${user.fullName || user.username || 'بك'}`,

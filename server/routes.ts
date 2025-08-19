@@ -1215,14 +1215,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (currentUser) {
             console.log(`✅ تم العثور على بيانات المستخدم ${currentUser.username} من Google Sheets`);
+            console.log(`📋 البيانات المرسلة:`, {
+              id: currentUser.id,
+              username: currentUser.username,
+              fullName: currentUser.fullName,
+              email: currentUser.email,
+              role: currentUser.role
+            });
             return res.json({
               id: currentUser.id,
               username: currentUser.username,
               fullName: currentUser.fullName,
               email: currentUser.email,
+              phone: currentUser.phone,
+              profileImage: currentUser.profileImage,
               role: currentUser.role,
               permissions: currentUser.permissions,
-              isActive: currentUser.isActive
+              isActive: currentUser.isActive,
+              isOnline: currentUser.isOnline
             });
           }
         } catch (sheetsError) {
