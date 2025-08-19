@@ -1128,17 +1128,38 @@ ${itemsList}
         // إذا كان هناك أمر شراء سابق، أضف صف جديد
         if (existingPO) {
           console.log(`📝 إضافة صف جديد للبند ${searchValue} مع أمر الشراء الجديد`);
+          console.log(`📋 البيانات الأصلية للصف:`, {
+            lineItem: rowData[2],  // C
+            description: rowData[4], // E - التوصيف
+            quantity_rfq: rowData[7], // H - الكمية من طلب التسعير
+            existing_po: rowData[10] // K - أمر الشراء السابق
+          });
           
           // نسخ كل البيانات من طلب التسعير
           const newRowData = [...rowData];
+          
+          // التأكد من نسخ التوصيف من العمود E (index 4)
+          if (!newRowData[4] && rowData[4]) {
+            newRowData[4] = rowData[4]; // نسخ التوصيف بشكل صريح
+          }
+          
           // مسح بيانات الكمية من طلب التسعير (العمود H - index 7)
           newRowData[7] = '';
-          // التوصيف في العمود E (index 4) يبقى كما هو - لا نغيره
+          
           // إضافة بيانات أمر الشراء الجديد
           newRowData[10] = poData.poNumber;      // PO Number (K)
           newRowData[11] = poData.poDate;        // PO Date (L)
           newRowData[12] = item.quantity.toString();   // PO Quantity (M)
           newRowData[13] = item.unitPrice.toString();  // PO Price (N)
+          
+          console.log(`📋 البيانات الجديدة للصف:`, {
+            lineItem: newRowData[2],  // C
+            description: newRowData[4], // E - التوصيف (يجب أن يُنسخ)
+            quantity_rfq: newRowData[7], // H - الكمية (يجب أن تكون فارغة)
+            new_po: newRowData[10], // K - أمر الشراء الجديد
+            po_qty: newRowData[12], // M - كمية أمر الشراء
+            po_price: newRowData[13] // N - سعر أمر الشراء
+          });
           
           // إدراج الصف الجديد بعد الصف الحالي
           await this.insertNewRowAfter(targetRow, newRowData);
