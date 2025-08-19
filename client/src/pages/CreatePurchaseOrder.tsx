@@ -80,9 +80,24 @@ export default function CreatePurchaseOrder() {
   const queryClient = useQueryClient();
 
   // Fetch all quotations for search
-  const { data: allQuotations = [] } = useQuery<Quotation[]>({
+  const { data: allQuotations = [], isLoading: loadingQuotations } = useQuery<Quotation[]>({
     queryKey: ["/api/quotations"],
   });
+
+  // تسجيل حالة تحميل البيانات
+  React.useEffect(() => {
+    if (!loadingQuotations) {
+      console.log(`📊 تم تحميل ${allQuotations.length} طلب تسعير`);
+      if (allQuotations.length > 0) {
+        console.log("📄 أول 5 طلبات:");
+        allQuotations.slice(0, 5).forEach((q: Quotation) => {
+          console.log(`  - ID: ${q.id}`);
+          console.log(`    Request: ${q.requestNumber}`);
+          console.log(`    Custom: ${q.customRequestNumber}`);
+        });
+      }
+    }
+  }, [allQuotations, loadingQuotations]);
 
   // Get selected quotation details with items
   const { data: selectedQuotation, isLoading: loadingQuotation } = useQuery<Quotation>({
@@ -396,22 +411,35 @@ export default function CreatePurchaseOrder() {
           <CardContent className="space-y-4">
             {/* قسم البحث */}
             <div className="bg-gray-50 p-4 rounded-lg">
+              {/* عرض حالة تحميل البيانات */}
+              {loadingQuotations ? (
+                <div className="mb-3 text-sm text-gray-600 flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-600"></div>
+                  جاري تحميل طلبات التسعير...
+                </div>
+              ) : (
+                <div className="mb-3 text-sm text-green-600">
+                  ✅ تم تحميل {allQuotations.length} طلب تسعير
+                </div>
+              )}
+              
               <div className="flex gap-2">
                 <Input
                   value={currentQuotationSearch}
                   onChange={(e) => setCurrentQuotationSearch(e.target.value)}
-                  placeholder="أدخل رقم طلب التسعير للبحث..."
+                  placeholder="أدخل رقم طلب التسعير للبحث (مثال: 25R000057)"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       e.preventDefault();
                       handleSearchQuotation();
                     }
                   }}
+                  disabled={loadingQuotations || allQuotations.length === 0}
                 />
                 <Button
                   type="button"
                   onClick={handleSearchQuotation}
-                  disabled={isSearching}
+                  disabled={isSearching || loadingQuotations || allQuotations.length === 0}
                 >
                   <Search className="h-4 w-4 ml-1" />
                   بحث
