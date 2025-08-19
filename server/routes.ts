@@ -2213,6 +2213,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user active status (نشط/محظور)
+  app.patch("/api/users/:userId/status", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { isActive } = req.body;
+      
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ 
+          success: false,
+          message: "يجب تحديد حالة التفعيل (true أو false)" 
+        });
+      }
+      
+      // تحديث حالة المستخدم في Google Sheets
+      const success = await usersGoogleSheetsManager.updateUserActiveStatus(userId, isActive);
+      
+      if (success) {
+        await logActivity(req, "update_status", "user", userId, `تم ${isActive ? 'تفعيل' : 'حظر'} المستخدم`);
+        res.json({ 
+          success: true,
+          message: `تم ${isActive ? 'تفعيل' : 'حظر'} المستخدم بنجاح` 
+        });
+      } else {
+        res.status(404).json({ 
+          success: false,
+          message: "المستخدم غير موجود" 
+        });
+      }
+    } catch (error) {
+      console.error("خطأ في تحديث حالة المستخدم:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "فشل في تحديث حالة المستخدم" 
+      });
+    }
+  });
+
   // Delete user
   app.delete("/api/users/:userId", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {

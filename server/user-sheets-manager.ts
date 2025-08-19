@@ -348,6 +348,55 @@ export class UserSheetsManager {
     }
   }
 
+  // تحديث حالة تفعيل المستخدم (Active/Inactive)
+  async updateUserActiveStatus(userId: string, isActive: boolean): Promise<boolean> {
+    if (!this.isInitialized) {
+      const initialized = await this.initialize();
+      if (!initialized) return false;
+    }
+
+    try {
+      const users = await this.getAllUsers();
+      const userIndex = users.findIndex(user => user.id === userId);
+      
+      if (userIndex === -1) {
+        console.error(`❌ المستخدم ${userId} غير موجود`);
+        return false;
+      }
+
+      const rowIndex = userIndex + 2; // +2 because row 1 is headers and array is 0-indexed
+      const now = new Date().toISOString();
+
+      console.log(`🔄 تحديث حالة المستخدم ${users[userIndex].username} إلى ${isActive ? 'نشط' : 'محظور'}`);
+
+      // تحديث حقل isActive في العمود J
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!J${rowIndex}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[isActive ? 'TRUE' : 'FALSE']]
+        }
+      });
+
+      // تحديث updatedAt في العمود P
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!P${rowIndex}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[now]]
+        }
+      });
+
+      console.log(`✅ تم تحديث حالة المستخدم ${users[userIndex].username} بنجاح`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث حالة تفعيل المستخدم:', (error as Error).message);
+      return false;
+    }
+  }
+
   // إضافة مستخدم جديد (لاستخدام routes.ts)
   async addUser(userData: {
     username: string;
