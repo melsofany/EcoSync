@@ -607,19 +607,49 @@ export class UsersGoogleSheetsManager {
         return false;
       }
 
-      // حذف الصف من Google Sheets
+      const userName = users[userIndex].username;
       const rowNumber = userIndex + 2; // الصف الأول هو العناوين
       
-      // بدلاً من حذف الصف، نمسح محتوياته فقط
-      await this.sheets.spreadsheets.values.clear({
-        spreadsheetId: this.spreadsheetId,
-        range: `USERS!A${rowNumber}:P${rowNumber}`
+      // الحصول على sheetId لورقة USERS
+      const spreadsheet = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId
       });
+      
+      const usersSheet = spreadsheet.data.sheets.find((sheet: any) => 
+        sheet.properties.title === 'USERS'
+      );
+      
+      if (!usersSheet) {
+        console.error('❌ ورقة USERS غير موجودة');
+        return false;
+      }
+      
+      const sheetId = usersSheet.properties.sheetId;
+      
+      // حذف الصف بالكامل من Google Sheets
+      const request = {
+        spreadsheetId: this.spreadsheetId,
+        resource: {
+          requests: [{
+            deleteDimension: {
+              range: {
+                sheetId: sheetId,
+                dimension: 'ROWS',
+                startIndex: rowNumber - 1, // 0-indexed
+                endIndex: rowNumber
+              }
+            }
+          }]
+        }
+      };
 
-      console.log(`✅ تم حذف المستخدم ${userId} بنجاح`);
+      await this.sheets.spreadsheets.batchUpdate(request);
+
+      console.log(`✅ تم حذف المستخدم ${userName} (${userId}) بنجاح من الصف ${rowNumber}`);
       return true;
     } catch (error) {
       console.error('❌ خطأ في حذف المستخدم:', error);
+      console.error('تفاصيل الخطأ:', (error as Error).message);
       return false;
     }
   }
