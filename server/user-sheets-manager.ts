@@ -188,14 +188,20 @@ export class UserSheetsManager {
       const users = response.data.values.map((row: string[], index: number) => {
         // تسجيل تفصيلي للصورة
         const profileImage = row[6];
+        const role = row[7];
+        const isActive = row[9];
         
-        // تسجيل تفصيلي لكل مستخدم له صورة
+        // تسجيل تفصيلي لكل مستخدم
+        console.log(`👤 المستخدم ${row[1]} (صف ${index + 2}):`);
+        console.log(`   - الدور: ${role || 'غير محدد'}`);
+        console.log(`   - الحالة: ${isActive === 'TRUE' ? 'نشط' : 'محظور'}`);
+        
         if (profileImage) {
           const previewText = profileImage.substring(0, 50);
-          console.log(`🖼️ المستخدم ${row[1]} (صف ${index + 2}): صورة بطول ${profileImage.length} حرف`);
-          console.log(`   البداية: ${previewText}...`);
+          console.log(`   - صورة: ${profileImage.length} حرف`);
+          console.log(`   - البداية: ${previewText}...`);
         } else {
-          console.log(`❌ المستخدم ${row[1]} (صف ${index + 2}): لا توجد صورة`);
+          console.log(`   - صورة: لا توجد`);
         }
         
         return {
@@ -206,9 +212,9 @@ export class UserSheetsManager {
           email: row[4] || undefined,
           phone: row[5] || undefined,
           profileImage: profileImage || undefined,
-          role: row[7] || 'data_entry',
+          role: role || 'data_entry',
           permissions: row[8] || undefined,
-          isActive: row[9] === 'TRUE',
+          isActive: isActive === 'TRUE',
           isOnline: row[10] === 'TRUE',
           lastLoginAt: row[11] || undefined,
           lastActivityAt: row[12] || undefined,
@@ -402,6 +408,16 @@ export class UserSheetsManager {
         willBeSaved: processedImage.length > 0 && processedImage.length <= 45000
       });
 
+      // تسجيل تفصيلي قبل الحفظ
+      console.log('📝 البيانات التي سيتم حفظها في Google Sheets:', {
+        id: userId,
+        username: userData.username,
+        role: userData.role,
+        isActive: userData.isActive,
+        hasImage: !!processedImage,
+        imageLength: processedImage ? processedImage.length : 0
+      });
+      
       const newUser = [
         userId,
         userData.username,
@@ -410,10 +426,10 @@ export class UserSheetsManager {
         userData.email || '',
         userData.phone || '',
         processedImage,
-        userData.role,
+        userData.role || 'data_entry', // التأكد من حفظ الدور الصحيح
         JSON.stringify(userData.permissions || {}),
-        userData.isActive !== false ? 'TRUE' : 'FALSE',
-        'FALSE', // isOnline - بدلاً من canAccessBot
+        'TRUE', // دائماً نشط عند الإنشاء
+        'FALSE', // isOnline
         '', // lastLoginAt
         now, // lastActivityAt
         '', // ipAddress
