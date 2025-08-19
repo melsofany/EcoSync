@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { canAccessSection } from "@/lib/auth";
 import { useState } from "react";
-import { useLogout } from "@/hooks/useAuth";
+import { useLogout, useAuth } from "@/hooks/useAuth";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -55,6 +55,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [location] = useLocation();
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const logout = useLogout();
+  const { user } = useAuth();
+
+  // تسجيل البيانات المستلمة
+  if (user) {
+    console.log('📱 Sidebar - البيانات المستلمة:', {
+      username: user.username,
+      fullName: user.fullName,
+      role: user.role
+    });
+  }
 
   const toggleExpanded = (section: string) => {
     const newExpanded = new Set(expandedItems);
@@ -64,26 +74,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       newExpanded.add(section);
     }
     setExpandedItems(newExpanded);
-  };
-  
-  // Mock admin user for Google Sheets system
-  const user = {
-    id: 'admin-user',
-    username: 'admin',
-    fullName: 'مدير النظام',
-    email: 'admin@qurtoba.com',
-    role: 'manager',
-    profileImage: null,
-    isActive: true,
-    isOnline: true,
-    lastLoginAt: null,
-    lastActivityAt: null,
-    canAccessBot: false,
-    phone: '',
-    permissions: {},
-    ipAddress: '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
   };
   
 
@@ -266,7 +256,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* User Info */}
         <div className="p-4 border-b border-gray-100 bg-gray-50">
           <UserDisplayName 
-            user={user}
+            user={user || { fullName: 'مستخدم', profileImage: null }}
             showUsername={false}
             showEmail={false}
             showPhone={false}
@@ -276,15 +266,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           />
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-gray-500 truncate">
-              {getRoleLabel(user.role)}
+              {getRoleLabel(user?.role || 'user')}
             </p>
             <div className="flex items-center">
               <Circle className={cn(
                 "w-2 h-2 rounded-full",
-                user.isOnline ? "fill-green-400 text-green-400" : "fill-gray-400 text-gray-400"
+                user?.isOnline ? "fill-green-400 text-green-400" : "fill-gray-400 text-gray-400"
               )} />
               <span className="text-xs text-gray-500 mr-1">
-                {user.isOnline ? "متصل" : "غير متصل"}
+                {user?.isOnline ? "متصل" : "غير متصل"}
               </span>
             </div>
           </div>
@@ -293,7 +283,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-3 lg:p-4 space-y-2 lg:space-y-3 overflow-y-auto">
           {menuItems.map((item) => {
-            if (!canAccessSection(user, item.section)) {
+            if (!canAccessSection(user || { role: 'user', permissions: {} }, item.section)) {
               return null;
             }
 
