@@ -423,7 +423,9 @@ export default function CreatePurchaseOrder() {
                     <div>
                       <span className="text-gray-600">التاريخ: </span>
                       <span className="font-semibold">
-                        {format(new Date(selectedQuotation.requestDate), "dd/MM/yyyy", { locale: ar })}
+                        {selectedQuotation.requestDate && !isNaN(Date.parse(selectedQuotation.requestDate))
+                          ? format(new Date(selectedQuotation.requestDate), "dd/MM/yyyy", { locale: ar })
+                          : "غير محدد"}
                       </span>
                     </div>
                   </div>
