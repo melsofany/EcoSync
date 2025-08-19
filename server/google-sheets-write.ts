@@ -1131,8 +1131,9 @@ ${itemsList}
           
           // نسخ كل البيانات من طلب التسعير
           const newRowData = [...rowData];
-          // مسح بيانات الكمية (العمود E - index 4)
-          newRowData[4] = '';
+          // مسح بيانات الكمية من طلب التسعير (العمود H - index 7)
+          newRowData[7] = '';
+          // التوصيف في العمود E (index 4) يبقى كما هو - لا نغيره
           // إضافة بيانات أمر الشراء الجديد
           newRowData[10] = poData.poNumber;      // PO Number (K)
           newRowData[11] = poData.poDate;        // PO Date (L)
