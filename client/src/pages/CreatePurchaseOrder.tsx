@@ -109,19 +109,40 @@ export default function CreatePurchaseOrder() {
 
     setIsSearching(true);
     
-    // البحث في طلبات التسعير
-    const found = allQuotations.find((q: Quotation) => 
-      q.requestNumber === currentQuotationSearch.trim() ||
-      q.customRequestNumber === currentQuotationSearch.trim()
-    );
+    // تسجيل معلومات التشخيص
+    console.log("🔍 البحث عن:", currentQuotationSearch.trim());
+    console.log("📋 عدد طلبات التسعير المُحملة:", allQuotations.length);
+    
+    if (allQuotations.length > 0) {
+      console.log("📄 أمثلة على طلبات التسعير:");
+      allQuotations.slice(0, 5).forEach((q: Quotation) => {
+        console.log(`  - ${q.requestNumber} | ${q.customRequestNumber} | ${q.id}`);
+      });
+    }
+    
+    // البحث في طلبات التسعير - مع تحسين المقارنة
+    const searchTerm = currentQuotationSearch.trim().toUpperCase();
+    const found = allQuotations.find((q: Quotation) => {
+      const requestNum = q.requestNumber?.toUpperCase();
+      const customNum = q.customRequestNumber?.toUpperCase();
+      
+      console.log(`🔎 مقارنة مع: ${requestNum} | ${customNum}`);
+      
+      return requestNum === searchTerm || 
+             customNum === searchTerm ||
+             requestNum?.includes(searchTerm) ||
+             customNum?.includes(searchTerm);
+    });
 
     if (found) {
+      console.log("✅ تم العثور على طلب:", found);
       setSelectedQuotationId(found.id);
       toast({
         title: "تم العثور على طلب التسعير",
         description: `طلب التسعير ${found.customRequestNumber || found.requestNumber} - ${found.clientName || "غير محدد"}`,
       });
     } else {
+      console.log("❌ لم يتم العثور على طلب");
       toast({
         title: "لم يتم العثور على طلب التسعير",
         description: "يرجى التحقق من رقم طلب التسعير",
