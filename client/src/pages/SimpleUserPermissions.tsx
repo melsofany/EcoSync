@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
@@ -110,6 +110,21 @@ export default function SimpleUserPermissions() {
   const users = (usersData as any)?.users || usersData || [];
   const permissions = (permissionsData as any)?.permissions || permissionsData || [];
   const currentUser = users.find((u: User) => u.id === selectedUserId);
+  
+  // تسجيل تفصيلي للصور
+  useEffect(() => {
+    if (users.length > 0) {
+      users.forEach((user: User) => {
+        if (user.profileImage) {
+          console.log(`🖼️ المستخدم ${user.username} له صورة:`, {
+            hasImage: !!user.profileImage,
+            isBase64: user.profileImage.startsWith('data:image/'),
+            length: user.profileImage.length
+          });
+        }
+      });
+    }
+  }, [users]);
 
   // تحديث الصلاحيات عند اختيار مستخدم جديد
   const handleUserSelect = (userId: string) => {
@@ -521,10 +536,12 @@ export default function SimpleUserPermissions() {
                     <div className="flex items-center gap-4">
                       <div className="relative">
                         <Avatar className="h-16 w-16">
-                          <AvatarImage 
-                            src={user.profileImage || `/api/users/${user.id}/avatar`} 
-                            alt={user.fullName} 
-                          />
+                          {user.profileImage && user.profileImage.startsWith('data:image/') ? (
+                            <AvatarImage 
+                              src={user.profileImage} 
+                              alt={user.fullName} 
+                            />
+                          ) : null}
                           <AvatarFallback className="text-lg font-semibold">
                             {user.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                           </AvatarFallback>
