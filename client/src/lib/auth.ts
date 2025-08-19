@@ -20,17 +20,26 @@ export interface User {
 }
 
 export const login = async (credentials: LoginCredentials): Promise<User> => {
-  const response = await apiRequest("/api/auth/login", "POST", credentials);
-  return response.json();
+  try {
+    const response = await apiRequest("POST", "/api/auth/login", credentials);
+    // apiRequest الآن ترجع JSON مباشرة
+    return response;
+  } catch (error: any) {
+    console.error("❌ خطأ في تسجيل الدخول:", error);
+    if (error.message?.includes('fetch')) {
+      throw new Error("خطأ في الاتصال بالخادم. تأكد من اتصال الإنترنت");
+    }
+    throw error;
+  }
 };
 
 export const logout = async (): Promise<void> => {
-  await apiRequest("/api/auth/logout", "POST");
+  await apiRequest("POST", "/api/auth/logout");
 };
 
 export const getCurrentUser = async (): Promise<User> => {
-  const response = await apiRequest("/api/auth/me", "GET");
-  return response.json();
+  const response = await apiRequest("GET", "/api/auth/me");
+  return response;
 };
 
 export const hasRole = (user: User | null, roles: string[]): boolean => {
