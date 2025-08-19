@@ -1136,22 +1136,15 @@ ${itemsList}
             console.log(`   العمود ${columnLetter} [${i}]: ${rowData[i] || '(فارغ)'}`);
           }
           
-          // نسخ كل البيانات من طلب التسعير بشكل آمن
-          const newRowData = [];
+          // نسخ كل البيانات من طلب التسعير ما عدا الكمية
+          const newRowData = [...rowData]; // نسخ عميق للصف الأصلي
           
-          // نسخ كل البيانات الأصلية أولاً
-          for (let i = 0; i < 27; i++) { // نسخ الأعمدة من A إلى AA
-            newRowData[i] = rowData[i] || '';
-          }
-          
-          // التأكد من نسخ التوصيف من العمود E (index 4) بشكل صريح
+          // التأكد من وجود التوصيف
           console.log(`📝 التوصيف الأصلي (العمود E): "${rowData[4]}"`);
-          if (rowData[4]) {
-            newRowData[4] = String(rowData[4]); // نسخ التوصيف بشكل صريح كنص
-          }
+          console.log(`📝 التوصيف المنسوخ (العمود E): "${newRowData[4]}"`);
           
-          // مسح بيانات الكمية من طلب التسعير (العمود H - index 7)
-          newRowData[7] = '';
+          // مسح الكمية من طلب التسعير فقط (العمود H - index 7)
+          newRowData[7] = ''; // مسح الكمية فقط
           
           // إضافة بيانات أمر الشراء الجديد
           newRowData[10] = poData.poNumber;      // PO Number (K)
@@ -1159,13 +1152,10 @@ ${itemsList}
           newRowData[12] = item.quantity.toString();   // PO Quantity (M)
           newRowData[13] = item.unitPrice.toString();  // PO Price (N)
           
-          console.log(`✅ التوصيف في الصف الجديد (العمود E): "${newRowData[4]}"`);
-          
-          // التحقق النهائي من التوصيف
-          if (!newRowData[4] && rowData[4]) {
-            console.log(`⚠️ محاولة أخيرة لنسخ التوصيف...`);
-            newRowData[4] = rowData[4];
-          }
+          console.log(`✅ التوصيف النهائي في الصف الجديد (العمود E): "${newRowData[4]}"`);
+          console.log(`✅ الكمية RFQ (العمود H) تم مسحها: "${newRowData[7]}"`);
+          console.log(`✅ كمية PO الجديدة (العمود M): "${newRowData[12]}"`);
+          console.log(`✅ سعر PO الجديد (العمود N): "${newRowData[13]}"`)
           
           // إدراج الصف الجديد بعد الصف الحالي
           await this.insertNewRowAfter(targetRow, newRowData);
