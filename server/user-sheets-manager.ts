@@ -183,24 +183,32 @@ export class UserSheetsManager {
         return [];
       }
 
-      const users = response.data.values.map((row: string[]) => ({
-        id: row[0] || '',
-        username: row[1] || '',
-        password: row[2] || '',
-        fullName: row[3] || '',
-        email: row[4] || undefined,
-        phone: row[5] || undefined,
-        profileImage: row[6] || undefined,
-        role: row[7] || 'data_entry',
-        permissions: row[8] || undefined,
-        isActive: row[9] === 'TRUE',
-        isOnline: row[10] === 'TRUE',
-        lastLoginAt: row[11] || undefined,
-        lastActivityAt: row[12] || undefined,
-        ipAddress: row[13] || undefined,
-        createdAt: row[14] || new Date().toISOString(),
-        updatedAt: row[15] || new Date().toISOString()
-      }));
+      const users = response.data.values.map((row: string[]) => {
+        // تسجيل تفصيلي للصورة
+        const profileImage = row[6];
+        if (row[1] === 'Ahmed' && profileImage) {
+          console.log(`🖼️ صورة المستخدم Ahmed: طول ${profileImage.length} حرف`);
+        }
+        
+        return {
+          id: row[0] || '',
+          username: row[1] || '',
+          password: row[2] || '',
+          fullName: row[3] || '',
+          email: row[4] || undefined,
+          phone: row[5] || undefined,
+          profileImage: profileImage || undefined,
+          role: row[7] || 'data_entry',
+          permissions: row[8] || undefined,
+          isActive: row[9] === 'TRUE',
+          isOnline: row[10] === 'TRUE',
+          lastLoginAt: row[11] || undefined,
+          lastActivityAt: row[12] || undefined,
+          ipAddress: row[13] || undefined,
+          createdAt: row[14] || new Date().toISOString(),
+          updatedAt: row[15] || new Date().toISOString()
+        };
+      });
 
       return users;
     } catch (error) {

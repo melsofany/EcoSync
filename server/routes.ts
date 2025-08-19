@@ -6499,6 +6499,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       // إزالة كلمات المرور من الاستجابة
       const usersWithoutPasswords = users.map(user => {
         const { password, ...userWithoutPassword } = user;
+        // تسجيل تفصيلي للمستخدمين مع الصور
+        if (user.username === 'Ahmed' && user.profileImage) {
+          console.log(`📸 المستخدم Ahmed له صورة بطول ${user.profileImage.length} حرف`);
+        }
         return userWithoutPassword;
       });
       
