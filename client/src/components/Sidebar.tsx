@@ -193,12 +193,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: Mic,
       section: "voice_control",
     },
-    {
-      title: "حفظ قاعدة البيانات",
-      href: "/database-storage",
-      icon: Database,
-      section: "admin",
-    },
   ];
 
   const getRoleLabel = (role: string) => {

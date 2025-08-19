@@ -27,7 +27,6 @@ import ItemDataSheet from "@/pages/ItemDataSheet";
 
 import NotFound from "@/pages/not-found";
 import TelegramBot from "@/pages/TelegramBot";
-import DatabaseStoragePage from "@/pages/DatabaseStoragePage";
 import { VoiceControlPage } from "@/pages/VoiceControlPage";
 import DataUnification from "@/pages/DataUnification";
 import UnificationMonitor from "@/pages/UnificationMonitor";
@@ -80,7 +79,6 @@ function Router() {
         <Route path="/reports" component={Reports} />
         <Route path="/admin" component={GeneralAdmin} />
         <Route path="/telegram-bot" component={TelegramBot} />
-        <Route path="/database-storage" component={DatabaseStoragePage} />
         <Route path="/voice-control" component={VoiceControlPage} />
         <Route path="/data-unification" component={DataUnification} />
         <Route path="/unification-monitor" component={UnificationMonitor} />
