@@ -33,7 +33,7 @@ export function useLogin() {
       queryClient.setQueryData(["/api/auth/me"], user);
       toast({
         title: "تم تسجيل الدخول بنجاح",
-        description: `مرحباً ${user.fullName}`,
+        description: `مرحباً ${user.fullName || user.username || 'بك'}`,
       });
     },
     onError: (error: any) => {
