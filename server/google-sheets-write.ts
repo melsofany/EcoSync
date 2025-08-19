@@ -1136,15 +1136,19 @@ ${itemsList}
             console.log(`   العمود ${columnLetter} [${i}]: ${rowData[i] || '(فارغ)'}`);
           }
           
-          // نسخ كل البيانات من طلب التسعير
+          // نسخ كل البيانات من طلب التسعير بشكل آمن
           const newRowData = [];
-          for (let i = 0; i < rowData.length; i++) {
-            newRowData[i] = rowData[i];
+          
+          // نسخ كل البيانات الأصلية أولاً
+          for (let i = 0; i < 27; i++) { // نسخ الأعمدة من A إلى AA
+            newRowData[i] = rowData[i] || '';
           }
           
           // التأكد من نسخ التوصيف من العمود E (index 4) بشكل صريح
           console.log(`📝 التوصيف الأصلي (العمود E): "${rowData[4]}"`);
-          newRowData[4] = rowData[4]; // نسخ التوصيف بشكل صريح
+          if (rowData[4]) {
+            newRowData[4] = String(rowData[4]); // نسخ التوصيف بشكل صريح كنص
+          }
           
           // مسح بيانات الكمية من طلب التسعير (العمود H - index 7)
           newRowData[7] = '';
@@ -1156,6 +1160,12 @@ ${itemsList}
           newRowData[13] = item.unitPrice.toString();  // PO Price (N)
           
           console.log(`✅ التوصيف في الصف الجديد (العمود E): "${newRowData[4]}"`);
+          
+          // التحقق النهائي من التوصيف
+          if (!newRowData[4] && rowData[4]) {
+            console.log(`⚠️ محاولة أخيرة لنسخ التوصيف...`);
+            newRowData[4] = rowData[4];
+          }
           
           // إدراج الصف الجديد بعد الصف الحالي
           await this.insertNewRowAfter(targetRow, newRowData);
@@ -1249,6 +1259,16 @@ ${itemsList}
       
       // إضافة البيانات في الصف الجديد
       const newRowNumber = afterRow + 1;
+      
+      // طباعة البيانات التي سيتم كتابتها
+      console.log(`📝 البيانات التي سيتم كتابتها في الصف ${newRowNumber}:`);
+      console.log(`   العمود C (LINE ITEM): ${rowData[2]}`);
+      console.log(`   العمود E (التوصيف): ${rowData[4]}`);
+      console.log(`   العمود H (الكمية RFQ): ${rowData[7]}`);
+      console.log(`   العمود K (PO): ${rowData[10]}`);
+      console.log(`   العمود M (PO QTY): ${rowData[12]}`);
+      console.log(`   العمود N (PO PRICE): ${rowData[13]}`);
+      
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
         range: `DATA!A${newRowNumber}:AA${newRowNumber}`,
