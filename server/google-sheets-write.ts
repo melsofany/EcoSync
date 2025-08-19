@@ -1136,23 +1136,35 @@ ${itemsList}
             console.log(`   العمود ${columnLetter} [${i}]: ${rowData[i] || '(فارغ)'}`);
           }
           
-          // نسخ كل البيانات من طلب التسعير ما عدا الكمية
-          const newRowData = [...rowData]; // نسخ عميق للصف الأصلي
+          // إنشاء صف جديد ونسخ كل البيانات عمود بعمود
+          const newRowData = new Array(27); // إنشاء مصفوفة جديدة بحجم 27 (من A إلى AA)
           
-          // التأكد من وجود التوصيف
+          // نسخ كل عمود بشكل صريح
+          for (let i = 0; i < 27; i++) {
+            if (i === 7) {
+              // العمود H (index 7) - الكمية RFQ - نتركه فارغاً
+              newRowData[i] = '';
+            } else if (i === 10) {
+              // العمود K - رقم أمر الشراء الجديد
+              newRowData[i] = poData.poNumber;
+            } else if (i === 11) {
+              // العمود L - تاريخ أمر الشراء
+              newRowData[i] = poData.poDate;
+            } else if (i === 12) {
+              // العمود M - كمية أمر الشراء
+              newRowData[i] = item.quantity.toString();
+            } else if (i === 13) {
+              // العمود N - سعر أمر الشراء
+              newRowData[i] = item.unitPrice.toString();
+            } else {
+              // نسخ القيمة الأصلية لكل الأعمدة الأخرى بما فيها التوصيف (العمود E - index 4)
+              newRowData[i] = rowData[i] !== undefined ? rowData[i] : '';
+            }
+          }
+          
+          // التأكد من نسخ التوصيف
           console.log(`📝 التوصيف الأصلي (العمود E): "${rowData[4]}"`);
           console.log(`📝 التوصيف المنسوخ (العمود E): "${newRowData[4]}"`);
-          
-          // مسح الكمية من طلب التسعير فقط (العمود H - index 7)
-          newRowData[7] = ''; // مسح الكمية فقط
-          
-          // إضافة بيانات أمر الشراء الجديد
-          newRowData[10] = poData.poNumber;      // PO Number (K)
-          newRowData[11] = poData.poDate;        // PO Date (L)
-          newRowData[12] = item.quantity.toString();   // PO Quantity (M)
-          newRowData[13] = item.unitPrice.toString();  // PO Price (N)
-          
-          console.log(`✅ التوصيف النهائي في الصف الجديد (العمود E): "${newRowData[4]}"`);
           console.log(`✅ الكمية RFQ (العمود H) تم مسحها: "${newRowData[7]}"`);
           console.log(`✅ كمية PO الجديدة (العمود M): "${newRowData[12]}"`);
           console.log(`✅ سعر PO الجديد (العمود N): "${newRowData[13]}"`)
