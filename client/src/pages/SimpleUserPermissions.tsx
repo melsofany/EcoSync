@@ -111,17 +111,22 @@ export default function SimpleUserPermissions() {
   const permissions = (permissionsData as any)?.permissions || permissionsData || [];
   const currentUser = users.find((u: User) => u.id === selectedUserId);
   
-  // تسجيل تفصيلي للصور
+  // تسجيل تفصيلي للصور والبيانات
   useEffect(() => {
     if (users.length > 0) {
+      console.log('📊 بيانات المستخدمين المستلمة:', users);
       users.forEach((user: User) => {
-        if (user.profileImage) {
-          console.log(`🖼️ المستخدم ${user.username} له صورة:`, {
-            hasImage: !!user.profileImage,
-            isBase64: user.profileImage.startsWith('data:image/'),
-            length: user.profileImage.length
-          });
-        }
+        console.log(`👤 بيانات المستخدم ${user.username}:`, {
+          id: user.id,
+          fullName: user.fullName,
+          role: user.role,
+          roleLabel: getRoleLabel(user.role),
+          email: user.email,
+          phone: user.phone,
+          isActive: user.isActive,
+          permissions: user.permissions,
+          profileImage: user.profileImage ? `${user.profileImage.length} حرف` : 'لا توجد'
+        });
       });
     }
   }, [users]);
