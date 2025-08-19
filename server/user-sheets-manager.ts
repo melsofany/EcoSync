@@ -183,11 +183,19 @@ export class UserSheetsManager {
         return [];
       }
 
-      const users = response.data.values.map((row: string[]) => {
+      console.log(`📊 إجمالي المستخدمين: ${response.data.values.length}`);
+      
+      const users = response.data.values.map((row: string[], index: number) => {
         // تسجيل تفصيلي للصورة
         const profileImage = row[6];
-        if (row[1] === 'Ahmed' && profileImage) {
-          console.log(`🖼️ صورة المستخدم Ahmed: طول ${profileImage.length} حرف`);
+        
+        // تسجيل تفصيلي لكل مستخدم له صورة
+        if (profileImage) {
+          const previewText = profileImage.substring(0, 50);
+          console.log(`🖼️ المستخدم ${row[1]} (صف ${index + 2}): صورة بطول ${profileImage.length} حرف`);
+          console.log(`   البداية: ${previewText}...`);
+        } else {
+          console.log(`❌ المستخدم ${row[1]} (صف ${index + 2}): لا توجد صورة`);
         }
         
         return {
