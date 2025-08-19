@@ -6579,9 +6579,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         });
       }
 
-      // لا نقوم بتشفير كلمة المرور هنا لأن createUser ستقوم بذلك
+      // لا نقوم بتشفير كلمة المرور هنا لأن addUser ستقوم بذلك
       console.log(`👤 إنشاء مستخدم جديد في Google Sheets: ${userData.username}`);
-      const newUser = await usersGoogleSheetsManager.createUser(userData);
+      const newUser = await usersGoogleSheetsManager.addUser(userData);
       
       // إزالة كلمة المرور من الاستجابة
       const { password: _, ...userWithoutPassword } = newUser;
