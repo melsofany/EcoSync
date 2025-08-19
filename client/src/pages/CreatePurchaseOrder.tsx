@@ -296,6 +296,10 @@ export default function CreatePurchaseOrder() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("📝 بدء إنشاء أمر الشراء...");
+    console.log("رقم أمر الشراء:", poNumber);
+    console.log("عدد البنود الكلي:", poItems.length);
+    
     if (!poNumber.trim()) {
       toast({
         title: "خطأ",
@@ -306,11 +310,12 @@ export default function CreatePurchaseOrder() {
     }
 
     const selectedItems = poItems.filter(item => item.isSelected);
+    console.log("عدد البنود المحددة:", selectedItems.length);
     
     if (selectedItems.length === 0) {
       toast({
         title: "خطأ",
-        description: "يرجى اختيار بند واحد على الأقل",
+        description: "يرجى اختيار بند واحد على الأقل بوضع علامة ✓ بجانبه",
         variant: "destructive",
       });
       return;
@@ -323,9 +328,10 @@ export default function CreatePurchaseOrder() {
     );
 
     if (invalidItems.length > 0) {
+      console.log("❌ بنود غير صالحة:", invalidItems);
       toast({
-        title: "خطأ",
-        description: "يرجى إدخال كمية وسعر صحيح لجميع البنود المحددة",
+        title: "خطأ في البيانات",
+        description: `يرجى إدخال كمية وسعر صحيح لجميع البنود المحددة (${invalidItems.length} بند ناقص)`,
         variant: "destructive",
       });
       return;
@@ -340,16 +346,20 @@ export default function CreatePurchaseOrder() {
         quotationId: item.quotationId,
         quotationNumber: item.quotationNumber,
         itemId: item.itemId,
-        lineItem: item.lineItem,
-        itemNumber: item.itemNumber,
-        partNumber: item.partNumber,
-        description: item.description,
-        unit: item.unit,
+        lineItem: item.lineItem || "",
+        itemNumber: item.itemNumber || "",
+        partNumber: item.partNumber || "",
+        description: item.description || "",
+        unit: item.unit || "Each",
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         totalPrice: item.totalPrice,
       })),
     };
+
+    console.log("📊 بيانات أمر الشراء المرسلة:", poData);
+    console.log("✅ عدد البنود:", poData.items.length);
+    console.log("💰 الإجمالي:", poData.totalValue);
 
     createPOMutation.mutate(poData);
   };
