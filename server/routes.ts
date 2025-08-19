@@ -988,33 +988,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { username, password } = req.body;
       
       console.log(`🔐 محاولة تسجيل دخول للمستخدم: ${username}`);
-      
-      // Check hardcoded admin first for backwards compatibility
-      if (username === 'admin' && password === 'admin123') {
-        const mockUser = {
-          id: 'admin-user',
-          username: 'admin',
-          fullName: 'مدير النظام',
-          email: 'admin@qurtoba.com',
-          role: 'manager',
-          permissions: ['view_all', 'edit_all', 'delete_all'],
-          isActive: true
-        };
-        
-        req.session.user = mockUser;
-        // حفظ الجلسة بقوة
-        await new Promise<void>((resolve, reject) => {
-          req.session.save((err) => {
-            if (err) reject(err);
-            else resolve();
-          });
-        });
-        console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
-        console.log(`🔐 تم حفظ الجلسة للمستخدم: ${username}`);
-        return res.json({ user: mockUser });
-      }
 
-      // Check Google Sheets users
+      // Check Google Sheets users  
       try {
         // Try to get user from both systems
         let user = await userSheetsManager.getUserByUsername(username);
@@ -1046,13 +1021,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: user.username,
           fullName: user.fullName,
           email: user.email,
+          phone: user.phone,
+          profileImage: user.profileImage,
           role: user.role,
           permissions: typeof user.permissions === 'string' ? 
             (user.permissions.includes('perm-') ? 
               user.permissions.split(',').map(p => p.trim()) : 
               (user.permissions.startsWith('{') ? JSON.parse(user.permissions || '{}') : [])) : 
             (user.permissions || []),
-          isActive: user.isActive
+          isActive: user.isActive,
+          isOnline: true
         };
 
         req.session.user = sessionUser;
@@ -1064,7 +1042,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         });
         console.log(`✅ تم تسجيل الدخول بنجاح للمستخدم: ${username}`);
-        console.log(`🔐 تم حفظ الجلسة للمستخدم: ${username}`);
+        console.log(`🔐 تم حفظ الجلسة مع البيانات:`, {
+          username: sessionUser.username,
+          fullName: sessionUser.fullName,
+          role: sessionUser.role
+        });
         return res.json({ user: sessionUser });
 
       } catch (sheetsError) {
@@ -1194,21 +1176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.session.user) {
         console.log(`🔍 جلب بيانات المستخدم من session: ${req.session.user.username}`);
         
-        // إذا كان المستخدم admin hardcoded، إعيد البيانات المباشرة
-        if (req.session.user.username === 'admin') {
-          const mockUser = {
-            id: 'admin-user',
-            username: 'admin',
-            fullName: 'مدير النظام',
-            email: 'admin@qurtoba.com',
-            role: 'manager',
-            permissions: ['view_all', 'edit_all', 'delete_all'],
-            isActive: true
-          };
-          return res.json(mockUser);
-        }
-        
-        // للمستخدمين من Google Sheets، إعيد بياناتهم الحقيقية
+        // دائماً احصل على البيانات الحقيقية من Google Sheets
         try {
           const users = await usersGoogleSheetsManager.getAllUsers();
           const currentUser = users.find(u => u.username === req.session.user.username);
@@ -1234,13 +1202,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               isActive: currentUser.isActive,
               isOnline: currentUser.isOnline
             });
+          } else {
+            console.log(`⚠️ لم يتم العثور على المستخدم ${req.session.user.username} في Google Sheets، استخدام بيانات الجلسة`);
+            // إذا لم نجد المستخدم في Google Sheets، نعيد بيانات الجلسة مع fullName من الجلسة
+            return res.json({
+              ...req.session.user,
+              profileImage: null,
+              isOnline: true
+            });
           }
         } catch (sheetsError) {
           console.error('❌ خطأ في جلب بيانات المستخدم من Google Sheets:', sheetsError);
+          // fallback - إعيد بيانات session الأساسية
+          return res.json(req.session.user);
         }
-        
-        // fallback - إعيد بيانات session الأساسية
-        return res.json(req.session.user);
       }
       
       return res.status(401).json({ message: "Unauthorized" });
