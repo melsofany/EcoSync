@@ -265,14 +265,28 @@ export default function CreatePurchaseOrder() {
   const createPOMutation = useMutation({
     mutationFn: async (data: any) => {
       try {
+        console.log("📤 إرسال بيانات أمر الشراء:", data);
         const response = await apiRequest("POST", "/api/purchase-orders/google-sheets", data);
+        console.log("📥 استجابة الخادم:", response);
         return response;
       } catch (error: any) {
-        console.error("❌ خطأ في إرسال أمر الشراء:", error);
-        // معالجة أخطاء الشبكة بشكل خاص
-        if (error.message?.includes('fetch')) {
-          throw new Error("خطأ في الاتصال بالخادم. تأكد من اتصال الإنترنت وحاول مرة أخرى");
+        console.error("❌ خطأ تفصيلي:", {
+          message: error.message,
+          stack: error.stack,
+          status: error.status,
+          error
+        });
+        
+        // معالجة أخطاء مختلفة
+        if (error.message?.toLowerCase().includes('failed to fetch') || 
+            error.message?.toLowerCase().includes('fetch')) {
+          throw new Error("خطأ في الاتصال بالخادم. تأكد من تشغيل الخادم وحاول مرة أخرى");
         }
+        
+        if (error.status === 401) {
+          throw new Error("جلستك انتهت. يرجى تسجيل الدخول مرة أخرى");
+        }
+        
         throw error;
       }
     },
