@@ -105,9 +105,9 @@ export default function CreatePurchaseOrder() {
     enabled: !!selectedQuotationId,
   });
 
-  // Get quotation items separately
+  // Get quotation items separately  
   const { data: quotationItems = [], isLoading: loadingItems } = useQuery<any[]>({
-    queryKey: ["/api/quotations", selectedQuotationId, "items"],
+    queryKey: [`/api/quotations/${selectedQuotationId}/items`],
     enabled: !!selectedQuotationId,
   });
 
@@ -173,32 +173,43 @@ export default function CreatePurchaseOrder() {
   React.useEffect(() => {
     if (selectedQuotationId && quotationItems && quotationItems.length > 0) {
       console.log(`📋 تحميل ${quotationItems.length} بند لطلب التسعير ${selectedQuotationId}`);
+      console.log("📄 بيانات البنود المستلمة:", quotationItems);
       
-      const newItems: POItem[] = quotationItems.map((item: any) => ({
-        quotationId: selectedQuotationId,
-        quotationNumber: selectedQuotation?.customRequestNumber || selectedQuotation?.requestNumber || "",
-        itemId: item.itemId || item.item?.id || item.id,
-        quotationItemId: item.id,
-        lineItem: item.lineItem || item.item?.lineItem,
-        itemNumber: item.itemNumber || item.item?.itemNumber,
-        partNumber: item.partNumber || item.item?.partNumber,
-        description: item.description || item.item?.description,
-        unit: item.unit || item.item?.uom || "Each",
-        quantity: 0, // سيتم إدخالها من المستخدم
-        unitPrice: 0, // سيتم إدخالها من المستخدم
-        totalPrice: 0,
-        notes: "",
-        isSelected: false, // غير محدد بشكل افتراضي
-      }));
+      const newItems: POItem[] = quotationItems.map((item: any, index: number) => {
+        // استخراج البيانات من البند
+        const lineItem = item.lineItem || item.item?.lineItem || item.LINE_ITEM || "";
+        const itemNumber = item.itemNumber || item.item?.itemNumber || item.ITEM_NUMBER || "";
+        const partNumber = item.partNumber || item.item?.partNumber || item.PART_NUMBER || "";
+        const description = item.description || item.item?.description || item.DESCRIPTION || "";
+        const unit = item.unit || item.item?.uom || item.UOM || "Each";
+        
+        console.log(`  البند ${index + 1}: ${lineItem} - ${description}`);
+        
+        return {
+          quotationId: selectedQuotationId,
+          quotationNumber: selectedQuotation?.customRequestNumber || selectedQuotation?.requestNumber || "",
+          itemId: item.itemId || item.item?.id || item.id || `item-${index}`,
+          quotationItemId: item.id,
+          lineItem: lineItem,
+          itemNumber: itemNumber,
+          partNumber: partNumber,
+          description: description,
+          unit: unit,
+          quantity: 0, // سيتم إدخالها من المستخدم
+          unitPrice: 0, // سيتم إدخالها من المستخدم
+          totalPrice: 0,
+          notes: "",
+          isSelected: false, // غير محدد بشكل افتراضي
+        };
+      });
 
       // إضافة البنود الجديدة إلى القائمة الموجودة
       setPOItems(prev => {
-        // تصفية البنود المكررة
-        const existingItemIds = prev.map(item => item.itemId);
-        const filteredNewItems = newItems.filter(item => !existingItemIds.includes(item.itemId));
-        const updatedItems = [...prev, ...filteredNewItems];
+        // مسح البنود السابقة لنفس طلب التسعير
+        const filteredPrev = prev.filter(item => item.quotationId !== selectedQuotationId);
+        const updatedItems = [...filteredPrev, ...newItems];
         
-        console.log(`✅ تم إضافة ${filteredNewItems.length} بند جديد، الإجمالي: ${updatedItems.length}`);
+        console.log(`✅ تم إضافة ${newItems.length} بند جديد، الإجمالي: ${updatedItems.length}`);
         return updatedItems;
       });
     }
