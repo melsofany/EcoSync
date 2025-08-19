@@ -5043,21 +5043,25 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           message: "البيانات المطلوبة غير مكتملة" 
         });
       }
+
+      console.log(`📦 حفظ أمر الشراء ${poNumber} مع ${items.length} بند`);
       
-      // التأكد من تهيئة GoogleSheetsWriter
-      if (!googleSheetsWriter) {
-        await googleSheetsWriter.initialize();
-      }
+      // استيراد GoogleSheetsWriter
+      const { GoogleSheetsWriter } = await import('./google-sheets-write');
+      const writer = new GoogleSheetsWriter();
+      
+      // التأكد من تهيئة الكاتب
+      await writer.initialize();
       
       // حفظ البيانات في Google Sheets
-      await googleSheetsWriter.savePurchaseOrderToSheets({
+      await writer.savePurchaseOrderToSheets({
         poNumber,
         poDate,
         items: items.map((item: any) => ({
-          itemNumber: item.itemNumber,
-          lineItem: item.lineItem,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice
+          itemNumber: item.itemNumber || '',
+          lineItem: item.lineItem || '',
+          quantity: item.quantity || 0,
+          unitPrice: item.unitPrice || 0
         }))
       });
       

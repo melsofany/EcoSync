@@ -264,21 +264,32 @@ export default function CreatePurchaseOrder() {
   // Create purchase order mutation
   const createPOMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/purchase-orders/google-sheets", data);
-      return response;
+      try {
+        const response = await apiRequest("POST", "/api/purchase-orders/google-sheets", data);
+        return response;
+      } catch (error: any) {
+        console.error("❌ خطأ في إرسال أمر الشراء:", error);
+        // معالجة أخطاء الشبكة بشكل خاص
+        if (error.message?.includes('fetch')) {
+          throw new Error("خطأ في الاتصال بالخادم. تأكد من اتصال الإنترنت وحاول مرة أخرى");
+        }
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("✅ تم إنشاء أمر الشراء بنجاح:", data);
       toast({
-        title: "تم إنشاء أمر الشراء بنجاح",
+        title: "تم إنشاء أمر الشراء بنجاح ✅",
         description: `رقم أمر الشراء: ${poNumber}`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/purchase-orders"] });
       resetForm();
     },
     onError: (error: any) => {
+      console.error("❌ فشل إنشاء أمر الشراء:", error);
       toast({
         title: "خطأ في إنشاء أمر الشراء",
-        description: error.message || "حدث خطأ غير متوقع",
+        description: error.message || "حدث خطأ غير متوقع. حاول مرة أخرى",
         variant: "destructive",
       });
     },
