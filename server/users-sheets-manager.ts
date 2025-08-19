@@ -427,7 +427,8 @@ export class UsersGoogleSheetsManager {
       console.log(`📋 الصلاحيات المحددة:`, permissions);
       
       const users = await this.getAllUsers();
-      const userIndex = users.findIndex(user => user.username === username);
+      // إزالة المسافات الزائدة من أسماء المستخدمين عند المقارنة
+      const userIndex = users.findIndex(user => user.username.trim() === username.trim());
       
       if (userIndex === -1) {
         console.log(`❌ المستخدم ${username} غير موجود`);
