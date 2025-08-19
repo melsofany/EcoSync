@@ -371,6 +371,12 @@ export class UserSheetsManager {
       const hashedPassword = await bcrypt.hash(userData.password, 10);
       const now = new Date().toISOString();
       const userId = `user-${Date.now()}`;
+      
+      console.log('🖼️ معالجة صورة المستخدم:', {
+        hasImage: !!userData.profileImage,
+        imageLength: userData.profileImage ? userData.profileImage.length : 0,
+        imageType: userData.profileImage ? (userData.profileImage.startsWith('data:image/') ? 'Base64' : 'Unknown') : 'None'
+      });
 
       const newUser = [
         userId,

@@ -6521,6 +6521,16 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       const userData = req.body;
       
+      console.log('📝 بيانات المستخدم المستلمة:', {
+        username: userData.username,
+        fullName: userData.fullName,
+        hasProfileImage: !!userData.profileImage,
+        profileImageLength: userData.profileImage ? userData.profileImage.length : 0,
+        role: userData.role,
+        email: userData.email,
+        phone: userData.phone
+      });
+      
       if (!userData.username || !userData.password || !userData.fullName) {
         return res.status(400).json({
           success: false,
@@ -6528,10 +6538,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         });
       }
 
-      // تشفير كلمة المرور
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
-      userData.password = hashedPassword;
-      
+      // لا نقوم بتشفير كلمة المرور هنا لأن createUser ستقوم بذلك
       console.log(`👤 إنشاء مستخدم جديد في Google Sheets: ${userData.username}`);
       const newUser = await usersGoogleSheetsManager.createUser(userData);
       

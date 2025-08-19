@@ -177,7 +177,7 @@ export default function SimpleUserPermissions() {
   const addUserMutation = useMutation({
     mutationFn: async () => {
       // إرسال البيانات كـ JSON مع Base64
-      const response = await apiRequest('/api/users', 'POST', {
+      const response = await apiRequest('/api/sheets-users', 'POST', {
         username: newUser.username,
         fullName: newUser.fullName,
         email: newUser.email,
@@ -188,7 +188,13 @@ export default function SimpleUserPermissions() {
         canAccessBot: newUser.canAccessBot,
         profileImage: newUser.profileImage // Base64 string
       });
-      return response;
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'فشل في إضافة المستخدم');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
