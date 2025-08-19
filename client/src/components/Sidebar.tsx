@@ -176,12 +176,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "admin",
     },
     {
-      title: "مراقب التوحيد الذكي",
-      href: "/unification-monitor",
-      icon: Merge,
-      section: "admin",
-    },
-    {
       title: "شاشة التوحيد المتقدمة",
       href: "/unification-progress",
       icon: BarChart,
