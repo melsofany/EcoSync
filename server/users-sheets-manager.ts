@@ -221,8 +221,28 @@ export class UsersGoogleSheetsManager {
       const rows = response.data.values || [];
       const users: UserData[] = [];
 
-      for (const row of rows) {
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
         if (row[0]) { // فقط إذا كان هناك User ID
+          // تسجيل تفصيلي لكل مستخدم
+          const profileImage = row[6];
+          const role = row[7];
+          const username = row[1];
+          
+          console.log(`👤 المستخدم ${username} (صف ${i + 2}):`);
+          console.log(`   - الدور: ${role || 'غير محدد'}`);
+          console.log(`   - الحالة: ${row[9] === 'TRUE' ? 'نشط' : 'محظور'}`);
+          
+          if (profileImage) {
+            if (profileImage.startsWith('data:image/')) {
+              console.log(`   - صورة: Base64 (${profileImage.length} حرف)`);
+            } else {
+              console.log(`   - صورة: ${profileImage}`);
+            }
+          } else {
+            console.log(`   - صورة: لا توجد`);
+          }
+          
           users.push({
             id: row[0] || '', // A: ID
             username: row[1] || '', // B: USERNAME
@@ -527,6 +547,50 @@ export class UsersGoogleSheetsManager {
     } catch (error) {
       console.error('❌ خطأ في إضافة المستخدم:', error);
       throw error;
+    }
+  }
+
+  // تحديث حالة تفعيل المستخدم (Active/Inactive)
+  async updateUserActiveStatus(userId: string, isActive: boolean): Promise<boolean> {
+    try {
+      const users = await this.getAllUsers();
+      const userIndex = users.findIndex((user: UserSheet) => user.id === userId);
+      
+      if (userIndex === -1) {
+        console.error(`❌ المستخدم ${userId} غير موجود`);
+        return false;
+      }
+
+      const rowIndex = userIndex + 2; // +2 because row 1 is headers and array is 0-indexed
+      const now = new Date().toISOString();
+
+      console.log(`🔄 تحديث حالة المستخدم ${users[userIndex].username} إلى ${isActive ? 'نشط' : 'محظور'}`);
+
+      // تحديث حقل isActive في العمود J
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!J${rowIndex}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[isActive ? 'TRUE' : 'FALSE']]
+        }
+      });
+
+      // تحديث updatedAt في العمود P
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!P${rowIndex}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[now]]
+        }
+      });
+
+      console.log(`✅ تم تحديث حالة المستخدم ${users[userIndex].username} بنجاح`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث حالة تفعيل المستخدم:', (error as Error).message);
+      return false;
     }
   }
 
