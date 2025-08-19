@@ -136,16 +136,18 @@ export default function CreatePurchaseOrder() {
   // When quotation items are loaded, add them to the list
   React.useEffect(() => {
     if (selectedQuotationId && quotationItems && quotationItems.length > 0) {
+      console.log(`📋 تحميل ${quotationItems.length} بند لطلب التسعير ${selectedQuotationId}`);
+      
       const newItems: POItem[] = quotationItems.map((item: any) => ({
         quotationId: selectedQuotationId,
         quotationNumber: selectedQuotation?.customRequestNumber || selectedQuotation?.requestNumber || "",
-        itemId: item.itemId || item.id,
+        itemId: item.itemId || item.item?.id || item.id,
         quotationItemId: item.id,
-        lineItem: item.lineItem,
-        itemNumber: item.itemNumber,
-        partNumber: item.partNumber,
-        description: item.description,
-        unit: item.unit || "Each",
+        lineItem: item.lineItem || item.item?.lineItem,
+        itemNumber: item.itemNumber || item.item?.itemNumber,
+        partNumber: item.partNumber || item.item?.partNumber,
+        description: item.description || item.item?.description,
+        unit: item.unit || item.item?.uom || "Each",
         quantity: 0, // سيتم إدخالها من المستخدم
         unitPrice: 0, // سيتم إدخالها من المستخدم
         totalPrice: 0,
@@ -158,7 +160,10 @@ export default function CreatePurchaseOrder() {
         // تصفية البنود المكررة
         const existingItemIds = prev.map(item => item.itemId);
         const filteredNewItems = newItems.filter(item => !existingItemIds.includes(item.itemId));
-        return [...prev, ...filteredNewItems];
+        const updatedItems = [...prev, ...filteredNewItems];
+        
+        console.log(`✅ تم إضافة ${filteredNewItems.length} بند جديد، الإجمالي: ${updatedItems.length}`);
+        return updatedItems;
       });
     }
   }, [selectedQuotationId, quotationItems, selectedQuotation]);
@@ -425,6 +430,16 @@ export default function CreatePurchaseOrder() {
                 </div>
               )}
             </div>
+
+            {/* عرض حالة التحميل */}
+            {loadingItems && selectedQuotationId && (
+              <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-blue-700">جاري تحميل بنود طلب التسعير...</span>
+                </div>
+              </div>
+            )}
 
             {/* جدول البنود */}
             {poItems.length > 0 && (
