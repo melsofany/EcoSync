@@ -1091,20 +1091,29 @@ ${itemsList}
         const searchValue = item.lineItem || item.itemNumber || '';
         console.log(`🔍 البحث عن البند: ${searchValue}`);
 
-        // قراءة العمود C (LINE ITEM) للعثور على البند
+        // قراءة كل البيانات للعثور على البند والتحقق من وجود PO سابق
         const response = await this.sheets.spreadsheets.values.get({
           spreadsheetId: this.spreadsheetId,
-          range: 'DATA!C:C', // العمود C يحتوي على LINE ITEM
+          range: 'DATA!A:AA', // قراءة كل الأعمدة
         });
 
         const values = response.data.values || [];
         let targetRow = -1;
+        let existingPO = false;
+        let rowData: any[] = [];
 
-        // البحث عن الصف المطابق
+        // البحث عن الصف المطابق والتحقق من وجود PO سابق
         for (let i = 1; i < values.length; i++) { // تخطي الصف الأول (العناوين)
-          if (values[i] && values[i][0] && 
-              (values[i][0].toString().trim() === searchValue.trim())) {
+          if (values[i] && values[i][2] && // العمود C (LINE ITEM)
+              (values[i][2].toString().trim() === searchValue.trim())) {
             targetRow = i + 1; // +1 لأن Google Sheets يبدأ من 1
+            rowData = values[i];
+            
+            // التحقق من وجود PO سابق في العمود K (index 10)
+            if (values[i][10] && values[i][10].toString().trim() !== '') {
+              existingPO = true;
+              console.log(`⚠️ البند ${searchValue} له أمر شراء سابق: ${values[i][10]}`);
+            }
             break;
           }
         }
@@ -1116,44 +1125,124 @@ ${itemsList}
 
         console.log(`✅ تم العثور على البند في الصف ${targetRow}`);
 
-        // تحديث البيانات في الأعمدة K, L, M, N
-        const updates = [
-          {
-            range: `DATA!K${targetRow}`, // رقم أمر الشراء
-            values: [[poData.poNumber]]
-          },
-          {
-            range: `DATA!L${targetRow}`, // تاريخ أمر الشراء
-            values: [[poData.poDate]]
-          },
-          {
-            range: `DATA!M${targetRow}`, // الكمية
-            values: [[item.quantity.toString()]]
-          },
-          {
-            range: `DATA!N${targetRow}`, // السعر
-            values: [[item.unitPrice.toString()]]
-          }
-        ];
-
-        // تحديث كل عمود
-        for (const update of updates) {
-          await this.sheets.spreadsheets.values.update({
-            spreadsheetId: this.spreadsheetId,
-            range: update.range,
-            valueInputOption: 'RAW',
-            resource: {
-              values: update.values
+        // إذا كان هناك أمر شراء سابق، أضف صف جديد
+        if (existingPO) {
+          console.log(`📝 إضافة صف جديد للبند ${searchValue} مع أمر الشراء الجديد`);
+          
+          // نسخ كل البيانات من طلب التسعير
+          const newRowData = [...rowData];
+          // مسح بيانات الكمية (العمود E - index 4)
+          newRowData[4] = '';
+          // إضافة بيانات أمر الشراء الجديد
+          newRowData[10] = poData.poNumber;      // PO Number (K)
+          newRowData[11] = poData.poDate;        // PO Date (L)
+          newRowData[12] = item.quantity.toString();   // PO Quantity (M)
+          newRowData[13] = item.unitPrice.toString();  // PO Price (N)
+          
+          // إدراج الصف الجديد بعد الصف الحالي
+          await this.insertNewRowAfter(targetRow, newRowData);
+          
+          console.log(`✅ تم إضافة صف جديد رقم ${targetRow + 1} مع أمر الشراء ${poData.poNumber}`);
+        } else {
+          // إذا لم يكن هناك أمر شراء سابق، حدث البيانات في نفس الصف
+          console.log(`📝 تحديث بيانات أمر الشراء في الصف ${targetRow}`);
+          
+          // تحديث البيانات في الأعمدة K, L, M, N
+          const updates = [
+            {
+              range: `DATA!K${targetRow}`, // رقم أمر الشراء
+              values: [[poData.poNumber]]
+            },
+            {
+              range: `DATA!L${targetRow}`, // تاريخ أمر الشراء
+              values: [[poData.poDate]]
+            },
+            {
+              range: `DATA!M${targetRow}`, // الكمية
+              values: [[item.quantity.toString()]]
+            },
+            {
+              range: `DATA!N${targetRow}`, // السعر
+              values: [[item.unitPrice.toString()]]
             }
-          });
-        }
+          ];
 
-        console.log(`✅ تم حفظ بيانات البند ${searchValue} في الصف ${targetRow}`);
+          // تحديث كل عمود
+          for (const update of updates) {
+            await this.sheets.spreadsheets.values.update({
+              spreadsheetId: this.spreadsheetId,
+              range: update.range,
+              valueInputOption: 'RAW',
+              resource: {
+                values: update.values
+              }
+            });
+          }
+
+          console.log(`✅ تم حفظ بيانات البند ${searchValue} في الصف ${targetRow}`);
+        }
       }
 
       console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber} بنجاح`);
     } catch (error) {
       console.error('❌ خطأ في حفظ أمر الشراء:', (error as Error).message);
+      throw error;
+    }
+  }
+
+  /**
+   * إدراج صف جديد بعد صف معين
+   */
+  private async insertNewRowAfter(afterRow: number, rowData: any[]): Promise<void> {
+    try {
+      // أولاً، احصل على معرف الورقة
+      const spreadsheet = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId
+      });
+      
+      const dataSheet = spreadsheet.data.sheets.find((sheet: any) => 
+        sheet.properties.title === 'DATA'
+      );
+      
+      if (!dataSheet) {
+        throw new Error('لم يتم العثور على ورقة DATA');
+      }
+      
+      const sheetId = dataSheet.properties.sheetId;
+      
+      // إدراج صف فارغ جديد
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: this.spreadsheetId,
+        resource: {
+          requests: [{
+            insertDimension: {
+              range: {
+                sheetId: sheetId,
+                dimension: 'ROWS',
+                startIndex: afterRow, // إدراج بعد هذا الصف (0-based)
+                endIndex: afterRow + 1
+              }
+            }
+          }]
+        }
+      });
+      
+      console.log(`✅ تم إدراج صف فارغ بعد الصف ${afterRow}`);
+      
+      // إضافة البيانات في الصف الجديد
+      const newRowNumber = afterRow + 1;
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `DATA!A${newRowNumber}:AA${newRowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [rowData]
+        }
+      });
+      
+      console.log(`✅ تم ملء البيانات في الصف الجديد ${newRowNumber}`);
+    } catch (error) {
+      console.error('❌ خطأ في إدراج صف جديد:', error);
       throw error;
     }
   }
