@@ -194,12 +194,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "voice_control",
     },
     {
-      title: "استرداد البيانات",
-      href: "/data-recovery",
-      icon: Download,
-      section: "admin",
-    },
-    {
       title: "حفظ قاعدة البيانات",
       href: "/database-storage",
       icon: Database,

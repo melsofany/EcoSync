@@ -5722,10 +5722,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // Import and register data recovery routes
-  const dataRecoveryRoutes = await import('./routes/data-recovery.js');
-  app.use('/api/data-recovery', dataRecoveryRoutes.default);
-  
   const linkingAnalysisRoutes = await import('./routes/linking-analysis.js');
   app.use('/api/linking', linkingAnalysisRoutes.default);
   
