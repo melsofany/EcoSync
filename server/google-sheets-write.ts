@@ -1102,19 +1102,39 @@ ${itemsList}
         let existingPO = false;
         let rowData: any[] = [];
 
-        // البحث عن الصف المطابق والتحقق من وجود PO سابق
+        // البحث عن كل الصفوف المطابقة للبند
+        let lastMatchingRow = -1;
+        let firstMatchingRow = -1;
+        let poCount = 0;
+        
         for (let i = 1; i < values.length; i++) { // تخطي الصف الأول (العناوين)
           if (values[i] && values[i][2] && // العمود C (LINE ITEM)
               (values[i][2].toString().trim() === searchValue.trim())) {
-            targetRow = i + 1; // +1 لأن Google Sheets يبدأ من 1
-            rowData = values[i];
             
-            // التحقق من وجود PO سابق في العمود K (index 10)
+            // تسجيل أول صف مطابق
+            if (firstMatchingRow === -1) {
+              firstMatchingRow = i + 1; // +1 لأن Google Sheets يبدأ من 1
+              rowData = values[i]; // حفظ بيانات أول صف للنسخ
+            }
+            
+            // تحديث آخر صف مطابق
+            lastMatchingRow = i + 1;
+            
+            // التحقق من وجود PO في هذا الصف
             if (values[i][10] && values[i][10].toString().trim() !== '') {
               existingPO = true;
-              console.log(`⚠️ البند ${searchValue} له أمر شراء سابق: ${values[i][10]}`);
+              poCount++;
+              console.log(`📋 البند ${searchValue} - أمر شراء #${poCount}: ${values[i][10]} في الصف ${i + 1}`);
             }
-            break;
+          }
+        }
+        
+        // استخدام آخر صف مطابق إذا وجدت تكرارات
+        if (lastMatchingRow !== -1) {
+          targetRow = existingPO ? lastMatchingRow : firstMatchingRow;
+          console.log(`✅ تم العثور على ${poCount > 0 ? poCount : 'صف واحد من'} البند ${searchValue}`);
+          if (existingPO) {
+            console.log(`📍 سيتم إضافة الصف الجديد بعد الصف ${lastMatchingRow} (آخر تكرار)`);
           }
         }
 
