@@ -28,7 +28,8 @@ export class GoogleSheetsWriter {
   private spreadsheetId: string;
 
   constructor() {
-    this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '';
+    // استخدام معرف Google Sheets المباشر
+    this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1rwRsOQgG7Mb84R9JiMKVqaLa8kUsoAYg4WGPJdQWLJU';
   }
 
   async initialize() {
@@ -1059,12 +1060,22 @@ ${itemsList}
     }>;
   }): Promise<void> {
     try {
-      if (!this.sheets) {
-        await this.initialize();
+      // التأكد من التهيئة
+      if (!this.sheets || !this.spreadsheetId) {
+        console.log('🔄 إعادة تهيئة Google Sheets...');
+        const initialized = await this.initialize();
+        if (!initialized) {
+          throw new Error('فشل في تهيئة Google Sheets');
+        }
       }
 
+      // التحقق مرة أخرى
       if (!this.sheets) {
-        throw new Error('فشل في تهيئة Google Sheets');
+        throw new Error('لا يمكن الوصول إلى Google Sheets API');
+      }
+
+      if (!this.spreadsheetId) {
+        throw new Error('معرف Google Sheets غير محدد. تأكد من وجود GOOGLE_SHEETS_ID في متغيرات البيئة');
       }
 
       console.log(`📝 حفظ أمر الشراء ${poData.poNumber} في Google Sheets`);
