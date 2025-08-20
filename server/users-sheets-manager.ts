@@ -302,6 +302,50 @@ export class UsersGoogleSheetsManager {
     }
   }
 
+  // البحث عن مستخدم باستخدام رمز إعادة التعيين
+  async findUserByResetToken(token: string): Promise<UserData | null> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'USERS!A2:R1000' // نضيف الأعمدة Q و R للرمز وتاريخ انتهاء الصلاحية
+      });
+
+      const rows = response.data.values || [];
+      
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (row[16] === token) { // العمود Q (index 16) للرمز
+          const tokenExpiry = row[17]; // العمود R (index 17) لتاريخ انتهاء الصلاحية
+          
+          // التحقق من أن الرمز لم ينته
+          if (tokenExpiry && new Date(tokenExpiry) > new Date()) {
+            return {
+              id: row[0] || '',
+              username: row[1] || '',
+              fullName: row[3] || '',
+              email: row[4] || '',
+              password: row[2] || '',
+              phone: row[5] || '',
+              role: row[7] || 'data_entry',
+              permissions: row[8] ? row[8].split(',').map((p: string) => p.trim()) : [],
+              isActive: row[9] === 'TRUE',
+              canAccessBot: row[10] === 'TRUE',
+              lastLogin: row[11] || '',
+              createdAt: row[14] || new Date().toISOString(),
+              updatedAt: row[15] || new Date().toISOString(),
+              profileImage: row[6] || ''
+            };
+          }
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ خطأ في البحث عن مستخدم بالرمز:', error);
+      return null;
+    }
+  }
+
   // إضافة مستخدم جديد
   async createUser(userData: Partial<UserData>): Promise<UserData> {
     try {
@@ -694,6 +738,105 @@ export class UsersGoogleSheetsManager {
       return true;
     } catch (error) {
       console.error('❌ خطأ في ربط معرف التليجرام:', error);
+      return false;
+    }
+  }
+
+  // تحديث كلمة المرور
+  async updatePassword(username: string, hashedPassword: string): Promise<boolean> {
+    try {
+      console.log(`🔐 تحديث كلمة المرور للمستخدم ${username}...`);
+      
+      const users = await this.getAllUsers();
+      const userIndex = users.findIndex(user => user.username.trim() === username.trim());
+      
+      if (userIndex === -1) {
+        console.log(`❌ المستخدم ${username} غير موجود`);
+        return false;
+      }
+
+      const rowNumber = userIndex + 2; // +2 لأن الصف الأول عناوين والصفوف تبدأ من 1
+      
+      // تحديث كلمة المرور في العمود C (index 2)
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!C${rowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[hashedPassword]]
+        }
+      });
+
+      // تحديث وقت التعديل
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!P${rowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[new Date().toISOString()]]
+        }
+      });
+
+      console.log(`✅ تم تحديث كلمة المرور للمستخدم ${username} بنجاح`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث كلمة المرور:', error);
+      return false;
+    }
+  }
+
+  // تحديث رمز إعادة تعيين كلمة المرور
+  async updateUser(username: string, updates: { resetToken?: string; resetTokenExpiry?: string }): Promise<boolean> {
+    try {
+      console.log(`💾 تحديث بيانات المستخدم ${username}...`);
+      
+      const users = await this.getAllUsers();
+      const userIndex = users.findIndex(user => user.username.trim() === username.trim());
+      
+      if (userIndex === -1) {
+        console.log(`❌ المستخدم ${username} غير موجود`);
+        return false;
+      }
+
+      const rowNumber = userIndex + 2; // +2 لأن الصف الأول عناوين والصفوف تبدأ من 1
+      
+      // استخدام العمود Q للرمز (RESET_TOKEN) والعمود R لوقت انتهاء الصلاحية (RESET_TOKEN_EXPIRY)
+      if (updates.resetToken !== undefined) {
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `USERS!Q${rowNumber}`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [[updates.resetToken || '']]
+          }
+        });
+      }
+      
+      if (updates.resetTokenExpiry !== undefined) {
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `USERS!R${rowNumber}`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [[updates.resetTokenExpiry || '']]
+          }
+        });
+      }
+
+      // تحديث وقت التعديل
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!P${rowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[new Date().toISOString()]]
+        }
+      });
+
+      console.log(`✅ تم تحديث بيانات المستخدم ${username} بنجاح`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث بيانات المستخدم:', error);
       return false;
     }
   }

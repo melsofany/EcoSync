@@ -20,6 +20,14 @@ import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 import { GoogleSheetsRealtimeData, googleSheetsRealtimeData } from "./google-sheets-realtime-data";
 import { GoogleSheetsWriter } from "./google-sheets-write";
 import { updateUserFullName, updateAhmedYoussefName } from "./update-user-fullname";
+import { 
+  generateResetToken, 
+  generateTokenExpiry, 
+  sendPasswordResetEmail, 
+  saveResetToken, 
+  verifyResetToken,
+  clearResetToken 
+} from "./password-reset-service";
 
 // استخدام الـ instance المُصدر من google-sheets-realtime-data.ts
 const googleSheetsRealTimeData = googleSheetsRealtimeData;
@@ -1079,6 +1087,197 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("خطأ في تسجيل الخروج:", error);
       res.status(500).json({ message: "خطأ داخلي في الخادم" });
+    }
+  });
+
+  // نظام إعادة تعيين كلمة المرور
+  // 1. طلب إعادة تعيين كلمة المرور - إرسال البريد الإلكتروني
+  app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ 
+          success: false,
+          message: "اسم المستخدم مطلوب" 
+        });
+      }
+      
+      console.log(`🔐 طلب إعادة تعيين كلمة المرور للمستخدم: ${username}`);
+      
+      // البحث عن المستخدم
+      let user = await userSheetsManager.getUserByUsername(username);
+      
+      if (!user) {
+        // محاولة البحث في مدير المستخدمين الآخر
+        const usersData = await usersGoogleSheetsManager.getAllUsers();
+        user = usersData.find(u => u.username === username && u.isActive);
+      }
+      
+      if (!user || !user.email) {
+        // لا نكشف ما إذا كان المستخدم موجوداً أم لا لأسباب أمنية
+        return res.json({ 
+          success: true,
+          message: "إذا كان البريد الإلكتروني مسجلاً، سيتم إرسال تعليمات إعادة التعيين" 
+        });
+      }
+      
+      // إنشاء رمز إعادة التعيين
+      const resetToken = generateResetToken();
+      const tokenExpiry = generateTokenExpiry();
+      
+      // حفظ الرمز في Google Sheets
+      const saved = await saveResetToken(username, resetToken, tokenExpiry);
+      
+      if (!saved) {
+        console.error('❌ فشل حفظ رمز إعادة التعيين');
+        return res.status(500).json({ 
+          success: false,
+          message: "حدث خطأ في النظام. يرجى المحاولة مرة أخرى" 
+        });
+      }
+      
+      // إنشاء رابط إعادة التعيين
+      const resetLink = `${req.protocol}://${req.get('host')}/reset-password?token=${resetToken}`;
+      
+      // عرض رابط إعادة التعيين في وحدة التحكم للتطوير
+      console.log('🔗 رابط إعادة تعيين كلمة المرور:');
+      console.log(`   ${resetLink}`);
+      console.log('⏰ صالح لمدة ساعة واحدة');
+      
+      // إرسال البريد الإلكتروني
+      const emailSent = await sendPasswordResetEmail(user.email, resetLink, user.fullName || username);
+      
+      if (!emailSent) {
+        console.log('⚠️ لم يتم إرسال البريد الإلكتروني - استخدم الرابط من وحدة التحكم');
+        // في بيئة التطوير، نعتبر هذا نجاحاً مع عرض رابط في وحدة التحكم
+        if (process.env.NODE_ENV === 'development') {
+          return res.json({ 
+            success: true,
+            message: "تم إنشاء رابط إعادة التعيين - تحقق من وحدة التحكم",
+            resetLink: resetLink // إرسال الرابط في بيئة التطوير فقط
+          });
+        }
+        return res.status(500).json({ 
+          success: false,
+          message: "حدث خطأ في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى" 
+        });
+      }
+      
+      console.log('✅ تم إرسال بريد إعادة التعيين بنجاح');
+      res.json({ 
+        success: true,
+        message: "تم إرسال تعليمات إعادة تعيين كلمة المرور إلى بريدك الإلكتروني" 
+      });
+      
+    } catch (error) {
+      console.error("خطأ في طلب إعادة تعيين كلمة المرور:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "خطأ داخلي في الخادم" 
+      });
+    }
+  });
+
+  // 2. التحقق من رمز إعادة التعيين
+  app.get("/api/auth/verify-reset-token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ 
+          success: false,
+          message: "رمز إعادة التعيين مطلوب" 
+        });
+      }
+      
+      console.log('🔍 التحقق من رمز إعادة التعيين');
+      
+      const result = await verifyResetToken(token);
+      
+      if (!result.valid) {
+        return res.status(400).json({ 
+          success: false,
+          message: "رمز إعادة التعيين غير صالح أو منتهي الصلاحية" 
+        });
+      }
+      
+      res.json({ 
+        success: true,
+        message: "رمز إعادة التعيين صالح",
+        username: result.username 
+      });
+      
+    } catch (error) {
+      console.error("خطأ في التحقق من رمز إعادة التعيين:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "خطأ داخلي في الخادم" 
+      });
+    }
+  });
+
+  // 3. إعادة تعيين كلمة المرور بالرمز
+  app.post("/api/auth/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ 
+          success: false,
+          message: "الرمز وكلمة المرور الجديدة مطلوبان" 
+        });
+      }
+      
+      // التحقق من قوة كلمة المرور
+      if (newPassword.length < 6) {
+        return res.status(400).json({ 
+          success: false,
+          message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" 
+        });
+      }
+      
+      console.log('🔐 إعادة تعيين كلمة المرور');
+      
+      // التحقق من الرمز
+      const result = await verifyResetToken(token);
+      
+      if (!result.valid || !result.username) {
+        return res.status(400).json({ 
+          success: false,
+          message: "رمز إعادة التعيين غير صالح أو منتهي الصلاحية" 
+        });
+      }
+      
+      // تشفير كلمة المرور الجديدة
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // تحديث كلمة المرور في Google Sheets
+      const updateSuccess = await usersGoogleSheetsManager.updatePassword(result.username, hashedPassword);
+      
+      if (!updateSuccess) {
+        console.error('❌ فشل تحديث كلمة المرور');
+        return res.status(500).json({ 
+          success: false,
+          message: "فشل في تحديث كلمة المرور" 
+        });
+      }
+      
+      // مسح رمز إعادة التعيين
+      await clearResetToken(result.username);
+      
+      console.log('✅ تم إعادة تعيين كلمة المرور بنجاح');
+      res.json({ 
+        success: true,
+        message: "تم تحديث كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة" 
+      });
+      
+    } catch (error) {
+      console.error("خطأ في إعادة تعيين كلمة المرور:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "خطأ داخلي في الخادم" 
+      });
     }
   });
 
