@@ -5,7 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Login from "@/pages/Login";
-import ResetPassword from "@/pages/ResetPassword";
+import { ForgotPassword } from "@/pages/ForgotPassword";
+import { ResetPassword } from "@/pages/ResetPassword";
 import ChangePassword from "@/pages/ChangePassword";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
@@ -51,6 +52,7 @@ function Router() {
   if (!user) {
     return (
       <Switch>
+        <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/" component={Login} />
         <Route component={Login} />
