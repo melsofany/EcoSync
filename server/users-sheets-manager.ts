@@ -1047,7 +1047,7 @@ export class UsersGoogleSheetsManager {
   }
 
   // إضافة مستخدم تليجرام في ورقة BOT_USERS المنفصلة
-  async addTelegramBotUser(telegramUserId: string, userData?: {
+  async addTelegramUser(telegramUserId: string, userData?: {
     firstName?: string;
     lastName?: string;
     phone?: string;
