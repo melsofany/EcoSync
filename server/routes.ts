@@ -259,6 +259,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database with default data
   await initializeDatabase();
   
+  // إعادة تعيين كلمة المرور للمستخدم admin عند بدء التشغيل
+  setTimeout(async () => {
+    try {
+      await userSheetsManager.resetAdminPassword();
+      console.log('✅ تم التحقق من كلمة مرور المستخدم admin');
+    } catch (error) {
+      console.error('❌ خطأ في التحقق من كلمة مرور admin:', error);
+    }
+  }, 2000); // انتظار ثانيتين لضمان تهيئة Google Sheets
+  
   // تحديث رؤوس ورقة تسعير الموردين مع الحقول الجديدة (بعد تهيئة Google Sheets)
   setTimeout(async () => {
     try {

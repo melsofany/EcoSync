@@ -313,6 +313,87 @@ export class UserSheetsManager {
     return users.find(user => user.id === id);
   }
 
+  // إعادة تعيين كلمة المرور للمستخدم admin
+  async resetAdminPassword(): Promise<boolean> {
+    if (!this.isInitialized) {
+      const initialized = await this.initialize();
+      if (!initialized) return false;
+    }
+
+    try {
+      // الحصول على جميع المستخدمين
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'USERS!A2:P1000'
+      });
+
+      const rows = response.data.values || [];
+      
+      // البحث عن صف المستخدم admin
+      let adminRowIndex = -1;
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i][1] === 'admin') {
+          adminRowIndex = i + 2; // +2 لأن الصفوف تبدأ من 1 والعناوين في الصف 1
+          break;
+        }
+      }
+
+      if (adminRowIndex === -1) {
+        console.log('⚠️ لم يتم العثور على المستخدم admin، سيتم إنشاؤه...');
+        // إنشاء المستخدم admin إذا لم يكن موجوداً
+        const hashedPassword = '$2b$10$CwTycUXWue0Thq9StjUM0urJmfnJ2uqLyss1aj6tbbNc8hfGv8uh.'; // admin123
+        const newAdmin = [
+          'admin-001',
+          'admin',
+          hashedPassword,
+          'مدير النظام',
+          'admin@qurtoba.com',
+          '',
+          '',
+          'manager',
+          '',
+          'TRUE',
+          'FALSE',
+          '',
+          '',
+          '',
+          new Date().toISOString(),
+          new Date().toISOString()
+        ];
+        
+        await this.sheets.spreadsheets.values.append({
+          spreadsheetId: this.spreadsheetId,
+          range: 'USERS!A2:P2',
+          valueInputOption: 'RAW',
+          resource: {
+            values: [newAdmin]
+          }
+        });
+        
+        console.log('✅ تم إنشاء المستخدم admin بكلمة المرور admin123');
+        return true;
+      }
+
+      // تحديث كلمة المرور للمستخدم admin
+      const hashedPassword = '$2b$10$CwTycUXWue0Thq9StjUM0urJmfnJ2uqLyss1aj6tbbNc8hfGv8uh.'; // admin123
+      
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!C${adminRowIndex}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[hashedPassword]]
+        }
+      });
+
+      console.log(`✅ تم إعادة تعيين كلمة المرور للمستخدم admin إلى admin123`);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في إعادة تعيين كلمة المرور:', (error as Error).message);
+      return false;
+    }
+  }
+
   // تحديث حالة الاتصال للمستخدم
   async updateUserOnlineStatus(userId: string, isOnline: boolean, ipAddress?: string): Promise<boolean> {
     if (!this.isInitialized) {
