@@ -93,10 +93,21 @@ export const hasRole = (user: User | null, roles: string[]): boolean => {
 };
 
 export const canAccessSection = (user: User | null, section: string): boolean => {
-  if (!user) return false;
+  if (!user) {
+    console.log(`❌ canAccessSection: لا يوجد مستخدم للقسم ${section}`);
+    return false;
+  }
+  
+  console.log(`🔍 canAccessSection للقسم ${section}:`, {
+    username: user.username,
+    role: user.role?.substring(0, 50) + (user.role?.length > 50 ? '...' : '')
+  });
   
   // استخدام النظام الجديد للصلاحيات
-  return canUserAccessSection(user, section);
+  const result = canUserAccessSection(user, section);
+  console.log(`📌 نتيجة القسم ${section}: ${result ? '✅ مسموح' : '❌ ممنوع'}`);
+  
+  return result;
 };
 
 // دالة جديدة للتحقق من صلاحية عملية معينة

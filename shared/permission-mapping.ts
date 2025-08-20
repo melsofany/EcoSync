@@ -84,6 +84,8 @@ export const PERMISSION_ID_MAPPING: Record<string, string> = {
 export function convertNumberedPermissions(numberedPermissions: string[]): string[] {
   const actualPermissions: string[] = [];
   
+  console.log('🔄 بدء تحويل الصلاحيات:', numberedPermissions.length);
+  
   for (const perm of numberedPermissions) {
     // إزالة المسافات وعلامات الاقتباس الزائدة
     const cleanPerm = perm.trim().replace(/['"]/g, '');
@@ -91,8 +93,12 @@ export function convertNumberedPermissions(numberedPermissions: string[]): strin
     
     if (mappedPermission) {
       actualPermissions.push(mappedPermission);
+    } else {
+      console.log(`⚠️ صلاحية غير معرفة: ${cleanPerm}`);
     }
   }
+  
+  console.log('✅ نتيجة التحويل:', actualPermissions.length, 'صلاحية من أصل', numberedPermissions.length);
   
   return actualPermissions;
 }

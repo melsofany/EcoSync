@@ -64,6 +64,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       fullName: user.fullName,
       role: user.role
     });
+    
+    // اختبار التحويل مباشرة
+    if (user.role && user.role.includes('perm-')) {
+      const testPerms = user.role.split(',').map(p => p.trim());
+      console.log('🔥 اختبار: وجدت', testPerms.length, 'صلاحية');
+      console.log('🔥 أول 3 صلاحيات:', testPerms.slice(0, 3));
+    }
   }
 
   const toggleExpanded = (section: string) => {
@@ -265,7 +272,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-3 lg:p-4 space-y-2 lg:space-y-3 overflow-y-auto">
           {menuItems.map((item) => {
-            if (!canAccessSection(user || { role: 'user', permissions: {} }, item.section)) {
+            const hasAccess = canAccessSection(user, item.section);
+            console.log(`📊 Sidebar - ${item.section}: ${hasAccess ? '✅' : '❌'}`);
+            if (!hasAccess) {
               return null;
             }
 
