@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/useAuth';
 
 interface User {
   id: string;
@@ -67,6 +68,7 @@ interface Permission {
 
 export default function SimpleUserPermissions() {
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -244,9 +246,20 @@ export default function SimpleUserPermissions() {
       queryClient.invalidateQueries({ queryKey: ['/api/sheets-users'] });
     },
     onError: (error: any) => {
+      // معالجة خاصة لأخطاء محددة
+      let errorMessage = "فشل في حذف المستخدم";
+      
+      if (error.message?.includes("حسابك الخاص")) {
+        errorMessage = "لا يمكنك حذف حسابك الخاص";
+      } else if (error.message?.includes("admin")) {
+        errorMessage = "لا يمكن حذف مستخدم admin الأساسي";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
-        title: "خطأ",
-        description: error.message || "فشل في حذف المستخدم",
+        title: "خطأ في الحذف",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -621,7 +634,13 @@ export default function SimpleUserPermissions() {
                       
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-red-600 hover:text-red-700"
+                            disabled={user.username === currentUser?.username || user.username === 'admin'}
+                            title={user.username === currentUser?.username ? "لا يمكنك حذف حسابك الخاص" : user.username === 'admin' ? "لا يمكن حذف مستخدم admin" : "حذف المستخدم"}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
