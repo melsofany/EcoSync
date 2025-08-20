@@ -546,7 +546,7 @@ export default function Admin() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {Array.isArray(activities) && activities.length > 0 ? (
+          {activities && activities.length > 0 ? (
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {activities.slice(0, 10).map((activity: any) => (
                 <div key={activity.id} className="flex items-start space-x-3 space-x-reverse p-3 bg-gray-50 rounded-lg">
