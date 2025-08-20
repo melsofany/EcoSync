@@ -6153,14 +6153,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // Real-time sync endpoints for Google Sheets
+  const { getSyncManager } = await import('./real-time-sync-manager');
+  const syncManager = getSyncManager(storage);
+  
+  // بدء المزامنة التلقائية عند تشغيل السيرفر
+  syncManager.startRealTimeSync();
+  
   app.post("/api/sync/items", async (req, res) => {
     try {
       console.log('🔄 طلب مزامنة فورية للأصناف من Google Sheets');
-      res.json({ 
-        success: true, 
-        message: 'تم طلب مزامنة الأصناف من Google Sheets' 
-      });
-    } catch (error) {
+      const result = await syncManager.syncItems();
+      res.json(result);
+    } catch (error: any) {
       res.status(500).json({ 
         success: false, 
         message: 'خطأ في المزامنة: ' + error.message 
@@ -6171,11 +6175,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   app.post("/api/sync/all", async (req, res) => {
     try {
       console.log('🔄 طلب مزامنة شاملة من Google Sheets');
-      res.json({ 
-        success: true, 
-        message: 'تم طلب المزامنة الشاملة من Google Sheets' 
-      });
-    } catch (error) {
+      const result = await syncManager.syncAll();
+      res.json(result);
+    } catch (error: any) {
       res.status(500).json({ 
         success: false, 
         message: 'خطأ في المزامنة: ' + error.message 
@@ -6184,13 +6186,44 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   app.get("/api/sync/status", (req, res) => {
+    const status = syncManager.getStatus();
     res.json({
       success: true,
-      syncActive: true,
-      interval: '10 seconds',
-      lastSync: new Date().toISOString(),
-      message: 'المزامنة الفورية نشطة'
+      syncActive: status.active,
+      interval: `${status.interval / 1000} seconds`,
+      lastSync: status.lastSync?.toISOString() || null,
+      formattedLastSync: status.formattedLastSync || 'لم تتم المزامنة بعد',
+      itemsSynced: status.itemsSynced,
+      errors: status.errors,
+      message: status.active ? 'المزامنة الفورية نشطة' : 'المزامنة متوقفة'
     });
+  });
+  
+  app.post("/api/sync/toggle", async (req, res) => {
+    try {
+      const status = syncManager.getStatus();
+      
+      if (status.active) {
+        syncManager.stopRealTimeSync();
+        res.json({
+          success: true,
+          active: false,
+          message: 'تم إيقاف المزامنة الفورية'
+        });
+      } else {
+        const started = await syncManager.startRealTimeSync();
+        res.json({
+          success: started,
+          active: started,
+          message: started ? 'تم تفعيل المزامنة الفورية' : 'فشل تفعيل المزامنة'
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في تبديل المزامنة: ' + error.message
+      });
+    }
   });
 
   const httpServer = createServer(app);
