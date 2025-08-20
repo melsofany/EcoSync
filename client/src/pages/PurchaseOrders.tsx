@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Eye, Printer, Truck, Clock, CheckCircle, DollarSign, Edit, Trash2 } from "lucide-react";
+import { Plus, Eye, Printer, Truck, Clock, CheckCircle, DollarSign, Edit, Trash2, Search } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -162,6 +162,7 @@ export default function PurchaseOrders() {
   const [editingPO, setEditingPO] = useState<any>(null);
   const [isEditItemsModalOpen, setIsEditItemsModalOpen] = useState(false);
   const [editingItemsPO, setEditingItemsPO] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -805,6 +806,19 @@ export default function PurchaseOrders() {
       {/* Purchase Orders Table */}
       <Card>
         <CardContent className="p-0">
+          {/* Search Bar */}
+          <div className="p-4 border-b">
+            <div className="relative max-w-md">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                placeholder="ابحث برقم الأمر أو رقم طلب التسعير..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pr-10 pl-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -821,8 +835,31 @@ export default function PurchaseOrders() {
               <TableBody>
                 {/* عرض البيانات الحقيقية من Google Sheets إذا كانت متوفرة */}
                 {googleSheetsData?.purchaseOrders && googleSheetsData.purchaseOrders.length > 0 ? (
-                  googleSheetsData.purchaseOrders.map((po: any, index: number) => (
-                    <TableRow key={`gs-${index}`} className="hover:bg-gray-50">
+                  (() => {
+                    const filteredPOs = googleSheetsData.purchaseOrders.filter((po: any) => {
+                      // التصفية بناءً على البحث
+                      if (!searchQuery) return true;
+                      const search = searchQuery.toLowerCase();
+                      return (
+                        po.poNumber?.toLowerCase().includes(search) ||
+                        po.quotationNumber?.toLowerCase().includes(search) ||
+                        po.orderDate?.toLowerCase().includes(search) ||
+                        po.status?.toLowerCase().includes(search)
+                      );
+                    });
+                    
+                    if (filteredPOs.length === 0 && searchQuery) {
+                      return (
+                        <TableRow>
+                          <TableCell colSpan={isManager ? 7 : 6} className="text-center py-8 text-gray-500">
+                            لم يتم العثور على أوامر شراء تطابق "{searchQuery}"
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+                    
+                    return filteredPOs.map((po: any, index: number) => (
+                      <TableRow key={`gs-${index}`} className="hover:bg-gray-50">
                       <TableCell className="font-medium text-blue-600">{po.poNumber}</TableCell>
                       <TableCell className="text-blue-600 font-mono">
                         {po.quotationNumber || 'غير محدد'}
@@ -888,7 +925,8 @@ export default function PurchaseOrders() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
+                    ));
+                  })()
                 ) : !purchaseOrders || purchaseOrders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={isManager ? 7 : 6} className="text-center py-8 text-gray-500">
@@ -896,7 +934,19 @@ export default function PurchaseOrders() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  purchaseOrders.map((po: any) => (
+                  purchaseOrders
+                    ?.filter((po: any) => {
+                      // التصفية بناءً على البحث
+                      if (!searchQuery) return true;
+                      const search = searchQuery.toLowerCase();
+                      return (
+                        po.poNumber?.toLowerCase().includes(search) ||
+                        po.quotationNumber?.toLowerCase().includes(search) ||
+                        po.orderDate?.toLowerCase().includes(search) ||
+                        po.status?.toLowerCase().includes(search)
+                      );
+                    })
+                    ?.map((po: any) => (
                     <TableRow key={po.id} className="hover:bg-gray-50">
                       <TableCell className="font-medium">{po.poNumber}</TableCell>
                       <TableCell className="text-blue-600">
