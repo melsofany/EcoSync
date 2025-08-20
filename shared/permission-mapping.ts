@@ -147,7 +147,12 @@ export function canUserAccessSection(user: any, section: string): boolean {
       customer_pricing: ["manager", "accounting"],
       "purchase-orders": ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
       reports: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
+      analytics: ["manager", "it_admin", "accounting"],
+      settings: ["manager", "it_admin"],
+      import: ["it_admin"],
+      activity: ["manager", "it_admin"],
       admin: ["manager", "it_admin"],
+      voice_control: ["manager", "it_admin"]
     };
     
     const allowedRoles = traditionalRoles[section];
@@ -157,21 +162,20 @@ export function canUserAccessSection(user: any, section: string): boolean {
   // للصلاحيات المفصلة
   const sectionPermissionMap: Record<string, string[]> = {
     dashboard: ['dashboard'],
-    quotations: ['quotations.view'],
-    items: ['items.view'],
-    clients: ['clients.view'],
-    suppliers: ['suppliers.view'],
-    supplier_pricing: ['supplierPricing.view'],
-    customer_pricing: ['customerPricing.view'],
-    'purchase-orders': ['purchaseOrders.view'],
-    reports: ['reports.view'],
-    analytics: ['analytics.view'],
-    admin: ['admin.userManagement', 'admin.systemSettings', 'admin.backupRestore'],
+    quotations: ['quotations.view', 'quotations.create', 'quotations.edit', 'quotations.delete'],
+    items: ['items.view', 'items.create', 'items.edit', 'items.delete'],
+    clients: ['clients.view', 'clients.create', 'clients.edit', 'clients.delete'],
+    suppliers: ['suppliers.view', 'suppliers.create', 'suppliers.edit', 'suppliers.delete'],
+    supplier_pricing: ['supplierPricing.view', 'supplierPricing.create', 'supplierPricing.edit', 'supplierPricing.delete'],
+    customer_pricing: ['customerPricing.view', 'customerPricing.create', 'customerPricing.edit', 'customerPricing.delete'],
+    'purchase-orders': ['purchaseOrders.view', 'purchaseOrders.create', 'purchaseOrders.edit', 'purchaseOrders.delete'],
+    reports: ['reports.view', 'reports.export'],
+    analytics: ['analytics.view', 'analytics.export'],
+    settings: ['settings.view', 'settings.edit'],
     import: ['import.quotations', 'import.items', 'import.purchaseOrders'],
-    activity: ['activity.view'],
-    telegram: ['telegram.bot'],
-    unification: ['data.unification'],
-    voice: ['voice.control']
+    activity: ['activity.view', 'activity.export'],
+    admin: ['admin.userManagement', 'admin.systemSettings', 'admin.backupRestore', 'admin.telegram', 'admin.dataUnification'],
+    voice_control: ['voice.control', 'voice.settings']
   };
   
   const requiredPermissions = sectionPermissionMap[section];
