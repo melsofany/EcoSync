@@ -708,12 +708,30 @@ export class GoogleSheetsRealtimeData {
         notes: row[24] || '',
         status: row[25] || 'جديد',
         employeeName: row[26] || ''
-      })).filter((item: any) => 
-        item.itemNumber && // البند يجب أن يحتوي على رقم
-        item.status !== "مُسعّر" && // عدم إظهار البنود المُسعّرة
-        item.status !== "مكتمل" && // عدم إظهار البنود المكتملة
-        item.status !== "منتهي" // عدم إظهار البنود المنتهية
-      );
+      })).filter((item: any) => {
+        // التحقق من وجود رقم البند
+        if (!item.itemNumber) return false;
+        
+        // التحقق من الحالة
+        if (item.status === "مُسعّر" || item.status === "مكتمل" || item.status === "منتهي") {
+          return false;
+        }
+        
+        // التحقق من تاريخ الانتهاء
+        if (item.expiryDate) {
+          const expiryDate = new Date(item.expiryDate);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // إذا انتهى تاريخ الصلاحية، لا نعرض البند
+          if (expiryDate < today) {
+            console.log(`⏰ إخفاء البند ${item.itemNumber} - انتهى في ${item.expiryDate}`);
+            return false;
+          }
+        }
+        
+        return true;
+      });
 
       return items;
     } catch (error) {
@@ -761,12 +779,30 @@ export class GoogleSheetsRealtimeData {
         notes: row[14] || '',
         status: row[15] || 'في انتظار تسعير الموردين',
         lineItem: '' // سيتم ملؤه من صفحة DATA
-      })).filter((item: any) => 
-        item.itemNumber && // البند يجب أن يحتوي على رقم
-        item.status !== "مُسعّر" && // عدم إظهار البنود المُسعّرة
-        item.status !== "مكتمل" && // عدم إظهار البنود المكتملة
-        item.status !== "منتهي" // عدم إظهار البنود المنتهية
-      );
+      })).filter((item: any) => {
+        // التحقق من وجود رقم البند
+        if (!item.itemNumber) return false;
+        
+        // التحقق من الحالة
+        if (item.status === "مُسعّر" || item.status === "مكتمل" || item.status === "منتهي") {
+          return false;
+        }
+        
+        // التحقق من تاريخ الانتهاء
+        if (item.expiryDate) {
+          const expiryDate = new Date(item.expiryDate);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // إذا انتهى تاريخ الصلاحية، لا نعرض البند
+          if (expiryDate < today) {
+            console.log(`⏰ إخفاء البند ${item.itemNumber} - انتهى في ${item.expiryDate}`);
+            return false;
+          }
+        }
+        
+        return true;
+      });
 
       // الآن نحتاج لجلب LINE ITEM من صفحة DATA لكل بند
       if (items.length > 0) {
