@@ -30,13 +30,18 @@ export async function apiRequest(
 ): Promise<any> {
   try {
     const options: RequestInit = {
-      method,
+      method: method.toUpperCase().trim(), // التأكد من أن method صحيح
       credentials: "include",
-      headers: {}
+      headers: {
+        "Accept": "application/json"
+      } as HeadersInit
     };
     
     if (data) {
-      options.headers = { "Content-Type": "application/json" };
+      options.headers = { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      };
       options.body = JSON.stringify(data);
     }
     
