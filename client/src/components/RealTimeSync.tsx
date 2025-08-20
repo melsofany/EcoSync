@@ -11,6 +11,9 @@ interface SyncStatus {
   syncActive: boolean;
   interval: string;
   lastSync: string;
+  formattedLastSync?: string;
+  itemsSynced?: number;
+  errors?: string[];
   message: string;
 }
 
@@ -41,9 +44,7 @@ export function RealTimeSync() {
   const handleManualSync = async (syncType: 'items' | 'all') => {
     setIsLoading(true);
     try {
-      const response = await apiRequest(`/api/sync/${syncType}`, {
-        method: 'POST',
-      });
+      const response = await apiRequest('POST', `/api/sync/${syncType}`);
 
       if (response.success) {
         toast({
@@ -53,11 +54,18 @@ export function RealTimeSync() {
         
         // إعادة فحص الحالة
         setTimeout(checkSyncStatus, 1000);
+      } else {
+        toast({
+          title: '⚠️ تنبيه',
+          description: response.message || 'حدث خطأ في المزامنة',
+          variant: 'default',
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('خطأ في المزامنة:', error);
       toast({
         title: '❌ خطأ',
-        description: 'فشل في عملية المزامنة',
+        description: error.message || 'فشل في عملية المزامنة',
         variant: 'destructive',
       });
     } finally {
@@ -133,12 +141,34 @@ export function RealTimeSync() {
         )}
 
         {/* آخر مزامنة */}
-        {syncStatus && (
+        {syncStatus && syncStatus.lastSync && (
           <div className="flex items-center justify-between">
             <span className="font-medium">آخر مزامنة:</span>
             <span className="text-sm text-muted-foreground">
-              {formatLastSync(syncStatus.lastSync)}
+              {syncStatus.formattedLastSync || formatLastSync(syncStatus.lastSync)}
             </span>
+          </div>
+        )}
+
+        {/* عدد البنود المحدثة */}
+        {syncStatus && syncStatus.itemsSynced !== undefined && (
+          <div className="flex items-center justify-between">
+            <span className="font-medium">البنود المحدثة:</span>
+            <Badge variant="secondary">
+              {syncStatus.itemsSynced.toLocaleString('ar-EG')} بند
+            </Badge>
+          </div>
+        )}
+
+        {/* الأخطاء إن وجدت */}
+        {syncStatus && syncStatus.errors && syncStatus.errors.length > 0 && (
+          <div className="border border-red-200 dark:border-red-800 rounded-md p-3 space-y-1">
+            <span className="font-medium text-red-600 dark:text-red-400 text-sm">أخطاء حديثة:</span>
+            <ul className="text-xs text-red-500 dark:text-red-400 space-y-1">
+              {syncStatus.errors.slice(-3).map((error, index) => (
+                <li key={index}>• {error}</li>
+              ))}
+            </ul>
           </div>
         )}
 
