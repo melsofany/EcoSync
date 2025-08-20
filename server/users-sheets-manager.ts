@@ -479,7 +479,7 @@ export class UsersGoogleSheetsManager {
         return false;
       }
 
-      // تحديث الصلاحيات في Google Sheets (العمود H - فهرس 7)
+      // تحديث الصلاحيات في Google Sheets (العمود I - فهرس 8 للصلاحيات، ليس العمود H الذي هو للدور)
       const rowNumber = userIndex + 2; // الصف الأول هو العناوين
       const permissionsString = permissions.join(',');
 
@@ -487,7 +487,7 @@ export class UsersGoogleSheetsManager {
 
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `USERS!H${rowNumber}`,
+        range: `USERS!I${rowNumber}`,  // العمود I للصلاحيات، ليس H للدور
         valueInputOption: 'RAW',
         resource: {
           values: [[permissionsString]]
