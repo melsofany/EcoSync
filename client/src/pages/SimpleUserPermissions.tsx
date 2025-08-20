@@ -161,7 +161,7 @@ export default function SimpleUserPermissions() {
         permissions: Array.from(userPermissions)
       });
       
-      const response = await apiRequest(`/api/user-permissions/${currentUser.username}`, 'PATCH', {
+      const response = await apiRequest('PATCH', `/api/user-permissions/${currentUser.username}`, {
         permissions: Array.from(userPermissions)
       });
       
@@ -197,7 +197,7 @@ export default function SimpleUserPermissions() {
   const addUserMutation = useMutation({
     mutationFn: async () => {
       // إرسال البيانات كـ JSON مع Base64
-      const response = await apiRequest('/api/sheets-users', 'POST', {
+      const response = await apiRequest('POST', '/api/sheets-users', {
         username: newUser.username,
         fullName: newUser.fullName,
         email: newUser.email,
@@ -247,7 +247,7 @@ export default function SimpleUserPermissions() {
   // حذف مستخدم
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await apiRequest(`/api/users/${userId}`, 'DELETE');
+      const response = await apiRequest('DELETE', `/api/users/${userId}`);
       return response.json();
     },
     onSuccess: () => {
@@ -269,7 +269,7 @@ export default function SimpleUserPermissions() {
   // حظر/إلغاء حظر مستخدم
   const toggleUserStatusMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      const response = await apiRequest(`/api/users/${userId}/status`, 'PATCH', { isActive });
+      const response = await apiRequest('PATCH', `/api/users/${userId}/status`, { isActive });
       return response.json();
     },
     onSuccess: () => {
@@ -299,7 +299,7 @@ export default function SimpleUserPermissions() {
         throw new Error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
       }
       
-      const response = await apiRequest(`/api/sheets-users/${selectedUser.username}/password`, 'PATCH', {
+      const response = await apiRequest('PATCH', `/api/sheets-users/${selectedUser.username}/password`, {
         newPassword: passwordData.newPassword
       });
       return response.json();
