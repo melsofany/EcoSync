@@ -1748,10 +1748,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return userWithoutPassword;
       });
       
-      res.json({
-        success: true,
-        users: usersWithoutPasswords
-      });
+      // إرجاع array مباشرة للتوافق مع Admin.tsx
+      res.json(usersWithoutPasswords);
     } catch (error) {
       console.error('❌ خطأ في جلب المستخدمين:', error);
       res.status(500).json({
@@ -2336,17 +2334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User management routes
-  app.get("/api/users", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
-    try {
-      const users = await storage.getAllUsers();
-      const usersWithoutPasswords = users.map(({ password, ...user }) => user);
-      res.json(usersWithoutPasswords);
-    } catch (error) {
-      console.error("Get users error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // تم نقل endpoint جلب المستخدمين للأعلى لاستخدام Google Sheets
 
   app.post("/api/users", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
