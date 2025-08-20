@@ -237,9 +237,13 @@ export default function Dashboard() {
                       <div className="text-xs text-gray-500">
                         آخر تحديث: {new Date().toLocaleTimeString('ar-EG')}
                       </div>
-                      {deepseekBalance.balance.is_demo && (
-                        <div className="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded mt-1">
-                          📊 بيانات من منصة DeepSeek
+                      {deepseekBalance.balance.is_demo ? (
+                        <div className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded mt-1">
+                          ⚠️ خطأ في جلب الرصيد الحقيقي
+                        </div>
+                      ) : (
+                        <div className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded mt-1">
+                          ✅ رصيد حقيقي من DeepSeek
                         </div>
                       )}
                     </div>

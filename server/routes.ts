@@ -337,33 +337,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public DeepSeek balance endpoint (without auth)
   app.get("/api/public/deepseek/balance", async (req: Request, res: Response) => {
     try {
-      console.log('💰 عرض رصيد DeepSeek الافتراضي (public endpoint)');
-      res.json({
-        success: true,
-        balance: {
-          total_balance: 0.21,
-          granted_balance: 0,
-          topped_up_balance: 0.21,
-          available_balance: 0.21,
-          currency: 'USD',
-          last_updated: new Date().toISOString(),
-          is_demo: true,
-          source: 'DeepSeek Platform'
+      const apiKey = process.env.DEEPSEEK_API_KEY;
+      
+      if (!apiKey) {
+        console.log('⚠️ لا يوجد مفتاح DeepSeek API');
+        return res.json({
+          success: true,
+          balance: {
+            total_balance: 0,
+            granted_balance: 0,
+            topped_up_balance: 0,
+            available_balance: 0,
+            currency: 'USD',
+            last_updated: new Date().toISOString(),
+            is_demo: true,
+            error: 'لا يوجد مفتاح API'
+          }
+        });
+      }
+
+      console.log('💰 جلب رصيد DeepSeek الحقيقي...');
+      
+      const response = await fetch('https://api.deepseek.com/user/balance', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
         }
       });
-    } catch (error: any) {
-      console.error('❌ خطأ في جلب رصيد DeepSeek (public):', error);
+
+      if (!response.ok) {
+        console.error(`❌ خطأ من DeepSeek API: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('تفاصيل الخطأ:', errorText);
+        
+        return res.json({
+          success: true,
+          balance: {
+            total_balance: 0,
+            granted_balance: 0,
+            topped_up_balance: 0,
+            available_balance: 0,
+            currency: 'USD',
+            last_updated: new Date().toISOString(),
+            is_demo: true,
+            error: `خطأ API: ${response.status}`
+          }
+        });
+      }
+
+      const data = await response.json();
+      console.log('✅ تم جلب الرصيد بنجاح:', data);
+      
+      // استخراج البيانات من التنسيق الجديد
+      let balance = {
+        total_balance: 0,
+        granted_balance: 0,
+        topped_up_balance: 0,
+        available_balance: 0,
+        currency: 'USD'
+      };
+      
+      if (data.balance_infos && data.balance_infos.length > 0) {
+        const info = data.balance_infos[0];
+        balance = {
+          total_balance: parseFloat(info.total_balance) || 0,
+          granted_balance: parseFloat(info.granted_balance) || 0,
+          topped_up_balance: parseFloat(info.topped_up_balance) || 0,
+          available_balance: parseFloat(info.total_balance) || 0, // الرصيد المتاح = الإجمالي
+          currency: info.currency || 'USD'
+        };
+      }
+      
+      // إرسال البيانات الحقيقية من DeepSeek
       res.json({
         success: true,
         balance: {
-          total_balance: 0.21,
+          ...balance,
+          last_updated: new Date().toISOString(),
+          is_demo: false,
+          source: 'DeepSeek API - Live'
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('❌ خطأ في جلب رصيد DeepSeek:', error.message);
+      res.json({
+        success: true,
+        balance: {
+          total_balance: 0,
           granted_balance: 0,
-          topped_up_balance: 0.21,
-          available_balance: 0.21,
+          topped_up_balance: 0,
+          available_balance: 0,
           currency: 'USD',
           last_updated: new Date().toISOString(),
           is_demo: true,
-          error: 'عرض رصيد افتراضي'
+          error: error.message
         }
       });
     }
