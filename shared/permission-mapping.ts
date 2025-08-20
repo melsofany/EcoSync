@@ -84,27 +84,15 @@ export const PERMISSION_ID_MAPPING: Record<string, string> = {
 export function convertNumberedPermissions(numberedPermissions: string[]): string[] {
   const actualPermissions: string[] = [];
   
-  console.log('🔍 convertNumberedPermissions بدء التحويل:', {
-    count: numberedPermissions.length,
-    first3: numberedPermissions.slice(0, 3)
-  });
-  
   for (const perm of numberedPermissions) {
-    const trimmedPerm = perm.trim();
-    const mappedPermission = PERMISSION_ID_MAPPING[trimmedPerm];
+    // إزالة المسافات وعلامات الاقتباس الزائدة
+    const cleanPerm = perm.trim().replace(/['"]/g, '');
+    const mappedPermission = PERMISSION_ID_MAPPING[cleanPerm];
     
     if (mappedPermission) {
       actualPermissions.push(mappedPermission);
-    } else {
-      console.log(`⚠️ لم يتم العثور على تعريف للصلاحية: "${trimmedPerm}"`);
     }
   }
-  
-  console.log('✅ نتيجة التحويل:', {
-    input: numberedPermissions.length,
-    output: actualPermissions.length,
-    samples: actualPermissions.slice(0, 3)
-  });
   
   return actualPermissions;
 }
@@ -139,18 +127,7 @@ export function getUserActualPermissions(user: any): string[] {
   }
   
   // تحويل الصلاحيات المرقمة إلى صلاحيات فعلية
-  const convertedPermissions = convertNumberedPermissions(userPermissions);
-  
-  // للتحقق والتصحيح
-  console.log('🔐 getUserActualPermissions تحليل:', {
-    user: user.username || 'Unknown',
-    role: user.role,
-    userPermissions: userPermissions.length,
-    convertedPermissions: convertedPermissions.length,
-    samples: convertedPermissions.slice(0, 5)
-  });
-  
-  return convertedPermissions;
+  return convertNumberedPermissions(userPermissions);
 }
 
 // دالة للتحقق من الوصول لقسم معين
