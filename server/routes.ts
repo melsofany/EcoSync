@@ -1145,6 +1145,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset admin password endpoint (للاستخدام الطارئ فقط)
+  app.post('/api/admin/reset-admin-password', async (req, res) => {
+    try {
+      const newPassword = 'admin123';
+      
+      // البحث عن المستخدم admin وتحديث كلمة المرور
+      const user = await usersGoogleSheetsManager.updateUserPassword('admin', newPassword);
+      
+      if (user) {
+        console.log('✅ تم إعادة تعيين كلمة المرور للمستخدم admin إلى', newPassword);
+        console.log('📝 بيانات تسجيل الدخول:');
+        console.log('   اسم المستخدم: admin');
+        console.log('   كلمة المرور: admin123');
+        res.json({ success: true, message: 'تم إعادة تعيين كلمة المرور', username: 'admin', password: 'admin123' });
+      } else {
+        res.status(404).json({ success: false, message: 'لم يتم العثور على المستخدم' });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في إعادة تعيين كلمة المرور:', error);
+      res.status(500).json({ success: false, message: 'خطأ في إعادة تعيين كلمة المرور' });
+    }
+  });
+
   // نظام إعادة تعيين كلمة المرور
   // 1. طلب إعادة تعيين كلمة المرور - إرسال البريد الإلكتروني
   app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
