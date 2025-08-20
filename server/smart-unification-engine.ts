@@ -77,40 +77,226 @@ export class SmartUnificationEngine extends EventEmitter {
     }
   }
 
-  // تحليل التشابه بين القطع
-  private areItemsSimilar(item1: UnificationItem, item2: UnificationItem): boolean {
-    // التحقق من PART NUMBER
+  // تحليل التشابه بين القطع باستخدام DeepSeek AI
+  private async areItemsSimilar(item1: UnificationItem, item2: UnificationItem): Promise<boolean> {
+    // 1. الفحص السريع أولاً
+    const quickCheck = this.quickSimilarityCheck(item1, item2);
+    if (quickCheck) return true;
+    
+    // 2. استخدام DeepSeek AI للتحليل المتقدم
+    try {
+      const apiKey = process.env.DEEPSEEK_API_KEY;
+      if (!apiKey) {
+        console.log('⚠️ DeepSeek API key غير موجود، استخدام المحرك البسيط');
+        return this.fallbackSimilarityCheck(item1, item2);
+      }
+      
+      const prompt = `أنت خبير في تحليل قطع الغيار والمنتجات الصناعية. قارن بين هذين البندين وحدد هل هما نفس المنتج أم لا.
+
+البند الأول:
+- Part Number: ${item1.partNumber || 'غير محدد'}
+- الوصف: ${item1.description || 'غير محدد'}
+
+البند الثاني:
+- Part Number: ${item2.partNumber || 'غير محدد'}
+- الوصف: ${item2.description || 'غير محدد'}
+
+ركز على:
+1. الموديل والرقم الفني
+2. المواصفات الكهربائية (الفولت، الأمبير، القدرة)
+3. الماركة والشركة المصنعة
+4. الاستخدام والتطبيق
+
+أجب بـ "نعم" إذا كانا نفس المنتج أو "لا" إذا كانا مختلفين.
+أضف شرح مختصر جداً (كلمتين أو ثلاث) عن السبب.`;
+
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            { role: 'system', content: 'أنت خبير فني متخصص في تحليل قطع الغيار الصناعية.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.1,
+          max_tokens: 50
+        })
+      });
+      
+      if (!response.ok) {
+        console.log('⚠️ خطأ في DeepSeek API، استخدام المحرك البسيط');
+        return this.fallbackSimilarityCheck(item1, item2);
+      }
+      
+      const data = await response.json();
+      const answer = data.choices?.[0]?.message?.content?.trim().toLowerCase() || '';
+      
+      // تحليل الإجابة
+      if (answer.includes('نعم') || answer.includes('yes')) {
+        this.emit('log', { 
+          message: `🤖 DeepSeek: تم توحيد البندين - ${answer}`, 
+          type: 'success' 
+        });
+        return true;
+      }
+      
+      return false;
+      
+    } catch (error: any) {
+      console.log('⚠️ خطأ في استخدام DeepSeek:', error.message);
+      return this.fallbackSimilarityCheck(item1, item2);
+    }
+  }
+  
+  // فحص سريع بدون AI
+  private quickSimilarityCheck(item1: UnificationItem, item2: UnificationItem): boolean {
+    // LINE ITEM متطابق تماماً
+    if (item1.lineItem && item2.lineItem) {
+      if (item1.lineItem.trim().toUpperCase() === item2.lineItem.trim().toUpperCase()) {
+        return true;
+      }
+    }
+    
+    // PART NUMBER متطابق تماماً
     if (item1.partNumber && item2.partNumber) {
       const normalized1 = this.normalizePartNumber(item1.partNumber);
       const normalized2 = this.normalizePartNumber(item2.partNumber);
-      
       if (normalized1 === normalized2) {
         return true;
       }
     }
-
-    // التحقق من LINE ITEM
-    if (item1.lineItem && item2.lineItem) {
-      const normalized1 = item1.lineItem.trim().toUpperCase();
-      const normalized2 = item2.lineItem.trim().toUpperCase();
-      
-      if (normalized1 === normalized2) {
+    
+    return false;
+  }
+  
+  // المحرك الاحتياطي في حالة فشل AI
+  private fallbackSimilarityCheck(item1: UnificationItem, item2: UnificationItem): boolean {
+    // استخراج المعلومات المهمة من كلا البندين
+    const info1 = this.extractProductInfo(item1);
+    const info2 = this.extractProductInfo(item2);
+    
+    // التحقق من تطابق الموديل
+    if (info1.model && info2.model && info1.model === info2.model) {
+      const specsMatch = this.compareSpecs(info1.specs, info2.specs);
+      if (specsMatch >= 0.8) {
         return true;
       }
     }
-
-    // التحقق من التوصيف مع تجاهل الأحرف الخاصة
+    
+    // التحقق من المواصفات الكهربائية والماركة
     if (item1.description && item2.description) {
+      const hasElectricalSpecs = this.haveSameElectricalSpecs(item1.description, item2.description);
+      const sameBrand = this.haveSameBrand(item1.description, item2.description);
+      
+      if (hasElectricalSpecs && sameBrand) {
+        return true;
+      }
+      
+      // المقارنة العادية
       const desc1 = this.normalizeDescription(item1.description);
       const desc2 = this.normalizeDescription(item2.description);
-      
-      // إذا كان 90% من الكلمات متطابقة
       const similarity = this.calculateTextSimilarity(desc1, desc2);
-      if (similarity >= 0.85) {
+      if (similarity >= 0.75) {
         return true;
       }
     }
-
+    
+    return false;
+  }
+  
+  // استخراج معلومات المنتج
+  private extractProductInfo(item: UnificationItem): { model: string; specs: string[] } {
+    const text = `${item.partNumber || ''} ${item.description || ''}`.toUpperCase();
+    
+    // استخراج الموديل (مثل LC1D32M7)
+    const modelMatch = text.match(/LC\d+D\s*\d+\s*[A-Z]\d+/gi) || 
+                       text.match(/LC\d+D\d+[A-Z]\d+/gi);
+    const model = modelMatch ? modelMatch[0].replace(/\s+/g, '') : '';
+    
+    // استخراج المواصفات
+    const specs: string[] = [];
+    
+    // الفولتية
+    const voltMatch = text.match(/\d+V/gi);
+    if (voltMatch) specs.push(...voltMatch);
+    
+    // التردد
+    const hzMatch = text.match(/\d+\s*HZ/gi);
+    if (hzMatch) specs.push(...hzMatch.map(s => s.replace(/\s+/g, '')));
+    
+    // الأمبير
+    const ampMatch = text.match(/\d+\s*A(?!\w)/gi);
+    if (ampMatch) specs.push(...ampMatch.map(s => s.replace(/\s+/g, '')));
+    
+    // القدرة
+    const kwMatch = text.match(/\d+\s*KW/gi);
+    if (kwMatch) specs.push(...kwMatch.map(s => s.replace(/\s+/g, '')));
+    
+    return { model, specs };
+  }
+  
+  // مقارنة المواصفات
+  private compareSpecs(specs1: string[], specs2: string[]): number {
+    if (specs1.length === 0 || specs2.length === 0) return 0;
+    
+    let matches = 0;
+    for (const spec1 of specs1) {
+      if (specs2.includes(spec1)) {
+        matches++;
+      }
+    }
+    
+    return matches / Math.max(specs1.length, specs2.length);
+  }
+  
+  // التحقق من المواصفات الكهربائية
+  private haveSameElectricalSpecs(desc1: string, desc2: string): boolean {
+    const extractSpecs = (text: string) => {
+      const upper = text.toUpperCase();
+      return {
+        voltage: upper.match(/\d+V/g) || [],
+        hz: upper.match(/\d+\s*HZ/g) || [],
+        amp: upper.match(/\d+\s*A(?!\w)/g) || [],
+        kw: upper.match(/\d+\s*KW/g) || []
+      };
+    };
+    
+    const specs1 = extractSpecs(desc1);
+    const specs2 = extractSpecs(desc2);
+    
+    // مقارنة كل نوع من المواصفات
+    const voltageMatch = JSON.stringify(specs1.voltage.sort()) === JSON.stringify(specs2.voltage.sort());
+    const hzMatch = JSON.stringify(specs1.hz.sort()) === JSON.stringify(specs2.hz.sort());
+    const ampMatch = JSON.stringify(specs1.amp.sort()) === JSON.stringify(specs2.amp.sort());
+    const kwMatch = JSON.stringify(specs1.kw.sort()) === JSON.stringify(specs2.kw.sort());
+    
+    // يجب أن تتطابق على الأقل 3 من 4 مواصفات
+    const matches = [voltageMatch, hzMatch, ampMatch, kwMatch].filter(m => m).length;
+    return matches >= 3;
+  }
+  
+  // التحقق من نفس الماركة
+  private haveSameBrand(desc1: string, desc2: string): boolean {
+    const brands = ['SCHNEIDER', 'SCHNIEDER', 'TELEMECANIQUE', 'ABB', 'SIEMENS', 'MITSUBISHI'];
+    const upper1 = desc1.toUpperCase();
+    const upper2 = desc2.toUpperCase();
+    
+    for (const brand of brands) {
+      // Schneider و Telemecanique نفس الشركة
+      if ((upper1.includes('SCHNEIDER') || upper1.includes('SCHNIEDER') || upper1.includes('TELEMECANIQUE')) &&
+          (upper2.includes('SCHNEIDER') || upper2.includes('SCHNIEDER') || upper2.includes('TELEMECANIQUE'))) {
+        return true;
+      }
+      
+      if (upper1.includes(brand) && upper2.includes(brand)) {
+        return true;
+      }
+    }
+    
     return false;
   }
 
@@ -148,7 +334,7 @@ export class SmartUnificationEngine extends EventEmitter {
   }
 
   // عملية التجميع الذكي
-  private createUnificationGroups(items: UnificationItem[]): UnificationGroup[] {
+  private async createUnificationGroups(items: UnificationItem[]): Promise<UnificationGroup[]> {
     const groups: UnificationGroup[] = [];
     const processedItems = new Set<number>();
 
@@ -173,7 +359,8 @@ export class SmartUnificationEngine extends EventEmitter {
 
         const compareItem = items[j];
         
-        if (this.areItemsSimilar(currentItem, compareItem)) {
+        const isSimilar = await this.areItemsSimilar(currentItem, compareItem);
+        if (isSimilar) {
           group.items.push(compareItem);
           processedItems.add(j);
           
@@ -282,7 +469,7 @@ export class SmartUnificationEngine extends EventEmitter {
       this.emit('log', { message: `📊 تم تحميل ${items.length} صنف للمعالجة`, type: 'info' });
 
       // التجميع الذكي
-      const groups = this.createUnificationGroups(items);
+      const groups = await this.createUnificationGroups(items);
       this.stats.groupsCreated = groups.length;
 
       // إعداد التحديثات
