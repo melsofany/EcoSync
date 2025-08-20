@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building, User, Lock, ArrowLeft, Mail } from "lucide-react";
+import { Building, User, Lock, ArrowLeft, Mail, Eye, EyeOff } from "lucide-react";
 import qortobaLogo from "@/assets/qortoba-logo.png";
 import logisticsBackground from "@/assets/logistics-background.jpg";
 
@@ -25,6 +25,7 @@ export default function Login() {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetMessage, setResetMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -117,12 +118,24 @@ export default function Login() {
               <div className="relative">
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="أدخل كلمة المرور"
-                  className="pl-12 bg-white/90 border-gray-200 focus:bg-white"
+                  className="pl-12 pr-12 bg-white/90 border-gray-200 focus:bg-white"
                   {...form.register("password")}
                 />
                 <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 h-5 w-5" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
               {form.formState.errors.password && (
                 <p className="text-sm text-red-600">{form.formState.errors.password.message}</p>
