@@ -34,11 +34,11 @@ export class SmartUnificationEngine extends EventEmitter {
 
   constructor() {
     super();
-    this.spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
+    this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1TuNmhUQSLCIJjyPKRGEX5WwCIlwgePdN5kBLkPSNGqg';
     this.initializeSheets();
   }
 
-  private async initializeSheets() {
+  private async initializeSheets(): Promise<void> {
     try {
       // استخدام المفتاح الجديد من الملف المحلي
       const fs = require('fs');
@@ -60,9 +60,12 @@ export class SmartUnificationEngine extends EventEmitter {
       });
 
       this.sheets = google.sheets({ version: 'v4', auth });
+      console.log('✅ تم تهيئة محرك التوحيد الذكي بنجاح');
       this.emit('log', { message: '🔗 تم تهيئة محرك التوحيد الذكي', type: 'success' });
     } catch (error: any) {
+      console.error('❌ خطأ في تهيئة المحرك:', error.message);
       this.emit('log', { message: `❌ خطأ في تهيئة المحرك: ${error.message}`, type: 'error' });
+      throw error;
     }
   }
 
@@ -204,6 +207,17 @@ export class SmartUnificationEngine extends EventEmitter {
     this.emit('log', { message: '🚀 بدء التوحيد الذكي المتقدم...', type: 'info' });
 
     try {
+      // التأكد من تهيئة Google Sheets
+      if (!this.sheets) {
+        await this.initializeSheets();
+        // انتظار قليل للتأكد من التهيئة
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      if (!this.sheets) {
+        throw new Error('فشل في تهيئة الاتصال مع Google Sheets');
+      }
+
       // قراءة البيانات
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
