@@ -710,7 +710,9 @@ export class GoogleSheetsRealtimeData {
         employeeName: row[26] || ''
       })).filter((item: any) => 
         item.itemNumber && // البند يجب أن يحتوي على رقم
-        item.status !== "مُسعّر" // عدم إظهار البنود المُسعّرة
+        item.status !== "مُسعّر" && // عدم إظهار البنود المُسعّرة
+        item.status !== "مكتمل" && // عدم إظهار البنود المكتملة
+        item.status !== "منتهي" // عدم إظهار البنود المنتهية
       );
 
       return items;
@@ -759,7 +761,12 @@ export class GoogleSheetsRealtimeData {
         notes: row[14] || '',
         status: row[15] || 'في انتظار تسعير الموردين',
         lineItem: '' // سيتم ملؤه من صفحة DATA
-      })).filter((item: any) => item.itemNumber); // تصفية البنود الفارغة
+      })).filter((item: any) => 
+        item.itemNumber && // البند يجب أن يحتوي على رقم
+        item.status !== "مُسعّر" && // عدم إظهار البنود المُسعّرة
+        item.status !== "مكتمل" && // عدم إظهار البنود المكتملة
+        item.status !== "منتهي" // عدم إظهار البنود المنتهية
+      );
 
       // الآن نحتاج لجلب LINE ITEM من صفحة DATA لكل بند
       if (items.length > 0) {
