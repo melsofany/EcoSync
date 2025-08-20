@@ -59,7 +59,7 @@ export default function CreateQuotation() {
 
   const createMutation = useMutation({
     mutationFn: async (data: NewQuotation) => {
-      return await apiRequest('/api/quotations/google-sheets', 'POST', data);
+      return await apiRequest('POST', '/api/quotations/google-sheets', data);
     },
     onSuccess: (data: any) => {
       toast({
