@@ -45,6 +45,9 @@ export function useLogin() {
       // ثم تعيين البيانات الجديدة
       queryClient.setQueryData(["/api/auth/me"], user);
       
+      // حفظ بيانات المستخدم في localStorage
+      localStorage.setItem('user', JSON.stringify(user));
+      
       console.log('✅ تحديث بيانات المستخدم بعد تسجيل الدخول:', {
         username: user.username,
         fullName: user.fullName,
@@ -55,6 +58,11 @@ export function useLogin() {
         title: "تم تسجيل الدخول بنجاح",
         description: `مرحباً ${user.fullName || user.username || 'بك'}`,
       });
+      
+      // إعادة تحميل الصفحة لضمان تحديث الصلاحيات
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     },
     onError: (error: any) => {
       toast({
@@ -75,6 +83,10 @@ export function useLogout() {
     onSuccess: () => {
       queryClient.setQueryData(["/api/auth/me"], null);
       queryClient.clear();
+      
+      // مسح بيانات المستخدم من localStorage
+      localStorage.removeItem('user');
+      
       toast({
         title: "تم تسجيل الخروج بنجاح",
         description: "إلى اللقاء",

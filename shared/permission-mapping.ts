@@ -144,6 +144,15 @@ export function getUserActualPermissions(user: any): string[] {
 
 // دالة للتحقق من الوصول لقسم معين
 export function canUserAccessSection(user: any, section: string): boolean {
+  // إذا المستخدم له 49 صلاحية، أعطه كل شيء
+  if (user.role && typeof user.role === 'string' && user.role.includes('perm-')) {
+    const perms = user.role.split(',');
+    if (perms.length >= 49) {
+      console.log(`✅ المستخدم ${user.username} لديه جميع الصلاحيات - السماح بالوصول للقسم ${section}`);
+      return true;
+    }
+  }
+  
   const actualPermissions = getUserActualPermissions(user);
   
   // إذا كان المستخدم له دور تقليدي

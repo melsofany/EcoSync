@@ -92,10 +92,34 @@ export const hasRole = (user: User | null, roles: string[]): boolean => {
   return false;
 };
 
-export const canAccessSection = (user: User | null, section: string): boolean => {
+// دالة محلية لأخذ user من localStorage
+const getStoredUser = (): User | null => {
+  try {
+    const userJson = localStorage.getItem('user');
+    if (userJson) {
+      return JSON.parse(userJson);
+    }
+  } catch (error) {
+    console.error('Error parsing user from localStorage:', error);
+  }
+  return null;
+};
+
+export const canAccessSection = (section: string): boolean => {
+  const user = getStoredUser();
+  
   if (!user) {
     console.log(`❌ canAccessSection: لا يوجد مستخدم للقسم ${section}`);
     return false;
+  }
+  
+  // إذا كان المستخدم له 49 صلاحية، أعطه كل شيء مباشرة
+  if (user.role && typeof user.role === 'string' && user.role.includes('perm-')) {
+    const perms = user.role.split(',');
+    if (perms.length >= 49) {
+      console.log(`✅ المستخدم ${user.username} لديه جميع الصلاحيات (${perms.length})`);
+      return true;
+    }
   }
   
   console.log(`🔍 canAccessSection للقسم ${section}:`, {
@@ -111,8 +135,17 @@ export const canAccessSection = (user: User | null, section: string): boolean =>
 };
 
 // دالة جديدة للتحقق من صلاحية عملية معينة
-export const canPerformAction = (user: User | null, resource: string, action: string): boolean => {
+export const canPerformAction = (resource: string, action: string): boolean => {
+  const user = getStoredUser();
   if (!user) return false;
+  
+  // إذا كان المستخدم له 49 صلاحية، أعطه كل شيء مباشرة
+  if (user.role && typeof user.role === 'string' && user.role.includes('perm-')) {
+    const perms = user.role.split(',');
+    if (perms.length >= 49) {
+      return true;
+    }
+  }
   
   // استخدام النظام الجديد للتحقق من العمليات
   return canUserPerformAction(user, resource, action);
