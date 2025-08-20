@@ -234,7 +234,7 @@ export class UserSheetsManager {
           email: row[4] || undefined,
           phone: row[5] || undefined,
           profileImage: profileImage || undefined,
-          role: role && role.includes('perm-') ? 'custom' : (role || 'data_entry'),
+          role: role || 'data_entry', // احتفظ بالدور الأصلي كما هو، حتى لو كان يحتوي على صلاحيات مفصلة
           permissions: permissionsArray.length > 0 ? JSON.stringify(permissionsArray) : (permissions || undefined),
           isActive: isActive === 'TRUE',
           isOnline: row[10] === 'TRUE',
