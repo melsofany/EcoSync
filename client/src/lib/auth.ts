@@ -1,4 +1,9 @@
 import { apiRequest } from "./queryClient";
+import { 
+  getUserActualPermissions, 
+  canUserAccessSection, 
+  canUserPerformAction 
+} from "@shared/permission-mapping";
 
 export interface LoginCredentials {
   username: string;
@@ -46,77 +51,58 @@ export const getCurrentUser = async (): Promise<User> => {
 export const hasRole = (user: User | null, roles: string[]): boolean => {
   if (!user) return false;
   
-  // التحقق من الصلاحيات سواء كانت في permissions أو في role
-  let userPermissions: string[] = [];
+  // الحصول على الصلاحيات الفعلية للمستخدم
+  const actualPermissions = getUserActualPermissions(user);
   
-  // إذا كانت الصلاحيات في حقل permissions كمصفوفة
-  if (user.permissions && user.permissions.length > 0) {
-    userPermissions = user.permissions;
-  }
-  // إذا كانت الصلاحيات في حقل role كسلسلة نصية مفصولة بفواصل
-  else if (user.role && user.role.includes('perm-')) {
-    userPermissions = user.role.split(',').map(p => p.trim());
+  // إذا كان المستخدم له دور تقليدي
+  if (actualPermissions.length === 1 && !actualPermissions[0].includes('.')) {
+    // التحقق من الأدوار التقليدية
+    return roles.includes(actualPermissions[0]);
   }
   
-  // إذا كان للمستخدم صلاحيات مفصلة
-  if (userPermissions.length > 0) {
-    // التحقق من وجود صلاحيات إدارية أساسية
-    const hasAdminPermissions = userPermissions.some(p => 
-      ['perm-001', 'perm-002', 'perm-003', 'perm-010'].includes(p)
-    );
-    if (hasAdminPermissions) {
-      return true; // منح الوصول الكامل للمستخدمين ذوي الصلاحيات الإدارية
+  // للمستخدمين بصلاحيات مفصلة، التحقق من وجود صلاحيات إدارية
+  // نتحقق من وجود صلاحيات إدارة المستخدمين أو إعدادات النظام
+  if (actualPermissions.includes('admin.userManagement') || 
+      actualPermissions.includes('admin.systemSettings')) {
+    // إذا كان المطلوب صلاحيات إدارية
+    if (roles.includes('manager') || roles.includes('it_admin')) {
+      return true;
     }
   }
   
-  // التحقق العادي من الأدوار
-  return roles.includes(user.role);
+  // التحقق من صلاحيات محددة بناء على الأدوار المطلوبة
+  if (roles.includes('data_entry')) {
+    // التحقق من صلاحيات إدخال البيانات
+    return actualPermissions.includes('items.create') || 
+           actualPermissions.includes('quotations.create');
+  }
+  
+  if (roles.includes('purchasing')) {
+    // التحقق من صلاحيات المشتريات
+    return actualPermissions.includes('purchaseOrders.create') || 
+           actualPermissions.includes('suppliers.edit');
+  }
+  
+  if (roles.includes('accounting')) {
+    // التحقق من صلاحيات المحاسبة
+    return actualPermissions.includes('reports.view') || 
+           actualPermissions.includes('pricing.viewMargins');
+  }
+  
+  return false;
 };
 
 export const canAccessSection = (user: User | null, section: string): boolean => {
   if (!user) return false;
-
-  // التحقق من الصلاحيات سواء كانت في permissions أو في role
-  let userPermissions: string[] = [];
   
-  // إذا كانت الصلاحيات في حقل permissions كمصفوفة
-  if (user.permissions && user.permissions.length > 0) {
-    userPermissions = user.permissions;
-  }
-  // إذا كانت الصلاحيات في حقل role كسلسلة نصية مفصولة بفواصل
-  else if (user.role && user.role.includes('perm-')) {
-    userPermissions = user.role.split(',').map(p => p.trim());
-  }
+  // استخدام النظام الجديد للصلاحيات
+  return canUserAccessSection(user, section);
+};
+
+// دالة جديدة للتحقق من صلاحية عملية معينة
+export const canPerformAction = (user: User | null, resource: string, action: string): boolean => {
+  if (!user) return false;
   
-  // إذا كان للمستخدم صلاحيات مفصلة، منحه الوصول الكامل إذا كان لديه صلاحيات إدارية
-  if (userPermissions.length > 0) {
-    const hasAdminPermissions = userPermissions.some(p => 
-      ['perm-001', 'perm-002', 'perm-003', 'perm-010'].includes(p)
-    );
-    if (hasAdminPermissions) {
-      return true; // منح الوصول الكامل للمستخدمين ذوي الصلاحيات الإدارية
-    }
-  }
-
-  // استخدام نظام الصلاحيات الجديد إذا كان متوفراً
-  try {
-    const { canAccessSection: newCanAccessSection } = require('../../shared/permissions');
-    return newCanAccessSection(user, section);
-  } catch (e) {
-    // العودة للنظام القديم في حالة عدم توفر الملف
-    const permissions = {
-      dashboard: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      quotations: ["manager", "it_admin", "data_entry", "accounting"],
-      items: ["manager", "it_admin", "data_entry"],
-      clients: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      suppliers: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      supplier_pricing: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      customer_pricing: ["manager", "accounting"],
-      "purchase-orders": ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      reports: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      admin: ["manager", "it_admin"],
-    };
-
-    return permissions[section as keyof typeof permissions]?.includes(user.role) ?? false;
-  }
+  // استخدام النظام الجديد للتحقق من العمليات
+  return canUserPerformAction(user, resource, action);
 };

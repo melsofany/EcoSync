@@ -28,6 +28,11 @@ import {
   verifyResetToken,
   clearResetToken 
 } from "./password-reset-service";
+import { 
+  getUserActualPermissions, 
+  canUserAccessSection, 
+  canUserPerformAction 
+} from "../shared/permission-mapping";
 
 // استخدام الـ instance المُصدر من google-sheets-realtime-data.ts
 const googleSheetsRealTimeData = googleSheetsRealtimeData;
@@ -754,31 +759,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Role-based access control
+  // Role-based access control محسن
   const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
       if (!req.session.user) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
-      const userRole = req.session.user.role;
+      const user = req.session.user;
+      const actualPermissions = getUserActualPermissions(user);
       
-      // إذا كان الدور يحتوي على صلاحيات متعددة (مثل Ahmed)، فهو مدير
-      if (typeof userRole === 'string' && userRole.includes('perm-001') && userRole.includes('perm-010')) {
-        // المستخدم لديه صلاحيات إدارية شاملة
-        console.log(`✅ المستخدم ${req.session.user.username} لديه صلاحيات إدارية شاملة`);
+      // إذا كان المستخدم له دور تقليدي
+      if (actualPermissions.length === 1 && !actualPermissions[0].includes('.')) {
+        // التحقق من الأدوار التقليدية
+        if (roles.includes(actualPermissions[0])) {
+          console.log(`✅ المستخدم ${user.username} تم قبول الوصول (دور تقليدي: ${actualPermissions[0]})`);
+          next();
+          return;
+        }
+        // منح صلاحيات إضافية للـ manager
+        if (actualPermissions[0] === 'manager' && roles.includes('it_admin')) {
+          console.log(`✅ المستخدم ${user.username} (manager) تم منحه صلاحيات it_admin`);
+          next();
+          return;
+        }
+      }
+      
+      // للمستخدمين بصلاحيات مفصلة
+      // التحقق من وجود صلاحيات إدارية
+      if (actualPermissions.includes('admin.userManagement') || 
+          actualPermissions.includes('admin.systemSettings')) {
+        if (roles.includes('manager') || roles.includes('it_admin')) {
+          console.log(`✅ المستخدم ${user.username} لديه صلاحيات إدارية`);
+          next();
+          return;
+        }
+      }
+      
+      // التحقق من صلاحيات محددة بناء على الأدوار المطلوبة
+      let hasRequiredPermission = false;
+      
+      if (roles.includes('data_entry')) {
+        hasRequiredPermission = actualPermissions.includes('items.create') || 
+                               actualPermissions.includes('quotations.create');
+      }
+      
+      if (roles.includes('purchasing')) {
+        hasRequiredPermission = hasRequiredPermission || 
+                               actualPermissions.includes('purchaseOrders.create') || 
+                               actualPermissions.includes('suppliers.edit');
+      }
+      
+      if (roles.includes('accounting')) {
+        hasRequiredPermission = hasRequiredPermission || 
+                               actualPermissions.includes('reports.view') || 
+                               actualPermissions.includes('pricing.viewMargins');
+      }
+      
+      if (hasRequiredPermission) {
+        console.log(`✅ المستخدم ${user.username} لديه الصلاحيات المطلوبة`);
         next();
         return;
       }
       
-      // التحقق العادي من الأدوار مع منح صلاحيات إضافية للـ manager
-      if (!roles.includes(userRole) && !(userRole === 'manager' && roles.includes('it_admin'))) {
-        console.log(`❌ المستخدم ${req.session.user.username} لا يملك الدور المطلوب. دوره: ${userRole}, الأدوار المطلوبة: ${roles.join(', ')}`);
-        return res.status(403).json({ message: "Forbidden" });
-      }
-      
-      console.log(`✅ المستخدم ${req.session.user.username} تم قبول الوصول`);
-      next();
+      console.log(`❌ المستخدم ${user.username} لا يملك الصلاحيات المطلوبة. صلاحياته: ${actualPermissions.join(', ')}`);
+      return res.status(403).json({ message: "Forbidden" });
     };
   };
 
