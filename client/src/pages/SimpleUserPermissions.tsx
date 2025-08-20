@@ -165,15 +165,9 @@ export default function SimpleUserPermissions() {
         permissions: Array.from(userPermissions)
       });
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('خطأ في الاستجابة:', response.status, errorText);
-        throw new Error(`خطأ في الخادم: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('نتيجة تحديث الصلاحيات:', result);
-      return result;
+      // apiRequest ترمي خطأ إذا فشل الطلب، لذا لا نحتاج للتحقق من response.ok
+      console.log('نتيجة تحديث الصلاحيات:', response);
+      return response;
     },
     onSuccess: (data) => {
       console.log('تم تحديث الصلاحيات بنجاح:', data);
@@ -197,7 +191,7 @@ export default function SimpleUserPermissions() {
   const addUserMutation = useMutation({
     mutationFn: async () => {
       // إرسال البيانات كـ JSON مع Base64
-      const response = await apiRequest('POST', '/api/sheets-users', {
+      return await apiRequest('POST', '/api/sheets-users', {
         username: newUser.username,
         fullName: newUser.fullName,
         email: newUser.email,
@@ -208,13 +202,6 @@ export default function SimpleUserPermissions() {
         canAccessBot: newUser.canAccessBot,
         profileImage: newUser.profileImage // Base64 string
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'فشل في إضافة المستخدم');
-      }
-      
-      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -247,8 +234,7 @@ export default function SimpleUserPermissions() {
   // حذف مستخدم
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await apiRequest('DELETE', `/api/users/${userId}`);
-      return response.json();
+      return await apiRequest('DELETE', `/api/users/${userId}`);
     },
     onSuccess: () => {
       toast({
@@ -269,8 +255,7 @@ export default function SimpleUserPermissions() {
   // حظر/إلغاء حظر مستخدم
   const toggleUserStatusMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      const response = await apiRequest('PATCH', `/api/users/${userId}/status`, { isActive });
-      return response.json();
+      return await apiRequest('PATCH', `/api/users/${userId}/status`, { isActive });
     },
     onSuccess: () => {
       toast({
@@ -299,10 +284,9 @@ export default function SimpleUserPermissions() {
         throw new Error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
       }
       
-      const response = await apiRequest('PATCH', `/api/sheets-users/${selectedUser.username}/password`, {
+      return await apiRequest('PATCH', `/api/sheets-users/${selectedUser.username}/password`, {
         newPassword: passwordData.newPassword
       });
-      return response.json();
     },
     onSuccess: () => {
       toast({
