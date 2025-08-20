@@ -785,6 +785,42 @@ export class UsersGoogleSheetsManager {
     }
   }
 
+  // تحديث كلمة مرور المستخدم (دالة مساعدة لإعادة التعيين)
+  async updateUserPassword(username: string, newPassword: string): Promise<UserData | null> {
+    try {
+      console.log(`🔐 إعادة تعيين كلمة المرور للمستخدم ${username}...`);
+      
+      // تشفير كلمة المرور الجديدة
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // تحديث كلمة المرور في Google Sheets
+      const success = await this.updatePassword(username, hashedPassword);
+      
+      if (success) {
+        // الحصول على بيانات المستخدم المحدثة
+        const users = await this.getAllUsers();
+        const updatedUser = users.find(user => user.username.trim() === username.trim());
+        
+        console.log(`✅ تم إعادة تعيين كلمة المرور للمستخدم ${username} إلى: ${newPassword}`);
+        console.log(`📝 بيانات تسجيل الدخول المحدثة:`);
+        console.log(`   اسم المستخدم: ${username}`);
+        console.log(`   كلمة المرور: ${newPassword}`);
+        
+        // التحقق من الكلمة الجديدة
+        if (updatedUser && await bcrypt.compare(newPassword, updatedUser.password)) {
+          console.log('✅ تم التحقق من كلمة مرور المستخدم', username);
+        }
+        
+        return updatedUser || null;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('❌ خطأ في إعادة تعيين كلمة المرور:', error);
+      return null;
+    }
+  }
+
   // تحديث رمز إعادة تعيين كلمة المرور
   async updateUser(username: string, updates: { resetToken?: string; resetTokenExpiry?: string }): Promise<boolean> {
     try {
@@ -1008,6 +1044,28 @@ export class UsersGoogleSheetsManager {
     } catch (error) {
       console.error('❌ خطأ في إضافة مستخدم تليجرام في ورقة BOT_USERS:', error);
       return null;
+    }
+  }
+
+  // إعادة تعيين كلمة مرور المدير
+  async resetAdminPassword(): Promise<boolean> {
+    try {
+      const newPassword = 'admin123';
+      const user = await this.updateUserPassword('admin', newPassword);
+      
+      if (user) {
+        console.log('✅ تم إعادة تعيين كلمة المرور للمستخدم admin إلى:', newPassword);
+        console.log('📝 بيانات تسجيل الدخول:');
+        console.log('   اسم المستخدم: admin');
+        console.log('   كلمة المرور: admin123');
+        return true;
+      } else {
+        console.log('⚠️ لم يتم العثور على المستخدم admin');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ خطأ في إعادة تعيين كلمة مرور المدير:', error);
+      return false;
     }
   }
 
