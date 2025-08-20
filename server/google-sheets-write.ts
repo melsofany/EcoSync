@@ -425,9 +425,10 @@ ${itemsList}
           '',                                       // I - فارغ
           quotation.expiryDate || '',               // J - EXPIRY DATE (تاريخ انتهاء العرض)
           '', '',                                   // K, L - فارغة
-          '', '', '', '',                           // M, N, O, P - فارغة
-          quotation.clientName,                     // Q - CLIENT NAME
-          quotation.responsibleEmployee || ''       // R - RESPONSIBLE EMPLOYEE
+          '', '', '',                               // M, N, O - فارغة
+          quotation.clientName,                     // P - CLIENT NAME
+          quotation.responsibleEmployee || '',      // Q - RESPONSIBLE EMPLOYEE
+          ''                                        // R - فارغ
         ];
         rows.push(row);
       }
