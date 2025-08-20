@@ -13,12 +13,32 @@ interface UnificationStats {
   progress: number;
   currentRow?: number;
   currentItemName?: string;
+  currentItem?: string;
   remainingRows?: number;
-  estimatedTimeRemaining?: string;
+  remainingItems?: number;
+  estimatedTimeRemaining?: number;
   processedItems?: number;
   unifiedItems?: number;
   startTime?: string;
+  elapsedTime?: number;
+  progressPercentage?: number;
 }
+
+// دالة لتنسيق الوقت
+const formatTime = (seconds: number): string => {
+  if (!seconds || seconds === 0) return 'حساب...';
+  
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  const parts = [];
+  if (hours > 0) parts.push(`${hours} ساعة`);
+  if (minutes > 0) parts.push(`${minutes} دقيقة`);
+  if (secs > 0) parts.push(`${secs} ثانية`);
+  
+  return parts.join(' و ') || '0 ثانية';
+};
 
 export default function UnificationProgress() {
   const { user } = useAuth();
@@ -59,17 +79,21 @@ export default function UnificationProgress() {
           // تحويل البيانات من تنسيق monitor إلى تنسيق unification progress
           const convertedStats = {
             totalItems: data.total || 0,
-            duplicateGroups: Math.floor((data.total - data.unified) / 2) || 0,
-            duplicateItems: (data.total - data.unified) || 0,
-            status: data.endTime ? 'completed' : (data.startTime ? 'running' : 'idle'),
-            isRunning: !!data.startTime && !data.endTime,
-            progress: data.total > 0 ? Math.round((data.processed / data.total) * 100) : 0,
-            currentRow: data.processed || 0,
+            duplicateGroups: data.groupsCreated || Math.floor((data.total - data.unified) / 2) || 0,
+            duplicateItems: data.duplicatesFound || (data.total - data.unified) || 0,
+            status: data.endTime ? 'completed' : (data.isRunning ? 'running' : 'idle'),
+            isRunning: data.isRunning || false,
+            progress: data.progressPercentage || data.progress || 0,
+            currentRow: data.currentRow || data.processed || 0,
+            currentItem: data.currentItem || '',
+            currentItemName: data.currentItem || '',
             processedItems: data.processed || 0,
             unifiedItems: data.unified || 0,
-            remainingRows: Math.max(0, (data.total || 0) - (data.processed || 0)),
+            remainingRows: data.remainingItems || Math.max(0, (data.total || 0) - (data.processed || 0)),
+            remainingItems: data.remainingItems || 0,
             startTime: data.startTime,
-            estimatedTimeRemaining: data.estimatedTimeRemaining || 'حساب...'
+            elapsedTime: data.elapsedTime || 0,
+            estimatedTimeRemaining: data.estimatedTimeRemaining || 0
           };
           setStats(convertedStats);
         }
@@ -205,6 +229,21 @@ export default function UnificationProgress() {
             </div>
           </div>
 
+          {/* البند الحالي */}
+          {stats.currentItem && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="h-5 w-5 text-yellow-600 animate-pulse" />
+                <span className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                  البند الحالي:
+                </span>
+              </div>
+              <div className="text-lg font-semibold text-yellow-900 dark:text-yellow-100">
+                {stats.currentItem}
+              </div>
+            </div>
+          )}
+
           {/* تفاصيل مباشرة */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
@@ -236,7 +275,7 @@ export default function UnificationProgress() {
             
             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg text-center">
               <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                {stats.estimatedTimeRemaining || 'حساب...'}
+                {formatTime(stats.estimatedTimeRemaining || 0)}
               </div>
               <div className="text-sm text-purple-800 dark:text-purple-300 font-medium">
                 الوقت المتبقي
@@ -244,20 +283,6 @@ export default function UnificationProgress() {
             </div>
           </div>
 
-          {/* البند الحالي */}
-          {stats.currentItemName && (
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  البند قيد المعالجة:
-                </span>
-              </div>
-              <div className="text-gray-900 dark:text-white font-mono text-sm bg-white dark:bg-gray-800 p-3 rounded border">
-                {stats.currentItemName}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
@@ -301,7 +326,7 @@ export default function UnificationProgress() {
       </div>
 
       {/* معلومات إضافية */}
-      {stats.isRunning && stats.startTime && (
+      {stats.isRunning && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6">
           <div className="flex items-center gap-2 mb-3">
             <Clock className="h-5 w-5 text-gray-500" />
@@ -310,11 +335,17 @@ export default function UnificationProgress() {
             </h3>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="text-gray-600 dark:text-gray-400">بدأت في:</span>
+              <span className="text-gray-600 dark:text-gray-400">الوقت المستغرق:</span>
               <span className="text-gray-900 dark:text-white font-medium mr-2">
-                {stats.startTime}
+                {formatTime(stats.elapsedTime || 0)}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">الوقت المتبقي:</span>
+              <span className="text-orange-600 dark:text-orange-400 font-medium mr-2">
+                {formatTime(stats.estimatedTimeRemaining || 0)}
               </span>
             </div>
             <div>

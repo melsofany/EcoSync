@@ -22,6 +22,8 @@ export class SmartUnificationEngine extends EventEmitter {
   private sheets: any;
   private spreadsheetId: string;
   private isRunning = false;
+  private currentItemName = '';
+  private currentRowIndex = 0;
   private stats = {
     total: 0,
     processed: 0,
@@ -29,7 +31,13 @@ export class SmartUnificationEngine extends EventEmitter {
     duplicatesFound: 0,
     groupsCreated: 0,
     startTime: null as Date | null,
-    endTime: null as Date | null
+    endTime: null as Date | null,
+    currentItem: '',
+    currentRow: 0,
+    progress: 0,
+    remainingItems: 0,
+    estimatedTimeRemaining: 0,
+    elapsedTime: 0
   };
 
   constructor() {
@@ -252,6 +260,7 @@ export class SmartUnificationEngine extends EventEmitter {
       }
 
       this.stats.total = items.length;
+      this.stats.remainingItems = items.length;
       this.emit('log', { message: `📊 تم تحميل ${items.length} صنف للمعالجة`, type: 'info' });
 
       // التجميع الذكي
@@ -262,7 +271,14 @@ export class SmartUnificationEngine extends EventEmitter {
       const updates: Array<{ range: string; values: any[][] }> = [];
       let unifiedCount = 0;
 
+      let groupIndex = 0;
       for (const group of groups) {
+        groupIndex++;
+        
+        // تحديث البند الحالي
+        this.currentItemName = group.masterDescription || group.masterPartNumber || `مجموعة ${groupIndex}`;
+        this.stats.currentItem = this.currentItemName;
+        
         for (const item of group.items) {
           if (item.currentId !== group.masterId) {
             updates.push({
@@ -271,9 +287,29 @@ export class SmartUnificationEngine extends EventEmitter {
             });
             unifiedCount++;
           }
+          
+          // تحديث الصف الحالي
+          this.currentRowIndex = item.rowIndex;
+          this.stats.currentRow = item.rowIndex;
         }
         
         this.stats.processed += group.items.length;
+        this.stats.remainingItems = Math.max(0, this.stats.total - this.stats.processed);
+        
+        // حساب نسبة التقدم
+        this.stats.progress = Math.round((this.stats.processed / this.stats.total) * 100);
+        
+        // حساب الوقت المستغرق
+        if (this.stats.startTime) {
+          this.stats.elapsedTime = Math.floor((new Date().getTime() - this.stats.startTime.getTime()) / 1000);
+          
+          // حساب الوقت المتبقي المتوقع
+          if (this.stats.processed > 0) {
+            const timePerItem = this.stats.elapsedTime / this.stats.processed;
+            this.stats.estimatedTimeRemaining = Math.ceil(timePerItem * this.stats.remainingItems);
+          }
+        }
+        
         if (group.items.length > 1) {
           this.stats.duplicatesFound += group.items.length - 1;
         }
@@ -339,7 +375,22 @@ export class SmartUnificationEngine extends EventEmitter {
   }
 
   getStats() {
-    return this.stats;
+    // تحديث الوقت المستغرق إذا كانت العملية قيد التشغيل
+    if (this.isRunning && this.stats.startTime) {
+      this.stats.elapsedTime = Math.floor((new Date().getTime() - this.stats.startTime.getTime()) / 1000);
+      
+      // حساب الوقت المتبقي المتوقع
+      if (this.stats.processed > 0) {
+        const timePerItem = this.stats.elapsedTime / this.stats.processed;
+        this.stats.estimatedTimeRemaining = Math.ceil(timePerItem * this.stats.remainingItems);
+      }
+    }
+    
+    return {
+      ...this.stats,
+      isRunning: this.isRunning,
+      progressPercentage: this.stats.progress
+    };
   }
 
   isProcessRunning(): boolean {
