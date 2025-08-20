@@ -337,6 +337,7 @@ export class SmartUnificationEngine extends EventEmitter {
   private async createUnificationGroupsFast(items: UnificationItem[]): Promise<UnificationGroup[]> {
     const groups: UnificationGroup[] = [];
     const processedItems = new Set<number>();
+    let processedCount = 0;
 
     this.emit('log', { message: `🚀 بدء التجميع السريع لـ ${items.length} صنف...`, type: 'info' });
 
@@ -352,6 +353,7 @@ export class SmartUnificationEngine extends EventEmitter {
       };
 
       processedItems.add(i);
+      processedCount++;
 
       // البحث السريع عن العناصر المشابهة
       for (let j = i + 1; j < items.length; j++) {
@@ -363,6 +365,7 @@ export class SmartUnificationEngine extends EventEmitter {
         if (this.quickMatch(currentItem, compareItem)) {
           group.items.push(compareItem);
           processedItems.add(j);
+          processedCount++;
           
           if (compareItem.description.length > group.masterDescription.length) {
             group.masterDescription = compareItem.description;
@@ -371,11 +374,20 @@ export class SmartUnificationEngine extends EventEmitter {
       }
 
       groups.push(group);
-
-      // تحديث الإحصائيات فوراً
-      this.stats.processed += group.items.length;
-      this.stats.remainingItems = Math.max(0, this.stats.total - this.stats.processed);
-      this.stats.progress = Math.round((this.stats.processed / this.stats.total) * 100);
+      
+      // تحديث التقدم بشكل تدريجي
+      this.stats.processed = processedCount;
+      this.stats.remainingItems = Math.max(0, this.stats.total - processedCount);
+      this.stats.progress = Math.min(100, Math.round((processedCount / this.stats.total) * 100));
+      
+      // تحديث الوقت كل 50 عنصر
+      if (processedCount % 50 === 0 && this.stats.startTime) {
+        this.stats.elapsedTime = Math.floor((new Date().getTime() - this.stats.startTime.getTime()) / 1000);
+        if (processedCount > 0) {
+          const timePerItem = this.stats.elapsedTime / processedCount;
+          this.stats.estimatedTimeRemaining = Math.ceil(timePerItem * this.stats.remainingItems);
+        }
+      }
       
       if (group.items.length > 1) {
         this.stats.duplicatesFound += group.items.length - 1;
@@ -384,22 +396,20 @@ export class SmartUnificationEngine extends EventEmitter {
           type: 'success' 
         });
       }
-      
-      // تحديث الوقت كل 10 مجموعات
-      if (groups.length % 10 === 0) {
-        if (this.stats.startTime) {
-          this.stats.elapsedTime = Math.floor((new Date().getTime() - this.stats.startTime.getTime()) / 1000);
-          if (this.stats.processed > 0) {
-            const timePerItem = this.stats.elapsedTime / this.stats.processed;
-            this.stats.estimatedTimeRemaining = Math.ceil(timePerItem * this.stats.remainingItems);
-          }
-        }
-      }
     }
 
-    const totalDuplicates = groups.reduce((sum, group) => sum + (group.items.length > 1 ? group.items.length - 1 : 0), 0);
+    // التأكد من الإحصائيات النهائية
+    this.stats.remainingItems = 0;
+    this.stats.progress = 100;
+    
+    // حساب الوقت النهائي
+    if (this.stats.startTime) {
+      this.stats.elapsedTime = Math.floor((new Date().getTime() - this.stats.startTime.getTime()) / 1000);
+      this.stats.estimatedTimeRemaining = 0;
+    }
+    
     this.emit('log', { 
-      message: `✅ تم إنشاء ${groups.length} مجموعة، وفر ${totalDuplicates} عنصر مكرر`, 
+      message: `✅ تم إنشاء ${groups.length} مجموعة، وفر ${this.stats.duplicatesFound} عنصر مكرر`, 
       type: 'success' 
     });
 
