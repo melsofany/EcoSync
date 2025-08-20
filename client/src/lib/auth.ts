@@ -46,10 +46,22 @@ export const getCurrentUser = async (): Promise<User> => {
 export const hasRole = (user: User | null, roles: string[]): boolean => {
   if (!user) return false;
   
-  // إذا كان للمستخدم صلاحيات مفصلة
+  // التحقق من الصلاحيات سواء كانت في permissions أو في role
+  let userPermissions: string[] = [];
+  
+  // إذا كانت الصلاحيات في حقل permissions كمصفوفة
   if (user.permissions && user.permissions.length > 0) {
+    userPermissions = user.permissions;
+  }
+  // إذا كانت الصلاحيات في حقل role كسلسلة نصية مفصولة بفواصل
+  else if (user.role && user.role.includes('perm-')) {
+    userPermissions = user.role.split(',').map(p => p.trim());
+  }
+  
+  // إذا كان للمستخدم صلاحيات مفصلة
+  if (userPermissions.length > 0) {
     // التحقق من وجود صلاحيات إدارية أساسية
-    const hasAdminPermissions = user.permissions.some(p => 
+    const hasAdminPermissions = userPermissions.some(p => 
       ['perm-001', 'perm-002', 'perm-003', 'perm-010'].includes(p)
     );
     if (hasAdminPermissions) {
@@ -64,9 +76,21 @@ export const hasRole = (user: User | null, roles: string[]): boolean => {
 export const canAccessSection = (user: User | null, section: string): boolean => {
   if (!user) return false;
 
-  // إذا كان للمستخدم صلاحيات مفصلة، منحه الوصول الكامل إذا كان لديه صلاحيات إدارية
+  // التحقق من الصلاحيات سواء كانت في permissions أو في role
+  let userPermissions: string[] = [];
+  
+  // إذا كانت الصلاحيات في حقل permissions كمصفوفة
   if (user.permissions && user.permissions.length > 0) {
-    const hasAdminPermissions = user.permissions.some(p => 
+    userPermissions = user.permissions;
+  }
+  // إذا كانت الصلاحيات في حقل role كسلسلة نصية مفصولة بفواصل
+  else if (user.role && user.role.includes('perm-')) {
+    userPermissions = user.role.split(',').map(p => p.trim());
+  }
+  
+  // إذا كان للمستخدم صلاحيات مفصلة، منحه الوصول الكامل إذا كان لديه صلاحيات إدارية
+  if (userPermissions.length > 0) {
+    const hasAdminPermissions = userPermissions.some(p => 
       ['perm-001', 'perm-002', 'perm-003', 'perm-010'].includes(p)
     );
     if (hasAdminPermissions) {
