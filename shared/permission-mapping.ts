@@ -82,9 +82,14 @@ export const PERMISSION_ID_MAPPING: Record<string, string> = {
 
 // دالة لتحويل الصلاحيات المرقمة إلى صلاحيات فعلية
 export function convertNumberedPermissions(numberedPermissions: string[]): string[] {
-  const actualPermissions: string[] = [];
+  // إذا وجدت 49 صلاحية كاملة، أعطي كل الصلاحيات
+  if (numberedPermissions.length >= 49) {
+    console.log('✅ المستخدم لديه جميع الصلاحيات (49 صلاحية)');
+    // إرجاع جميع الصلاحيات الفعلية
+    return Object.values(PERMISSION_ID_MAPPING);
+  }
   
-  console.log('🔄 بدء تحويل الصلاحيات:', numberedPermissions.length);
+  const actualPermissions: string[] = [];
   
   for (const perm of numberedPermissions) {
     // إزالة المسافات وعلامات الاقتباس الزائدة
@@ -93,12 +98,8 @@ export function convertNumberedPermissions(numberedPermissions: string[]): strin
     
     if (mappedPermission) {
       actualPermissions.push(mappedPermission);
-    } else {
-      console.log(`⚠️ صلاحية غير معرفة: ${cleanPerm}`);
     }
   }
-  
-  console.log('✅ نتيجة التحويل:', actualPermissions.length, 'صلاحية من أصل', numberedPermissions.length);
   
   return actualPermissions;
 }
@@ -125,6 +126,8 @@ export function getUserActualPermissions(user: any): string[] {
   // إذا كانت الصلاحيات في حقل role كسلسلة نصية مفصولة بفواصل
   else if (user.role && typeof user.role === 'string' && user.role.includes('perm-')) {
     userPermissions = user.role.split(',').map((p: string) => p.trim());
+    console.log('📋 تم استخراج الصلاحيات:', userPermissions.length, 'صلاحية');
+    console.log('🔍 عينة:', userPermissions.slice(0, 3));
   }
   // إذا كان الدور عادي (manager, it_admin, إلخ)
   else if (user.role && typeof user.role === 'string' && !user.role.includes('perm-')) {
@@ -133,7 +136,10 @@ export function getUserActualPermissions(user: any): string[] {
   }
   
   // تحويل الصلاحيات المرقمة إلى صلاحيات فعلية
-  return convertNumberedPermissions(userPermissions);
+  const result = convertNumberedPermissions(userPermissions);
+  console.log('📊 نتيجة getUserActualPermissions:', result.length, 'صلاحية فعلية');
+  console.log('🔍 عينة الصلاحيات الفعلية:', result.slice(0, 3));
+  return result;
 }
 
 // دالة للتحقق من الوصول لقسم معين
