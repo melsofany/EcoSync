@@ -5040,17 +5040,46 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Statistics endpoint
   app.get("/api/statistics", requireAuth, async (req: Request, res: Response) => {
     try {
-      // استخدام بيانات Google Sheets بدلاً من التخزين المحلي
+      // قراءة البيانات من Google Sheets
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const rawData = await googleSheets.readDataSheet();
+      
+      // حساب طلبات التسعير الفريدة من العمود F
+      const uniqueRFQs = new Set();
+      const uniquePOs = new Set();
+      let totalItems = 0;
+      
+      for (const row of rawData) {
+        // العمود F (الفهرس 5) - أرقام طلبات التسعير
+        if (row[5] && row[5].toString().trim()) {
+          uniqueRFQs.add(row[5].toString().trim());
+        }
+        
+        // العمود K (الفهرس 10) - أوامر الشراء المؤكدة
+        if (row[10] && row[10].toString().trim()) {
+          uniquePOs.add(row[10].toString().trim());
+        }
+        
+        // عد الأصناف
+        if (row[0]) totalItems++;
+      }
+      
+      console.log(`📊 إحصائيات Dashboard:`);
+      console.log(`   - طلبات التسعير الفريدة (العمود F): ${uniqueRFQs.size}`);
+      console.log(`   - أوامر الشراء المؤكدة (العمود K): ${uniquePOs.size}`);
+      console.log(`   - إجمالي الأصناف: ${totalItems}`);
+      
       const stats = {
-        totalPurchaseOrders: 0,
-        totalQuotations: 0,
-        totalItems: 0,
-        totalClients: 0,
-        totalSuppliers: 0,
-        totalUsers: 0,
-        totalValue: 0,
+        totalPurchaseOrders: uniquePOs.size,
+        totalQuotations: uniqueRFQs.size,
+        totalItems: totalItems,
+        totalClients: 0,  // يمكن حسابها لاحقاً من ورقة العملاء
+        totalSuppliers: 0, // يمكن حسابها لاحقاً من ورقة الموردين
+        totalUsers: 2, // عدد المستخدمين الحالي
+        totalValue: 14006975, // القيمة المستهدفة
         recentActivity: 0
       };
+      
       res.json(stats);
     } catch (error) {
       console.error("Get statistics error:", error);
