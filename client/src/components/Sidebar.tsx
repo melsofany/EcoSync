@@ -272,7 +272,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-3 lg:p-4 space-y-2 lg:space-y-3 overflow-y-auto">
           {menuItems.map((item) => {
-            const hasAccess = canAccessSection(item.section);
+            const hasAccess = canAccessSection(item.section, user);
             console.log(`📊 Sidebar - ${item.section}: ${hasAccess ? '✅' : '❌'}`);
             if (!hasAccess) {
               return null;

@@ -105,12 +105,25 @@ const getStoredUser = (): User | null => {
   return null;
 };
 
-export const canAccessSection = (section: string): boolean => {
-  const user = getStoredUser();
+export const canAccessSection = (section: string, currentUser?: User | null): boolean => {
+  // استخدم المستخدم الممرر أو احصل عليه من localStorage
+  const user = currentUser || getStoredUser();
   
   if (!user) {
     console.log(`❌ canAccessSection: لا يوجد مستخدم للقسم ${section}`);
     return false;
+  }
+  
+  console.log(`🔍 canAccessSection للقسم ${section}:`, {
+    username: user.username,
+    role: user.role,
+    fullName: user.fullName
+  });
+  
+  // إذا كان المستخدم له دور manager أو it_admin، أعطه كل شيء
+  if (user.role === 'manager' || user.role === 'it_admin') {
+    console.log(`✅ المستخدم ${user.username} له دور إداري: ${user.role}`);
+    return true;
   }
   
   // إذا كان المستخدم له 49 صلاحية، أعطه كل شيء مباشرة
@@ -121,11 +134,6 @@ export const canAccessSection = (section: string): boolean => {
       return true;
     }
   }
-  
-  console.log(`🔍 canAccessSection للقسم ${section}:`, {
-    username: user.username,
-    role: user.role?.substring(0, 50) + (user.role?.length > 50 ? '...' : '')
-  });
   
   // استخدام النظام الجديد للصلاحيات
   const result = canUserAccessSection(user, section);

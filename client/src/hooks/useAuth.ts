@@ -15,7 +15,7 @@ export function useAuth() {
     gcTime: 10 * 60 * 1000, // 10 دقائق
   });
 
-  // سجل البيانات المستلمة
+  // سجل البيانات المستلمة وحفظها في localStorage
   if (user) {
     console.log('🔐 بيانات المستخدم من API:', {
       id: user.id,
@@ -23,6 +23,10 @@ export function useAuth() {
       fullName: user.fullName,
       role: user.role
     });
+    
+    // حفظ البيانات في localStorage مباشرة
+    localStorage.setItem('user', JSON.stringify(user));
+    console.log('💾 تم حفظ بيانات المستخدم في localStorage');
   }
 
   return {
