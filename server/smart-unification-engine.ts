@@ -333,7 +333,140 @@ export class SmartUnificationEngine extends EventEmitter {
     return commonWords / Math.max(words1.length, words2.length);
   }
 
-  // عملية التجميع الذكي
+  // عملية التجميع السريع بدون AI
+  private async createUnificationGroupsFast(items: UnificationItem[]): Promise<UnificationGroup[]> {
+    const groups: UnificationGroup[] = [];
+    const processedItems = new Set<number>();
+
+    this.emit('log', { message: `🚀 بدء التجميع السريع لـ ${items.length} صنف...`, type: 'info' });
+
+    for (let i = 0; i < items.length; i++) {
+      if (processedItems.has(i)) continue;
+
+      const currentItem = items[i];
+      const group: UnificationGroup = {
+        masterId: `P-${(groups.length + 1).toString().padStart(7, '0')}`,
+        items: [currentItem],
+        masterPartNumber: currentItem.partNumber,
+        masterDescription: currentItem.description
+      };
+
+      processedItems.add(i);
+
+      // البحث السريع عن العناصر المشابهة
+      for (let j = i + 1; j < items.length; j++) {
+        if (processedItems.has(j)) continue;
+
+        const compareItem = items[j];
+        
+        // مقارنة سريعة بدون AI
+        if (this.quickMatch(currentItem, compareItem)) {
+          group.items.push(compareItem);
+          processedItems.add(j);
+          
+          if (compareItem.description.length > group.masterDescription.length) {
+            group.masterDescription = compareItem.description;
+          }
+        }
+      }
+
+      groups.push(group);
+
+      // تحديث الإحصائيات فوراً
+      this.stats.processed += group.items.length;
+      this.stats.remainingItems = Math.max(0, this.stats.total - this.stats.processed);
+      this.stats.progress = Math.round((this.stats.processed / this.stats.total) * 100);
+      
+      if (group.items.length > 1) {
+        this.stats.duplicatesFound += group.items.length - 1;
+        this.emit('log', { 
+          message: `📦 مجموعة ${group.masterId}: ${group.items.length} عنصر مكرر`, 
+          type: 'success' 
+        });
+      }
+      
+      // تحديث الوقت كل 10 مجموعات
+      if (groups.length % 10 === 0) {
+        if (this.stats.startTime) {
+          this.stats.elapsedTime = Math.floor((new Date().getTime() - this.stats.startTime.getTime()) / 1000);
+          if (this.stats.processed > 0) {
+            const timePerItem = this.stats.elapsedTime / this.stats.processed;
+            this.stats.estimatedTimeRemaining = Math.ceil(timePerItem * this.stats.remainingItems);
+          }
+        }
+      }
+    }
+
+    const totalDuplicates = groups.reduce((sum, group) => sum + (group.items.length > 1 ? group.items.length - 1 : 0), 0);
+    this.emit('log', { 
+      message: `✅ تم إنشاء ${groups.length} مجموعة، وفر ${totalDuplicates} عنصر مكرر`, 
+      type: 'success' 
+    });
+
+    return groups;
+  }
+  
+  // مقارنة سريعة بدون AI
+  private quickMatch(item1: UnificationItem, item2: UnificationItem): boolean {
+    // 1. تطابق LINE ITEM
+    if (item1.lineItem && item2.lineItem) {
+      if (item1.lineItem.trim().toUpperCase() === item2.lineItem.trim().toUpperCase()) {
+        return true;
+      }
+    }
+    
+    // 2. تطابق PART NUMBER بعد التنظيف
+    if (item1.partNumber && item2.partNumber) {
+      const clean1 = this.normalizePartNumber(item1.partNumber);
+      const clean2 = this.normalizePartNumber(item2.partNumber);
+      if (clean1 === clean2) {
+        return true;
+      }
+      
+      // تحقق من احتواء أحدهما على الآخر
+      if (clean1.length > 4 && clean2.length > 4) {
+        if (clean1.includes(clean2) || clean2.includes(clean1)) {
+          // تحقق إضافي من الوصف
+          if (item1.description && item2.description) {
+            const desc1 = item1.description.toUpperCase();
+            const desc2 = item2.description.toUpperCase();
+            // البحث عن نفس الماركة
+            const brands = ['SCHNEIDER', 'SCHNIEDER', 'TELEMECANIQUE', 'ABB', 'SIEMENS'];
+            for (const brand of brands) {
+              if (desc1.includes(brand) && desc2.includes(brand)) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // 3. تطابق المواصفات للمنتجات الكهربائية
+    if (item1.description && item2.description) {
+      const info1 = this.extractProductInfo(item1);
+      const info2 = this.extractProductInfo(item2);
+      
+      // إذا كان نفس الموديل
+      if (info1.model && info2.model && info1.model === info2.model) {
+        return true;
+      }
+      
+      // إذا كانت المواصفات الكهربائية متطابقة
+      const specs1 = info1.specs.sort().join(',');
+      const specs2 = info2.specs.sort().join(',');
+      if (specs1 && specs2 && specs1 === specs2) {
+        // تحقق من الماركة
+        if (this.haveSameBrand(item1.description, item2.description)) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  }
+
+  // عملية التجميع الذكي مع AI (بطيء)
   private async createUnificationGroups(items: UnificationItem[]): Promise<UnificationGroup[]> {
     const groups: UnificationGroup[] = [];
     const processedItems = new Set<number>();
@@ -467,10 +600,12 @@ export class SmartUnificationEngine extends EventEmitter {
       this.stats.total = items.length;
       this.stats.remainingItems = items.length;
       this.emit('log', { message: `📊 تم تحميل ${items.length} صنف للمعالجة`, type: 'info' });
+      console.log('📊 بدء التجميع الذكي للبنود...');
 
-      // التجميع الذكي
-      const groups = await this.createUnificationGroups(items);
+      // التجميع الذكي - معالجة سريعة بدون DeepSeek أولاً
+      const groups = await this.createUnificationGroupsFast(items);
       this.stats.groupsCreated = groups.length;
+      console.log(`✅ تم إنشاء ${groups.length} مجموعة`);
 
       // إعداد التحديثات
       const updates: Array<{ range: string; values: any[][] }> = [];
