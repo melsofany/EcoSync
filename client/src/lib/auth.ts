@@ -10,6 +10,7 @@ export interface User {
   username: string;
   fullName: string;
   role: string;
+  permissions?: string[]; // صلاحيات مفصلة اختيارية
   isActive: boolean;
   isOnline: boolean;
   lastLoginAt: string | null;
@@ -43,11 +44,35 @@ export const getCurrentUser = async (): Promise<User> => {
 };
 
 export const hasRole = (user: User | null, roles: string[]): boolean => {
-  return user ? roles.includes(user.role) : false;
+  if (!user) return false;
+  
+  // إذا كان للمستخدم صلاحيات مفصلة
+  if (user.permissions && user.permissions.length > 0) {
+    // التحقق من وجود صلاحيات إدارية أساسية
+    const hasAdminPermissions = user.permissions.some(p => 
+      ['perm-001', 'perm-002', 'perm-003', 'perm-010'].includes(p)
+    );
+    if (hasAdminPermissions) {
+      return true; // منح الوصول الكامل للمستخدمين ذوي الصلاحيات الإدارية
+    }
+  }
+  
+  // التحقق العادي من الأدوار
+  return roles.includes(user.role);
 };
 
 export const canAccessSection = (user: User | null, section: string): boolean => {
   if (!user) return false;
+
+  // إذا كان للمستخدم صلاحيات مفصلة، منحه الوصول الكامل إذا كان لديه صلاحيات إدارية
+  if (user.permissions && user.permissions.length > 0) {
+    const hasAdminPermissions = user.permissions.some(p => 
+      ['perm-001', 'perm-002', 'perm-003', 'perm-010'].includes(p)
+    );
+    if (hasAdminPermissions) {
+      return true; // منح الوصول الكامل للمستخدمين ذوي الصلاحيات الإدارية
+    }
+  }
 
   // استخدام نظام الصلاحيات الجديد إذا كان متوفراً
   try {

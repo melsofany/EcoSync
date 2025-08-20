@@ -6776,13 +6776,36 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log('📋 جلب المستخدمين من Google Sheets...');
       const users = await usersGoogleSheetsManager.getAllUsers();
       
-      // إزالة كلمات المرور من الاستجابة
+      // إزالة كلمات المرور من الاستجابة وتحويل الصلاحيات
       const usersWithoutPasswords = users.map(user => {
         const { password, ...userWithoutPassword } = user;
+        
+        // تحويل الصلاحيات من string إلى array إذا كانت من نوع الصلاحيات المفصلة
+        let permissions: string[] = [];
+        if (user.role && user.role.includes('perm-')) {
+          // إذا كان الـ role يحتوي على صلاحيات مفصلة، حولها إلى array
+          permissions = user.role.split(',').map(p => p.trim());
+          userWithoutPassword.permissions = permissions;
+          userWithoutPassword.role = 'custom'; // دور مخصص بصلاحيات مفصلة
+        } else if (user.permissions) {
+          // إذا كانت الصلاحيات موجودة في حقل permissions
+          try {
+            permissions = typeof user.permissions === 'string' 
+              ? JSON.parse(user.permissions) 
+              : user.permissions;
+            userWithoutPassword.permissions = permissions;
+          } catch (e) {
+            userWithoutPassword.permissions = [];
+          }
+        } else {
+          userWithoutPassword.permissions = [];
+        }
+        
         // تسجيل تفصيلي للمستخدمين مع الصور
         if (user.username === 'Ahmed' && user.profileImage) {
           console.log(`📸 المستخدم Ahmed له صورة بطول ${user.profileImage.length} حرف`);
         }
+        
         return userWithoutPassword;
       });
       
