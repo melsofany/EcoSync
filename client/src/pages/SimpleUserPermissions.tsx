@@ -111,7 +111,7 @@ export default function SimpleUserPermissions() {
 
   const users = (usersData as any)?.users || usersData || [];
   const permissions = (permissionsData as any)?.permissions || permissionsData || [];
-  const currentUser = users.find((u: User) => u.id === selectedUserId);
+  const selectedUserData = users.find((u: User) => u.id === selectedUserId);
   
   // تسجيل تفصيلي للصور والبيانات
   useEffect(() => {
@@ -156,14 +156,14 @@ export default function SimpleUserPermissions() {
   // تحديث صلاحيات المستخدم
   const updatePermissionsMutation = useMutation({
     mutationFn: async () => {
-      if (!currentUser) throw new Error('لم يتم اختيار مستخدم');
+      if (!selectedUserData) throw new Error('لم يتم اختيار مستخدم');
       
       console.log('إرسال طلب تحديث الصلاحيات:', {
-        username: currentUser.username,
+        username: selectedUserData.username,
         permissions: Array.from(userPermissions)
       });
       
-      const response = await apiRequest('PATCH', `/api/user-permissions/${currentUser.username}`, {
+      const response = await apiRequest('PATCH', `/api/user-permissions/${selectedUserData.username}`, {
         permissions: Array.from(userPermissions)
       });
       
@@ -175,7 +175,7 @@ export default function SimpleUserPermissions() {
       console.log('تم تحديث الصلاحيات بنجاح:', data);
       toast({
         title: "تم التحديث",
-        description: `تم حفظ ${Array.from(userPermissions).length} صلاحية للمستخدم ${currentUser?.fullName}`,
+        description: `تم حفظ ${Array.from(userPermissions).length} صلاحية للمستخدم ${selectedUserData?.fullName}`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/sheets-users'] });
     },
@@ -714,21 +714,21 @@ export default function SimpleUserPermissions() {
                   </SelectContent>
                 </Select>
 
-                {currentUser && (
+                {selectedUserData && (
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold text-blue-900">{currentUser.fullName}</h3>
+                        <h3 className="font-semibold text-blue-900">{selectedUserData.fullName}</h3>
                         <p className="text-sm text-blue-700">
-                          {currentUser.username} • {getRoleLabel(currentUser.role)}
+                          {selectedUserData.username} • {getRoleLabel(selectedUserData.role)}
                         </p>
-                        <p className="text-sm text-blue-600">{currentUser.email}</p>
+                        <p className="text-sm text-blue-600">{selectedUserData.email}</p>
                       </div>
                       <div className="flex gap-2">
-                        <Badge variant={currentUser.isActive ? "default" : "secondary"}>
-                          {currentUser.isActive ? "نشط" : "غير نشط"}
+                        <Badge variant={selectedUserData.isActive ? "default" : "secondary"}>
+                          {selectedUserData.isActive ? "نشط" : "غير نشط"}
                         </Badge>
-                        {currentUser.canAccessBot && (
+                        {selectedUserData.canAccessBot && (
                           <Badge variant="outline" className="text-green-700 border-green-300">
                             وصول البوت
                           </Badge>
@@ -742,7 +742,7 @@ export default function SimpleUserPermissions() {
           </Card>
 
           {/* الصلاحيات */}
-          {currentUser && (
+          {selectedUserData && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -750,7 +750,7 @@ export default function SimpleUserPermissions() {
                   صلاحيات المستخدم
                 </CardTitle>
                 <CardDescription>
-                  حدد الصلاحيات للمستخدم {currentUser.fullName}
+                  حدد الصلاحيات للمستخدم {selectedUserData.fullName}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
