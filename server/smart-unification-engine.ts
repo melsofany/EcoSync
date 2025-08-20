@@ -41,13 +41,13 @@ export class SmartUnificationEngine extends EventEmitter {
   private async initializeSheets(): Promise<void> {
     try {
       // استخدام المفتاح الجديد من الملف المحلي
-      const fs = require('fs');
-      const path = require('path');
+      const { readFileSync } = await import('fs');
+      const { resolve } = await import('path');
       
       let credentials;
       try {
-        const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
-        const fileContent = fs.readFileSync(credentialsPath, 'utf8');
+        const credentialsPath = resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
+        const fileContent = readFileSync(credentialsPath, 'utf8');
         credentials = JSON.parse(fileContent);
       } catch (fileError) {
         console.error('❌ خطأ في قراءة مفتاح Google Sheets:', fileError.message);
