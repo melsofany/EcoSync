@@ -117,10 +117,6 @@ export class GoogleSheetsUnification {
 
   private async getItemsFromGoogleSheets() {
     try {
-      // إعداد المصادقة باستخدام نفس بيانات UserSheetsManager
-      const credentials = {
-        type: "service_account",
-        project_id: "cortoba-supp-sys",
       const fs = require("fs");
       const path = require("path");
       
@@ -133,7 +129,6 @@ export class GoogleSheetsUnification {
         console.error("❌ خطأ في قراءة مفتاح Google Sheets:", fileError.message);
         throw fileError;
       }
-      };
       
       const auth = new GoogleAuth({
         credentials,
@@ -219,9 +214,6 @@ export class GoogleSheetsUnification {
 
   private async getFullSheetsData() {
     try {
-      const credentials = {
-        type: "service_account",
-        project_id: "cortoba-supp-sys",
       const fs = require("fs");
       const path = require("path");
       
@@ -234,7 +226,6 @@ export class GoogleSheetsUnification {
         console.error("❌ خطأ في قراءة مفتاح Google Sheets:", fileError.message);
         throw fileError;
       }
-      };
       
       const auth = new GoogleAuth({
         credentials,
@@ -733,6 +724,29 @@ export class GoogleSheetsUnification {
     return itemId;
   }
 
+  private async getSheetsService() {
+    const fs = require("fs");
+    const path = require("path");
+    
+    let credentials;
+    try {
+      const credentialsPath = path.resolve("./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json");
+      const fileContent = fs.readFileSync(credentialsPath, "utf8");
+      credentials = JSON.parse(fileContent);
+    } catch (fileError) {
+      console.error("❌ خطأ في قراءة مفتاح Google Sheets:", fileError.message);
+      throw fileError;
+    }
+    
+    const auth = new GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    const sheets = google.sheets({ version: 'v4', auth });
+    return sheets;
+  }
+
   private async initializeNextItemId(): Promise<void> {
     try {
       // الحصول على أعلى معرف موجود من Google Sheets
@@ -765,10 +779,6 @@ export class GoogleSheetsUnification {
 
   private async applyUpdatesToSheets(updates: Array<{ range: string; values: any[][] }>): Promise<void> {
     try {
-      // إعداد المصادقة مع صلاحيات الكتابة
-      const credentials = {
-        type: "service_account",
-        project_id: "cortoba-supp-sys",
       const fs = require("fs");
       const path = require("path");
       
