@@ -2196,17 +2196,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/monitor/start", async (req: Request, res: Response) => {
     try {
-      if (!smartEngine) {
-        const { SmartUnificationEngine } = await import('./smart-unification-engine');
-        smartEngine = new SmartUnificationEngine();
-      }
-      
-      if (smartEngine.isProcessRunning()) {
-        return res.json({
-          success: false,
-          message: "التوحيد الذكي قيد التشغيل بالفعل"
-        });
-      }
+      // إنشاء محرك جديد في كل مرة لضمان حالة نظيفة
+      const { SmartUnificationEngine } = await import('./smart-unification-engine');
+      smartEngine = new SmartUnificationEngine();
       
       // بدء التوحيد الذكي المتقدم
       smartEngine.startSmartUnification().catch((error: any) => {
@@ -2229,6 +2221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       if (smartEngine) {
         smartEngine.stopUnification();
+        smartEngine = null; // مسح المحرك بعد الإيقاف
       }
       res.json({
         success: true,

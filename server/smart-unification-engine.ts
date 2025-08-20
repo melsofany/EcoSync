@@ -210,8 +210,26 @@ export class SmartUnificationEngine extends EventEmitter {
       return;
     }
 
+    // إعادة تعيين جميع الإحصائيات
+    this.stats = {
+      total: 0,
+      processed: 0,
+      unified: 0,
+      duplicatesFound: 0,
+      groupsCreated: 0,
+      startTime: new Date(),
+      endTime: null,
+      currentItem: '',
+      currentRow: 0,
+      progress: 0,
+      remainingItems: 0,
+      estimatedTimeRemaining: 0,
+      elapsedTime: 0
+    };
+
     this.isRunning = true;
-    this.stats.startTime = new Date();
+    this.currentItemName = '';
+    this.currentRowIndex = 0;
     this.emit('log', { message: '🚀 بدء التوحيد الذكي المتقدم...', type: 'info' });
 
     try {
