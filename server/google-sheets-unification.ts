@@ -372,9 +372,6 @@ export class GoogleSheetsUnification {
 
   private async applyUpdatesToSheets(updates: { range: string; values: any[][] }[]) {
     try {
-      const credentials = {
-        type: "service_account",
-        project_id: "cortoba-supp-sys",
       const fs = require("fs");
       const path = require("path");
       
@@ -387,7 +384,6 @@ export class GoogleSheetsUnification {
         console.error("❌ خطأ في قراءة مفتاح Google Sheets:", fileError.message);
         throw fileError;
       }
-      };
       
       const auth = new GoogleAuth({
         credentials,

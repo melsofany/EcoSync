@@ -619,37 +619,7 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
-  async getAllItems(): Promise<any[]> {
-    try {
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:AA'
-      });
-
-      const rows = response.data.values || [];
-      const items = [];
-
-      for (const row of rows) {
-        if (row[3] && row[4]) { // Part Number and Description exist
-          items.push({
-            id: row[0] || '', // Column A - Item Number
-            itemNumber: row[0] || '',
-            partNumber: row[3] || '', // Column D - Part Number
-            description: row[4] || '', // Column E - Description
-            rfqNumber: row[5] || '', // Column F - RFQ Number
-            requestDate: row[6] || '', // Column G - Request Date
-            quantity: row[7] || '', // Column H - Quantity
-            clientName: row[16] || '' // Column Q - Client Name
-          });
-        }
-      }
-
-      return items;
-    } catch (error) {
-      console.error('❌ خطأ في جلب جميع الأصناف:', error);
-      return [];
-    }
-  }
+  // تم حذف هذه الدالة لأنها مكررة - يتم استخدام getAllItems الموجودة في السطر 273
 
   /**
    * قراءة البيانات من صفحة تسعير الموردين
