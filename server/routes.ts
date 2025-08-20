@@ -1168,6 +1168,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fix user roles endpoint (لإصلاح الأدوار المحفوظة خطأ)
+  app.post('/api/admin/fix-user-roles', async (req, res) => {
+    try {
+      console.log('🔧 بدء إصلاح أدوار المستخدمين...');
+      
+      // إصلاح دور المستخدم Ahmed
+      const fixed = await usersGoogleSheetsManager.fixUserRole('Ahmed', 'it_admin');
+      
+      if (fixed) {
+        console.log('✅ تم إصلاح دور المستخدم Ahmed إلى it_admin');
+        res.json({ 
+          success: true, 
+          message: 'تم إصلاح أدوار المستخدمين',
+          fixed: ['Ahmed -> it_admin']
+        });
+      } else {
+        res.status(500).json({ success: false, message: 'فشل في إصلاح الأدوار' });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في إصلاح الأدوار:', error);
+      res.status(500).json({ success: false, message: 'خطأ في إصلاح الأدوار' });
+    }
+  });
+
   // نظام إعادة تعيين كلمة المرور
   // 1. طلب إعادة تعيين كلمة المرور - إرسال البريد الإلكتروني
   app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {

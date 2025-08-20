@@ -513,6 +513,69 @@ export class UsersGoogleSheetsManager {
     }
   }
 
+  // إصلاح دور المستخدم (نقل الصلاحيات من العمود H إلى I ووضع الدور الصحيح)
+  async fixUserRole(username: string, correctRole: string): Promise<boolean> {
+    try {
+      console.log(`🔧 إصلاح دور المستخدم ${username}...`);
+      
+      const users = await this.getAllUsers();
+      const userIndex = users.findIndex(user => user.username.trim() === username.trim());
+      
+      if (userIndex === -1) {
+        console.log(`❌ المستخدم ${username} غير موجود`);
+        return false;
+      }
+
+      const rowNumber = userIndex + 2;
+      const user = users[userIndex];
+      
+      // التحقق من أن الدور الحالي يحتوي على صلاحيات (يبدأ بـ perm-)
+      if (user.role && user.role.includes('perm-')) {
+        console.log(`📋 نقل الصلاحيات من العمود H إلى العمود I`);
+        
+        // نقل الصلاحيات من العمود H إلى العمود I
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `USERS!I${rowNumber}`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [[user.role]] // الصلاحيات التي كانت في العمود H
+          }
+        });
+        
+        // وضع الدور الصحيح في العمود H
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `USERS!H${rowNumber}`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [[correctRole]]
+          }
+        });
+        
+        // تحديث وقت التعديل
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `USERS!P${rowNumber}`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [[new Date().toISOString()]]
+          }
+        });
+        
+        console.log(`✅ تم إصلاح دور المستخدم ${username} إلى ${correctRole}`);
+        console.log(`📋 تم نقل الصلاحيات إلى العمود الصحيح`);
+        return true;
+      } else {
+        console.log(`⚠️ دور المستخدم ${username} صحيح بالفعل: ${user.role}`);
+        return true;
+      }
+    } catch (error) {
+      console.error('❌ خطأ في إصلاح دور المستخدم:', error);
+      return false;
+    }
+  }
+
   // إضافة مستخدم جديد
   async addUser(userData: {
     username: string;
