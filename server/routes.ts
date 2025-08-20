@@ -6886,6 +6886,136 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // حذف مستخدم من Google Sheets
+  app.delete("/api/sheets-users/:username", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      
+      console.log(`🗑️ محاولة حذف المستخدم: ${username}`);
+      
+      // منع حذف المستخدم الحالي
+      if (username === req.session.user?.username) {
+        return res.status(400).json({ 
+          success: false,
+          message: "لا يمكنك حذف حسابك الخاص" 
+        });
+      }
+      
+      // منع حذف المستخدم admin
+      if (username === 'admin') {
+        return res.status(400).json({ 
+          success: false,
+          message: "لا يمكن حذف مستخدم admin الأساسي" 
+        });
+      }
+      
+      // البحث عن المستخدم وحذفه
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const userIndex = users.findIndex(u => u.username === username);
+      
+      if (userIndex === -1) {
+        return res.status(404).json({ 
+          success: false,
+          message: "المستخدم غير موجود" 
+        });
+      }
+      
+      // حذف الصف من Google Sheets
+      const rowNumber = userIndex + 2; // +2 لأن الصف الأول عناوين والصفوف تبدأ من 1
+      
+      // حذف الصف بالكامل
+      await usersGoogleSheetsManager.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        resource: {
+          requests: [{
+            deleteDimension: {
+              range: {
+                sheetId: 0, // افتراض أن USERS في الورقة الأولى
+                dimension: 'ROWS',
+                startIndex: rowNumber - 1, // -1 لأن الفهرس يبدأ من 0
+                endIndex: rowNumber
+              }
+            }
+          }]
+        }
+      });
+      
+      console.log(`✅ تم حذف المستخدم ${username} بنجاح`);
+      res.json({ 
+        success: true, 
+        message: `تم حذف المستخدم ${username} بنجاح` 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في حذف المستخدم:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "خطأ في حذف المستخدم" 
+      });
+    }
+  });
+
+  // تغيير حالة المستخدم (تفعيل/حظر)
+  app.patch("/api/sheets-users/:username/status", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { username } = req.params;
+      const { isActive } = req.body;
+      
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ 
+          success: false,
+          message: "حالة المستخدم مطلوبة (true أو false)" 
+        });
+      }
+      
+      console.log(`🔄 تغيير حالة المستخدم ${username} إلى ${isActive ? 'نشط' : 'محظور'}`);
+      
+      // البحث عن المستخدم
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const userIndex = users.findIndex(u => u.username === username);
+      
+      if (userIndex === -1) {
+        return res.status(404).json({ 
+          success: false,
+          message: "المستخدم غير موجود" 
+        });
+      }
+      
+      // تحديث الحالة في Google Sheets
+      const rowNumber = userIndex + 2;
+      
+      await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        range: `USERS!J${rowNumber}`, // J: IS_ACTIVE
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[isActive ? 'TRUE' : 'FALSE']]
+        }
+      });
+      
+      // تحديث وقت التعديل
+      await usersGoogleSheetsManager.sheets.spreadsheets.values.update({
+        spreadsheetId: usersGoogleSheetsManager.spreadsheetId,
+        range: `USERS!P${rowNumber}`, // P: UPDATED_AT
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[new Date().toISOString()]]
+        }
+      });
+      
+      console.log(`✅ تم ${isActive ? 'تفعيل' : 'حظر'} المستخدم ${username} بنجاح`);
+      res.json({ 
+        success: true, 
+        message: `تم ${isActive ? 'تفعيل' : 'حظر'} المستخدم بنجاح` 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في تغيير حالة المستخدم:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "خطأ في تغيير حالة المستخدم" 
+      });
+    }
+  });
+
   // فحص صلاحية الوصول للبوت
   app.get("/api/bot-access/:username", requireAuth, async (req: Request, res: Response) => {
     try {

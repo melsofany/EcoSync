@@ -204,6 +204,28 @@ export class UserSheetsManager {
           console.log(`   - صورة: لا توجد`);
         }
         
+        // تحويل الصلاحيات المفصلة إلى array
+        let permissions = row[8] || undefined;
+        let permissionsArray: string[] = [];
+        
+        // إذا كان الدور يحتوي على صلاحيات مفصلة (perm-xxx)
+        if (role && role.includes('perm-')) {
+          permissionsArray = role.split(',').map(p => p.trim());
+          // في هذه الحالة، نضع الصلاحيات في permissions ونغير role إلى 'custom'
+          permissions = JSON.stringify(permissionsArray);
+        } else if (permissions) {
+          // إذا كانت الصلاحيات موجودة في العمود الصحيح
+          try {
+            if (typeof permissions === 'string' && permissions.includes('[')) {
+              permissionsArray = JSON.parse(permissions);
+            } else if (typeof permissions === 'string' && permissions.includes('perm-')) {
+              permissionsArray = permissions.split(',').map(p => p.trim());
+            }
+          } catch (e) {
+            // في حالة فشل التحليل، نترك permissions كما هي
+          }
+        }
+        
         return {
           id: row[0] || '',
           username: row[1] || '',
@@ -212,8 +234,8 @@ export class UserSheetsManager {
           email: row[4] || undefined,
           phone: row[5] || undefined,
           profileImage: profileImage || undefined,
-          role: role || 'data_entry',
-          permissions: row[8] || undefined,
+          role: role && role.includes('perm-') ? 'custom' : (role || 'data_entry'),
+          permissions: permissionsArray.length > 0 ? JSON.stringify(permissionsArray) : (permissions || undefined),
           isActive: isActive === 'TRUE',
           isOnline: row[10] === 'TRUE',
           lastLoginAt: row[11] || undefined,

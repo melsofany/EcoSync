@@ -233,8 +233,8 @@ export default function SimpleUserPermissions() {
 
   // حذف مستخدم
   const deleteUserMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      return await apiRequest('DELETE', `/api/users/${userId}`);
+    mutationFn: async (username: string) => {
+      return await apiRequest('DELETE', `/api/sheets-users/${username}`);
     },
     onSuccess: () => {
       toast({
@@ -254,8 +254,8 @@ export default function SimpleUserPermissions() {
 
   // حظر/إلغاء حظر مستخدم
   const toggleUserStatusMutation = useMutation({
-    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      return await apiRequest('PATCH', `/api/users/${userId}/status`, { isActive });
+    mutationFn: async ({ username, isActive }: { username: string; isActive: boolean }) => {
+      return await apiRequest('PATCH', `/api/sheets-users/${username}/status`, { isActive });
     },
     onSuccess: () => {
       toast({
@@ -598,7 +598,7 @@ export default function SimpleUserPermissions() {
                         size="sm"
                         variant="outline"
                         onClick={() => toggleUserStatusMutation.mutate({ 
-                          userId: user.id, 
+                          username: user.username, 
                           isActive: !user.isActive 
                         })}
                         disabled={toggleUserStatusMutation.isPending}
@@ -635,7 +635,7 @@ export default function SimpleUserPermissions() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>إلغاء</AlertDialogCancel>
                             <AlertDialogAction 
-                              onClick={() => deleteUserMutation.mutate(user.id)}
+                              onClick={() => deleteUserMutation.mutate(user.username)}
                               className="bg-red-600 hover:bg-red-700"
                             >
                               حذف
