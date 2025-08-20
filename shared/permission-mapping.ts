@@ -105,6 +105,8 @@ export function hasSpecificPermission(userPermissions: string[], requiredPermiss
 
 // دالة للحصول على جميع الصلاحيات الفعلية للمستخدم
 export function getUserActualPermissions(user: any): string[] {
+  if (!user) return [];
+  
   let userPermissions: string[] = [];
   
   // إذا كانت الصلاحيات في حقل permissions كمصفوفة
@@ -112,17 +114,28 @@ export function getUserActualPermissions(user: any): string[] {
     userPermissions = user.permissions;
   }
   // إذا كانت الصلاحيات في حقل role كسلسلة نصية مفصولة بفواصل
-  else if (user.role && user.role.includes('perm-')) {
+  else if (user.role && typeof user.role === 'string' && user.role.includes('perm-')) {
     userPermissions = user.role.split(',').map((p: string) => p.trim());
   }
   // إذا كان الدور عادي (manager, it_admin, إلخ)
-  else if (user.role && !user.role.includes('perm-')) {
+  else if (user.role && typeof user.role === 'string' && !user.role.includes('perm-')) {
     // إرجاع الدور كما هو للتعامل معه بالطريقة التقليدية
     return [user.role];
   }
   
   // تحويل الصلاحيات المرقمة إلى صلاحيات فعلية
-  return convertNumberedPermissions(userPermissions);
+  const convertedPermissions = convertNumberedPermissions(userPermissions);
+  
+  // للتحقق والتصحيح
+  console.log('🔐 getUserActualPermissions تحليل:', {
+    user: user.username || 'Unknown',
+    role: user.role,
+    userPermissions: userPermissions.length,
+    convertedPermissions: convertedPermissions.length,
+    samples: convertedPermissions.slice(0, 5)
+  });
+  
+  return convertedPermissions;
 }
 
 // دالة للتحقق من الوصول لقسم معين
