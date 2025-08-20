@@ -1,0 +1,64 @@
+# بناء المرحلة الأولى - Build Stage
+FROM node:20-alpine AS builder
+
+# تعيين مجلد العمل
+WORKDIR /app
+
+# نسخ ملفات package
+COPY package*.json ./
+
+# تثبيت جميع المكتبات (بما في ذلك devDependencies للبناء)
+RUN npm ci
+
+# نسخ كود المصدر
+COPY . .
+
+# بناء التطبيق
+RUN npm run build
+
+# المرحلة الثانية - Production Stage
+FROM node:20-alpine
+
+# تثبيت أدوات مفيدة
+RUN apk add --no-cache curl tzdata
+
+# تعيين المنطقة الزمنية لمصر
+ENV TZ=Africa/Cairo
+
+# إنشاء مستخدم غير root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# تعيين مجلد العمل
+WORKDIR /app
+
+# نسخ ملفات package
+COPY package*.json ./
+
+# تثبيت مكتبات الإنتاج فقط
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# نسخ الملفات المبنية من المرحلة الأولى
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/client/dist ./client/dist
+
+# نسخ الملفات الضرورية
+COPY --chown=nodejs:nodejs server ./server
+COPY --chown=nodejs:nodejs shared ./shared
+COPY --chown=nodejs:nodejs public ./public
+COPY --chown=nodejs:nodejs attached_assets ./attached_assets
+COPY --chown=nodejs:nodejs google-service-account.json ./
+
+# إنشاء مجلدات ضرورية
+RUN mkdir -p uploads logs && \
+    chown -R nodejs:nodejs uploads logs
+
+# التبديل للمستخدم غير root
+USER nodejs
+
+# تعريف المنافذ
+EXPOSE 80 443
+
+# الأمر الافتراضي للتشغيل
+CMD ["node", "dist/server/index.js"]
