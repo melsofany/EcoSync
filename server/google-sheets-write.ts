@@ -1149,11 +1149,10 @@ ${itemsList}
             console.log(`📍 سيتم التحديث في الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير بدون أمر شراء)`);
           }
         } else if (lastMatchingRow !== -1) {
-          // لم نجد الصف المطابق لطلب التسعير، لكن وجدنا البند
-          // نضيف صف جديد بعد آخر تكرار للبند
-          targetRow = lastMatchingRow;
-          existingPOInSameRFQ = true; // نعامله كأنه يحتاج صف جديد
-          console.log(`⚠️ البند ${searchValue} موجود في طلبات تسعير أخرى، سيتم إضافة صف جديد بعد الصف ${lastMatchingRow}`);
+          // لم نجد الصف المطابق لطلب التسعير، لكن وجدنا البند في طلبات أخرى
+          console.log(`⚠️ البند ${searchValue} غير موجود في طلب التسعير ${rfqNumber}`);
+          console.log(`⚠️ لكن البند موجود في طلبات تسعير أخرى - تخطي هذا البند`);
+          continue; // تخطي هذا البند لأنه ليس في نفس طلب التسعير
         }
 
         if (targetRow === -1) {
