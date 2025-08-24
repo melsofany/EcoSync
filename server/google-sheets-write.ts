@@ -1094,7 +1094,7 @@ ${itemsList}
         // البحث عن البند في ورقة DATA
         const searchValue = item.lineItem || item.itemNumber || '';
         const rfqNumber = item.rfqNumber || ''; // الحصول على رقم طلب التسعير من البند
-        console.log(`🔍 البحث عن البند: ${searchValue} في طلب التسعير: ${rfqNumber}`);
+        console.log(`🔍 البحث عن البند: ${searchValue} في طلب التسعير: ${rfqNumber || '(غير محدد)'}`);
 
         // قراءة كل البيانات للعثور على البند والتحقق من وجود PO سابق
         const response = await this.sheets.spreadsheets.values.get({
@@ -1110,6 +1110,7 @@ ${itemsList}
         // البحث عن الصف المطابق للبند وطلب التسعير
         let matchingRowWithRFQ = -1;
         let lastMatchingRow = -1;
+        let firstMatchingRowWithoutPO = -1; // أول صف مطابق بدون أمر شراء
         
         for (let i = 1; i < values.length; i++) { // تخطي الصف الأول (العناوين)
           if (values[i] && values[i][2] && // العمود C (LINE ITEM)
@@ -1118,9 +1119,17 @@ ${itemsList}
             // تحديث آخر صف مطابق للبند (بغض النظر عن RFQ)
             lastMatchingRow = i + 1;
             
-            // التحقق من مطابقة RFQ (العمود F)
+            // إذا لم يكن هناك أمر شراء في هذا الصف، احفظه كخيار محتمل
+            if (!values[i][10] || values[i][10].toString().trim() === '') {
+              if (firstMatchingRowWithoutPO === -1) {
+                firstMatchingRowWithoutPO = i + 1;
+                rowData = values[i]; // حفظ بيانات الصف للاستخدام المحتمل
+              }
+            }
+            
+            // التحقق من مطابقة RFQ (العمود F) - فقط إذا كان rfqNumber محدد
             const rowRFQ = values[i][5] ? values[i][5].toString().trim() : '';
-            if (rowRFQ === rfqNumber.trim()) {
+            if (rfqNumber && rowRFQ === rfqNumber.trim()) {
               // وجدنا الصف المطابق للبند وطلب التسعير
               matchingRowWithRFQ = i + 1;
               rowData = values[i]; // حفظ بيانات الصف للنسخ
@@ -1138,7 +1147,7 @@ ${itemsList}
         
         // تحديد الصف المستهدف
         if (matchingRowWithRFQ !== -1) {
-          // وجدنا الصف المطابق للبند وطلب التسعير
+          // وجدنا الصف المطابق للبند وطلب التسعير المحدد
           if (existingPOInSameRFQ) {
             // البند له أمر شراء في نفس طلب التسعير - نضيف صف جديد بعده
             targetRow = matchingRowWithRFQ;
@@ -1148,8 +1157,18 @@ ${itemsList}
             targetRow = matchingRowWithRFQ;
             console.log(`📍 سيتم التحديث في الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير بدون أمر شراء)`);
           }
-        } else if (lastMatchingRow !== -1) {
-          // لم نجد الصف المطابق لطلب التسعير، لكن وجدنا البند في طلبات أخرى
+        } else if (!rfqNumber && firstMatchingRowWithoutPO !== -1) {
+          // لا يوجد رقم طلب تسعير محدد، ووجدنا البند بدون أمر شراء
+          targetRow = firstMatchingRowWithoutPO;
+          existingPOInSameRFQ = false;
+          console.log(`📍 سيتم التحديث في الصف ${firstMatchingRowWithoutPO} (أول صف مطابق بدون أمر شراء)`);
+        } else if (!rfqNumber && lastMatchingRow !== -1) {
+          // لا يوجد رقم طلب تسعير محدد، لكن كل الصفوف لها أوامر شراء
+          targetRow = lastMatchingRow;
+          existingPOInSameRFQ = true; // نضيف صف جديد
+          console.log(`⚠️ البند ${searchValue} موجود لكن كل الصفوف لها أوامر شراء - سيتم إضافة صف جديد`);
+        } else if (rfqNumber && lastMatchingRow !== -1) {
+          // يوجد رقم طلب تسعير محدد لكن البند غير موجود في هذا الطلب
           console.log(`⚠️ البند ${searchValue} غير موجود في طلب التسعير ${rfqNumber}`);
           console.log(`⚠️ لكن البند موجود في طلبات تسعير أخرى - تخطي هذا البند`);
           continue; // تخطي هذا البند لأنه ليس في نفس طلب التسعير
