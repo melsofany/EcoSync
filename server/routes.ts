@@ -37,8 +37,7 @@ import {
 // استخدام الـ instance المُصدر من google-sheets-realtime-data.ts
 const googleSheetsRealTimeData = googleSheetsRealtimeData;
 
-// إنشاء instance من Google Sheets Writer
-const googleSheetsWriter = new GoogleSheetsWriter();
+// ملاحظة: GoogleSheetsWriter يتم إنشاؤه وتهيئته عند الحاجة فقط في كل endpoint
 
 // دالة مساعدة معممة للتحقق من صحة البيانات الرقمية (تتجنب القيم الافتراضية الخاطئة)
 const isValidNumericValue = (value: any): boolean => {
@@ -269,15 +268,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }, 2000); // انتظار ثانيتين لضمان تهيئة Google Sheets
   
-  // تحديث رؤوس ورقة تسعير الموردين مع الحقول الجديدة (بعد تهيئة Google Sheets)
-  setTimeout(async () => {
-    try {
-      await googleSheetsWriter.setupSupplierPricingSheetHeaders();
-      console.log('✅ تم تحديث رؤوس ورقة تسعير الموردين بنجاح');
-    } catch (error) {
-      console.error('❌ خطأ في تحديث رؤوس ورقة تسعير الموردين:', error);
-    }
-  }, 3000); // انتظار 3 ثوانٍ لضمان تهيئة Google Sheets
+  // تم تعطيل تحديث رؤوس الموردين تلقائياً لتجنب أخطاء التهيئة
+  // سيتم التحديث عند الحاجة فقط من خلال إنشاء writer مهيأ
   
   // استخدام Memory Store للعرض التوضيحي
   const MemStore = MemoryStore(session);
