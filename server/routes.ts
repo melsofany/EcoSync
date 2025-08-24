@@ -5709,8 +5709,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
     } catch (error) {
       console.error("❌ خطأ في حفظ أمر الشراء في Google Sheets:", error);
+      const errorMessage = error instanceof Error ? error.message : "خطأ في حفظ أمر الشراء";
+      console.error("❌ تفاصيل الخطأ:", error instanceof Error ? error.stack : error);
       res.status(500).json({ 
-        message: (error as Error).message || "خطأ في حفظ أمر الشراء" 
+        success: false,
+        message: errorMessage,
+        error: "SHEETS_SAVE_ERROR",
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
       });
     }
   });

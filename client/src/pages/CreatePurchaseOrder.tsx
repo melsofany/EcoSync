@@ -335,7 +335,13 @@ export default function CreatePurchaseOrder() {
         console.log("📥 استجابة الخادم:", response);
         return response;
       } catch (error: any) {
-        console.error("❌ خطأ:", error);
+        console.error("❌ خطأ في إنشاء أمر الشراء:", error);
+        console.error("❌ تفاصيل الخطأ:", {
+          message: error.message,
+          data: error.data,
+          status: error.status,
+          response: error.response
+        });
         
         // التحقق من الخطأ 409 (تكرار)
         if (error.status === 409 || error.data?.error === 'DUPLICATE_PO_NUMBER') {
