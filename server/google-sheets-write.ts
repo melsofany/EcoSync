@@ -1134,10 +1134,14 @@ ${itemsList}
         
         // استخدام آخر صف مطابق إذا وجدت تكرارات
         if (lastMatchingRow !== -1) {
-          targetRow = existingPO ? lastMatchingRow : firstMatchingRow;
+          // دائماً نستخدم آخر صف مطابق لإضافة الصف الجديد بعده
+          targetRow = lastMatchingRow;
           console.log(`✅ تم العثور على ${poCount > 0 ? poCount : 'صف واحد من'} البند ${searchValue}`);
           if (existingPO) {
             console.log(`📍 سيتم إضافة الصف الجديد بعد الصف ${lastMatchingRow} (آخر تكرار)`);
+          } else {
+            console.log(`📍 سيتم التحديث في الصف ${firstMatchingRow} (أول تكرار)`);
+            targetRow = firstMatchingRow; // للتحديث نستخدم أول صف مطابق
           }
         }
 
@@ -1148,18 +1152,19 @@ ${itemsList}
 
         console.log(`✅ تم العثور على البند في الصف ${targetRow}`);
 
-        // تحديد السلوك بناءً على ما إذا كان هذا أول بند أم لا
+        // تحديد السلوك بناءً على وجود أمر شراء سابق
         let shouldAddNewRow = false;
         
-        if (isFirstItem) {
-          // أول بند دائماً يُحفظ في نفس الصف
-          console.log(`🎯 أول بند في أمر الشراء - سيتم الحفظ في نفس الصف ${targetRow}`);
-          isFirstItem = false; // تحديث المتغير
-          shouldAddNewRow = false; // الحفظ في نفس الصف
-        } else if (existingPO) {
-          // البنود الأخرى: إذا كان هناك أمر شراء سابق، أضف صف جديد
+        // إذا كان البند له أمر شراء سابق، نضيف صف جديد
+        if (existingPO) {
+          console.log(`⚠️ البند ${searchValue} له أمر شراء سابق - سيتم إضافة صف جديد`);
           shouldAddNewRow = true;
+        } else {
+          console.log(`✅ البند ${searchValue} ليس له أمر شراء سابق - سيتم التحديث في نفس الصف`);
+          shouldAddNewRow = false;
         }
+        
+        isFirstItem = false; // تحديث المتغير بعد أول بند
 
         // إذا كان يجب إضافة صف جديد
         if (shouldAddNewRow) {
@@ -1175,35 +1180,45 @@ ${itemsList}
           // إنشاء صف جديد ونسخ كل البيانات عمود بعمود
           const newRowData = new Array(27); // إنشاء مصفوفة جديدة بحجم 27 (من A إلى AA)
           
-          // نسخ كل عمود بشكل صريح
-          for (let i = 0; i < 27; i++) {
+          // نسخ الأعمدة من A إلى J (ما عدا H)
+          for (let i = 0; i <= 9; i++) { // من 0 إلى 9 (A إلى J)
             if (i === 7) {
               // العمود H (index 7) - الكمية RFQ - نتركه فارغاً
               newRowData[i] = '';
-            } else if (i === 10) {
-              // العمود K - رقم أمر الشراء الجديد
-              newRowData[i] = poData.poNumber;
-            } else if (i === 11) {
-              // العمود L - تاريخ أمر الشراء
-              newRowData[i] = poData.poDate;
-            } else if (i === 12) {
-              // العمود M - كمية أمر الشراء
-              newRowData[i] = item.quantity.toString();
-            } else if (i === 13) {
-              // العمود N - سعر أمر الشراء
-              newRowData[i] = item.unitPrice.toString();
             } else {
-              // نسخ القيمة الأصلية لكل الأعمدة الأخرى بما فيها التوصيف (العمود E - index 4)
+              // نسخ القيمة الأصلية من الصف الموجود
               newRowData[i] = rowData[i] !== undefined ? rowData[i] : '';
             }
           }
           
-          // التأكد من نسخ التوصيف
-          console.log(`📝 التوصيف الأصلي (العمود E): "${rowData[4]}"`);
-          console.log(`📝 التوصيف المنسوخ (العمود E): "${newRowData[4]}"`);
-          console.log(`✅ الكمية RFQ (العمود H) تم مسحها: "${newRowData[7]}"`);
-          console.log(`✅ كمية PO الجديدة (العمود M): "${newRowData[12]}"`);
-          console.log(`✅ سعر PO الجديد (العمود N): "${newRowData[13]}"`)
+          // إضافة بيانات أمر الشراء الجديد في الأعمدة K-N
+          newRowData[10] = poData.poNumber;           // العمود K - رقم أمر الشراء
+          newRowData[11] = poData.poDate;            // العمود L - تاريخ أمر الشراء
+          newRowData[12] = item.quantity.toString(); // العمود M - كمية أمر الشراء
+          newRowData[13] = item.unitPrice.toString(); // العمود N - سعر أمر الشراء
+          
+          // ترك باقي الأعمدة فارغة (O-AA)
+          for (let i = 14; i < 27; i++) {
+            newRowData[i] = '';
+          }
+          
+          // التأكد من نسخ البيانات المهمة
+          console.log(`📝 البيانات المنسوخة:`);
+          console.log(`   العمود A (Item Number): "${newRowData[0]}"`);
+          console.log(`   العمود B (UOM): "${newRowData[1]}"`);
+          console.log(`   العمود C (LINE ITEM): "${newRowData[2]}"`);
+          console.log(`   العمود D (PART NO): "${newRowData[3]}"`);
+          console.log(`   العمود E (التوصيف): "${newRowData[4]}"`);
+          console.log(`   العمود F (RFQ): "${newRowData[5]}"`);
+          console.log(`   العمود G (التاريخ): "${newRowData[6]}"`);
+          console.log(`   العمود H (الكمية RFQ) - فارغ: "${newRowData[7]}"`);
+          console.log(`   العمود I: "${newRowData[8]}"`);
+          console.log(`   العمود J: "${newRowData[9]}"`);
+          console.log(`📦 بيانات أمر الشراء الجديد:`);
+          console.log(`   العمود K (PO): "${newRowData[10]}"`);
+          console.log(`   العمود L (PO Date): "${newRowData[11]}"`);
+          console.log(`   العمود M (PO Qty): "${newRowData[12]}"`);
+          console.log(`   العمود N (PO Price): "${newRowData[13]}"`);
           
           // إدراج الصف الجديد بعد الصف الحالي
           await this.insertNewRowAfter(targetRow, newRowData);
