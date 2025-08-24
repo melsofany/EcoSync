@@ -1056,6 +1056,7 @@ ${itemsList}
     items: Array<{
       itemNumber?: string;
       lineItem?: string;
+      rfqNumber?: string; // إضافة رقم طلب التسعير
       quantity: number;
       unitPrice: number;
     }>;
@@ -1092,7 +1093,8 @@ ${itemsList}
 
         // البحث عن البند في ورقة DATA
         const searchValue = item.lineItem || item.itemNumber || '';
-        console.log(`🔍 البحث عن البند: ${searchValue}`);
+        const rfqNumber = item.rfqNumber || ''; // الحصول على رقم طلب التسعير من البند
+        console.log(`🔍 البحث عن البند: ${searchValue} في طلب التسعير: ${rfqNumber}`);
 
         // قراءة كل البيانات للعثور على البند والتحقق من وجود PO سابق
         const response = await this.sheets.spreadsheets.values.get({
@@ -1102,47 +1104,56 @@ ${itemsList}
 
         const values = response.data.values || [];
         let targetRow = -1;
-        let existingPO = false;
+        let existingPOInSameRFQ = false;
         let rowData: any[] = [];
 
-        // البحث عن كل الصفوف المطابقة للبند
+        // البحث عن الصف المطابق للبند وطلب التسعير
+        let matchingRowWithRFQ = -1;
         let lastMatchingRow = -1;
-        let firstMatchingRow = -1;
-        let poCount = 0;
         
         for (let i = 1; i < values.length; i++) { // تخطي الصف الأول (العناوين)
           if (values[i] && values[i][2] && // العمود C (LINE ITEM)
               (values[i][2].toString().trim() === searchValue.trim())) {
             
-            // تسجيل أول صف مطابق
-            if (firstMatchingRow === -1) {
-              firstMatchingRow = i + 1; // +1 لأن Google Sheets يبدأ من 1
-              rowData = values[i]; // حفظ بيانات أول صف للنسخ
-            }
-            
-            // تحديث آخر صف مطابق
+            // تحديث آخر صف مطابق للبند (بغض النظر عن RFQ)
             lastMatchingRow = i + 1;
             
-            // التحقق من وجود PO في هذا الصف
-            if (values[i][10] && values[i][10].toString().trim() !== '') {
-              existingPO = true;
-              poCount++;
-              console.log(`📋 البند ${searchValue} - أمر شراء #${poCount}: ${values[i][10]} في الصف ${i + 1}`);
+            // التحقق من مطابقة RFQ (العمود F)
+            const rowRFQ = values[i][5] ? values[i][5].toString().trim() : '';
+            if (rowRFQ === rfqNumber.trim()) {
+              // وجدنا الصف المطابق للبند وطلب التسعير
+              matchingRowWithRFQ = i + 1;
+              rowData = values[i]; // حفظ بيانات الصف للنسخ
+              
+              // التحقق من وجود PO في هذا الصف المحدد
+              if (values[i][10] && values[i][10].toString().trim() !== '') {
+                existingPOInSameRFQ = true;
+                console.log(`📋 البند ${searchValue} في طلب التسعير ${rfqNumber} له أمر شراء: ${values[i][10]} في الصف ${i + 1}`);
+              } else {
+                console.log(`✅ البند ${searchValue} في طلب التسعير ${rfqNumber} بدون أمر شراء في الصف ${i + 1}`);
+              }
             }
           }
         }
         
-        // استخدام آخر صف مطابق إذا وجدت تكرارات
-        if (lastMatchingRow !== -1) {
-          // دائماً نستخدم آخر صف مطابق لإضافة الصف الجديد بعده
-          targetRow = lastMatchingRow;
-          console.log(`✅ تم العثور على ${poCount > 0 ? poCount : 'صف واحد من'} البند ${searchValue}`);
-          if (existingPO) {
-            console.log(`📍 سيتم إضافة الصف الجديد بعد الصف ${lastMatchingRow} (آخر تكرار)`);
+        // تحديد الصف المستهدف
+        if (matchingRowWithRFQ !== -1) {
+          // وجدنا الصف المطابق للبند وطلب التسعير
+          if (existingPOInSameRFQ) {
+            // البند له أمر شراء في نفس طلب التسعير - نضيف صف جديد بعده
+            targetRow = matchingRowWithRFQ;
+            console.log(`📍 سيتم إضافة صف جديد بعد الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير مع أمر شراء موجود)`);
           } else {
-            console.log(`📍 سيتم التحديث في الصف ${firstMatchingRow} (أول تكرار)`);
-            targetRow = firstMatchingRow; // للتحديث نستخدم أول صف مطابق
+            // البند بدون أمر شراء في نفس طلب التسعير - نحدث نفس الصف
+            targetRow = matchingRowWithRFQ;
+            console.log(`📍 سيتم التحديث في الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير بدون أمر شراء)`);
           }
+        } else if (lastMatchingRow !== -1) {
+          // لم نجد الصف المطابق لطلب التسعير، لكن وجدنا البند
+          // نضيف صف جديد بعد آخر تكرار للبند
+          targetRow = lastMatchingRow;
+          existingPOInSameRFQ = true; // نعامله كأنه يحتاج صف جديد
+          console.log(`⚠️ البند ${searchValue} موجود في طلبات تسعير أخرى، سيتم إضافة صف جديد بعد الصف ${lastMatchingRow}`);
         }
 
         if (targetRow === -1) {
@@ -1152,15 +1163,15 @@ ${itemsList}
 
         console.log(`✅ تم العثور على البند في الصف ${targetRow}`);
 
-        // تحديد السلوك بناءً على وجود أمر شراء سابق
+        // تحديد السلوك بناءً على وجود أمر شراء في نفس طلب التسعير
         let shouldAddNewRow = false;
         
-        // إذا كان البند له أمر شراء سابق، نضيف صف جديد
-        if (existingPO) {
-          console.log(`⚠️ البند ${searchValue} له أمر شراء سابق - سيتم إضافة صف جديد`);
+        // إذا كان البند له أمر شراء في نفس طلب التسعير، نضيف صف جديد
+        if (existingPOInSameRFQ) {
+          console.log(`⚠️ البند ${searchValue} له أمر شراء سابق في نفس طلب التسعير - سيتم إضافة صف جديد`);
           shouldAddNewRow = true;
         } else {
-          console.log(`✅ البند ${searchValue} ليس له أمر شراء سابق - سيتم التحديث في نفس الصف`);
+          console.log(`✅ البند ${searchValue} ليس له أمر شراء في نفس طلب التسعير - سيتم التحديث في نفس الصف`);
           shouldAddNewRow = false;
         }
         

@@ -5691,6 +5691,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         items: items.map((item: any) => ({
           itemNumber: item.itemNumber || '',
           lineItem: item.lineItem || '',
+          rfqNumber: item.rfqNumber || '', // إضافة رقم طلب التسعير
           quantity: item.quantity || 0,
           unitPrice: item.unitPrice || 0
         }))

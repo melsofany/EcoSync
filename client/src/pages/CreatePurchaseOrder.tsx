@@ -423,6 +423,7 @@ export default function CreatePurchaseOrder() {
       items: finalPOItems.map(item => ({
         quotationId: item.quotationId,
         quotationNumber: item.quotationNumber,
+        rfqNumber: item.quotationNumber, // إضافة رقم طلب التسعير
         itemId: item.itemId,
         lineItem: item.lineItem || "",
         itemNumber: item.itemNumber || "",
