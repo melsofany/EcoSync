@@ -5493,6 +5493,64 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // التحقق من وجود رقم أمر الشراء
+  app.get("/api/purchase-orders/check/:poNumber", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { poNumber } = req.params;
+      
+      console.log('🔍 التحقق من وجود رقم أمر الشراء:', poNumber);
+      
+      // التحقق من Google Sheets أولاً
+      try {
+        const { googleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
+        const purchaseOrders = await googleSheetsRealtimeData.getAllPurchaseOrders();
+        const existingPO = purchaseOrders.find((po: any) => 
+          po.poNumber === poNumber
+        );
+        
+        if (existingPO) {
+          console.log('⚠️ رقم أمر الشراء موجود في Google Sheets:', poNumber);
+          return res.json({ 
+            exists: true, 
+            purchaseOrder: {
+              poNumber: existingPO.poNumber,
+              date: existingPO.poDate,
+              totalValue: existingPO.totalValue
+            }
+          });
+        }
+      } catch (sheetsError) {
+        console.log('تعذر التحقق من Google Sheets:', sheetsError.message);
+      }
+      
+      // التحقق من قاعدة البيانات
+      try {
+        const existingPO = await storage.getPurchaseOrderByNumber(poNumber);
+        
+        if (existingPO) {
+          console.log('⚠️ رقم أمر الشراء موجود في قاعدة البيانات:', poNumber);
+          return res.json({ 
+            exists: true, 
+            purchaseOrder: {
+              poNumber: existingPO.orderNumber,
+              date: existingPO.orderDate,
+              totalValue: existingPO.totalValue
+            }
+          });
+        }
+      } catch (dbError) {
+        console.log('تعذر التحقق من قاعدة البيانات:', dbError.message);
+      }
+      
+      console.log('✅ رقم أمر الشراء متاح:', poNumber);
+      res.json({ exists: false });
+      
+    } catch (error) {
+      console.error('خطأ في التحقق من رقم أمر الشراء:', error);
+      res.status(500).json({ message: 'حدث خطأ في التحقق من رقم أمر الشراء' });
+    }
+  });
+
   // حفظ أمر الشراء في Google Sheets
   app.post("/api/purchase-orders/google-sheets", requireAuth, requireRole(['manager', 'purchasing', 'data_entry']), async (req: Request, res: Response) => {
     try {
@@ -5504,6 +5562,30 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         return res.status(400).json({ 
           message: "البيانات المطلوبة غير مكتملة" 
         });
+      }
+
+      // التحقق من عدم وجود رقم أمر الشراء مسبقاً
+      try {
+        const { googleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
+        const purchaseOrders = await googleSheetsRealtimeData.getAllPurchaseOrders();
+        const existingPO = purchaseOrders.find((po: any) => 
+          po.poNumber === poNumber
+        );
+        
+        if (existingPO) {
+          console.log('❌ رقم أمر الشراء موجود مسبقاً:', poNumber);
+          return res.status(409).json({ 
+            error: 'DUPLICATE_PO_NUMBER',
+            message: `رقم أمر الشراء ${poNumber} موجود مسبقاً`,
+            existingPO: {
+              poNumber: existingPO.poNumber,
+              date: existingPO.poDate,
+              totalValue: existingPO.totalValue
+            }
+          });
+        }
+      } catch (checkError) {
+        console.log('تحذير: تعذر التحقق من الأرقام المكررة:', checkError.message);
       }
 
       console.log(`📦 حفظ أمر الشراء ${poNumber} مع ${items.length} بند`);
