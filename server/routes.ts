@@ -2893,6 +2893,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // التحقق من وجود رقم طلب التسعير
+  app.get("/api/quotations/check/:rfqNumber", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { rfqNumber } = req.params;
+      
+      console.log('🔍 التحقق من وجود رقم الطلب:', rfqNumber);
+      
+      // التحقق من Google Sheets أولاً
+      try {
+        const { googleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
+        const quotations = await googleSheetsRealtimeData.getAllQuotations();
+        const existingQuotation = quotations.find((q: any) => 
+          q.rfqNumber === rfqNumber || q.customRequestNumber === rfqNumber
+        );
+        
+        if (existingQuotation) {
+          console.log('⚠️ رقم الطلب موجود في Google Sheets:', rfqNumber);
+          return res.json({ 
+            exists: true, 
+            quotation: {
+              id: existingQuotation.id,
+              rfqNumber: existingQuotation.rfqNumber,
+              clientName: existingQuotation.clientName,
+              requestDate: existingQuotation.requestDate
+            }
+          });
+        }
+      } catch (sheetsError) {
+        console.log('تعذر التحقق من Google Sheets:', sheetsError.message);
+      }
+      
+      // التحقق من قاعدة البيانات
+      const existingQuotation = await storage.getQuotationByCustomNumber(rfqNumber);
+      
+      if (existingQuotation) {
+        console.log('⚠️ رقم الطلب موجود في قاعدة البيانات:', rfqNumber);
+        return res.json({ 
+          exists: true, 
+          quotation: {
+            id: existingQuotation.id,
+            rfqNumber: existingQuotation.customRequestNumber || existingQuotation.requestNumber,
+            clientName: existingQuotation.clientName,
+            requestDate: existingQuotation.requestDate
+          }
+        });
+      }
+      
+      console.log('✅ رقم الطلب متاح:', rfqNumber);
+      res.json({ exists: false });
+      
+    } catch (error) {
+      console.error('خطأ في التحقق من رقم الطلب:', error);
+      res.status(500).json({ message: 'حدث خطأ في التحقق من رقم الطلب' });
+    }
+  });
+
   app.post("/api/quotations", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
     try {
       const userId = req.session?.user?.id;

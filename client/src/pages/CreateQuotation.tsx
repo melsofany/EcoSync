@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Save, Trash2, FileText, Calendar, User, Building } from "lucide-react";
+import { Plus, Save, Trash2, FileText, Calendar, User, Building, AlertCircle, Edit } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface QuotationItem {
   id?: string;
@@ -37,6 +47,11 @@ export default function CreateQuotation() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [existingQuotation, setExistingQuotation] = useState<any>(null);
+  const [isCheckingRfq, setIsCheckingRfq] = useState(false);
+  const [rfqWarning, setRfqWarning] = useState<string | null>(null);
+  const [checkTimeout, setCheckTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const [quotation, setQuotation] = useState<NewQuotation>({
     clientName: '',
@@ -72,11 +87,18 @@ export default function CreateQuotation() {
     },
     onError: (error: any) => {
       console.error('❌ خطأ في إنشاء طلب التسعير:', error);
-      toast({
-        title: "❌ خطأ في إنشاء طلب التسعير",
-        description: error.data?.message || error.message || "حدث خطأ غير متوقع",
-        variant: "destructive"
-      });
+      
+      // التحقق من وجود طلب مكرر
+      if (error.status === 409 || error.data?.error === 'DUPLICATE_REQUEST_NUMBER') {
+        setExistingQuotation(error.data?.existingQuotation);
+        setShowDuplicateDialog(true);
+      } else {
+        toast({
+          title: "❌ خطأ في إنشاء طلب التسعير",
+          description: error.data?.message || error.message || "حدث خطأ غير متوقع",
+          variant: "destructive"
+        });
+      }
     }
   });
 
@@ -170,6 +192,53 @@ export default function CreateQuotation() {
     createMutation.mutate(quotation);
   };
 
+  // التحقق من رقم الطلب
+  const checkRfqNumber = useCallback(async (rfqNumber: string) => {
+    if (!rfqNumber.trim()) {
+      setRfqWarning(null);
+      return;
+    }
+
+    setIsCheckingRfq(true);
+    try {
+      const response = await fetch(`/api/quotations/check/${encodeURIComponent(rfqNumber)}`, {
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      
+      if (data.exists) {
+        setRfqWarning(`⚠️ رقم الطلب ${rfqNumber} موجود مسبقاً للعميل: ${data.quotation.clientName}`);
+        setExistingQuotation(data.quotation);
+      } else {
+        setRfqWarning(null);
+        setExistingQuotation(null);
+      }
+    } catch (error) {
+      console.error('خطأ في التحقق من رقم الطلب:', error);
+      setRfqWarning(null);
+    } finally {
+      setIsCheckingRfq(false);
+    }
+  }, []);
+
+  // استخدام debounce للتحقق عند التوقف عن الكتابة
+  useEffect(() => {
+    if (checkTimeout) {
+      clearTimeout(checkTimeout);
+    }
+
+    const timeout = setTimeout(() => {
+      checkRfqNumber(quotation.rfqNumber);
+    }, 500); // التحقق بعد 500ms من التوقف عن الكتابة
+
+    setCheckTimeout(timeout);
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [quotation.rfqNumber]);
+
   const totalItems = quotation.items.length;
   const totalValue = 0; // سيتم التسعير لاحقاً في مرحلة تسعير الموردين
 
@@ -215,13 +284,39 @@ export default function CreateQuotation() {
 
             <div>
               <Label htmlFor="rfqNumber">رقم طلب التسعير *</Label>
-              <Input
-                id="rfqNumber"
-                value={quotation.rfqNumber}
-                onChange={(e) => setQuotation(prev => ({ ...prev, rfqNumber: e.target.value }))}
-                placeholder="مثال: 25R000001"
-                className="mt-1"
-              />
+              <div className="relative">
+                <Input
+                  id="rfqNumber"
+                  value={quotation.rfqNumber}
+                  onChange={(e) => setQuotation(prev => ({ ...prev, rfqNumber: e.target.value }))}
+                  placeholder="مثال: 25R000001"
+                  className={`mt-1 ${rfqWarning ? 'border-amber-500' : ''}`}
+                />
+                {isCheckingRfq && (
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+              </div>
+              {rfqWarning && (
+                <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md">
+                  <p className="text-sm text-amber-800 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    {rfqWarning}
+                  </p>
+                  {existingQuotation && (
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="p-0 h-auto text-amber-700 hover:text-amber-900 mt-1"
+                      onClick={() => navigate(`/quotations/${existingQuotation.id}`)}
+                    >
+                      <Edit className="h-3 w-3 ml-1" />
+                      الذهاب للطلب الموجود للتعديل عليه
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
@@ -431,6 +526,55 @@ export default function CreateQuotation() {
           </CardContent>
         </Card>
       )}
+
+      {/* نافذة التنبيه للطلب المكرر */}
+      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <AlertDialogContent className="max-w-md" dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertCircle className="h-5 w-5" />
+              طلب التسعير موجود مسبقاً
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-right space-y-3">
+              <p className="text-base">
+                رقم طلب التسعير <strong className="text-primary">{quotation.rfqNumber}</strong> موجود بالفعل في النظام.
+              </p>
+              {existingQuotation && (
+                <div className="bg-muted p-3 rounded-md space-y-2">
+                  <p className="text-sm font-medium">معلومات الطلب الموجود:</p>
+                  <div className="text-sm space-y-1">
+                    <p>• العميل: <span className="font-medium">{existingQuotation.clientName}</span></p>
+                    <p>• رقم الطلب: <span className="font-medium">{existingQuotation.customRequestNumber || existingQuotation.requestNumber}</span></p>
+                  </div>
+                </div>
+              )}
+              <p className="text-sm text-muted-foreground">
+                لا يمكن إضافة طلب تسعير بنفس الرقم مرة أخرى، ولكن يمكنك التعديل على الطلب الموجود.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogCancel>
+              البقاء في الصفحة
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (existingQuotation?.redirectTo) {
+                  navigate(existingQuotation.redirectTo);
+                } else if (existingQuotation?.id) {
+                  navigate(`/quotations/${existingQuotation.id}`);
+                } else {
+                  navigate('/quotations');
+                }
+              }}
+              className="flex items-center gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              الذهاب للطلب الموجود
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* أزرار الإجراءات */}
       <div className="flex justify-end space-x-4 space-x-reverse">
