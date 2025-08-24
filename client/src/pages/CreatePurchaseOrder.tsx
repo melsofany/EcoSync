@@ -137,9 +137,11 @@ export default function CreatePurchaseOrder() {
       if (data.exists) {
         setPOWarning(`⚠️ رقم أمر الشراء ${poNumber} موجود مسبقاً`);
         setExistingPO(data.purchaseOrder);
+        setShowDuplicateDialog(true); // عرض النافذة المنبثقة
       } else {
         setPOWarning(null);
         setExistingPO(null);
+        setShowDuplicateDialog(false);
       }
     } catch (error) {
       console.error('خطأ في التحقق من رقم أمر الشراء:', error);
@@ -388,6 +390,17 @@ export default function CreatePurchaseOrder() {
       toast({
         title: "خطأ",
         description: "يرجى إدخال رقم أمر الشراء",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // التحقق من عدم وجود رقم أمر شراء مكرر
+    if (existingPO) {
+      setShowDuplicateDialog(true);
+      toast({
+        title: "خطأ",
+        description: "رقم أمر الشراء موجود مسبقاً",
         variant: "destructive",
       });
       return;
