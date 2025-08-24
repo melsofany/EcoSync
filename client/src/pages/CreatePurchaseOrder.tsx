@@ -450,7 +450,7 @@ export default function CreatePurchaseOrder() {
       </div>
 
       {/* نافذة التنبيه للأمر المكرر */}
-      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+      <AlertDialog open={showDuplicateDialog} onOpenChange={() => {}}>
         <AlertDialogContent className="max-w-md" dir="rtl">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-amber-600">
@@ -476,8 +476,13 @@ export default function CreatePurchaseOrder() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex gap-2">
-            <AlertDialogCancel>
-              إغلاق
+            <AlertDialogCancel onClick={() => {
+              setShowDuplicateDialog(false);
+              setPONumber(''); // مسح رقم أمر الشراء المكرر
+              setExistingPO(null);
+              setPOWarning(null);
+            }}>
+              تغيير رقم أمر الشراء
             </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -800,13 +805,19 @@ export default function CreatePurchaseOrder() {
           </Button>
           <Button
             type="submit"
-            disabled={createPOMutation.isPending || finalPOItems.length === 0}
-            className="bg-blue-600 hover:bg-blue-700"
+            disabled={createPOMutation.isPending || finalPOItems.length === 0 || !!existingPO}
+            className={existingPO ? "bg-red-500 cursor-not-allowed opacity-60" : "bg-blue-600 hover:bg-blue-700"}
+            title={existingPO ? "لا يمكن إصدار أمر شراء برقم مكرر" : ""}
           >
             {createPOMutation.isPending ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2"></div>
                 جاري الإنشاء...
+              </>
+            ) : existingPO ? (
+              <>
+                <AlertCircle className="h-4 w-4 ml-1" />
+                رقم أمر الشراء مكرر
               </>
             ) : (
               <>
