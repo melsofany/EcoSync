@@ -1084,6 +1084,7 @@ ${itemsList}
       console.log(`📋 عدد البنود: ${poData.items.length}`);
 
       let isFirstItem = true; // متغير لتتبع أول بند
+      let savedItemsCount = 0; // عداد للبنود المحفوظة فعلياً
       
       for (const item of poData.items) {
         if (!item.lineItem && !item.itemNumber) {
@@ -1259,6 +1260,7 @@ ${itemsList}
           await this.insertNewRowAfter(targetRow, newRowData);
           
           console.log(`✅ تم إضافة صف جديد رقم ${targetRow + 1} مع أمر الشراء ${poData.poNumber}`);
+          savedItemsCount++; // زيادة عداد البنود المحفوظة
         } else {
           // إذا لم يكن هناك أمر شراء سابق، حدث البيانات في نفس الصف
           console.log(`📝 تحديث بيانات أمر الشراء في الصف ${targetRow}`);
@@ -1303,10 +1305,17 @@ ${itemsList}
           }
 
           console.log(`✅ تم حفظ بيانات البند ${searchValue} في الصف ${targetRow}`);
+          savedItemsCount++; // زيادة عداد البنود المحفوظة
         }
       }
 
-      console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber} بنجاح`);
+      // التحقق من عدد البنود المحفوظة فعلياً
+      if (savedItemsCount === 0) {
+        console.log(`⚠️ لم يتم حفظ أي بند لأمر الشراء ${poData.poNumber}`);
+        throw new Error(`لم يتم حفظ أي بند - تحقق من أن البنود موجودة في طلبات التسعير المحددة`);
+      }
+      
+      console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber} بنجاح مع ${savedItemsCount} بند`);
     } catch (error) {
       console.error('❌ خطأ في حفظ أمر الشراء:', (error as Error).message);
       throw error;
