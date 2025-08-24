@@ -1159,20 +1159,22 @@ ${itemsList}
             console.log(`📍 سيتم التحديث في الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير بدون أمر شراء)`);
           }
         } else if (!rfqNumber) {
-          // لا يوجد رقم طلب تسعير محدد - هذا خطأ
-          console.log(`❌ خطأ: البند ${searchValue} بدون رقم طلب تسعير محدد`);
-          console.log(`❌ لا يمكن حفظ أمر الشراء بدون تحديد طلب التسعير`);
-          continue; // تخطي هذا البند
+          // لا يوجد رقم طلب تسعير محدد - هذا خطأ حرج
+          console.error(`❌ خطأ حرج: البند ${searchValue} بدون رقم طلب تسعير محدد`);
+          console.error(`❌ لا يمكن حفظ أمر الشراء بدون تحديد طلب التسعير`);
+          throw new Error(`البند ${searchValue} لا يحتوي على رقم طلب تسعير. لا يمكن إنشاء أمر شراء بدون تحديد طلب التسعير`);
         } else if (rfqNumber && lastMatchingRow !== -1) {
           // يوجد رقم طلب تسعير محدد لكن البند غير موجود في هذا الطلب
-          console.log(`⚠️ البند ${searchValue} غير موجود في طلب التسعير ${rfqNumber}`);
-          console.log(`⚠️ لكن البند موجود في طلبات تسعير أخرى - تخطي هذا البند`);
-          continue; // تخطي هذا البند لأنه ليس في نفس طلب التسعير
+          console.error(`❌ خطأ: البند ${searchValue} غير موجود في طلب التسعير ${rfqNumber}`);
+          console.error(`⚠️ البند موجود في طلبات تسعير أخرى لكن ليس في الطلب المحدد`);
+          // تجميع رسالة خطأ أكثر وضوحاً
+          const errorMsg = `البند ${searchValue} غير موجود في طلب التسعير ${rfqNumber}. تأكد من اختيار طلب التسعير الصحيح`;
+          throw new Error(errorMsg);
         }
 
         if (targetRow === -1) {
-          console.log(`⚠️ لم يتم العثور على البند ${searchValue} في ورقة DATA`);
-          continue;
+          console.error(`❌ خطأ: لم يتم العثور على البند ${searchValue} في ورقة DATA`);
+          throw new Error(`البند ${searchValue} غير موجود في قاعدة البيانات. تأكد من وجود البند في طلب التسعير المحدد`);
         }
 
         console.log(`✅ تم العثور على البند في الصف ${targetRow}`);
@@ -1311,8 +1313,10 @@ ${itemsList}
 
       // التحقق من عدد البنود المحفوظة فعلياً
       if (savedItemsCount === 0) {
-        console.log(`⚠️ لم يتم حفظ أي بند لأمر الشراء ${poData.poNumber}`);
-        throw new Error(`لم يتم حفظ أي بند - تحقق من أن البنود موجودة في طلبات التسعير المحددة`);
+        console.error(`❌ فشل: لم يتم حفظ أي بند لأمر الشراء ${poData.poNumber}`);
+        console.error(`📋 عدد البنود المرسلة: ${poData.items.length}`);
+        console.error(`✅ عدد البنود المحفوظة: ${savedItemsCount}`);
+        throw new Error(`فشل حفظ أمر الشراء: لم يتم حفظ أي بند. تأكد من أن البنود موجودة في طلبات التسعير المحددة وأن أرقام طلبات التسعير صحيحة`);
       }
       
       console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber} بنجاح مع ${savedItemsCount} بند`);

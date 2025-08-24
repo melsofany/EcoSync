@@ -5711,10 +5711,26 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.error("❌ خطأ في حفظ أمر الشراء في Google Sheets:", error);
       const errorMessage = error instanceof Error ? error.message : "خطأ في حفظ أمر الشراء";
       console.error("❌ تفاصيل الخطأ:", error instanceof Error ? error.stack : error);
-      res.status(500).json({ 
+      
+      // تحديد كود الحالة المناسب
+      let statusCode = 500;
+      let errorCode = "SHEETS_SAVE_ERROR";
+      
+      // تحسين رسائل الخطأ بناءً على نوع الخطأ
+      if (errorMessage.includes("غير موجود في طلب التسعير") || 
+          errorMessage.includes("غير موجود في قاعدة البيانات") ||
+          errorMessage.includes("بدون رقم طلب تسعير")) {
+        statusCode = 400; // Bad Request
+        errorCode = "INVALID_ITEMS";
+      } else if (errorMessage.includes("لم يتم حفظ أي بند")) {
+        statusCode = 400; // Bad Request
+        errorCode = "NO_ITEMS_SAVED";
+      }
+      
+      res.status(statusCode).json({ 
         success: false,
         message: errorMessage,
-        error: "SHEETS_SAVE_ERROR",
+        error: errorCode,
         details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
       });
     }

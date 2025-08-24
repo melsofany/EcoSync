@@ -364,11 +364,28 @@ export default function CreatePurchaseOrder() {
     },
     onError: (error: any) => {
       console.error("❌ فشل إنشاء أمر الشراء:", error);
+      console.error("❌ تفاصيل الخطأ الكاملة:", {
+        message: error.message,
+        details: error.details,
+        stack: error.stack
+      });
       
       if (!showDuplicateDialog) {
+        // عرض رسالة خطأ مفصلة
+        let errorMessage = error.message || "حدث خطأ غير متوقع";
+        
+        // إضافة تفاصيل إضافية إذا كانت متاحة
+        if (error.message?.includes("البند") && error.message?.includes("غير موجود")) {
+          errorMessage += ". تحقق من اختيار البنود الصحيحة من طلبات التسعير المحددة";
+        } else if (error.message?.includes("لم يتم حفظ أي بند")) {
+          errorMessage += ". جميع البنود المحددة غير صالحة أو غير موجودة في طلبات التسعير";
+        } else if (error.message?.includes("بدون رقم طلب تسعير")) {
+          errorMessage += ". تأكد من تحديد طلب التسعير لكل بند";
+        }
+        
         toast({
-          title: "خطأ في إنشاء أمر الشراء",
-          description: error.message || "حدث خطأ غير متوقع",
+          title: "❌ فشل إنشاء أمر الشراء",
+          description: errorMessage,
           variant: "destructive",
         });
       }
