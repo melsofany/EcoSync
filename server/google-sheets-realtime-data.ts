@@ -472,12 +472,13 @@ export class GoogleSheetsRealtimeData {
 
   async getAllPurchaseOrders() {
     try {
-      const items = await this.getAllItems();
+      // استخدام getAllItemsRaw للحصول على كل الصفوف
+      const items = await this.getAllItemsRaw();
       const poMap = new Map();
 
       // تجميع الأصناف حسب PO NUMBER
       for (const item of items) {
-        if (!item.poNumber) continue;
+        if (!item.poNumber || item.poNumber === '') continue;
 
         if (!poMap.has(item.poNumber)) {
           poMap.set(item.poNumber, {
@@ -499,10 +500,11 @@ export class GoogleSheetsRealtimeData {
         po.items.push(item);
         po.itemsCount++;
         
-        // حساب القيمة الإجمالية
-        const value = parseFloat(item.totalValue?.toString().replace(/[^\d.-]/g, '') || '0');
-        if (!isNaN(value)) {
-          po.totalAmount += value;
+        // حساب القيمة الإجمالية من الكمية والسعر
+        const quantity = parseFloat(item.poQuantity?.toString().replace(/[^\d.-]/g, '') || '0');
+        const price = parseFloat(item.poPrice?.toString().replace(/[^\d.-]/g, '') || '0');
+        if (!isNaN(quantity) && !isNaN(price) && quantity > 0 && price > 0) {
+          po.totalAmount += quantity * price;
         }
       }
 
@@ -639,6 +641,10 @@ export class GoogleSheetsRealtimeData {
             rfqNumber: row[5] || '', // Column F - RFQ Number
             requestDate: row[6] || '', // Column G - Request Date
             quantity: row[7] || '', // Column H - Quantity
+            poNumber: row[10] || '', // Column K - رقم أمر الشراء
+            poDate: row[11] || '', // Column L - تاريخ أمر الشراء
+            poQuantity: row[12] || '', // Column M - كمية أمر الشراء
+            poPrice: row[13] || '', // Column N - سعر أمر الشراء
             clientName: row[16] || '' // Column Q - Client Name
           });
         }
