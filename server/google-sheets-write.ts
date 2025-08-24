@@ -1082,6 +1082,8 @@ ${itemsList}
       console.log(`📝 حفظ أمر الشراء ${poData.poNumber} في Google Sheets`);
       console.log(`📋 عدد البنود: ${poData.items.length}`);
 
+      let isFirstItem = true; // متغير لتتبع أول بند
+      
       for (const item of poData.items) {
         if (!item.lineItem && !item.itemNumber) {
           console.log('⚠️ تخطي بند بدون LINE ITEM أو رقم صنف');
@@ -1146,8 +1148,21 @@ ${itemsList}
 
         console.log(`✅ تم العثور على البند في الصف ${targetRow}`);
 
-        // إذا كان هناك أمر شراء سابق، أضف صف جديد
-        if (existingPO) {
+        // تحديد السلوك بناءً على ما إذا كان هذا أول بند أم لا
+        let shouldAddNewRow = false;
+        
+        if (isFirstItem) {
+          // أول بند دائماً يُحفظ في نفس الصف
+          console.log(`🎯 أول بند في أمر الشراء - سيتم الحفظ في نفس الصف ${targetRow}`);
+          isFirstItem = false; // تحديث المتغير
+          shouldAddNewRow = false; // الحفظ في نفس الصف
+        } else if (existingPO) {
+          // البنود الأخرى: إذا كان هناك أمر شراء سابق، أضف صف جديد
+          shouldAddNewRow = true;
+        }
+
+        // إذا كان يجب إضافة صف جديد
+        if (shouldAddNewRow) {
           console.log(`📝 إضافة صف جديد للبند ${searchValue} مع أمر الشراء الجديد`);
           
           // طباعة كل الأعمدة لفهم البيانات
