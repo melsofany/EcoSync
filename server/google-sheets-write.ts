@@ -1157,16 +1157,11 @@ ${itemsList}
             targetRow = matchingRowWithRFQ;
             console.log(`📍 سيتم التحديث في الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير بدون أمر شراء)`);
           }
-        } else if (!rfqNumber && firstMatchingRowWithoutPO !== -1) {
-          // لا يوجد رقم طلب تسعير محدد، ووجدنا البند بدون أمر شراء
-          targetRow = firstMatchingRowWithoutPO;
-          existingPOInSameRFQ = false;
-          console.log(`📍 سيتم التحديث في الصف ${firstMatchingRowWithoutPO} (أول صف مطابق بدون أمر شراء)`);
-        } else if (!rfqNumber && lastMatchingRow !== -1) {
-          // لا يوجد رقم طلب تسعير محدد، لكن كل الصفوف لها أوامر شراء
-          targetRow = lastMatchingRow;
-          existingPOInSameRFQ = true; // نضيف صف جديد
-          console.log(`⚠️ البند ${searchValue} موجود لكن كل الصفوف لها أوامر شراء - سيتم إضافة صف جديد`);
+        } else if (!rfqNumber) {
+          // لا يوجد رقم طلب تسعير محدد - هذا خطأ
+          console.log(`❌ خطأ: البند ${searchValue} بدون رقم طلب تسعير محدد`);
+          console.log(`❌ لا يمكن حفظ أمر الشراء بدون تحديد طلب التسعير`);
+          continue; // تخطي هذا البند
         } else if (rfqNumber && lastMatchingRow !== -1) {
           // يوجد رقم طلب تسعير محدد لكن البند غير موجود في هذا الطلب
           console.log(`⚠️ البند ${searchValue} غير موجود في طلب التسعير ${rfqNumber}`);
