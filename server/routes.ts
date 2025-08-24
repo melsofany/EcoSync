@@ -3589,15 +3589,60 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🔍 API call received for Google Sheets purchase orders list');
       
-      // قراءة البيانات مباشرة من Google Sheets
-      const { GoogleSheetsRealtimeData } = await import('./google-sheets-realtime-data.js');
-      const googleSheets = new GoogleSheetsRealtimeData();
+      // قراءة البيانات مباشرة من Google Sheets بدون استخدام ذاكرة التخزين المؤقت
+      const { googleSheetsRealtimeData } = await import('./google-sheets-realtime-data.js');
       
-      // قراءة أوامر الشراء من Google Sheets مباشرة
+      // قراءة البيانات الخام مباشرة من Google Sheets
+      console.log('📊 قراءة أوامر الشراء مباشرة من Google Sheets...');
+      const rawData = await googleSheetsRealtimeData.readDataSheet();
       
-      const purchaseOrders = await googleSheets.getAllPurchaseOrders();
+      // معالجة البيانات لاستخراج أوامر الشراء
+      const poMap = new Map();
       
-      console.log(`📦 تم استخراج ${purchaseOrders.length} أمر شراء من Google Sheets`);
+      for (let i = 0; i < rawData.length; i++) {
+        const row = rawData[i];
+        const poNumber = row[10]; // العمود K - رقم أمر الشراء
+        
+        if (!poNumber || poNumber === '') continue;
+        
+        if (!poMap.has(poNumber)) {
+          poMap.set(poNumber, {
+            id: `po-sheets-${poNumber}`,
+            poNumber: poNumber,
+            quotationNumber: row[5] || '', // العمود F - RFQ
+            orderDate: row[11] || '', // العمود L - تاريخ أمر الشراء
+            status: 'confirmed',
+            supplierName: row[15] || 'الموردين المعتمدين', // العمود P - اسم العميل
+            currency: 'EGP',
+            totalAmount: 0,
+            deliveryStatus: 'delivered',
+            itemsCount: 0,
+            items: []
+          });
+        }
+        
+        const po = poMap.get(poNumber);
+        po.itemsCount++;
+        
+        // حساب القيمة الإجمالية
+        const quantity = parseFloat(row[12]) || 0; // العمود M - كمية أمر الشراء
+        const price = parseFloat(row[13]) || 0; // العمود N - سعر أمر الشراء
+        const itemTotal = quantity * price;
+        po.totalAmount += itemTotal;
+        
+        // إضافة البند
+        po.items.push({
+          lineItem: row[2] || '', // العمود C
+          description: row[4] || '', // العمود E
+          quantity: quantity,
+          price: price,
+          total: itemTotal
+        });
+      }
+      
+      const purchaseOrders = Array.from(poMap.values());
+      console.log(`📦 تم استخراج ${purchaseOrders.length} أمر شراء من Google Sheets (قراءة مباشرة)`);
+      
       res.json(purchaseOrders);
     } catch (error) {
       console.error("Get purchase orders error:", error);
@@ -5500,30 +5545,67 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       console.log('🔍 التحقق من وجود رقم أمر الشراء:', poNumber);
       
-      // التحقق من Google Sheets أولاً
+      // التحقق من Google Sheets مباشرة بدون استخدام البيانات المخزنة مؤقتاً
       try {
         const { googleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
-        const purchaseOrders = await googleSheetsRealtimeData.getAllPurchaseOrders();
-        const existingPO = purchaseOrders.find((po: any) => 
-          po.poNumber === poNumber
-        );
+        
+        // قراءة البيانات مباشرة من Google Sheets
+        console.log('📊 قراءة البيانات المباشرة من Google Sheets للتحقق من أمر الشراء...');
+        const rawData = await googleSheetsRealtimeData.readDataSheet();
+        
+        // البحث عن أمر الشراء في البيانات الخام
+        let existingPO = null;
+        let totalAmount = 0;
+        let itemsCount = 0;
+        let poDate = '';
+        
+        for (let i = 0; i < rawData.length; i++) {
+          const row = rawData[i];
+          // العمود K (index 10) - رقم أمر الشراء
+          if (row[10] && row[10].toString().trim() === poNumber) {
+            if (!existingPO) {
+              existingPO = {
+                poNumber: row[10],
+                orderDate: row[11] || '', // العمود L - تاريخ أمر الشراء
+                items: []
+              };
+              poDate = row[11] || '';
+            }
+            
+            // حساب القيمة الإجمالية من الكمية والسعر
+            const quantity = parseFloat(row[12]) || 0; // العمود M - كمية أمر الشراء
+            const price = parseFloat(row[13]) || 0; // العمود N - سعر أمر الشراء
+            totalAmount += quantity * price;
+            itemsCount++;
+            
+            existingPO.items.push({
+              lineItem: row[2] || '', // العمود C
+              description: row[4] || '', // العمود E
+              quantity: quantity,
+              price: price
+            });
+          }
+        }
         
         if (existingPO) {
           console.log('⚠️ رقم أمر الشراء موجود في Google Sheets:', poNumber);
           console.log('📋 بيانات أمر الشراء:', {
             poNumber: existingPO.poNumber,
             date: existingPO.orderDate,
-            totalAmount: existingPO.totalAmount
+            totalAmount: totalAmount,
+            itemsCount: itemsCount
           });
           return res.json({ 
             exists: true, 
             purchaseOrder: {
               poNumber: existingPO.poNumber,
-              date: existingPO.orderDate, // استخدام orderDate بدلاً من poDate
-              totalValue: existingPO.totalAmount // استخدام totalAmount بدلاً من totalValue
+              date: existingPO.orderDate,
+              totalValue: totalAmount
             }
           });
         }
+        
+        console.log('✅ رقم أمر الشراء غير موجود في Google Sheets:', poNumber);
       } catch (sheetsError) {
         console.log('تعذر التحقق من Google Sheets:', sheetsError.message);
       }
