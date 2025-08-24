@@ -5510,12 +5510,17 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         
         if (existingPO) {
           console.log('⚠️ رقم أمر الشراء موجود في Google Sheets:', poNumber);
+          console.log('📋 بيانات أمر الشراء:', {
+            poNumber: existingPO.poNumber,
+            date: existingPO.orderDate,
+            totalAmount: existingPO.totalAmount
+          });
           return res.json({ 
             exists: true, 
             purchaseOrder: {
               poNumber: existingPO.poNumber,
-              date: existingPO.poDate,
-              totalValue: existingPO.totalValue
+              date: existingPO.orderDate, // استخدام orderDate بدلاً من poDate
+              totalValue: existingPO.totalAmount // استخدام totalAmount بدلاً من totalValue
             }
           });
         }

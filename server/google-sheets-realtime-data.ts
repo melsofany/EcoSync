@@ -510,6 +510,18 @@ export class GoogleSheetsRealtimeData {
 
       const purchaseOrders = Array.from(poMap.values());
       console.log(`🛒 تم استخراج ${purchaseOrders.length} أمر شراء من Google Sheets`);
+      
+      // عرض تفاصيل أمر P25ETEST إذا كان موجوداً
+      const testPO = purchaseOrders.find(po => po.poNumber === 'P25ETEST');
+      if (testPO) {
+        console.log('📋 تفاصيل P25ETEST:', {
+          poNumber: testPO.poNumber,
+          orderDate: testPO.orderDate,
+          totalAmount: testPO.totalAmount,
+          itemsCount: testPO.itemsCount
+        });
+      }
+      
       return purchaseOrders;
     } catch (error) {
       console.error('❌ خطأ في استخراج أوامر الشراء:', (error as Error).message);
