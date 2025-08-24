@@ -227,9 +227,14 @@ export default function CreatePurchaseOrder() {
         const description = item.description || item.item?.description || item.DESCRIPTION || "";
         const unit = item.unit || item.item?.uom || item.UOM || "Each";
         
+        // استخدام رقم طلب التسعير من البند إذا كان موجوداً، أو من الطلب نفسه
+        const quotationNumber = item.quotationNumber || item.rfqNumber || 
+                                selectedQuotation?.customRequestNumber || 
+                                selectedQuotation?.requestNumber || "";
+        
         return {
           quotationId: selectedQuotationId,
-          quotationNumber: selectedQuotation?.customRequestNumber || selectedQuotation?.requestNumber || "",
+          quotationNumber: quotationNumber,
           itemId: item.itemId || item.item?.id || item.id || `item-${index}`,
           quotationItemId: item.id,
           lineItem: lineItem,
@@ -280,6 +285,20 @@ export default function CreatePurchaseOrder() {
       toast({
         title: "خطأ",
         description: "يرجى اختيار بند واحد على الأقل",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // التحقق من وجود رقم طلب التسعير لكل بند
+    const itemsWithoutRFQ = selectedItems.filter(item => 
+      !item.quotationNumber || item.quotationNumber.trim() === ""
+    );
+
+    if (itemsWithoutRFQ.length > 0) {
+      toast({
+        title: "خطأ في البيانات",
+        description: `البنود التالية ليس لها رقم طلب تسعير: ${itemsWithoutRFQ.map(item => item.lineItem || item.itemNumber).join(", ")}`,
         variant: "destructive",
       });
       return;
@@ -438,6 +457,21 @@ export default function CreatePurchaseOrder() {
       return;
     }
 
+    // التحقق النهائي من أن جميع البنود لها رقم طلب تسعير
+    const itemsWithoutRFQ = finalPOItems.filter(item => 
+      !item.quotationNumber || item.quotationNumber.trim() === ""
+    );
+
+    if (itemsWithoutRFQ.length > 0) {
+      console.error("❌ بنود بدون رقم طلب تسعير:", itemsWithoutRFQ);
+      toast({
+        title: "خطأ في البيانات",
+        description: `لا يمكن إنشاء أمر شراء - البنود التالية ليس لها رقم طلب تسعير: ${itemsWithoutRFQ.map(item => item.lineItem || item.itemNumber || "بند غير محدد").join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const poData = {
       poNumber: poNumber.trim(),
       poDate: poDate,
@@ -446,7 +480,7 @@ export default function CreatePurchaseOrder() {
       items: finalPOItems.map(item => ({
         quotationId: item.quotationId,
         quotationNumber: item.quotationNumber,
-        rfqNumber: item.quotationNumber, // إضافة رقم طلب التسعير
+        rfqNumber: item.quotationNumber || "", // إضافة رقم طلب التسعير مع قيمة افتراضية
         itemId: item.itemId,
         lineItem: item.lineItem || "",
         itemNumber: item.itemNumber || "",

@@ -4853,6 +4853,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             return {
               id: `item-${item.itemNumber || Math.random()}`,
               quotationId: quotationId,
+              quotationNumber: quotation.requestNumber || quotation.customRequestNumber || "", // إضافة رقم طلب التسعير
+              rfqNumber: quotation.requestNumber || quotation.customRequestNumber || "", // إضافة رقم RFQ
               itemId: item.itemNumber || `item-${Math.random()}`,
               quantity: parseFloat(item.quantity?.toString().replace(/[^\d.-]/g, '') || '1'),
               unitPrice: parseFloat(item.price?.toString().replace(/[^\d.-]/g, '') || '0'),
