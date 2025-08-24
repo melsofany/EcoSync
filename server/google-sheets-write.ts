@@ -1197,8 +1197,15 @@ ${itemsList}
           newRowData[12] = item.quantity.toString(); // العمود M - كمية أمر الشراء
           newRowData[13] = item.unitPrice.toString(); // العمود N - سعر أمر الشراء
           
-          // ترك باقي الأعمدة فارغة (O-AA)
-          for (let i = 14; i < 27; i++) {
+          // ترك العمود O فارغ
+          newRowData[14] = '';
+          
+          // نسخ العمودين P و Q من الصف الأصلي
+          newRowData[15] = rowData[15] !== undefined ? rowData[15] : ''; // العمود P
+          newRowData[16] = rowData[16] !== undefined ? rowData[16] : ''; // العمود Q
+          
+          // ترك باقي الأعمدة فارغة (R-AA)
+          for (let i = 17; i < 27; i++) {
             newRowData[i] = '';
           }
           
@@ -1219,6 +1226,8 @@ ${itemsList}
           console.log(`   العمود L (PO Date): "${newRowData[11]}"`);
           console.log(`   العمود M (PO Qty): "${newRowData[12]}"`);
           console.log(`   العمود N (PO Price): "${newRowData[13]}"`);
+          console.log(`   العمود P (منسوخ): "${newRowData[15]}"`);
+          console.log(`   العمود Q (منسوخ): "${newRowData[16]}"`);
           
           // إدراج الصف الجديد بعد الصف الحالي
           await this.insertNewRowAfter(targetRow, newRowData);
