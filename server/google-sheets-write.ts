@@ -1197,8 +1197,9 @@ ${itemsList}
           newRowData[12] = item.quantity.toString(); // العمود M - كمية أمر الشراء
           newRowData[13] = item.unitPrice.toString(); // العمود N - سعر أمر الشراء
           
-          // ترك العمود O فارغ
-          newRowData[14] = '';
+          // حساب حاصل ضرب الكمية في السعر للعمود O
+          const totalPrice = item.quantity * item.unitPrice;
+          newRowData[14] = totalPrice.toString(); // العمود O - الإجمالي
           
           // نسخ العمودين P و Q من الصف الأصلي
           newRowData[15] = rowData[15] !== undefined ? rowData[15] : ''; // العمود P
@@ -1226,6 +1227,7 @@ ${itemsList}
           console.log(`   العمود L (PO Date): "${newRowData[11]}"`);
           console.log(`   العمود M (PO Qty): "${newRowData[12]}"`);
           console.log(`   العمود N (PO Price): "${newRowData[13]}"`);
+          console.log(`   العمود O (الإجمالي): "${newRowData[14]}"`);
           console.log(`   العمود P (منسوخ): "${newRowData[15]}"`);
           console.log(`   العمود Q (منسوخ): "${newRowData[16]}"`);
           
@@ -1237,7 +1239,10 @@ ${itemsList}
           // إذا لم يكن هناك أمر شراء سابق، حدث البيانات في نفس الصف
           console.log(`📝 تحديث بيانات أمر الشراء في الصف ${targetRow}`);
           
-          // تحديث البيانات في الأعمدة K, L, M, N
+          // حساب الإجمالي
+          const totalPrice = item.quantity * item.unitPrice;
+          
+          // تحديث البيانات في الأعمدة K, L, M, N, O
           const updates = [
             {
               range: `DATA!K${targetRow}`, // رقم أمر الشراء
@@ -1254,6 +1259,10 @@ ${itemsList}
             {
               range: `DATA!N${targetRow}`, // السعر
               values: [[item.unitPrice.toString()]]
+            },
+            {
+              range: `DATA!O${targetRow}`, // الإجمالي (كمية × سعر)
+              values: [[totalPrice.toString()]]
             }
           ];
 
