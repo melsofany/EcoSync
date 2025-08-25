@@ -5611,14 +5611,26 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       // إذا كانت هناك بنود، معالجتها
       try {
+        console.log('🔄 بدء عملية حفظ البنود في Google Sheets...');
+        console.log('📋 البنود المراد حفظها:', JSON.stringify(processedItems, null, 2));
+        
         // استيراد GoogleSheetsWriter
-        const { GoogleSheetsWriter } = await import('./google-sheets-write.js');
+        const { GoogleSheetsWriter } = await import('./google-sheets-write');
+        console.log('✅ تم استيراد GoogleSheetsWriter');
+        
         const writer = new GoogleSheetsWriter();
+        console.log('✅ تم إنشاء كائن GoogleSheetsWriter');
         
         // التأكد من تهيئة الكاتب
-        await writer.initialize();
+        const initialized = await writer.initialize();
+        console.log(`✅ تهيئة الكاتب: ${initialized}`);
+        
+        if (!initialized) {
+          throw new Error('فشل في تهيئة GoogleSheetsWriter');
+        }
         
         // حفظ البيانات في Google Sheets
+        console.log('🔄 بدء حفظ البيانات في Google Sheets...');
         await writer.savePurchaseOrderToSheets({
           poNumber,
           poDate,
@@ -5631,10 +5643,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           }))
         });
         
-        console.log(`✅ تم حفظ أمر الشراء ${poNumber} مع ${processedItems.length} بند`);
+        console.log(`✅ تم حفظ أمر الشراء ${poNumber} مع ${processedItems.length} بند في Google Sheets بنجاح`);
         
       } catch (sheetsError) {
-        console.error('⚠️ خطأ في حفظ البنود في Google Sheets:', sheetsError);
+        console.error('❌ خطأ تفصيلي في حفظ البنود في Google Sheets:', sheetsError);
+        console.error('❌ نوع الخطأ:', sheetsError instanceof Error ? sheetsError.name : 'غير معروف');
+        console.error('❌ رسالة الخطأ:', sheetsError instanceof Error ? sheetsError.message : sheetsError);
+        console.error('❌ تفاصيل الخطأ:', sheetsError instanceof Error ? sheetsError.stack : 'لا توجد تفاصيل');
         // المتابعة حتى لو فشل حفظ البنود
       }
       

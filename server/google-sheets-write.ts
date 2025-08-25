@@ -1062,6 +1062,9 @@ ${itemsList}
     }>;
   }): Promise<void> {
     try {
+      console.log('🚀 بدء دالة savePurchaseOrderToSheets');
+      console.log('📋 البيانات المستلمة:', JSON.stringify(poData, null, 2));
+      
       // التأكد من التهيئة
       if (!this.sheets || !this.spreadsheetId) {
         console.log('🔄 إعادة تهيئة Google Sheets...');
