@@ -37,23 +37,29 @@ export class GoogleSheetsWriter {
       // محاولة تحميل المفتاح من متغير البيئة أو الملف
       let credentials;
       
-      // استخدام الملف المحلي مباشرة لتجنب مشاكل تحليل JSON
-      let useLocalFile = true;
-      
-      if (process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY && !useLocalFile) {
+      // التحقق من وجود متغير البيئة أولاً (للإنتاج)
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+        try {
+          const keyData = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
+          credentials = JSON.parse(keyData);
+          console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة BASE64');
+          console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
+        } catch (parseError) {
+          console.error('❌ خطأ في تحليل مفتاح Google Sheets BASE64:', (parseError as Error).message);
+          throw new Error('فشل في تحليل مفتاح Google Sheets من متغير البيئة');
+        }
+      } else if (process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY) {
         try {
           const keyData = process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY.trim();
           credentials = JSON.parse(keyData);
           console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة');
+          console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
         } catch (parseError) {
           console.error('❌ خطأ في تحليل مفتاح Google Sheets:', (parseError as Error).message);
-          console.log('🔄 التبديل لاستخدام الملف المحلي...');
-          useLocalFile = true;
+          throw new Error('فشل في تحليل مفتاح Google Sheets من متغير البيئة');
         }
-      }
-      
-      if (useLocalFile) {
-        // محاولة تحميل من الملف
+      } else {
+        // محاولة تحميل من الملف المحلي (للتطوير فقط)
         try {
           const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
           const fileContent = fs.readFileSync(credentialsPath, 'utf8');
