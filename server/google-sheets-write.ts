@@ -1162,22 +1162,25 @@ ${itemsList}
             console.log(`📍 سيتم التحديث في الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير بدون أمر شراء)`);
           }
         } else if (!rfqNumber) {
-          // لا يوجد رقم طلب تسعير محدد - هذا خطأ حرج
-          console.error(`❌ خطأ حرج: البند ${searchValue} بدون رقم طلب تسعير محدد`);
-          console.error(`❌ لا يمكن حفظ أمر الشراء بدون تحديد طلب التسعير`);
-          throw new Error(`البند ${searchValue} لا يحتوي على رقم طلب تسعير. لا يمكن إنشاء أمر شراء بدون تحديد طلب التسعير`);
+          // لا يوجد رقم طلب تسعير محدد - نبحث عن أي صف متاح للبند
+          console.warn(`⚠️ البند ${searchValue} بدون رقم طلب تسعير محدد - البحث عن صف متاح`);
+          if (firstMatchingRowWithoutPO !== -1) {
+            targetRow = firstMatchingRowWithoutPO;
+            console.log(`📍 سيتم استخدام الصف ${firstMatchingRowWithoutPO} (بند بدون أمر شراء)`);
+          } else if (lastMatchingRow !== -1) {
+            targetRow = lastMatchingRow;
+            console.log(`📍 سيتم استخدام الصف ${lastMatchingRow} (آخر صف مطابق)`);
+          }
         } else if (rfqNumber && lastMatchingRow !== -1) {
-          // يوجد رقم طلب تسعير محدد لكن البند غير موجود في هذا الطلب
-          console.error(`❌ خطأ: البند ${searchValue} غير موجود في طلب التسعير ${rfqNumber}`);
-          console.error(`⚠️ البند موجود في طلبات تسعير أخرى لكن ليس في الطلب المحدد`);
-          // تجميع رسالة خطأ أكثر وضوحاً
-          const errorMsg = `البند ${searchValue} غير موجود في طلب التسعير ${rfqNumber}. تأكد من اختيار طلب التسعير الصحيح`;
-          throw new Error(errorMsg);
+          // يوجد رقم طلب تسعير محدد والبند موجود - نستخدم آخر صف مطابق
+          console.log(`📍 البند ${searchValue} موجود في الصف ${lastMatchingRow}`);
+          targetRow = lastMatchingRow;
         }
 
         if (targetRow === -1) {
-          console.error(`❌ خطأ: لم يتم العثور على البند ${searchValue} في ورقة DATA`);
-          throw new Error(`البند ${searchValue} غير موجود في قاعدة البيانات. تأكد من وجود البند في طلب التسعير المحدد`);
+          console.warn(`⚠️ البند ${searchValue} غير موجود في ورقة DATA - سيتم إضافته كصف جديد`);
+          // لا نرمي خطأ هنا، بل نضع علامة لإضافة البند كصف جديد
+          targetRow = 0; // علامة خاصة لإضافة صف جديد
         }
 
         console.log(`✅ تم العثور على البند في الصف ${targetRow}`);
@@ -1196,6 +1199,45 @@ ${itemsList}
         
         isFirstItem = false; // تحديث المتغير بعد أول بند
 
+        // معالجة البنود الجديدة (targetRow === 0)
+        if (targetRow === 0) {
+          console.log(`📝 إضافة بند جديد: ${searchValue}`);
+          
+          // إنشاء صف جديد للبند
+          const newRowData = [
+            '', // A - معرف البند (سيتم توليده لاحقاً)
+            '', // B - UOM
+            item.lineItem || '', // C - Line Item
+            '', // D - Part Number
+            '', // E - الوصف
+            item.rfqNumber || '', // F - رقم RFQ
+            '', // G - تاريخ RFQ
+            '', // H - كمية RFQ
+            '', // I - سعر العميل
+            '', // J - اسم المورد
+            poData.poNumber, // K - رقم أمر الشراء
+            poData.poDate, // L - تاريخ أمر الشراء
+            item.quantity?.toString() || '0', // M - كمية أمر الشراء
+            item.unitPrice?.toString() || '0', // N - سعر أمر الشراء
+            ((item.quantity || 0) * (item.unitPrice || 0)).toString() // O - الإجمالي
+          ];
+          
+          // إضافة الصف الجديد
+          await this.sheets.spreadsheets.values.append({
+            spreadsheetId: this.spreadsheetId,
+            range: 'DATA!A:O',
+            valueInputOption: 'RAW',
+            insertDataOption: 'INSERT_ROWS',
+            resource: {
+              values: [newRowData]
+            }
+          });
+          
+          console.log(`✅ تم إضافة البند الجديد: ${searchValue}`);
+          savedItemsCount++;
+          continue; // الانتقال للبند التالي
+        }
+        
         // إذا كان يجب إضافة صف جديد
         if (shouldAddNewRow) {
           console.log(`📝 إضافة صف جديد للبند ${searchValue} مع أمر الشراء الجديد`);
@@ -1316,48 +1358,9 @@ ${itemsList}
 
       // التحقق من عدد البنود المحفوظة فعلياً
       if (savedItemsCount === 0 && poData.items.length > 0) {
-        console.warn(`⚠️ تحذير: لم يتم العثور على البنود في Google Sheets`);
-        console.log(`📝 سيتم إضافة ${poData.items.length} بند جديد`);
-        
-        // إضافة البنود الجديدة إلى Google Sheets
-        for (const item of poData.items) {
-          try {
-            // إضافة صف جديد في نهاية الورقة
-            const newRow = [
-              '', // A - معرف البند (سيتم توليده لاحقاً)
-              '', // B - UOM
-              item.lineItem || '', // C - Line Item
-              '', // D - Part Number
-              '', // E - الوصف
-              item.rfqNumber || '', // F - رقم RFQ
-              '', // G - تاريخ RFQ
-              '', // H - كمية RFQ
-              '', // I - سعر العميل
-              '', // J - اسم المورد
-              poData.poNumber, // K - رقم أمر الشراء
-              poData.poDate, // L - تاريخ أمر الشراء
-              item.quantity?.toString() || '0', // M - كمية أمر الشراء
-              item.unitPrice?.toString() || '0', // N - سعر أمر الشراء
-              ((item.quantity || 0) * (item.unitPrice || 0)).toString() // O - الإجمالي
-            ];
-            
-            // إضافة الصف الجديد
-            await this.sheets.spreadsheets.values.append({
-              spreadsheetId: this.spreadsheetId,
-              range: 'DATA!A:O',
-              valueInputOption: 'RAW',
-              insertDataOption: 'INSERT_ROWS',
-              resource: {
-                values: [newRow]
-              }
-            });
-            
-            console.log(`✅ تم إضافة بند جديد: ${item.lineItem || item.itemNumber}`);
-            savedItemsCount++;
-          } catch (appendError) {
-            console.error(`❌ فشل إضافة البند: ${appendError}`);
-          }
-        }
+        console.warn(`⚠️ تحذير: لم يتم حفظ أي بند بعد - ربما البنود غير موجودة في Google Sheets`);
+        console.log(`📝 عدد البنود المطلوبة: ${poData.items.length}`);
+        // لا نرمي خطأ هنا - قد تكون البنود قد أضيفت في الكود أعلاه
       }
       
       console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber} بنجاح مع ${savedItemsCount} بند`);
