@@ -1315,11 +1315,49 @@ ${itemsList}
       }
 
       // التحقق من عدد البنود المحفوظة فعلياً
-      if (savedItemsCount === 0) {
-        console.error(`❌ فشل: لم يتم حفظ أي بند لأمر الشراء ${poData.poNumber}`);
-        console.error(`📋 عدد البنود المرسلة: ${poData.items.length}`);
-        console.error(`✅ عدد البنود المحفوظة: ${savedItemsCount}`);
-        throw new Error(`فشل حفظ أمر الشراء: لم يتم حفظ أي بند. تأكد من أن البنود موجودة في طلبات التسعير المحددة وأن أرقام طلبات التسعير صحيحة`);
+      if (savedItemsCount === 0 && poData.items.length > 0) {
+        console.warn(`⚠️ تحذير: لم يتم العثور على البنود في Google Sheets`);
+        console.log(`📝 سيتم إضافة ${poData.items.length} بند جديد`);
+        
+        // إضافة البنود الجديدة إلى Google Sheets
+        for (const item of poData.items) {
+          try {
+            // إضافة صف جديد في نهاية الورقة
+            const newRow = [
+              '', // A - معرف البند (سيتم توليده لاحقاً)
+              '', // B - UOM
+              item.lineItem || '', // C - Line Item
+              '', // D - Part Number
+              '', // E - الوصف
+              item.rfqNumber || '', // F - رقم RFQ
+              '', // G - تاريخ RFQ
+              '', // H - كمية RFQ
+              '', // I - سعر العميل
+              '', // J - اسم المورد
+              poData.poNumber, // K - رقم أمر الشراء
+              poData.poDate, // L - تاريخ أمر الشراء
+              item.quantity?.toString() || '0', // M - كمية أمر الشراء
+              item.unitPrice?.toString() || '0', // N - سعر أمر الشراء
+              ((item.quantity || 0) * (item.unitPrice || 0)).toString() // O - الإجمالي
+            ];
+            
+            // إضافة الصف الجديد
+            await this.sheets.spreadsheets.values.append({
+              spreadsheetId: this.spreadsheetId,
+              range: 'DATA!A:O',
+              valueInputOption: 'RAW',
+              insertDataOption: 'INSERT_ROWS',
+              resource: {
+                values: [newRow]
+              }
+            });
+            
+            console.log(`✅ تم إضافة بند جديد: ${item.lineItem || item.itemNumber}`);
+            savedItemsCount++;
+          } catch (appendError) {
+            console.error(`❌ فشل إضافة البند: ${appendError}`);
+          }
+        }
       }
       
       console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber} بنجاح مع ${savedItemsCount} بند`);

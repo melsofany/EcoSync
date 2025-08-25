@@ -5571,6 +5571,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   app.post("/api/purchase-orders/google-sheets", requireAuth, requireRole(['manager', 'purchasing', 'data_entry']), async (req: Request, res: Response) => {
     try {
       console.log('📝 استلام طلب حفظ أمر الشراء في Google Sheets');
+      console.log('👤 المستخدم:', req.session?.user?.username || 'غير معروف');
       console.log('📋 البيانات المستلمة:', JSON.stringify(req.body, null, 2));
       
       const { poNumber, poDate, items } = req.body;
