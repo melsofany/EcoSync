@@ -2,8 +2,16 @@ import { Resend } from 'resend';
 import crypto from 'crypto';
 import { usersGoogleSheetsManager } from './users-sheets-manager';
 
-// تهيئة Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+// تهيئة Resend (اختياري)
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+let resend: Resend | null = null;
+
+if (RESEND_API_KEY && RESEND_API_KEY !== '' && RESEND_API_KEY !== 'your-resend-api-key') {
+  resend = new Resend(RESEND_API_KEY);
+  console.log('✅ تم تهيئة Resend في password-reset-service');
+} else {
+  console.log('⚠️ Resend غير متوفر في password-reset-service');
+}
 
 // إنشاء رمز إعادة تعيين عشوائي
 export function generateResetToken(): string {
@@ -21,6 +29,11 @@ export function generateTokenExpiry(): Date {
 export async function sendPasswordResetEmail(email: string, resetLink: string, userName: string): Promise<boolean> {
   try {
     console.log(`📧 إرسال بريد إعادة تعيين كلمة المرور إلى: ${email}`);
+    
+    if (!resend) {
+      console.log('⚠️ خدمة البريد الإلكتروني غير متوفرة - تم تعطيل إرسال البريد');
+      return true; // Return true to continue the process without email
+    }
     
     const { data, error } = await resend.emails.send({
       from: 'نظام قرطبة <onboarding@resend.dev>',
