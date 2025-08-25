@@ -255,34 +255,24 @@ export class GoogleSheetsOnlyStorage {
 
   // إضافة أمر شراء جديد إلى Google Sheets
   async createPurchaseOrder(poData: any) {
-    try {
-      const values = [[
-        poData.poNumber,
-        poData.quotationNumber || '',
-        poData.orderDate,
-        poData.totalAmount,
-        poData.status,
-        poData.supplierName || '',
-        poData.currency || 'EGP',
-        poData.deliveryStatus || 'pending',
-        poData.itemsCount || 1,
-        poData.notes || ''
-      ]];
-
-      await this.sheets.spreadsheets.values.append({
-        spreadsheetId: this.spreadsheetId,
-        range: 'Purchase_Orders!A:J',
-        valueInputOption: 'USER_ENTERED',
-        requestBody: { values }
-      });
-
-      console.log(`✅ تم إضافة أمر شراء ${poData.poNumber} إلى Google Sheets`);
-      return { ...poData, id: `po-sheets-${Date.now()}` };
-
-    } catch (error) {
-      console.error('❌ خطأ في إضافة أمر الشراء:', error);
-      throw error;
-    }
+    // في النظام الحالي، أوامر الشراء يتم حفظها مباشرة في ورقة DATA
+    // عبر endpoint آخر (/api/purchase-orders/google-sheets)
+    // لذا نعيد البيانات كما هي دون كتابة
+    console.log('⚠️ createPurchaseOrder تم استدعاؤه - الحفظ يتم عبر endpoint آخر');
+    
+    const purchaseOrder = {
+      id: `po-${Date.now()}`,
+      poNumber: poData.poNumber,
+      quotationId: poData.quotationId,
+      poDate: poData.poDate,
+      totalValue: poData.totalValue || 0,
+      status: poData.status || 'pending',
+      createdBy: poData.createdBy,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    return purchaseOrder;
   }
 
   // إضافة طلب تسعير جديد إلى Google Sheets
@@ -460,6 +450,23 @@ export class GoogleSheetsOnlyStorage {
   async getPurchaseOrder() { return undefined; }
   async updatePurchaseOrder() { return {}; }
   async deletePurchaseOrder() { return; }
+  async getPurchaseOrderByNumber(poNumber: string) { 
+    // البحث عن أمر الشراء في البيانات المحملة
+    const purchaseOrders = await this.getAllPurchaseOrders();
+    return purchaseOrders.find((po: any) => po.poNumber === poNumber) || undefined;
+  }
+  async addPurchaseOrderItem(itemData: any) { 
+    // في النظام الحالي، البنود تضاف عبر endpoint آخر
+    console.log('⚠️ addPurchaseOrderItem - البنود تضاف عبر endpoint آخر');
+    return { 
+      id: `po-item-${Date.now()}`,
+      ...itemData 
+    };
+  }
+  async getPurchaseOrderItems(poId: string) { 
+    // إرجاع قائمة فارغة مؤقتاً
+    return [];
+  }
   async createSupplier() { return {}; }
   async getAllSuppliers() { return []; }
   async getSupplier() { return undefined; }
