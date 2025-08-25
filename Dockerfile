@@ -25,10 +25,6 @@ RUN npm install --legacy-peer-deps --build-from-source=better-sqlite3 && npm cac
 # نسخ بقية ملفات المشروع
 COPY . .
 
-# نسخ ملف Google Service Account إذا كان موجود
-# في Railway، سيتم تمرير هذا الملف عبر متغير البيئة
-COPY attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json /app/attached_assets/ || true
-
 # التأكد من وجود esbuild و vite في node_modules
 RUN npm list esbuild vite || npm install esbuild vite --save-dev
 
