@@ -1961,10 +1961,11 @@ import { ExcelOnlyStorage } from './excel-only-storage';
 // استخدام نظام البيانات المطابق لـ Google Sheets (37 أمر شراء)
 import { simpleGoogleSheetsStorage } from "./simple-google-sheets-storage.js";
 import { sheetsFallbackStorage } from "./sheets-fallback-storage.js";
+import { GoogleSheetsOnlyStorage } from "./google-sheets-only-storage.js";
 
 // Use Google Sheets storage directly instead of PostgreSQL
 console.log("🔄 تحويل النظام لاستخدام Google Sheets بدلاً من PostgreSQL");
-export const storage = sheetsFallbackStorage;
+export const storage = new GoogleSheetsOnlyStorage();
 
 // تهيئة النظام الهجين مع البيانات الحقيقية
 export async function initializeDatabase() {

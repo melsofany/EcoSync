@@ -1,22 +1,53 @@
 // نظام التخزين الجديد - Google Sheets فقط
 import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
+import fs from 'fs';
 
 export class GoogleSheetsOnlyStorage {
   private auth: any;
   private sheets: any;
-  private spreadsheetId: string;
+  private spreadsheetId: string = '';
   private useAlternativeMode: boolean = false;
 
   constructor() {
     try {
-      // تجربة تحليل مفتاح Google
+      // تجربة تحليل مفتاح Google من المتغيرات البيئية أو Base64
       let credentials;
-      try {
-        credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY || '{}');
-      } catch (parseError) {
-        console.log('⚠️ مشكلة في تحليل مفتاح Google، استخدام النظام البديل');
-        // استخدام النظام البديل مؤقتاً
+      
+      // محاولة قراءة من Base64 أولاً
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+        try {
+          const decodedKey = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+          credentials = JSON.parse(decodedKey);
+        } catch (e) {
+          console.log('⚠️ فشل فك Base64، جرب JSON مباشر');
+        }
+      }
+      
+      // إذا فشل Base64، جرب JSON مباشر
+      if (!credentials && process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+        try {
+          credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+        } catch (e) {
+          console.log('⚠️ فشل قراءة JSON مباشر');
+        }
+      }
+      
+      // إذا فشل كلاهما، جرب قراءة من الملف المحلي
+      if (!credentials) {
+        try {
+          const localKeyPath = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
+          if (fs.existsSync(localKeyPath)) {
+            credentials = JSON.parse(fs.readFileSync(localKeyPath, 'utf8'));
+            console.log('✅ تم تحميل مفتاح Google من الملف المحلي');
+          }
+        } catch (e) {
+          console.log('⚠️ فشل قراءة الملف المحلي');
+        }
+      }
+      
+      if (!credentials) {
+        console.log('⚠️ لا يوجد مفتاح Google صالح، استخدام النظام البديل');
         this.useAlternativeMode = true;
         return;
       }
@@ -30,8 +61,8 @@ export class GoogleSheetsOnlyStorage {
       this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '';
       
       console.log('🔗 تم تهيئة نظام Google Sheets فقط');
-    } catch (error) {
-      console.error('❌ خطأ في تهيئة Google Sheets:', error.message);
+    } catch (error: any) {
+      console.error('❌ خطأ في تهيئة Google Sheets:', error?.message || error);
       this.useAlternativeMode = true;
     }
   }
@@ -46,7 +77,7 @@ export class GoogleSheetsOnlyStorage {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Purchase_Orders!A:Z'
+        range: 'DATA!A:Z'
       });
 
       const rows = response.data.values || [];
@@ -55,20 +86,37 @@ export class GoogleSheetsOnlyStorage {
       const headers = rows[0];
       const data = rows.slice(1);
 
-      const purchaseOrders = data.map((row, index) => ({
-        id: `po-sheets-${index}`,
-        poNumber: row[0] || '',
-        quotationNumber: row[1] || '',
-        orderDate: row[2] || '',
-        totalAmount: parseFloat(row[3]) || 0,
-        status: row[4] || 'pending',
-        supplierName: row[5] || '',
-        currency: row[6] || 'EGP',
-        deliveryStatus: row[7] || 'pending',
-        itemsCount: parseInt(row[8]) || 1,
-        notes: row[9] || ''
-      }));
+      // فلترة الصفوف التي تحتوي على أرقام أوامر شراء في العمود K
+      const poRows = data.filter(row => row[10] && row[10].toString().trim());
+      
+      // إنشاء قائمة أوامر الشراء الفريدة
+      const uniquePOs = new Map();
+      
+      poRows.forEach((row: any) => {
+        const poNumber = row[10].toString().trim(); // Column K - PO Number
+        if (!uniquePOs.has(poNumber)) {
+          uniquePOs.set(poNumber, {
+            id: `po-${poNumber}`,
+            poNumber: poNumber,
+            quotationNumber: row[6] || '', // Column G - RFQ
+            orderDate: row[11] || '', // Column L - PO Date
+            totalAmount: parseFloat(row[13]) || 0, // Column N - Total Amount
+            status: 'confirmed',
+            supplierName: row[9] || '', // Column J - Supplier
+            currency: 'EGP',
+            deliveryStatus: 'pending',
+            itemsCount: 1,
+            notes: ''
+          });
+        } else {
+          // تحديث عدد البنود
+          const existing = uniquePOs.get(poNumber);
+          existing.itemsCount++;
+          existing.totalAmount += parseFloat(row[13]) || 0;
+        }
+      });
 
+      const purchaseOrders = Array.from(uniquePOs.values());
       console.log(`🛒 تم تحميل ${purchaseOrders.length} أمر شراء من Google Sheets`);
       return purchaseOrders;
 
@@ -116,7 +164,7 @@ export class GoogleSheetsOnlyStorage {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Quotations!A:Z'
+        range: 'DATA!A:Z'
       });
 
       const rows = response.data.values || [];
@@ -125,20 +173,37 @@ export class GoogleSheetsOnlyStorage {
       const headers = rows[0];
       const data = rows.slice(1);
 
-      const quotations = data.map((row, index) => ({
-        id: `rfq-sheets-${index}`,
-        rfqNumber: row[0] || '',
-        customRequestNumber: row[1] || '',
-        requestDate: row[2] || '',
-        status: row[3] || 'pending',
-        clientName: row[4] || '',
-        totalItems: parseInt(row[5]) || 0,
-        totalValue: parseFloat(row[6]) || 0,
-        responseDate: row[7] || '',
-        notes: row[8] || '',
-        createdAt: row[9] || new Date().toISOString()
-      }));
+      // إنشاء قائمة طلبات التسعير الفريدة من العمود G
+      const uniqueRFQs = new Map();
+      
+      data.forEach((row: any) => {
+        const rfqNumber = row[6]; // Column G - RFQ Number
+        if (rfqNumber && rfqNumber.toString().trim()) {
+          const rfq = rfqNumber.toString().trim();
+          if (!uniqueRFQs.has(rfq)) {
+            uniqueRFQs.set(rfq, {
+              id: `rfq-${rfq}`,
+              rfqNumber: rfq,
+              customRequestNumber: '',
+              requestDate: row[5] || '', // Column F - Date
+              status: row[10] ? 'has_po' : 'pending', // Check if has PO
+              clientName: 'قرطبة للتوريدات',
+              totalItems: 1,
+              totalValue: parseFloat(row[13]) || 0, // Column N - Total Value
+              responseDate: '',
+              notes: '',
+              createdAt: new Date().toISOString()
+            });
+          } else {
+            // تحديث عدد البنود والقيمة الإجمالية
+            const existing = uniqueRFQs.get(rfq);
+            existing.totalItems++;
+            existing.totalValue += parseFloat(row[13]) || 0;
+          }
+        }
+      });
 
+      const quotations = Array.from(uniqueRFQs.values());
       console.log(`📋 تم تحميل ${quotations.length} طلب تسعير من Google Sheets`);
       return quotations;
 
@@ -153,7 +218,7 @@ export class GoogleSheetsOnlyStorage {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'Items!A:Z'
+        range: 'DATA!A:Z'
       });
 
       const rows = response.data.values || [];
@@ -162,7 +227,7 @@ export class GoogleSheetsOnlyStorage {
       const headers = rows[0];
       const data = rows.slice(1);
 
-      const items = data.map((row, index) => ({
+      const items = data.map((row: any, index: number) => ({
         id: `item-sheets-${index}`,
         itemNumber: row[0] || '',
         lineItem: row[1] || '',
