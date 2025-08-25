@@ -44,12 +44,26 @@ const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY; // Will be added to env
 
 class QortobaAnalysisBot {
   private bot: TelegramBot;
+  private pollingEnabled: boolean;
 
   constructor() {
-    this.bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
-    this.setupHandlers();
-    // Initialize authorized users list
-    this.loadAuthorizedUsers();
+    // تعطيل polling في الإنتاج لتجنب التعارض
+    this.pollingEnabled = process.env.NODE_ENV !== 'production';
+    
+    console.log(`🤖 [TELEGRAM BOT] البيئة: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🤖 [TELEGRAM BOT] حالة Polling: ${this.pollingEnabled ? 'مفعّل' : 'معطّل'}`);
+    
+    this.bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { 
+      polling: this.pollingEnabled 
+    });
+    
+    if (this.pollingEnabled) {
+      this.setupHandlers();
+      // Initialize authorized users list
+      this.loadAuthorizedUsers();
+    } else {
+      console.log('⚠️ [TELEGRAM BOT] البوت معطّل في بيئة الإنتاج لتجنب التعارض');
+    }
   }
 
   private setupHandlers() {
@@ -319,6 +333,11 @@ class QortobaAnalysisBot {
 
   // Send test message to all authorized users automatically
   async sendTestToAllUsers() {
+    // تجاهل في الإنتاج
+    if (!this.pollingEnabled) {
+      return;
+    }
+    
     try {
       // Load authorized users if empty
       if (AUTHORIZED_USERS.length === 0) {
@@ -399,6 +418,11 @@ class QortobaAnalysisBot {
 
   // Method to send automatic analysis for new items
   async sendNewItemAnalysis(itemId: string) {
+    // تجاهل في الإنتاج
+    if (!this.pollingEnabled) {
+      return;
+    }
+    
     try {
       // Load authorized users if empty
       if (AUTHORIZED_USERS.length === 0) {
@@ -458,6 +482,11 @@ class QortobaAnalysisBot {
 
   // Send analysis with direct item data (for new quotations)
   async sendNewItemAnalysisWithData(itemData: any) {
+    // تجاهل في الإنتاج
+    if (!this.pollingEnabled) {
+      return;
+    }
+    
     try {
       // Load authorized users if empty
       if (AUTHORIZED_USERS.length === 0) {

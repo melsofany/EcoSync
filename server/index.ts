@@ -1,7 +1,17 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import "./telegram-bot"; // Initialize Telegram bot
 import { storage } from "./storage";
+
+// تهيئة البوت التليجرام فقط في التطوير
+if (process.env.NODE_ENV !== 'production') {
+  import("./telegram-bot").then(() => {
+    console.log('🤖 [TELEGRAM BOT] تم تهيئة البوت في بيئة التطوير');
+  }).catch(err => {
+    console.error('❌ [TELEGRAM BOT] خطأ في تهيئة البوت:', err);
+  });
+} else {
+  console.log('⚠️ [TELEGRAM BOT] البوت معطّل في بيئة الإنتاج');
+}
 
 // إعلان النوع العالمي للنظام الفارغ
 declare global {
