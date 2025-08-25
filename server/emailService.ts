@@ -1,11 +1,11 @@
 import { Resend } from 'resend';
 
 // Initialize Resend with API key (optional for production)
-const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_iL48tjwP_HMjSGy39x4UA4etAqitDzScn';
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 let resend: Resend | null = null;
 
 try {
-  if (RESEND_API_KEY && RESEND_API_KEY !== 'your-resend-api-key') {
+  if (RESEND_API_KEY && RESEND_API_KEY !== '' && RESEND_API_KEY !== 'your-resend-api-key') {
     resend = new Resend(RESEND_API_KEY);
     console.log('✅ تم تهيئة خدمة البريد الإلكتروني (Resend)');
   } else {
