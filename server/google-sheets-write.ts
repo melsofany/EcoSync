@@ -29,7 +29,7 @@ export class GoogleSheetsWriter {
 
   constructor() {
     // استخدام معرف Google Sheets المباشر
-    this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1rwRsOQgG7Mb84R9JiMKVqaLa8kUsoAYg4WGPJdQWLJU';
+    this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
   }
 
   async initialize() {
