@@ -5,10 +5,10 @@ nixPkgs = ['nodejs_20', 'npm-9_x']
 cmds = ['npm install --legacy-peer-deps']
 
 [phases.build]
-cmds = ['npm run build']
+cmds = ['npm run build', 'ls -la dist/', 'ls -la dist/public/']
 
 [start]
-cmd = 'npm run start'
+cmd = 'node dist/index.js'
 
 [variables]
 NODE_ENV = 'production'

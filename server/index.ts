@@ -100,8 +100,8 @@ app.use((req, res, next) => {
   global.SYSTEM_COMPLETELY_EMPTY = false;
   global.TARGET_TOTAL_VALUE = 14006975; // القيمة المستهدفة بالجنيه المصري
   
-  // Railway expects PORT 8080, but we'll use whatever is provided or default to 5000
-  const port = parseInt(process.env.PORT || '8080', 10);
+  // Use PORT from environment or default to 5000
+  const port = parseInt(process.env.PORT || '5000', 10);
   console.log(`🚀 Starting server on PORT: ${port} (from ${process.env.PORT ? 'ENV' : 'DEFAULT'})`);
   server.listen(port, "0.0.0.0", () => {
     console.log(`${new Date().toLocaleTimeString("en-US", {
