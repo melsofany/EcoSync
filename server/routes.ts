@@ -3143,13 +3143,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const rawData = await googleSheets.readDataSheet();
         
         // تحميل مفتاح Google Sheets
-        const keyPath = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
-        const credentials = JSON.parse(readFileSync(keyPath, 'utf8'));
-        
-        const auth = new GoogleAuth({
-          credentials: credentials,
-          scopes: ['https://www.googleapis.com/auth/spreadsheets']
-        });
+        const { createGoogleAuth } = await import('./google-auth-helper');
+        const auth = createGoogleAuth();
         
         const sheets = google.sheets({ version: 'v4', auth: auth });
         const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';

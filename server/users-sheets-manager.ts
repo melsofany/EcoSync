@@ -1,7 +1,6 @@
-import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
-import { readFileSync } from 'fs';
 import bcrypt from 'bcrypt';
+import { createGoogleAuth } from './google-auth-helper';
 
 interface UserData {
   id: string;
@@ -41,18 +40,7 @@ export class UsersGoogleSheetsManager {
 
   private async initializeAuth() {
     try {
-      console.log('✅ تم تحميل المفتاح الجديد من الملف المحلي');
-      const keyPath = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
-      const credentials = JSON.parse(readFileSync(keyPath, 'utf8'));
-      
-      console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
-      console.log(`🔐 طول المفتاح الخاص: ${credentials.private_key?.length || 0} حرف`);
-
-      this.auth = new GoogleAuth({
-        credentials: credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets']
-      });
-
+      this.auth = createGoogleAuth();
       this.sheets = google.sheets({ version: 'v4', auth: this.auth });
       console.log('✅ تم تهيئة Google Sheets لإدارة المستخدمين');
     } catch (error) {

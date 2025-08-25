@@ -1,7 +1,5 @@
-import { GoogleAuth } from 'google-auth-library';
 import { google } from 'googleapis';
-import * as fs from 'fs';
-import * as path from 'path';
+import { createGoogleAuth } from './google-auth-helper';
 
 export class GoogleSheetsRealtimeData {
   private auth: any;
@@ -15,32 +13,7 @@ export class GoogleSheetsRealtimeData {
 
   private async initializeAuth() {
     try {
-      // استخدام المفتاح الجديد من الملف المحلي
-      
-      let credentials;
-      try {
-        const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
-        const fileContent = fs.readFileSync(credentialsPath, 'utf8');
-        credentials = JSON.parse(fileContent);
-        
-        // التحقق من طول المفتاح الخاص
-        if (credentials.private_key.length < 1000) {
-          throw new Error(`المفتاح الخاص مقطوع أو غير مكتمل - الطول الحالي: ${credentials.private_key.length} حرف`);
-        }
-        
-        console.log('✅ تم تحميل المفتاح الجديد من الملف المحلي');
-        console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
-        console.log(`🔐 طول المفتاح الخاص: ${credentials.private_key.length} حرف`);
-      } catch (fileError) {
-        console.error('❌ خطأ في قراءة الملف المحلي:', fileError.message);
-        throw fileError;
-      }
-
-      this.auth = new GoogleAuth({
-        credentials: credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets']
-      });
-
+      this.auth = createGoogleAuth();
       this.sheets = google.sheets({ version: 'v4', auth: this.auth });
       console.log('✅ تم تهيئة Google Sheets للبيانات الحقيقية');
     } catch (error) {

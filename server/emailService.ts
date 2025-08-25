@@ -1,7 +1,20 @@
 import { Resend } from 'resend';
 
-// Initialize Resend with the provided API key
-const resend = new Resend('re_iL48tjwP_HMjSGy39x4UA4etAqitDzScn');
+// Initialize Resend with API key (optional for production)
+const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_iL48tjwP_HMjSGy39x4UA4etAqitDzScn';
+let resend: Resend | null = null;
+
+try {
+  if (RESEND_API_KEY && RESEND_API_KEY !== 'your-resend-api-key') {
+    resend = new Resend(RESEND_API_KEY);
+    console.log('✅ تم تهيئة خدمة البريد الإلكتروني (Resend)');
+  } else {
+    console.log('⚠️ لا يوجد مفتاح Resend API - سيتم تعطيل إرسال البريد الإلكتروني');
+  }
+} catch (error) {
+  console.log('⚠️ خطأ في تهيئة Resend:', error);
+  resend = null;
+}
 
 interface EmailParams {
   to: string;
@@ -11,6 +24,13 @@ interface EmailParams {
 
 export async function sendEmail(params: EmailParams): Promise<{ success: boolean; message: string }> {
   try {
+    if (!resend) {
+      console.log('⚠️ خدمة البريد الإلكتروني غير متوفرة');
+      return {
+        success: true,
+        message: 'تم تعطيل إرسال البريد الإلكتروني في وضع التطوير'
+      };
+    }
     // In testing mode, Resend only allows sending to the registered email
     // So we'll send to the registered email with the actual recipient info in the email body
     const actualRecipient = params.to;
