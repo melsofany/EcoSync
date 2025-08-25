@@ -5587,25 +5587,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log(`📦 حفظ أمر الشراء ${poNumber} بتاريخ ${poDate}`);
       console.log(`📋 عدد البنود: ${processedItems.length}`);
       
-      // إذا لم تكن هناك بنود، إرجاع نجاح مؤقت
+      // إذا لم تكن هناك بنود، إرجاع خطأ
       if (processedItems.length === 0) {
-        console.log('⚠️ لا توجد بنود في أمر الشراء - حفظ البيانات الأساسية فقط');
-        
-        // حفظ البيانات الأساسية في storage
-        await storage.createPurchaseOrder({
-          poNumber: poNumber,
-          quotationId: req.body.quotationId || null,
-          poDate: new Date(poDate),
-          totalValue: req.body.totalValue || "0",
-          status: req.body.status || "pending",
-          createdBy: req.session.user!.id,
-          notes: ""
-        });
-        
-        return res.status(201).json({ 
-          success: true,
-          message: `تم إنشاء أمر الشراء ${poNumber} بنجاح`,
-          poNumber 
+        console.log('❌ لا توجد بنود في أمر الشراء');
+        return res.status(400).json({ 
+          success: false,
+          message: "لا يمكن إنشاء أمر شراء بدون بنود. الرجاء إضافة بند واحد على الأقل.",
+          error: "NO_ITEMS"
         });
       }
       
@@ -5650,7 +5638,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         console.error('❌ نوع الخطأ:', sheetsError instanceof Error ? sheetsError.name : 'غير معروف');
         console.error('❌ رسالة الخطأ:', sheetsError instanceof Error ? sheetsError.message : sheetsError);
         console.error('❌ تفاصيل الخطأ:', sheetsError instanceof Error ? sheetsError.stack : 'لا توجد تفاصيل');
-        // المتابعة حتى لو فشل حفظ البنود
+        
+        // إرجاع خطأ بدلاً من المتابعة
+        throw sheetsError;
       }
       
       // تسجيل النشاط
@@ -5672,6 +5662,26 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         success: false,
         message: "حدث خطأ في حفظ أمر الشراء. الرجاء المحاولة مرة أخرى.",
         error: "SAVE_ERROR"
+      });
+    }
+  });
+
+  // endpoint للفحص - مؤقت
+  app.get("/api/test-sheets-connection", async (req: Request, res: Response) => {
+    try {
+      const { GoogleSheetsWriter } = await import('./google-sheets-write');
+      const writer = new GoogleSheetsWriter();
+      const initialized = await writer.initialize();
+      
+      res.json({
+        success: initialized,
+        message: initialized ? 'Google Sheets جاهز' : 'فشل الاتصال',
+        spreadsheetId: process.env.GOOGLE_SHEETS_ID || 'غير محدد'
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'خطأ غير معروف'
       });
     }
   });
