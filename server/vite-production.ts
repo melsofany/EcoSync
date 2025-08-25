@@ -14,11 +14,29 @@ export function log(message: string, source = "express") {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // Try multiple possible paths for the build directory
+  const possiblePaths = [
+    path.resolve(import.meta.dirname, "public"),
+    path.resolve(process.cwd(), "dist", "public"),
+    path.resolve(process.cwd(), "public"),
+    path.resolve(import.meta.dirname, "..", "dist", "public")
+  ];
 
-  if (!fs.existsSync(distPath)) {
+  let distPath: string | null = null;
+  
+  for (const tryPath of possiblePaths) {
+    if (fs.existsSync(tryPath)) {
+      distPath = tryPath;
+      console.log(`✅ Found static files at: ${tryPath}`);
+      break;
+    }
+  }
+
+  if (!distPath) {
+    console.error(`❌ Could not find build directory. Tried paths:`);
+    possiblePaths.forEach(p => console.error(`  - ${p}`));
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      `Could not find the build directory, make sure to build the client first`,
     );
   }
 
