@@ -1,11 +1,15 @@
-# استخدام Node.js 18 Alpine كصورة أساسية
-FROM node:18-alpine
+# استخدام Node.js 20 Alpine كصورة أساسية (مطلوب لـ better-sqlite3)
+FROM node:20-alpine
 
-# تثبيت التبعيات الإضافية
+# تثبيت التبعيات الإضافية والمكتبات المطلوبة لـ better-sqlite3
 RUN apk add --no-cache \
     postgresql-client \
     curl \
-    bash
+    bash \
+    python3 \
+    make \
+    g++ \
+    git
 
 # إنشاء مجلد التطبيق
 WORKDIR /app
@@ -15,7 +19,8 @@ COPY package*.json ./
 
 # تثبيت جميع التبعيات (شاملة devDependencies للبناء)
 # استخدام npm install بدلاً من npm ci لتجنب مشاكل package-lock.json
-RUN npm install --legacy-peer-deps && npm cache clean --force
+# وإضافة --build-from-source لـ better-sqlite3 للتوافق مع Alpine Linux
+RUN npm install --legacy-peer-deps --build-from-source=better-sqlite3 && npm cache clean --force
 
 # نسخ بقية ملفات المشروع
 COPY . .

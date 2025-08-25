@@ -1,22 +1,38 @@
 # حل مشكلة Railway Docker Build
 
-## ✅ المشكلة التي تم حلها
-كان هناك خطأ في بناء Docker image على Railway بسبب الأمر `npm ci` الذي يتطلب توافق كامل مع `package-lock.json`.
+## ✅ المشاكل التي تم حلها
+1. **مشكلة npm ci:** تم حلها باستبدال `npm ci` بـ `npm install --legacy-peer-deps`
+2. **مشكلة better-sqlite3:** حزمة better-sqlite3 تتطلب Node.js 20+ (تم التحديث من Node.js 18)
 
 ## 🔧 الحلول المطبقة
 
-### 1. تحديث Dockerfile
-- استبدال `npm ci` بـ `npm install --legacy-peer-deps`
-- إضافة فحص لوجود `client/package.json` وتثبيت تبعياته
-- التعامل مع أخطاء البناء بشكل أفضل
+### التحديثات التي تمت في Dockerfile:
 
-### 2. التغييرات الرئيسية:
+1. **تحديث نسخة Node.js:**
 ```dockerfile
-# قبل (كان يسبب خطأ)
-RUN npm ci && npm cache clean --force
+# قبل
+FROM node:18-alpine
 
-# بعد (يعمل بشكل صحيح)
-RUN npm install --legacy-peer-deps && npm cache clean --force
+# بعد
+FROM node:20-alpine
+```
+
+2. **إضافة المكتبات المطلوبة:**
+```dockerfile
+RUN apk add --no-cache \
+    postgresql-client \
+    curl \
+    bash \
+    python3 \
+    make \
+    g++ \
+    git
+```
+
+3. **تحديث أوامر التثبيت:**
+```dockerfile
+# استبدال npm ci بـ npm install مع الخيارات المناسبة
+RUN npm install --legacy-peer-deps --build-from-source=better-sqlite3
 ```
 
 ## 📦 كيفية نشر التحديثات على Railway
