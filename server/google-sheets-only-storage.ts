@@ -451,9 +451,37 @@ export class GoogleSheetsOnlyStorage {
   async updatePurchaseOrder() { return {}; }
   async deletePurchaseOrder() { return; }
   async getPurchaseOrderByNumber(poNumber: string) { 
-    // البحث عن أمر الشراء في البيانات المحملة
-    const purchaseOrders = await this.getAllPurchaseOrders();
-    return purchaseOrders.find((po: any) => po.poNumber === poNumber) || undefined;
+    try {
+      console.log(`🔍 البحث عن أمر شراء: ${poNumber}`);
+      
+      // قراءة البيانات من ورقة DATA
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A2:AA'
+      });
+      
+      const rows = response.data.values || [];
+      
+      // البحث عن الصفوف التي تحتوي على رقم أمر الشراء في العمود K
+      for (const row of rows) {
+        if (row[10] === poNumber) { // العمود K (index 10) - رقم أمر الشراء
+          console.log(`✅ تم العثور على أمر الشراء ${poNumber}`);
+          return {
+            id: `po-${poNumber}`,
+            poNumber: poNumber,
+            totalValue: 0,
+            status: 'existing'
+          };
+        }
+      }
+      
+      console.log(`❌ لم يتم العثور على أمر الشراء ${poNumber}`);
+      return undefined;
+      
+    } catch (error) {
+      console.error('❌ خطأ في البحث عن أمر الشراء:', error);
+      return undefined;
+    }
   }
   async addPurchaseOrderItem(itemData: any) { 
     // في النظام الحالي، البنود تضاف عبر endpoint آخر

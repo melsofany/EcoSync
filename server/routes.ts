@@ -3637,69 +3637,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  app.post("/api/purchase-orders", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
-    try {
-      // Check for duplicate PO number if provided
-      if (req.body.poNumber) {
-        console.log('🔍 Checking for duplicate PO number:', req.body.poNumber);
-        
-        const existingPO = await storage.getPurchaseOrderByNumber(req.body.poNumber);
-        if (existingPO) {
-          console.log('⚠️ Duplicate PO found:', existingPO.id);
-          await logActivity(req, "duplicate_po_rejected", "purchase_order", existingPO.id, 
-            `رقم أمر الشراء ${req.body.poNumber} موجود مسبقاً`);
-          
-          return res.status(409).json({
-            message: "رقم أمر الشراء موجود مسبقاً",
-            error: "DUPLICATE_PO_NUMBER",
-            existingPurchaseOrder: {
-              id: existingPO.id,
-              poNumber: existingPO.poNumber,
-              totalValue: existingPO.totalValue,
-              status: existingPO.status
-            },
-            redirectTo: `/purchase-orders/${existingPO.id}`
-          });
-        }
-      }
-
-      // Transform the data to match schema requirements
-      const poData = {
-        poNumber: req.body.poNumber,
-        quotationId: req.body.quotationId,
-        poDate: new Date(req.body.poDate),
-        totalValue: req.body.totalValue.toString(), // Convert to string as expected by schema
-        notes: req.body.notes || "",
-        status: "pending",
-        createdBy: req.session.user!.id,
-      };
-      
-      const validatedData = insertPurchaseOrderSchema.parse(poData);
-      
-      const purchaseOrder = await storage.createPurchaseOrder(validatedData);
-      
-      // Add items to the purchase order
-      if (req.body.items && Array.isArray(req.body.items)) {
-        for (const item of req.body.items) {
-          await storage.addPurchaseOrderItem({
-            poId: purchaseOrder.id,
-            itemId: item.itemId,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice.toString(),
-            totalPrice: item.totalPrice.toString(),
-            currency: item.currency
-          });
-        }
-      }
-      
-      await logActivity(req, "create_purchase_order", "purchase_order", purchaseOrder.id, `Created PO: ${purchaseOrder.poNumber}`);
-
-      res.status(201).json(purchaseOrder);
-    } catch (error) {
-      console.error("Create purchase order error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // تم تعطيل هذا endpoint لأنه مكرر - استخدم /api/purchase-orders/google-sheets بدلاً منه
+  // app.post("/api/purchase-orders", requireAuth, requireRole(["data_entry", "manager"]), async (req: Request, res: Response) => {
 
   // Object Storage routes for profile images
   app.get("/public-objects/:filePath(*)", async (req: Request, res: Response) => {
@@ -5508,24 +5447,25 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
 
 
+  // تم تعطيل هذا endpoint المكرر - استخدم /api/purchase-orders/google-sheets بدلاً منه
   // Enhanced Purchase Orders endpoints
-  app.post("/api/purchase-orders", requireAuth, requireRole(['manager', 'purchasing']), async (req: Request, res: Response) => {
-    try {
-      const poData = {
-        ...req.body,
-        createdBy: req.session.user!.id,
-        poDate: new Date(req.body.poDate),
-        totalValue: parseFloat(req.body.totalValue || '0')
-      };
-      
-      const purchaseOrder = await storage.createPurchaseOrder(poData);
-      await logActivity(req, "create_purchase_order", "purchase_order", purchaseOrder.id, `Created purchase order ${purchaseOrder.poNumber}`);
-      res.status(201).json(purchaseOrder);
-    } catch (error) {
-      console.error("Error creating purchase order:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
+  // app.post("/api/purchase-orders", requireAuth, requireRole(['manager', 'purchasing']), async (req: Request, res: Response) => {
+  //   try {
+  //     const poData = {
+  //       ...req.body,
+  //       createdBy: req.session.user!.id,
+  //       poDate: new Date(req.body.poDate),
+  //       totalValue: parseFloat(req.body.totalValue || '0')
+  //     };
+  //     
+  //     const purchaseOrder = await storage.createPurchaseOrder(poData);
+  //     await logActivity(req, "create_purchase_order", "purchase_order", purchaseOrder.id, `Created purchase order ${purchaseOrder.poNumber}`);
+  //     res.status(201).json(purchaseOrder);
+  //   } catch (error) {
+  //     console.error("Error creating purchase order:", error);
+  //     res.status(500).json({ message: "Internal server error" });
+  //   }
+  // });
 
   // التحقق من وجود رقم أمر الشراء
   app.get("/api/purchase-orders/check/:poNumber", requireAuth, async (req: Request, res: Response) => {

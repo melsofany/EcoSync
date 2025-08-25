@@ -51,9 +51,17 @@ export default function NewPurchaseOrderModal({ isOpen, onClose }: NewPurchaseOr
 
   const createPurchaseOrderMutation = useMutation({
     mutationFn: async (data: PurchaseOrderForm) => {
-      const response = await apiRequest("POST", "/api/purchase-orders", {
-        ...data,
+      // تحضير بيانات أمر الشراء للنظام الجديد
+      const poNumber = `PO-${Date.now()}`;
+      const poDate = new Date().toISOString();
+      
+      const response = await apiRequest("POST", "/api/purchase-orders/google-sheets", {
+        poNumber: poNumber,
+        poDate: poDate,
+        items: [], // سيتم إضافة البنود لاحقاً
+        quotationId: data.quotationId,
         totalValue: parseFloat(data.totalValue),
+        status: data.status
       });
       return response.json();
     },
