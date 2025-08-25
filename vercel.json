@@ -1,20 +1,19 @@
 {
-  "buildCommand": "chmod +x build-vercel.sh && ./build-vercel.sh",
-  "outputDirectory": "dist",
-  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/public",
   "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "destination": "/api"
     },
     {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/$1"
     }
   ],
   "functions": {
-    "dist/index.js": {
+    "api/index.js": {
       "maxDuration": 30,
       "runtime": "nodejs20.x"
     }
