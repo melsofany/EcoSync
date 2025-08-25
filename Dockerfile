@@ -25,17 +25,24 @@ RUN npm install --legacy-peer-deps --build-from-source=better-sqlite3 && npm cac
 # نسخ بقية ملفات المشروع
 COPY . .
 
+# التأكد من وجود esbuild و vite في node_modules
+RUN npm list esbuild vite || npm install esbuild vite --save-dev
+
 # إنشاء مجلدات اللوجز والنسخ الاحتياطية
 RUN mkdir -p logs backup
 
 # التحقق من وجود client/package.json وتثبيت تبعياته أولاً
 RUN if [ -f "client/package.json" ]; then cd client && npm install --legacy-peer-deps; fi
 
-# بناء المشروع
-RUN npm run build || echo "Build step completed with warnings"
+# بناء المشروع (تأكد من وجود esbuild و vite)
+RUN npm run build
 
-# إزالة devDependencies بعد البناء لتوفير المساحة (مع التعامل مع أي أخطاء)
-RUN npm prune --production || true
+# التحقق من أن ملف dist/index.js تم إنشاؤه
+RUN ls -la dist/ && test -f dist/index.js
+
+# إزالة devDependencies بعد البناء لتوفير المساحة
+# ملاحظة: تم تعطيل هذا الأمر لأنه قد يحذف تبعيات مطلوبة
+# RUN npm prune --production || true
 
 # إنشاء مستخدم غير root للأمان
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
