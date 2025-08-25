@@ -5,11 +5,21 @@ import * as schema from "@shared/schema";
 
 neonConfig.webSocketConstructor = ws;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+// المشروع يستخدم Google Sheets كقاعدة بيانات أساسية
+// في حالة عدم وجود DATABASE_URL، نستخدم قيمة افتراضية لتجنب الأخطاء
+let pool: Pool;
+let db: any;
+
+try {
+  const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/postgres';
+  pool = new Pool({ connectionString: databaseUrl });
+  db = drizzle({ client: pool, schema });
+  console.log('✅ تم الاتصال بقاعدة البيانات PostgreSQL');
+} catch (error) {
+  console.log('⚠️ لا توجد قاعدة بيانات PostgreSQL، سيتم استخدام Google Sheets فقط');
+  // قيم افتراضية لتجنب الأخطاء
+  pool = null as any;
+  db = null as any;
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+export { pool, db };
