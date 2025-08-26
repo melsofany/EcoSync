@@ -32,10 +32,14 @@ export class UsersGoogleSheetsManager {
   private auth: any;
   public sheets: any;
   public spreadsheetId: string;
+  private usersCache: UserData[] = [];
+  private lastSyncTime: Date = new Date();
+  private syncInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     this.spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
     this.initializeAuth();
+    this.startAutoSync();
   }
 
   private async initializeAuth() {
@@ -200,6 +204,18 @@ export class UsersGoogleSheetsManager {
 
   // قراءة جميع المستخدمين
   async getAllUsers(): Promise<UserData[]> {
+    // إذا كان الكاش ممتلئًا وحديثًا، أرجع من الكاش
+    if (this.usersCache.length > 0 && 
+        (new Date().getTime() - this.lastSyncTime.getTime()) < 30000) {
+      return this.usersCache;
+    }
+    
+    // خلافًا لذلك، احصل على البيانات من Google Sheets
+    return await this.syncUsersFromSheets();
+  }
+
+  // مزامنة المستخدمين من Google Sheets
+  private async syncUsersFromSheets(): Promise<UserData[]> {
     try {
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
@@ -251,11 +267,47 @@ export class UsersGoogleSheetsManager {
       }
 
       console.log(`📋 تم قراءة ${users.length} مستخدم من Google Sheets`);
+      
+      // تحديث الكاش
+      this.usersCache = users;
+      this.lastSyncTime = new Date();
+      
       return users;
     } catch (error) {
       console.error('❌ خطأ في قراءة المستخدمين:', error);
-      return [];
+      // إرجاع الكاش في حالة الفشل
+      return this.usersCache.length > 0 ? this.usersCache : [];
     }
+  }
+  
+  // بدء المزامنة التلقائية
+  private startAutoSync() {
+    // مزامنة أولية
+    this.syncUsersFromSheets().then(() => {
+      console.log('✅ تمت المزامنة الأولية للمستخدمين');
+    });
+    
+    // مزامنة كل 30 ثانية
+    this.syncInterval = setInterval(() => {
+      this.syncUsersFromSheets().then(() => {
+        console.log('🔄 تمت مزامنة المستخدمين من Google Sheets');
+      });
+    }, 30000);
+  }
+  
+  // إيقاف المزامنة التلقائية
+  public stopAutoSync() {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+      this.syncInterval = null;
+      console.log('⏹️ تم إيقاف المزامنة التلقائية للمستخدمين');
+    }
+  }
+  
+  // فرض المزامنة الفورية
+  public async forceSync(): Promise<UserData[]> {
+    console.log('🔄 فرض مزامنة المستخدمين...');
+    return await this.syncUsersFromSheets();
   }
 
   // قراءة جميع الصلاحيات
@@ -750,6 +802,32 @@ export class UsersGoogleSheetsManager {
     }
   }
 
+  // البحث عن مستخدم باسم المستخدم
+  async getUserByUsername(username: string): Promise<UserData | null> {
+    try {
+      // احصل على المستخدمين من الكاش أو Google Sheets
+      const users = await this.getAllUsers();
+      const user = users.find(u => u.username === username && u.isActive);
+      return user || null;
+    } catch (error) {
+      console.error('❌ خطأ في البحث عن المستخدم:', error);
+      return null;
+    }
+  }
+
+  // البحث عن مستخدم بالمعرف
+  async getUserById(userId: string): Promise<UserData | null> {
+    try {
+      // احصل على المستخدمين من الكاش أو Google Sheets
+      const users = await this.getAllUsers();
+      const user = users.find(u => u.id === userId);
+      return user || null;
+    } catch (error) {
+      console.error('❌ خطأ في البحث عن المستخدم بالمعرف:', error);
+      return null;
+    }
+  }
+
   // ربط معرف التليجرام بمستخدم موجود في Google Sheets
   async linkTelegramId(username: string, telegramUserId: string): Promise<boolean> {
     try {
@@ -798,7 +876,8 @@ export class UsersGoogleSheetsManager {
     try {
       console.log(`🔐 تحديث كلمة المرور للمستخدم ${username}...`);
       
-      const users = await this.getAllUsers();
+      // فرض المزامنة للحصول على أحدث البيانات
+      const users = await this.forceSync();
       const userIndex = users.findIndex(user => user.username.trim() === username.trim());
       
       if (userIndex === -1) {
@@ -829,6 +908,10 @@ export class UsersGoogleSheetsManager {
       });
 
       console.log(`✅ تم تحديث كلمة المرور للمستخدم ${username} بنجاح`);
+      
+      // فرض المزامنة بعد التحديث
+      await this.forceSync();
+      
       return true;
     } catch (error) {
       console.error('❌ خطأ في تحديث كلمة المرور:', error);

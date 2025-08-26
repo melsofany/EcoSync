@@ -1120,8 +1120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (!user) {
           // Try the other user manager as fallback
-          const usersData = await usersGoogleSheetsManager.getAllUsers();
-          user = usersData.find(u => u.username === username && u.isActive);
+          user = await usersGoogleSheetsManager.getUserByUsername(username);
         }
 
         if (!user) {
