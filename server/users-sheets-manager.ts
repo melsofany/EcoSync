@@ -1101,19 +1101,37 @@ export class UsersGoogleSheetsManager {
   // إعادة تعيين كلمة مرور المدير
   async resetAdminPassword(): Promise<boolean> {
     try {
+      // كلمة المرور الجديدة
       const newPassword = 'admin123';
-      const user = await this.updateUserPassword('admin', newPassword);
+      // تشفير كلمة المرور بـ bcrypt  
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
       
-      if (user) {
-        console.log('✅ تم إعادة تعيين كلمة المرور للمستخدم admin إلى:', newPassword);
-        console.log('📝 بيانات تسجيل الدخول:');
-        console.log('   اسم المستخدم: admin');
-        console.log('   كلمة المرور: admin123');
-        return true;
-      } else {
+      // تحديث كلمة المرور مباشرة في Google Sheets
+      const users = await this.getAllUsers();
+      const adminIndex = users.findIndex(user => user.username === 'admin');
+      
+      if (adminIndex === -1) {
         console.log('⚠️ لم يتم العثور على المستخدم admin');
         return false;
       }
+      
+      const rowNumber = adminIndex + 2; // +2 لأن الصف الأول للعناوين
+      
+      // تحديث كلمة المرور في العمود E (الخامس)
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `USERS!E${rowNumber}`,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[hashedPassword]]
+        }
+      });
+      
+      console.log('✅ تم إعادة تعيين كلمة المرور للمستخدم admin إلى admin123');
+      console.log('📝 بيانات تسجيل الدخول:');
+      console.log('   اسم المستخدم: admin');
+      console.log('   كلمة المرور: admin123');
+      return true;
     } catch (error) {
       console.error('❌ خطأ في إعادة تعيين كلمة مرور المدير:', error);
       return false;
