@@ -575,10 +575,30 @@ export class SmartUnificationEngine extends EventEmitter {
       }
 
       // قراءة البيانات
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A:O'
-      });
+      console.log('📄 محاولة قراءة البيانات من Google Sheets...');
+      console.log('🌐 Spreadsheet ID:', this.spreadsheetId);
+      
+      let response;
+      try {
+        response = await this.sheets.spreadsheets.values.get({
+          spreadsheetId: this.spreadsheetId,
+          range: 'DATA!A:O'
+        });
+      } catch (sheetError: any) {
+        console.error('❌ خطأ في قراءة ورقة DATA:', sheetError.message);
+        
+        // محاولة قراءة بيانات من ورقة Sheet1 كبديل
+        console.log('🔄 محاولة قراءة من Sheet1...');
+        try {
+          response = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.spreadsheetId,
+            range: 'Sheet1!A:O'
+          });
+        } catch (sheet1Error: any) {
+          console.error('❌ خطأ في قراءة Sheet1:', sheet1Error.message);
+          throw new Error('لا يمكن العثور على ورقة بيانات في Google Sheets. تأكد من وجود ورقة DATA أو Sheet1.');
+        }
+      }
 
       const rows = response.data.values || [];
       if (rows.length < 2) {

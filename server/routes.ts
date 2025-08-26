@@ -2406,16 +2406,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { SmartUnificationEngine } = await import('./smart-unification-engine');
       smartEngine = new SmartUnificationEngine();
       
-      // بدء التوحيد الذكي المتقدم
-      smartEngine.startSmartUnification().catch((error: any) => {
-        console.error('خطأ في التوحيد الذكي:', error);
-      });
+      console.log('🚀 محاولة بدء التوحيد الذكي...');
+      
+      // بدء التوحيد الذكي المتقدم والانتظار للتأكد من البدء الفعلي
+      smartEngine.startSmartUnification()
+        .then(() => {
+          console.log('✅ اكتمل التوحيد الذكي بنجاح');
+        })
+        .catch((error: any) => {
+          console.error('❌ خطأ في التوحيد الذكي:', error);
+          console.error('تفاصيل الخطأ:', error.message);
+          if (error.response) {
+            console.error('استجابة الخطأ:', error.response.data);
+          }
+        });
+      
+      // انتظار قليل للتأكد من بدء العملية
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       res.json({
         success: true,
-        message: "تم بدء التوحيد الذكي المتقدم"
+        message: "تم بدء التوحيد الذكي المتقدم - تحقق من السجلات لمتابعة التقدم"
       });
     } catch (error: any) {
+      console.error('❌ خطأ في إنشاء محرك التوحيد:', error);
       res.status(500).json({
         success: false,
         message: "خطأ في بدء التوحيد الذكي: " + error.message
