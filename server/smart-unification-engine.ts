@@ -42,8 +42,8 @@ export class SmartUnificationEngine extends EventEmitter {
 
   constructor() {
     super();
-    this.spreadsheetId = process.env.GOOGLE_SHEETS_ID || '1TuNmhUQSLCIJjyPKRGEX5WwCIlwgePdN5kBLkPSNGqg';
-    this.initializeSheets();
+    this.spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
+    // لا نقوم بالتهيئة هنا، سيتم التهيئة عند الحاجة
   }
 
   private async initializeSheets(): Promise<void> {
@@ -57,8 +57,8 @@ export class SmartUnificationEngine extends EventEmitter {
         const credentialsPath = resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
         const fileContent = readFileSync(credentialsPath, 'utf8');
         credentials = JSON.parse(fileContent);
-      } catch (fileError) {
-        console.error('❌ خطأ في قراءة مفتاح Google Sheets:', fileError.message);
+      } catch (fileError: any) {
+        console.error('❌ خطأ في قراءة مفتاح Google Sheets:', fileError?.message || 'خطأ غير معروف');
         throw fileError;
       }
 
