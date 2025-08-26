@@ -49,33 +49,40 @@ export class SmartUnificationEngine extends EventEmitter {
   private async initializeSheets(): Promise<void> {
     try {
       // استخدام المفتاح الجديد من الملف المحلي
-      const { readFileSync } = await import('fs');
-      const { join, dirname } = await import('path');
-      const { fileURLToPath } = await import('url');
+      const { readFileSync, existsSync } = await import('fs');
+      const { join } = await import('path');
       
       let credentials;
+      let credentialsPath = '';
+      
+      // قائمة المسارات المحتملة
+      const possiblePaths = [
+        join(process.cwd(), 'attached_assets', 'cortoba-supp-sys-93ea3e5bcad2_1755195927771.json'),
+        './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json',
+        '/home/runner/workspace/attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json'
+      ];
+      
+      // البحث عن الملف في المسارات المحتملة
+      for (const path of possiblePaths) {
+        console.log('🔍 فحص المسار:', path);
+        if (existsSync(path)) {
+          credentialsPath = path;
+          console.log('✅ وجدت الملف في:', path);
+          break;
+        }
+      }
+      
+      if (!credentialsPath) {
+        throw new Error('❌ لم يتم العثور على ملف مفتاح Google Sheets في أي من المسارات المحتملة');
+      }
+      
       try {
-        // استخدام مسار أكثر موثوقية
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = dirname(__filename);
-        const credentialsPath = join(__dirname, '..', 'attached_assets', 'cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
-        console.log('🔍 محاولة قراءة المفتاح من:', credentialsPath);
         const fileContent = readFileSync(credentialsPath, 'utf8');
         credentials = JSON.parse(fileContent);
-        console.log('✅ تم قراءة مفتاح Google Sheets بنجاح');
-      } catch (fileError: any) {
-        console.error('❌ خطأ في قراءة مفتاح Google Sheets:', fileError?.message || 'خطأ غير معروف');
-        // محاولة قراءة من مسار بديل
-        try {
-          const alternativePath = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
-          console.log('🔍 محاولة قراءة من مسار بديل:', alternativePath);
-          const fileContent = readFileSync(alternativePath, 'utf8');
-          credentials = JSON.parse(fileContent);
-          console.log('✅ تم قراءة مفتاح Google Sheets من المسار البديل');
-        } catch (altError: any) {
-          console.error('❌ فشل قراءة المفتاح من المسار البديل أيضاً');
-          throw fileError;
-        }
+        console.log('✅ تم قراءة مفتاح Google Sheets بنجاح من:', credentialsPath);
+      } catch (readError: any) {
+        console.error('❌ خطأ في قراءة أو تحليل ملف المفتاح:', readError.message);
+        throw readError;
       }
 
       const auth = new GoogleAuth({
