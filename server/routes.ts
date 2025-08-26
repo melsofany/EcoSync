@@ -866,71 +866,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Role-based access control محسن
-  const requireRole = (roles: string[]) => {
+  // Permission-based access control - نظام صلاحيات مرقم فقط
+  const requireRole = (requiredRoles: string[]) => {
     return (req: Request, res: Response, next: Function) => {
       if (!req.session.user) {
-        return res.status(403).json({ message: "Forbidden" });
+        return res.status(403).json({ message: "غير مصرح - يجب تسجيل الدخول" });
       }
       
       const user = req.session.user;
       const actualPermissions = getUserActualPermissions(user);
       
-      // إذا كان المستخدم له دور تقليدي
-      if (actualPermissions.length === 1 && !actualPermissions[0].includes('.')) {
-        // التحقق من الأدوار التقليدية
-        if (roles.includes(actualPermissions[0])) {
-          console.log(`✅ المستخدم ${user.username} تم قبول الوصول (دور تقليدي: ${actualPermissions[0]})`);
-          next();
-          return;
-        }
-        // منح صلاحيات إضافية للـ manager
-        if (actualPermissions[0] === 'manager' && roles.includes('it_admin')) {
-          console.log(`✅ المستخدم ${user.username} (manager) تم منحه صلاحيات it_admin`);
-          next();
-          return;
-        }
+      // إذا لم يكن للمستخدم أي صلاحيات
+      if (actualPermissions.length === 0) {
+        console.log(`❌ المستخدم ${user.username} (الوظيفة: ${user.role}) لا يملك أي صلاحيات`);
+        return res.status(403).json({ message: "لا توجد صلاحيات كافية" });
       }
       
-      // للمستخدمين بصلاحيات مفصلة
-      // التحقق من وجود صلاحيات إدارية
-      if (actualPermissions.includes('admin.userManagement') || 
-          actualPermissions.includes('admin.systemSettings')) {
-        if (roles.includes('manager') || roles.includes('it_admin')) {
-          console.log(`✅ المستخدم ${user.username} لديه صلاحيات إدارية`);
-          next();
-          return;
-        }
-      }
-      
-      // التحقق من صلاحيات محددة بناء على الأدوار المطلوبة
-      let hasRequiredPermission = false;
-      
-      if (roles.includes('data_entry')) {
-        hasRequiredPermission = actualPermissions.includes('items.create') || 
-                               actualPermissions.includes('quotations.create');
-      }
-      
-      if (roles.includes('purchasing')) {
-        hasRequiredPermission = hasRequiredPermission || 
-                               actualPermissions.includes('purchaseOrders.create') || 
-                               actualPermissions.includes('suppliers.edit');
-      }
-      
-      if (roles.includes('accounting')) {
-        hasRequiredPermission = hasRequiredPermission || 
-                               actualPermissions.includes('reports.view') || 
-                               actualPermissions.includes('pricing.viewMargins');
-      }
-      
-      if (hasRequiredPermission) {
-        console.log(`✅ المستخدم ${user.username} لديه الصلاحيات المطلوبة`);
+      // إذا كان المستخدم لديه جميع الصلاحيات (49 صلاحية أو أكثر)
+      if (actualPermissions.length >= 49) {
+        console.log(`✅ المستخدم ${user.username} (الوظيفة: ${user.role}) لديه جميع الصلاحيات`);
         next();
         return;
       }
       
-      console.log(`❌ المستخدم ${user.username} لا يملك الصلاحيات المطلوبة. صلاحياته: ${actualPermissions.join(', ')}`);
-      return res.status(403).json({ message: "Forbidden" });
+      // تحويل الأدوار القديمة إلى صلاحيات جديدة للتوافق
+      const roleToPermissionsMap: Record<string, string[]> = {
+        'manager': ['admin.userManagement', 'admin.systemSettings', 'admin.backupRestore'],
+        'it_admin': ['admin.systemSettings', 'import.quotations', 'import.items', 'import.purchaseOrders'],
+        'data_entry': ['items.create', 'quotations.create', 'items.edit', 'quotations.edit'],
+        'purchasing': ['purchaseOrders.create', 'suppliers.edit', 'supplierPricing.create'],
+        'accounting': ['reports.view', 'pricing.viewMargins', 'customerPricing.create']
+      };
+      
+      // التحقق من الصلاحيات المطلوبة
+      let hasRequiredPermission = false;
+      
+      for (const requiredRole of requiredRoles) {
+        // إذا كان المتطلب صلاحية مباشرة (يحتوي على نقطة)
+        if (requiredRole.includes('.')) {
+          if (actualPermissions.includes(requiredRole)) {
+            hasRequiredPermission = true;
+            break;
+          }
+        }
+        // إذا كان المتطلب دور قديم، حوله للصلاحيات الجديدة
+        else if (roleToPermissionsMap[requiredRole]) {
+          const mappedPermissions = roleToPermissionsMap[requiredRole];
+          if (mappedPermissions.some(perm => actualPermissions.includes(perm))) {
+            hasRequiredPermission = true;
+            break;
+          }
+        }
+      }
+      
+      if (hasRequiredPermission) {
+        console.log(`✅ المستخدم ${user.username} (الوظيفة: ${user.role}) لديه الصلاحيات المطلوبة`);
+        next();
+        return;
+      }
+      
+      console.log(`❌ المستخدم ${user.username} (الوظيفة: ${user.role}) لا يملك الصلاحيات المطلوبة`);
+      console.log(`   المطلوب: ${requiredRoles.join(', ')}`);
+      console.log(`   الموجود: ${actualPermissions.slice(0, 5).join(', ')}${actualPermissions.length > 5 ? '...' : ''}`);
+      return res.status(403).json({ message: "لا توجد صلاحيات كافية للوصول لهذا المحتوى" });
     };
   };
 

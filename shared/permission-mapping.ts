@@ -119,65 +119,41 @@ export function getUserActualPermissions(user: any): string[] {
   
   let userPermissions: string[] = [];
   
-  // إذا كانت الصلاحيات في حقل permissions كمصفوفة
+  // نقرأ الصلاحيات من حقل permissions فقط
   if (user.permissions && Array.isArray(user.permissions)) {
     userPermissions = user.permissions;
-  }
-  // إذا كانت الصلاحيات في حقل role كسلسلة نصية مفصولة بفواصل
-  else if (user.role && typeof user.role === 'string' && user.role.includes('perm-')) {
-    userPermissions = user.role.split(',').map((p: string) => p.trim());
-    console.log('📋 تم استخراج الصلاحيات:', userPermissions.length, 'صلاحية');
-    console.log('🔍 عينة:', userPermissions.slice(0, 3));
-  }
-  // إذا كان الدور عادي (manager, it_admin, إلخ)
-  else if (user.role && typeof user.role === 'string' && !user.role.includes('perm-')) {
-    // إرجاع الدور كما هو للتعامل معه بالطريقة التقليدية
-    return [user.role];
+    console.log(`📋 المستخدم ${user.username} لديه ${userPermissions.length} صلاحية مرقمة`);
+  } else if (user.permissions && typeof user.permissions === 'string') {
+    // إذا كانت الصلاحيات نص مفصول بفواصل
+    userPermissions = user.permissions.split(',').map((p: string) => p.trim());
+    console.log(`📋 المستخدم ${user.username} لديه ${userPermissions.length} صلاحية مرقمة (من نص)`);
+  } else {
+    // لا توجد صلاحيات
+    console.log(`⚠️ المستخدم ${user.username} لا يملك أي صلاحيات`);
+    return [];
   }
   
   // تحويل الصلاحيات المرقمة إلى صلاحيات فعلية
   const result = convertNumberedPermissions(userPermissions);
-  console.log('📊 نتيجة getUserActualPermissions:', result.length, 'صلاحية فعلية');
-  console.log('🔍 عينة الصلاحيات الفعلية:', result.slice(0, 3));
+  console.log(`✅ تم تحويل ${userPermissions.length} صلاحية مرقمة إلى ${result.length} صلاحية فعلية`);
+  
   return result;
 }
 
 // دالة للتحقق من الوصول لقسم معين
 export function canUserAccessSection(user: any, section: string): boolean {
-  // إذا المستخدم له 49 صلاحية، أعطه كل شيء
-  if (user.role && typeof user.role === 'string' && user.role.includes('perm-')) {
-    const perms = user.role.split(',');
-    if (perms.length >= 49) {
-      console.log(`✅ المستخدم ${user.username} لديه جميع الصلاحيات - السماح بالوصول للقسم ${section}`);
-      return true;
-    }
-  }
-  
   const actualPermissions = getUserActualPermissions(user);
   
-  // إذا كان المستخدم له دور تقليدي
-  if (actualPermissions.length === 1 && !actualPermissions[0].includes('.')) {
-    // استخدام النظام القديم للأدوار التقليدية
-    const traditionalRoles: Record<string, string[]> = {
-      dashboard: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      quotations: ["manager", "it_admin", "data_entry", "accounting"],
-      items: ["manager", "it_admin", "data_entry"],
-      clients: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      suppliers: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      supplier_pricing: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      customer_pricing: ["manager", "accounting"],
-      "purchase-orders": ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      reports: ["manager", "it_admin", "data_entry", "purchasing", "accounting"],
-      analytics: ["manager", "it_admin", "accounting"],
-      settings: ["manager", "it_admin"],
-      import: ["it_admin"],
-      activity: ["manager", "it_admin"],
-      admin: ["manager", "it_admin"],
-      voice_control: ["manager", "it_admin"]
-    };
-    
-    const allowedRoles = traditionalRoles[section];
-    return allowedRoles ? allowedRoles.includes(actualPermissions[0]) : false;
+  // إذا لم يكن للمستخدم صلاحيات
+  if (actualPermissions.length === 0) {
+    console.log(`❌ المستخدم ${user.username} لا يملك أي صلاحيات للوصول إلى ${section}`);
+    return false;
+  }
+  
+  // إذا كان لديه جميع الصلاحيات (49 صلاحية)
+  if (actualPermissions.length >= 49) {
+    console.log(`✅ المستخدم ${user.username} لديه جميع الصلاحيات - السماح بالوصول للقسم ${section}`);
+    return true;
   }
   
   // للصلاحيات المفصلة
@@ -210,14 +186,23 @@ export function canUserAccessSection(user: any, section: string): boolean {
 export function canUserPerformAction(user: any, resource: string, action: string): boolean {
   const actualPermissions = getUserActualPermissions(user);
   
-  // إذا كان المستخدم له دور تقليدي مع صلاحيات كاملة
-  if (actualPermissions.includes('manager') || actualPermissions.includes('it_admin')) {
-    return true;
+  // إذا لم يكن للمستخدم صلاحيات
+  if (actualPermissions.length === 0) {
+    console.log(`❌ المستخدم ${user.username} لا يملك أي صلاحيات لتنفيذ ${action} على ${resource}`);
+    return false;
   }
   
   // بناء اسم الصلاحية المطلوبة
   const requiredPermission = `${resource}.${action}`;
   
   // التحقق من وجود الصلاحية
-  return actualPermissions.includes(requiredPermission);
+  const hasPermission = actualPermissions.includes(requiredPermission);
+  
+  if (hasPermission) {
+    console.log(`✅ المستخدم ${user.username} لديه صلاحية ${requiredPermission}`);
+  } else {
+    console.log(`❌ المستخدم ${user.username} لا يملك صلاحية ${requiredPermission}`);
+  }
+  
+  return hasPermission;
 }

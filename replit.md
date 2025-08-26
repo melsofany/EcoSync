@@ -8,6 +8,7 @@ Preferred communication style: Simple, everyday language.
 Data source: Google Sheets ONLY - no database storage, all data must come from Google Sheets exclusively.
 UI Preferences: No unification buttons in main Items page - all unification operations should be separate/programmatic.
 Supplier Pricing Requirements: Enhanced supplier pricing form with detailed supplier information, VAT handling, and extended terms including contact details, payment terms, and warranty information.
+Permission System: Single permission-based system using numbered permissions (perm-001 through perm-049). ROLE field is used for job title display only, while PERMISSIONS field contains actual access rights.
 
 ## System Architecture
 
