@@ -112,7 +112,10 @@ export default function UnificationProgress() {
     try {
       const response = await fetch('/api/monitor/start', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
@@ -140,7 +143,10 @@ export default function UnificationProgress() {
     try {
       const response = await fetch('/api/monitor/stop', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.ok) {
