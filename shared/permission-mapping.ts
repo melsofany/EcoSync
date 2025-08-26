@@ -27,57 +27,53 @@ export const PERMISSION_ID_MAPPING: Record<string, string> = {
   'perm-016': 'suppliers.edit',
   'perm-017': 'suppliers.delete',
   
-  // طلبات الشراء
+  // أوامر الشراء
   'perm-018': 'purchaseOrders.view',
   'perm-019': 'purchaseOrders.create',
   'perm-020': 'purchaseOrders.edit',
   'perm-021': 'purchaseOrders.delete',
+  'perm-022': 'purchaseOrders.approve',
+  'perm-023': 'purchaseOrders.cancel',
   
-  // تسعير الموردين
-  'perm-022': 'supplierPricing.view',
-  'perm-023': 'supplierPricing.create',
-  'perm-024': 'supplierPricing.edit',
-  'perm-025': 'supplierPricing.delete',
+  // أسعار الموردين
+  'perm-024': 'supplierPricing.view',
+  'perm-025': 'supplierPricing.create',
+  'perm-026': 'supplierPricing.edit',
+  'perm-027': 'supplierPricing.delete',
   
-  // تسعير العملاء
-  'perm-026': 'customerPricing.view',
-  'perm-027': 'customerPricing.create',
-  'perm-028': 'customerPricing.edit',
-  'perm-029': 'customerPricing.delete',
+  // أسعار العملاء
+  'perm-028': 'customerPricing.view',
+  'perm-029': 'customerPricing.create',
+  'perm-030': 'customerPricing.edit',
+  'perm-031': 'customerPricing.delete',
   
-  // التقارير
-  'perm-030': 'reports.view',
-  'perm-031': 'reports.export',
+  // التقارير والإحصائيات
+  'perm-032': 'reports.view',
+  'perm-033': 'reports.export',
+  'perm-034': 'analytics.view',
+  'perm-035': 'analytics.export',
   
-  // الإحصائيات
-  'perm-032': 'analytics.view',
+  // الإدارة والنظام
+  'perm-036': 'admin.userManagement',
+  'perm-037': 'admin.systemSettings',
+  'perm-038': 'admin.backupRestore',
+  'perm-039': 'admin.activityLog',
   
-  // الإدارة
-  'perm-033': 'admin.userManagement',
-  'perm-034': 'admin.systemSettings',
-  'perm-035': 'admin.backupRestore',
+  // استيراد وتصدير البيانات
+  'perm-040': 'import.quotations',
+  'perm-041': 'import.items',
+  'perm-042': 'import.purchaseOrders',
+  'perm-043': 'export.data',
   
-  // استيراد البيانات
-  'perm-036': 'import.quotations',
-  'perm-037': 'import.items',
-  'perm-038': 'import.purchaseOrders',
+  // خدمات إضافية
+  'perm-044': 'telegram.bot',
+  'perm-045': 'data.unification',
+  'perm-046': 'voice.control',
   
-  // سجل النشاطات
-  'perm-039': 'activity.view',
-  
-  // صلاحيات الأسعار
-  'perm-040': 'pricing.viewSalePrices',
-  'perm-041': 'pricing.viewSupplierPrices',
-  'perm-042': 'pricing.viewPurchaseOrderPrices',
-  'perm-043': 'pricing.viewCosts',
-  'perm-044': 'pricing.viewMargins',
-  
-  // صلاحيات إضافية مستقبلية
-  'perm-045': 'telegram.bot',
-  'perm-046': 'data.unification',
-  'perm-047': 'voice.control',
-  'perm-048': 'backup.database',
-  'perm-049': 'system.advanced'
+  // احتياطي للتوسع المستقبلي
+  'perm-047': 'future.feature1',
+  'perm-048': 'future.feature2',
+  'perm-049': 'future.feature3'
 };
 
 // دالة لتحويل الصلاحيات المرقمة إلى صلاحيات فعلية
@@ -165,14 +161,17 @@ export function canUserAccessSection(user: any, section: string): boolean {
     suppliers: ['suppliers.view', 'suppliers.create', 'suppliers.edit', 'suppliers.delete'],
     supplier_pricing: ['supplierPricing.view', 'supplierPricing.create', 'supplierPricing.edit', 'supplierPricing.delete'],
     customer_pricing: ['customerPricing.view', 'customerPricing.create', 'customerPricing.edit', 'customerPricing.delete'],
-    'purchase-orders': ['purchaseOrders.view', 'purchaseOrders.create', 'purchaseOrders.edit', 'purchaseOrders.delete'],
+    'purchase-orders': ['purchaseOrders.view', 'purchaseOrders.create', 'purchaseOrders.edit', 'purchaseOrders.delete', 'purchaseOrders.approve', 'purchaseOrders.cancel'],
     reports: ['reports.view', 'reports.export'],
     analytics: ['analytics.view', 'analytics.export'],
-    settings: ['settings.view', 'settings.edit'],
+    settings: ['admin.systemSettings'],
     import: ['import.quotations', 'import.items', 'import.purchaseOrders'],
-    activity: ['activity.view', 'activity.export'],
-    admin: ['admin.userManagement', 'admin.systemSettings', 'admin.backupRestore', 'admin.telegram', 'admin.dataUnification'],
-    voice_control: ['voice.control', 'voice.settings']
+    export: ['export.data'],
+    activity: ['admin.activityLog'],
+    admin: ['admin.userManagement', 'admin.systemSettings', 'admin.backupRestore', 'admin.activityLog'],
+    telegram: ['telegram.bot'],
+    unification: ['data.unification'],
+    voice_control: ['voice.control']
   };
   
   const requiredPermissions = sectionPermissionMap[section];
