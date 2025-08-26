@@ -1106,6 +1106,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // تفعيل المستخدم admin
+  app.post("/api/users/activate-admin", async (req: Request, res: Response) => {
+    try {
+      console.log('🔧 بدء عملية تفعيل المستخدم admin...');
+      
+      // البحث عن المستخدم admin
+      const users = await usersGoogleSheetsManager.getAllUsers();
+      const adminUser = users.find(u => u.username === 'admin');
+      
+      if (!adminUser) {
+        console.error('❌ المستخدم admin غير موجود');
+        return res.status(404).json({ message: 'المستخدم admin غير موجود' });
+      }
+      
+      console.log('📝 بيانات المستخدم admin الحالية:', {
+        id: adminUser.id,
+        username: adminUser.username,
+        isActive: adminUser.isActive
+      });
+      
+      // تفعيل المستخدم
+      const activated = await userSheetsManager.updateUserActiveStatus(adminUser.id, true);
+      
+      if (!activated) {
+        console.error('❌ فشل تفعيل المستخدم admin');
+        return res.status(500).json({ message: 'فشل تفعيل المستخدم' });
+      }
+      
+      // إعادة تعيين كلمة المرور
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      const passwordUpdated = await usersGoogleSheetsManager.updatePassword('admin', hashedPassword);
+      
+      if (!passwordUpdated) {
+        console.error('⚠️ تم تفعيل المستخدم لكن فشل تحديث كلمة المرور');
+      }
+      
+      // فرض المزامنة الفورية
+      await usersGoogleSheetsManager.forceSync();
+      
+      console.log('✅ تم تفعيل المستخدم admin وإعادة تعيين كلمة المرور إلى admin123');
+      
+      return res.json({ 
+        message: 'تم تفعيل المستخدم admin بنجاح',
+        username: 'admin',
+        password: 'admin123',
+        status: 'نشط'
+      });
+      
+    } catch (error) {
+      console.error('❌ خطأ في تفعيل المستخدم admin:', error);
+      return res.status(500).json({ message: 'خطأ في تفعيل المستخدم' });
+    }
+  });
+
   // Complete authentication system for Google Sheets
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
