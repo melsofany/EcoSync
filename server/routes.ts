@@ -1229,6 +1229,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // إصلاح كلمة مرور admin مباشرة (حل نهائي)
+  app.get('/api/auth/fix-admin-password', async (req, res) => {
+    try {
+      console.log('🔧 بدء إصلاح كلمة مرور admin...');
+      
+      // إنشاء hash جديد لكلمة المرور admin123
+      import('bcrypt').then(async (bcryptModule) => {
+        const hashedPassword = await bcryptModule.default.hash('admin123', 10);
+        console.log('🔑 تم إنشاء Hash جديد:', hashedPassword);
+        
+        // تحديث مباشر في Google Sheets
+        import('googleapis').then(async (googleModule) => {
+          const auth = new googleModule.google.auth.GoogleAuth({
+            keyFile: './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json',
+            scopes: ['https://www.googleapis.com/auth/spreadsheets']
+          });
+          const sheets = googleModule.google.sheets({ version: 'v4', auth });
+          
+          // تحديث كلمة المرور في العمود E للصف 2 (admin)
+          await sheets.spreadsheets.values.update({
+            spreadsheetId: '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg',
+            range: 'USERS!E2',
+            valueInputOption: 'RAW',
+            resource: {
+              values: [[hashedPassword]]
+            }
+          });
+          
+          console.log('✅ تم تحديث كلمة المرور في Google Sheets');
+          
+          res.json({ 
+            success: true, 
+            message: 'تم إصلاح كلمة المرور بنجاح',
+            credentials: {
+              username: 'admin',
+              password: 'admin123',
+              hash: hashedPassword
+            },
+            instruction: 'يمكنك الآن تسجيل الدخول بـ admin/admin123'
+          });
+        }).catch(error => {
+          throw error;
+        });
+      }).catch(error => {
+        throw error;
+      });
+    } catch (error) {
+      console.error('❌ خطأ في إصلاح كلمة المرور:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'خطأ في إصلاح كلمة المرور',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Fix user roles endpoint (لإصلاح الأدوار المحفوظة خطأ)
   app.post('/api/admin/fix-user-roles', async (req, res) => {
     try {
