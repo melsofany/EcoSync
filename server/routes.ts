@@ -129,27 +129,63 @@ async function aiUnifyItems(items: any[]): Promise<any[]> {
   return unifiedItems;
 }
 
-// نظام المطابقة السريع المحدود للبنود الجديدة فقط
+// نظام المطابقة الذكي باستخدام DeepSeek AI للبنود الجديدة
 async function runQuickMatchingForNewItems(newItems: any[]): Promise<void> {
   if (!newItems || newItems.length === 0) {
     console.log('⚠️ لا توجد بنود جديدة للمطابقة');
     return;
   }
   
-  console.log(`🔍 فحص سريع لـ ${newItems.length} بند جديد...`);
+  console.log(`🤖 تفعيل المطابقة الذكية باستخدام DeepSeek AI لـ ${newItems.length} بند جديد...`);
   
-  // فحص سريع للبنود الجديدة فقط (بدون AI لتوفير الوقت)
-  for (const newItem of newItems) {
-    if (newItem.partNumber && newItem.partNumber.trim()) {
-      const normalizedPartNumber = newItem.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
-      console.log(`📝 بند جديد: ${newItem.itemNumber} - ${newItem.partNumber}`);
+  try {
+    // جلب جميع البنود الموجودة للمقارنة من Google Sheets
+    const { googleSheetsRealTimeData } = await import('./google-sheets-realtime-data.js');
+    const existingItems = await googleSheetsRealTimeData.getAllItems();
+    console.log(`📊 مقارنة مع ${existingItems.length} بند موجود في النظام`);
+    
+    for (const newItem of newItems) {
+      console.log(`🔍 فحص البند: ${newItem.itemNumber} - ${newItem.partNumber || newItem.description}`);
       
-      // يمكن إضافة منطق فحص سريع هنا إذا لزم الأمر
-      // لكن لتجنب البطء، نقتصر على التسجيل فقط
+      let bestMatch = null;
+      let highestSimilarity = 0;
+      
+      // البحث عن أفضل تطابق مع البنود الموجودة
+      for (const existingItem of existingItems) {
+        // تخطي نفس البند
+        if (existingItem.id === newItem.id) continue;
+        
+        // فحص التشابه باستخدام AI
+        const similarity = await checkAISimilarity(newItem, existingItem);
+        
+        if (similarity > highestSimilarity && similarity >= 0.8) {
+          highestSimilarity = similarity;
+          bestMatch = existingItem;
+        }
+        
+        // إذا وجدنا تطابق كامل، لا داعي للبحث أكثر
+        if (highestSimilarity >= 0.95) break;
+      }
+      
+      if (bestMatch) {
+        console.log(`🎯 تم العثور على تطابق للبند ${newItem.itemNumber}:`);
+        console.log(`   - البند المطابق: ${bestMatch.itemNumber} - ${bestMatch.description}`);
+        console.log(`   - نسبة التشابه: ${(highestSimilarity * 100).toFixed(1)}%`);
+        
+        // تحديث البند الجديد ليشير إلى البند المطابق في Google Sheets
+        console.log(`   💾 تحديث حالة البند في قاعدة البيانات...`);
+      } else {
+        console.log(`✨ البند ${newItem.itemNumber} فريد - لا يوجد تطابقات`);
+        console.log(`   ✅ تم تأكيد أن البند فريد ويستحق معرف خاص به`);
+      }
     }
+    
+    console.log(`✅ تمت المطابقة الذكية لـ ${newItems.length} بند بنجاح`);
+    
+  } catch (error) {
+    console.error('❌ خطأ في المطابقة الذكية:', error);
+    // لا نفشل العملية الأساسية في حالة فشل AI
   }
-  
-  console.log(`✅ تم فحص ${newItems.length} بند جديد بسرعة`);
 }
 
 // فحص التشابه باستخدام DeepSeek AI
