@@ -166,25 +166,82 @@ export class UsersGoogleSheetsManager {
           }
         });
 
-        // إضافة الصلاحيات الافتراضية
+        // إضافة الصلاحيات الافتراضية - مطابقة للترقيمات في permission-mapping.ts
         const defaultPermissions = [
-          ['perm-001', 'view_dashboard', 'عرض لوحة التحكم', 'general', 'عرض الصفحة الرئيسية ولوحة التحكم', 'TRUE'],
-          ['perm-002', 'view_items', 'عرض الأصناف', 'items', 'عرض قائمة الأصناف والبحث فيها', 'TRUE'],
-          ['perm-003', 'create_items', 'إنشاء أصناف', 'items', 'إضافة أصناف جديدة للنظام', 'TRUE'],
-          ['perm-004', 'edit_items', 'تعديل الأصناف', 'items', 'تعديل بيانات الأصناف الموجودة', 'TRUE'],
-          ['perm-005', 'delete_items', 'حذف الأصناف', 'items', 'حذف الأصناف من النظام', 'FALSE'],
-          ['perm-006', 'view_quotations', 'عرض طلبات التسعير', 'quotations', 'عرض قائمة طلبات التسعير', 'TRUE'],
-          ['perm-007', 'create_quotations', 'إنشاء طلبات تسعير', 'quotations', 'إنشاء طلبات تسعير جديدة', 'TRUE'],
-          ['perm-008', 'edit_quotations', 'تعديل طلبات التسعير', 'quotations', 'تعديل طلبات التسعير الموجودة', 'TRUE'],
-          ['perm-009', 'access_bot', 'الوصول للبوت', 'bot', 'الوصول لصفحة البوت وإدارته', 'FALSE'],
-          ['perm-010', 'manage_users', 'إدارة المستخدمين', 'admin', 'إنشاء وتعديل وحذف المستخدمين', 'FALSE'],
-          ['perm-011', 'view_reports', 'عرض التقارير', 'reports', 'عرض التقارير والإحصائيات', 'TRUE'],
-          ['perm-012', 'export_data', 'تصدير البيانات', 'data', 'تصدير البيانات إلى ملفات Excel', 'TRUE']
+          // لوحة التحكم
+          ['perm-001', 'dashboard', 'لوحة التحكم', 'general', 'الوصول إلى لوحة التحكم الرئيسية', 'TRUE'],
+          
+          // طلبات التسعير
+          ['perm-002', 'quotations.view', 'عرض طلبات التسعير', 'quotations', 'عرض قائمة طلبات التسعير', 'TRUE'],
+          ['perm-003', 'quotations.create', 'إنشاء طلبات تسعير', 'quotations', 'إنشاء طلبات تسعير جديدة', 'TRUE'],
+          ['perm-004', 'quotations.edit', 'تعديل طلبات التسعير', 'quotations', 'تعديل طلبات التسعير الموجودة', 'TRUE'],
+          ['perm-005', 'quotations.delete', 'حذف طلبات التسعير', 'quotations', 'حذف طلبات التسعير', 'FALSE'],
+          
+          // الأصناف
+          ['perm-006', 'items.view', 'عرض الأصناف', 'items', 'عرض قائمة الأصناف والبحث فيها', 'TRUE'],
+          ['perm-007', 'items.create', 'إنشاء أصناف', 'items', 'إضافة أصناف جديدة للنظام', 'TRUE'],
+          ['perm-008', 'items.edit', 'تعديل الأصناف', 'items', 'تعديل بيانات الأصناف الموجودة', 'TRUE'],
+          ['perm-009', 'items.delete', 'حذف الأصناف', 'items', 'حذف الأصناف من النظام', 'FALSE'],
+          
+          // العملاء
+          ['perm-010', 'clients.view', 'عرض العملاء', 'clients', 'عرض قائمة العملاء', 'TRUE'],
+          ['perm-011', 'clients.create', 'إنشاء عملاء', 'clients', 'إضافة عملاء جدد', 'TRUE'],
+          ['perm-012', 'clients.edit', 'تعديل العملاء', 'clients', 'تعديل بيانات العملاء', 'TRUE'],
+          ['perm-013', 'clients.delete', 'حذف العملاء', 'clients', 'حذف العملاء', 'FALSE'],
+          
+          // الموردين
+          ['perm-014', 'suppliers.view', 'عرض الموردين', 'suppliers', 'عرض قائمة الموردين', 'TRUE'],
+          ['perm-015', 'suppliers.create', 'إنشاء موردين', 'suppliers', 'إضافة موردين جدد', 'TRUE'],
+          ['perm-016', 'suppliers.edit', 'تعديل الموردين', 'suppliers', 'تعديل بيانات الموردين', 'TRUE'],
+          ['perm-017', 'suppliers.delete', 'حذف الموردين', 'suppliers', 'حذف الموردين', 'FALSE'],
+          
+          // أوامر الشراء
+          ['perm-018', 'purchaseOrders.view', 'عرض أوامر الشراء', 'purchase_orders', 'عرض قائمة أوامر الشراء', 'TRUE'],
+          ['perm-019', 'purchaseOrders.create', 'إنشاء أوامر شراء', 'purchase_orders', 'إنشاء أوامر شراء جديدة', 'TRUE'],
+          ['perm-020', 'purchaseOrders.edit', 'تعديل أوامر الشراء', 'purchase_orders', 'تعديل أوامر الشراء الموجودة', 'TRUE'],
+          ['perm-021', 'purchaseOrders.delete', 'حذف أوامر الشراء', 'purchase_orders', 'حذف أوامر الشراء', 'FALSE'],
+          ['perm-022', 'purchaseOrders.approve', 'اعتماد أوامر الشراء', 'purchase_orders', 'اعتماد أوامر الشراء', 'FALSE'],
+          ['perm-023', 'purchaseOrders.cancel', 'إلغاء أوامر الشراء', 'purchase_orders', 'إلغاء أوامر الشراء', 'FALSE'],
+          
+          // أسعار الموردين
+          ['perm-024', 'supplierPricing.view', 'عرض أسعار الموردين', 'supplier_pricing', 'عرض أسعار الموردين', 'TRUE'],
+          ['perm-025', 'supplierPricing.create', 'إنشاء أسعار موردين', 'supplier_pricing', 'إضافة أسعار موردين جديدة', 'TRUE'],
+          ['perm-026', 'supplierPricing.edit', 'تعديل أسعار الموردين', 'supplier_pricing', 'تعديل أسعار الموردين', 'TRUE'],
+          ['perm-027', 'supplierPricing.delete', 'حذف أسعار الموردين', 'supplier_pricing', 'حذف أسعار الموردين', 'FALSE'],
+          
+          // أسعار العملاء
+          ['perm-028', 'customerPricing.view', 'عرض أسعار العملاء', 'customer_pricing', 'عرض أسعار العملاء', 'TRUE'],
+          ['perm-029', 'customerPricing.create', 'إنشاء أسعار عملاء', 'customer_pricing', 'إضافة أسعار عملاء جديدة', 'TRUE'],
+          ['perm-030', 'customerPricing.edit', 'تعديل أسعار العملاء', 'customer_pricing', 'تعديل أسعار العملاء', 'TRUE'],
+          ['perm-031', 'customerPricing.delete', 'حذف أسعار العملاء', 'customer_pricing', 'حذف أسعار العملاء', 'FALSE'],
+          
+          // التقارير والإحصائيات
+          ['perm-032', 'reports.view', 'عرض التقارير', 'reports', 'عرض التقارير والإحصائيات', 'TRUE'],
+          ['perm-033', 'reports.export', 'تصدير التقارير', 'reports', 'تصدير التقارير إلى Excel', 'TRUE'],
+          ['perm-034', 'analytics.view', 'عرض الإحصائيات', 'analytics', 'عرض الإحصائيات المتقدمة', 'TRUE'],
+          ['perm-035', 'analytics.export', 'تصدير الإحصائيات', 'analytics', 'تصدير الإحصائيات', 'FALSE'],
+          
+          // الإدارة والنظام
+          ['perm-036', 'admin.userManagement', 'إدارة المستخدمين', 'admin', 'إنشاء وتعديل وحذف المستخدمين', 'FALSE'],
+          ['perm-037', 'admin.systemSettings', 'إعدادات النظام', 'admin', 'تعديل إعدادات النظام', 'FALSE'],
+          ['perm-038', 'admin.backupRestore', 'النسخ الاحتياطي', 'admin', 'إنشاء واستعادة النسخ الاحتياطية', 'FALSE'],
+          ['perm-039', 'admin.activityLog', 'سجل النشاطات', 'admin', 'عرض سجل نشاطات المستخدمين', 'FALSE'],
+          
+          // استيراد وتصدير البيانات
+          ['perm-040', 'import.quotations', 'استيراد طلبات التسعير', 'import_export', 'استيراد طلبات التسعير من Excel', 'FALSE'],
+          ['perm-041', 'import.items', 'استيراد الأصناف', 'import_export', 'استيراد الأصناف من Excel', 'FALSE'],
+          ['perm-042', 'import.purchaseOrders', 'استيراد أوامر الشراء', 'import_export', 'استيراد أوامر الشراء من Excel', 'FALSE'],
+          ['perm-043', 'export.data', 'تصدير البيانات', 'import_export', 'تصدير جميع البيانات', 'TRUE'],
+          
+          // خدمات إضافية
+          ['perm-044', 'telegram.bot', 'البوت التلغرام', 'services', 'الوصول لصفحة البوت وإدارته', 'FALSE'],
+          ['perm-045', 'data.unification', 'توحيد البيانات', 'services', 'الوصول لأدوات توحيد البيانات', 'FALSE'],
+          ['perm-046', 'voice.control', 'التحكم الصوتي', 'services', 'استخدام التحكم الصوتي', 'FALSE']
         ];
 
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'PERMISSIONS!A2:F13',
+          range: 'PERMISSIONS!A2:F47', // 46 صلاحية
           valueInputOption: 'RAW',
           resource: {
             values: defaultPermissions
@@ -308,6 +365,107 @@ export class UsersGoogleSheetsManager {
   public async forceSync(): Promise<UserData[]> {
     console.log('🔄 فرض مزامنة المستخدمين...');
     return await this.syncUsersFromSheets();
+  }
+
+  // تحديث الصلاحيات الافتراضية لتصحيح الأخطاء
+  async updateDefaultPermissions(): Promise<boolean> {
+    try {
+      console.log('🔄 تحديث الصلاحيات الافتراضية...');
+      
+      // الصلاحيات الصحيحة المطابقة لـ permission-mapping.ts
+      const correctPermissions = [
+        // لوحة التحكم
+        ['perm-001', 'dashboard', 'لوحة التحكم', 'general', 'الوصول إلى لوحة التحكم الرئيسية', 'TRUE'],
+        
+        // طلبات التسعير
+        ['perm-002', 'quotations.view', 'عرض طلبات التسعير', 'quotations', 'عرض قائمة طلبات التسعير', 'TRUE'],
+        ['perm-003', 'quotations.create', 'إنشاء طلبات تسعير', 'quotations', 'إنشاء طلبات تسعير جديدة', 'TRUE'],
+        ['perm-004', 'quotations.edit', 'تعديل طلبات التسعير', 'quotations', 'تعديل طلبات التسعير الموجودة', 'TRUE'],
+        ['perm-005', 'quotations.delete', 'حذف طلبات التسعير', 'quotations', 'حذف طلبات التسعير', 'FALSE'],
+        
+        // الأصناف
+        ['perm-006', 'items.view', 'عرض الأصناف', 'items', 'عرض قائمة الأصناف والبحث فيها', 'TRUE'],
+        ['perm-007', 'items.create', 'إنشاء أصناف', 'items', 'إضافة أصناف جديدة للنظام', 'TRUE'],
+        ['perm-008', 'items.edit', 'تعديل الأصناف', 'items', 'تعديل بيانات الأصناف الموجودة', 'TRUE'],
+        ['perm-009', 'items.delete', 'حذف الأصناف', 'items', 'حذف الأصناف من النظام', 'FALSE'],
+        
+        // العملاء
+        ['perm-010', 'clients.view', 'عرض العملاء', 'clients', 'عرض قائمة العملاء', 'TRUE'],
+        ['perm-011', 'clients.create', 'إنشاء عملاء', 'clients', 'إضافة عملاء جدد', 'TRUE'],
+        ['perm-012', 'clients.edit', 'تعديل العملاء', 'clients', 'تعديل بيانات العملاء', 'TRUE'],
+        ['perm-013', 'clients.delete', 'حذف العملاء', 'clients', 'حذف العملاء', 'FALSE'],
+        
+        // الموردين
+        ['perm-014', 'suppliers.view', 'عرض الموردين', 'suppliers', 'عرض قائمة الموردين', 'TRUE'],
+        ['perm-015', 'suppliers.create', 'إنشاء موردين', 'suppliers', 'إضافة موردين جدد', 'TRUE'],
+        ['perm-016', 'suppliers.edit', 'تعديل الموردين', 'suppliers', 'تعديل بيانات الموردين', 'TRUE'],
+        ['perm-017', 'suppliers.delete', 'حذف الموردين', 'suppliers', 'حذف الموردين', 'FALSE'],
+        
+        // أوامر الشراء
+        ['perm-018', 'purchaseOrders.view', 'عرض أوامر الشراء', 'purchase_orders', 'عرض قائمة أوامر الشراء', 'TRUE'],
+        ['perm-019', 'purchaseOrders.create', 'إنشاء أوامر شراء', 'purchase_orders', 'إنشاء أوامر شراء جديدة', 'TRUE'],
+        ['perm-020', 'purchaseOrders.edit', 'تعديل أوامر الشراء', 'purchase_orders', 'تعديل أوامر الشراء الموجودة', 'TRUE'],
+        ['perm-021', 'purchaseOrders.delete', 'حذف أوامر الشراء', 'purchase_orders', 'حذف أوامر الشراء', 'FALSE'],
+        ['perm-022', 'purchaseOrders.approve', 'اعتماد أوامر الشراء', 'purchase_orders', 'اعتماد أوامر الشراء', 'FALSE'],
+        ['perm-023', 'purchaseOrders.cancel', 'إلغاء أوامر الشراء', 'purchase_orders', 'إلغاء أوامر الشراء', 'FALSE'],
+        
+        // أسعار الموردين
+        ['perm-024', 'supplierPricing.view', 'عرض أسعار الموردين', 'supplier_pricing', 'عرض أسعار الموردين', 'TRUE'],
+        ['perm-025', 'supplierPricing.create', 'إنشاء أسعار موردين', 'supplier_pricing', 'إضافة أسعار موردين جديدة', 'TRUE'],
+        ['perm-026', 'supplierPricing.edit', 'تعديل أسعار الموردين', 'supplier_pricing', 'تعديل أسعار الموردين', 'TRUE'],
+        ['perm-027', 'supplierPricing.delete', 'حذف أسعار الموردين', 'supplier_pricing', 'حذف أسعار الموردين', 'FALSE'],
+        
+        // أسعار العملاء
+        ['perm-028', 'customerPricing.view', 'عرض أسعار العملاء', 'customer_pricing', 'عرض أسعار العملاء', 'TRUE'],
+        ['perm-029', 'customerPricing.create', 'إنشاء أسعار عملاء', 'customer_pricing', 'إضافة أسعار عملاء جديدة', 'TRUE'],
+        ['perm-030', 'customerPricing.edit', 'تعديل أسعار العملاء', 'customer_pricing', 'تعديل أسعار العملاء', 'TRUE'],
+        ['perm-031', 'customerPricing.delete', 'حذف أسعار العملاء', 'customer_pricing', 'حذف أسعار العملاء', 'FALSE'],
+        
+        // التقارير والإحصائيات
+        ['perm-032', 'reports.view', 'عرض التقارير', 'reports', 'عرض التقارير والإحصائيات', 'TRUE'],
+        ['perm-033', 'reports.export', 'تصدير التقارير', 'reports', 'تصدير التقارير إلى Excel', 'TRUE'],
+        ['perm-034', 'analytics.view', 'عرض الإحصائيات', 'analytics', 'عرض الإحصائيات المتقدمة', 'TRUE'],
+        ['perm-035', 'analytics.export', 'تصدير الإحصائيات', 'analytics', 'تصدير الإحصائيات', 'FALSE'],
+        
+        // الإدارة والنظام
+        ['perm-036', 'admin.userManagement', 'إدارة المستخدمين', 'admin', 'إنشاء وتعديل وحذف المستخدمين', 'FALSE'],
+        ['perm-037', 'admin.systemSettings', 'إعدادات النظام', 'admin', 'تعديل إعدادات النظام', 'FALSE'],
+        ['perm-038', 'admin.backupRestore', 'النسخ الاحتياطي', 'admin', 'إنشاء واستعادة النسخ الاحتياطية', 'FALSE'],
+        ['perm-039', 'admin.activityLog', 'سجل النشاطات', 'admin', 'عرض سجل نشاطات المستخدمين', 'FALSE'],
+        
+        // استيراد وتصدير البيانات
+        ['perm-040', 'import.quotations', 'استيراد طلبات التسعير', 'import_export', 'استيراد طلبات التسعير من Excel', 'FALSE'],
+        ['perm-041', 'import.items', 'استيراد الأصناف', 'import_export', 'استيراد الأصناف من Excel', 'FALSE'],
+        ['perm-042', 'import.purchaseOrders', 'استيراد أوامر الشراء', 'import_export', 'استيراد أوامر الشراء من Excel', 'FALSE'],
+        ['perm-043', 'export.data', 'تصدير البيانات', 'import_export', 'تصدير جميع البيانات', 'TRUE'],
+        
+        // خدمات إضافية
+        ['perm-044', 'telegram.bot', 'البوت التلغرام', 'services', 'الوصول لصفحة البوت وإدارته', 'FALSE'],
+        ['perm-045', 'data.unification', 'توحيد البيانات', 'services', 'الوصول لأدوات توحيد البيانات', 'FALSE'],
+        ['perm-046', 'voice.control', 'التحكم الصوتي', 'services', 'استخدام التحكم الصوتي', 'FALSE']
+      ];
+
+      // مسح البيانات الموجودة وإضافة الصحيحة
+      await this.sheets.spreadsheets.values.clear({
+        spreadsheetId: this.spreadsheetId,
+        range: 'PERMISSIONS!A2:G1000'
+      });
+
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: 'PERMISSIONS!A2:F47',
+        valueInputOption: 'RAW',
+        resource: {
+          values: correctPermissions
+        }
+      });
+
+      console.log('✅ تم تحديث الصلاحيات الافتراضية بنجاح');
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث الصلاحيات:', error);
+      return false;
+    }
   }
 
   // قراءة جميع الصلاحيات

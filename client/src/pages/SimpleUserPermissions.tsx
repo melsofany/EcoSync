@@ -680,6 +680,42 @@ export default function SimpleUserPermissions() {
         </TabsContent>
 
         <TabsContent value="permissions" className="space-y-6">
+          {/* زر تحديث الصلاحيات للمدير التقني */}
+          {currentUser?.role === 'it_admin' && (
+            <Card className="bg-orange-50 border-orange-200">
+              <CardHeader>
+                <CardTitle className="text-orange-800">تحديث الصلاحيات الافتراضية</CardTitle>
+                <CardDescription className="text-orange-600">
+                  تحديث قائمة الصلاحيات في Google Sheets لتصحيح الأرقام والمعرفات
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      const response = await apiRequest('POST', '/api/permissions/update-defaults');
+                      toast({
+                        title: "تم التحديث",
+                        description: "تم تحديث الصلاحيات الافتراضية بنجاح",
+                      });
+                      queryClient.invalidateQueries({ queryKey: ['/api/permissions'] });
+                    } catch (error: any) {
+                      toast({
+                        title: "خطأ",
+                        description: error.message || "فشل تحديث الصلاحيات",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  <RefreshCw className="h-4 w-4 ml-2" />
+                  تحديث الصلاحيات الآن
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+          
           {/* اختيار المستخدم للصلاحيات */}
           <Card>
             <CardHeader>

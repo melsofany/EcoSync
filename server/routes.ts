@@ -7467,6 +7467,32 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // تحديث الصلاحيات الافتراضية في Google Sheets
+  app.post("/api/permissions/update-defaults", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      console.log('🔄 تحديث الصلاحيات الافتراضية...');
+      const updated = await usersGoogleSheetsManager.updateDefaultPermissions();
+      
+      if (updated) {
+        res.json({
+          success: true,
+          message: "تم تحديث الصلاحيات الافتراضية بنجاح"
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "فشل تحديث الصلاحيات"
+        });
+      }
+    } catch (error) {
+      console.error('❌ خطأ في تحديث الصلاحيات:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في تحديث الصلاحيات الافتراضية"
+      });
+    }
+  });
+
   // حذف مستخدم من Google Sheets
   app.delete("/api/sheets-users/:username", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
