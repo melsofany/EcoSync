@@ -107,42 +107,45 @@ export class SemanticUnificationService {
 
   // مقارنة أوصاف المنتجات باستخدام DeepSeek API
   private async compareDescriptions(description1: string, description2: string): Promise<DeepSeekResponse> {
-    // تجاهل القيم العامة والفارغة
-    const ignoredTerms = ['EACH', 'PCS', '', 'N/A', 'NULL'];
+    // فلترة سريعة للقيم غير الصالحة
+    const ignoredTerms = ['EACH', 'PCS', '', 'N/A', 'NULL', '-', '0'];
+    const desc1 = description1.trim();
+    const desc2 = description2.trim();
     
-    if (ignoredTerms.includes(description1.toUpperCase()) || 
-        ignoredTerms.includes(description2.toUpperCase())) {
+    if (ignoredTerms.includes(desc1.toUpperCase()) || 
+        ignoredTerms.includes(desc2.toUpperCase()) ||
+        desc1.length < 3 || desc2.length < 3) {
       return {
         similar: false,
         score: 0,
-        reason: 'أحد الأوصاف يحتوي على قيمة عامة أو فارغة'
+        reason: 'وصف غير صالح للمقارنة'
+      };
+    }
+
+    // فحص سريع للتطابق الكامل
+    if (desc1.toLowerCase() === desc2.toLowerCase()) {
+      return {
+        similar: true,
+        score: 1.0,
+        reason: 'تطابق كامل'
       };
     }
 
     try {
       this.status.aiCallCount++;
       
-      const prompt = `أنت خبير في توحيد المنتجات الصناعية والكهربائية. مهمتك تحديد إذا كان البندان نفس المنتج أم لا.
+      const prompt = `مقارنة سريعة للمنتجات:
+1: "${desc1}"
+2: "${desc2}"
 
-التوصيف الأول: "${description1}"
-التوصيف الثاني: "${description2}"
+قواعد:
+- التوصيف والوظيفة أولاً
+- تجاهل الاختلافات اللغوية
+- كونتاكتور 25A = Contactor 25A ✅
+- كونتاكتور 25A ≠ 40A ❌
 
-القواعد الأساسية:
-- الأولوية الكاملة للتوصيف والمعنى والوظيفة
-- نفس المنتج قد يكون له أوصاف مختلفة (عربي/إنجليزي)
-- ركز على المعنى والوظيفة، ليس النص
-- فقط للمنتجات المتطابقة فعلاً:
-  ✅ كونتاكتور 25A = Contactor 25 Amp
-  ✅ ريلاي 24V = Relay 24VDC
-  ❌ كونتاكتور 25A ≠ كونتاكتور 40A
-  ❌ كونتاكتور ≠ ريلاي
-
-أجب فقط بـ JSON:
-{
-  "similar": true/false,
-  "score": 0.0-1.0,
-  "reason": "سبب مختصر"
-}`;
+JSON فقط:
+{"similar":true/false,"score":0.0-1.0,"reason":"سبب"}`;
 
       const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
@@ -354,22 +357,37 @@ export class SemanticUnificationService {
           this.status.estimatedTimeRemaining = (products.length - i) * timePerItem;
         }
 
-        // عرض التقدم كل 500 بند
-        if (i % 500 === 0 && i > 0) {
-          console.log(`تم معالجة ${i} عنصر من أصل ${products.length}`);
+        // عرض التقدم كل 250 بند مع سرعة
+        if (i % 250 === 0 && i > 0) {
+          const elapsed = Date.now() - new Date(this.status.startTime).getTime();
+          const speed = Math.round((i / elapsed) * 1000 * 60); // عناصر/دقيقة
+          console.log(`⚡ معالجة سريعة: ${i}/${products.length} (${speed} بند/دقيقة) - AI: ${this.status.aiCallCount}`);
         }
 
-        // البحث عن تطابق مع المجموعات الموجودة
+        // البحث السريع عن تطابق مع التحسينات
         let matched = false;
         let bestMatchId: string | null = null;
         let bestMatchScore = 0;
 
-        for (const [unifiedId, groupProducts] of this.unifiedGroups.entries()) {
-          for (const groupProduct of groupProducts) {
-            // استخدام DeepSeek للمقارنة
+        // مرحلة 1: فلترة سريعة بناء على طول النص
+        const productDesc = product.description.toLowerCase().trim();
+        if (productDesc.length < 3) {
+          // تخطي الأوصاف القصيرة جداً
+        } else {
+          // مرحلة 2: مقارنة مع ممثل واحد فقط لكل مجموعة
+          for (const [unifiedId, groupProducts] of this.unifiedGroups.entries()) {
+            const representative = groupProducts[0]; // فقط الممثل الأول
+            
+            // فحص سريع للطول أولاً
+            const repDesc = representative.description.toLowerCase().trim();
+            if (Math.abs(productDesc.length - repDesc.length) > productDesc.length * 0.5) {
+              continue; // تخطي إذا كان الفرق في الطول كبير جداً
+            }
+
+            // استخدام DeepSeek للمقارنة الدقيقة
             const comparisonResult = await this.compareDescriptions(
               product.description,
-              groupProduct.description
+              representative.description
             );
 
             if (comparisonResult.similar && comparisonResult.score > bestMatchScore) {
@@ -377,14 +395,10 @@ export class SemanticUnificationService {
               bestMatchId = unifiedId;
             }
 
-            // إذا تجاوزت النسبة الحد المطلوب، توقف عن البحث
-            if (bestMatchScore >= 0.7) {
+            // إذا وجدنا تطابق عالي، توقف
+            if (bestMatchScore >= 0.85) {
               break;
             }
-          }
-
-          if (bestMatchScore >= 0.7) {
-            break;
           }
         }
 
@@ -406,8 +420,27 @@ export class SemanticUnificationService {
 
         this.processedItems.push(product);
 
-        // كتابة المعرف الموحد في العمود A
-        await this.writeUnifiedId(product.rowIndex, product.unifiedId!);
+        // تجميع الكتابة للعمليات المجمعة (كل 100 بند)
+        if (i % 100 === 99 || i === products.length - 1) {
+          // كتابة مجمعة للآخر 100 بند
+          const batchUpdates = this.processedItems.slice(-Math.min(100, this.processedItems.length))
+            .map(item => [item.unifiedId]);
+          
+          const startRow = Math.max(2, product.rowIndex - batchUpdates.length + 1);
+          
+          try {
+            await this.sheets.spreadsheets.values.update({
+              spreadsheetId: this.spreadsheetId,
+              range: `DATA!A${startRow}:A${product.rowIndex}`,
+              valueInputOption: 'RAW',
+              resource: { values: batchUpdates }
+            });
+          } catch (error) {
+            console.error('فشل في الكتابة المجمعة:', error);
+            // fallback للكتابة الفردية
+            await this.writeUnifiedId(product.rowIndex, product.unifiedId!);
+          }
+        }
       }
 
       // إعداد النتيجة النهائية
