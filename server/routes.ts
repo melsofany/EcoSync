@@ -2400,13 +2400,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/monitor/start", async (req: Request, res: Response) => {
     try {
-      // إنشاء محرك جديد في كل مرة لضمان حالة نظيفة
-      const { SmartUnificationEngine } = await import('./smart-unification-engine');
-      smartEngine = new SmartUnificationEngine();
+      // إنشاء محرك جديد فقط إذا لم يكن موجودا أو إعادة تعيينه إذا كان موجودا
+      if (!smartEngine) {
+        const { SmartUnificationEngine } = await import('./smart-unification-engine');
+        smartEngine = new SmartUnificationEngine();
+      } else {
+        // إعادة تعيين الحالة للبدء من جديد
+        smartEngine.resetStats();
+      }
       
       console.log('🚀 محاولة بدء التوحيد الذكي...');
       
-      // بدء التوحيد الذكي المتقدم والانتظار للتأكد من البدء الفعلي
+      // بدء التوحيد الذكي المتقدم بشكل غير متزامن
       smartEngine.startSmartUnification()
         .then(() => {
           console.log('✅ اكتمل التوحيد الذكي بنجاح');

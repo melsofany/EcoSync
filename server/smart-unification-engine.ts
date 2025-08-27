@@ -767,6 +767,26 @@ export class SmartUnificationEngine extends EventEmitter {
     this.emit('log', { message: '⏹️ تم إيقاف التوحيد الذكي', type: 'warning' });
   }
 
+  resetStats(): void {
+    this.stats = {
+      total: 0,
+      processed: 0,
+      unified: 0,
+      duplicatesFound: 0,
+      groupsCreated: 0,
+      progress: 0,
+      currentRow: 0,
+      currentItem: '',
+      remainingItems: 0,
+      startTime: null,
+      endTime: null,
+      elapsedTime: 0,
+      estimatedTimeRemaining: 0
+    };
+    this.isRunning = false;
+    this.emit('log', { message: '🔄 تم إعادة تعيين الإحصائيات', type: 'info' });
+  }
+
   getStats() {
     // تحديث الوقت المستغرق إذا كانت العملية قيد التشغيل
     if (this.isRunning && this.stats.startTime) {
