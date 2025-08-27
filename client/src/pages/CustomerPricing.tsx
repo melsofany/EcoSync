@@ -68,30 +68,28 @@ function ItemDetailedPricing({ item }: { item: any }) {
         const data = await response.json();
         console.log(`📄 البيانات الكاملة من API:`, data);
         
-        // Force state update with new object
-        // Store LINE ITEM directly in DOM as fallback
-        const lineItemValue = data.lineItem || '';
-        
-        // Update DOM directly for mobile browsers
-        const lineItemElement = document.getElementById('line-item-display');
-        if (lineItemElement && lineItemValue) {
-          lineItemElement.textContent = lineItemValue;
-          lineItemElement.style.backgroundColor = '#d4f4dd';
-          lineItemElement.style.color = '#008000';
-          lineItemElement.style.border = '3px solid #008000';
-        }
-        
         // التأكد من وجود lineItem من البيانات الواردة
         const lineItemFromData = data.lineItem || data.LINE_ITEM || data['lineItem'] || '';
+        console.log('📥 البيانات المستلمة من الخادم:', {
+          lineItem: lineItemFromData,
+          itemId: data.itemId,
+          itemNumber: data.itemNumber,
+          rfqNumber: data.rfqNumber,
+          supplierName: data.supplierName,
+          supplierUnitPrice: data.supplierUnitPrice
+        });
         
         const newData = {
           ...data,
-          lineItem: lineItemFromData || lineItemValue,
+          lineItem: lineItemFromData,
           itemId: data.itemId || data.itemNumber || '',
+          itemNumber: data.itemNumber || data.itemId || '',
           partNumber: data.partNumber || '',
           description: data.description || '',
           quantity: data.quantity || '1',
-          uom: data.uom || 'EACH'
+          uom: data.uom || 'EACH',
+          rfqNumber: data.rfqNumber || item.requestNumber || '',
+          supplierName: data.supplierName || item.supplierName || ''
         };
         
         setDetailedPricing(newData);
@@ -238,8 +236,15 @@ function ItemDetailedPricing({ item }: { item: any }) {
             </div>
             <div className="text-center">
               <label className="text-sm font-medium block">LINE ITEM:</label>
-              <p className="font-mono text-purple-600 font-bold bg-purple-50 p-2 rounded border border-purple-200">
-                {detailedPricing?.lineItem || detailedPricing?.LINE_ITEM || "غير متوفر"}
+              <p 
+                id="line-item-display"
+                className="font-mono text-purple-600 font-bold bg-purple-50 p-2 rounded border border-purple-200 min-h-[40px] flex items-center justify-center"
+              >
+                {detailedPricing?.lineItem ? (
+                  <span className="text-lg">{detailedPricing.lineItem}</span>
+                ) : (
+                  <span className="text-gray-400">غير متوفر</span>
+                )}
               </p>
             </div>
             <div>
@@ -454,8 +459,8 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quotationId: null, // لا نربط بعرض سعر محدد
-          itemId: item.itemNumber || item.id || item.item?.id, // استخدام itemNumber أولاً
-          rfqNumber: item.rfqNumber || item.requestNumber || '', // إضافة رقم طلب التسعير
+          itemId: item.itemNumber || item.id, // استخدام itemNumber أولاً
+          rfqNumber: item.requestNumber || item.rfqNumber || '', // إضافة رقم طلب التسعير
           supplierPricingId: item.supplierPricing?.id,
           costPrice: costPrice,
           customerUnitPrice: Number(formData.sellingPrice), // استخدام customerUnitPrice
@@ -465,7 +470,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
           totalAmount,
           notes: formData.notes,
           currency: "EGP",
-          createdBy: "current-user-id", // سيتم تحديده لاحقاً من auth context
+          createdBy: "current-user-id" // سيتم تحديده لاحقاً من auth context
         }),
       });
 

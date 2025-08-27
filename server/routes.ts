@@ -5456,6 +5456,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   const comprehensiveDataHandler = async (req: Request, res: Response) => {
     try {
       const itemId = req.params.itemId;
+      console.log(`\n🔍 [comprehensive-data] طلب بيانات شاملة للبند: ${itemId}`);
       
       // منع التخزين المؤقت نهائياً
       res.set({
@@ -5468,12 +5469,27 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       // إذا كان المعرف يبدأ بـ customer- فنحتاج للحصول على رقم البند الحقيقي
       if (itemId.startsWith('customer-')) {
+        console.log(`📦 معرف العميل: ${itemId} - البحث عن البند الحقيقي...`);
         const customerItems = await googleSheetsRealTimeData.getItemsReadyForCustomerPricing();
         const targetItem = customerItems.find((item: any) => item.id === itemId);
         
         if (targetItem && targetItem.itemNumber) {
+          console.log(`✅ تم العثور على البند الحقيقي: ${targetItem.itemNumber}`);
+          console.log(`📝 تفاصيل البند المستهدف:`, {
+            itemNumber: targetItem.itemNumber,
+            partNumber: targetItem.partNumber,
+            description: targetItem.description?.substring(0, 50),
+            rfqNumber: targetItem.rfqNumber || targetItem.requestNumber
+          });
+          
           // جلب بيانات البند الأساسية
           const itemData = await googleSheetsRealTimeData.getItemDetailsById(targetItem.itemNumber);
+          console.log(`📊 البيانات المستلمة من getItemDetailsById:`, {
+            hasData: !!itemData,
+            lineItem: itemData?.lineItem || 'غير موجود',
+            itemNumber: itemData?.itemNumber,
+            rfqNumber: itemData?.rfqNumber
+          });
           
           // جلب كل الصفوف من ورقة DATA
           const allDataRows = await googleSheetsRealTimeData.getAllDataRowsForItem(targetItem.itemNumber);
@@ -5498,9 +5514,18 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             allDataRows: allDataRows // إضافة كل الصفوف من ورقة DATA
           };
           
-          console.log(`🚀 [comprehensive-data] البيانات النهائية المُرسلة: ${allDataRows.length} صف من DATA`);
+          console.log(`✨ البيانات النهائية المرسلة للعميل:`, {
+            lineItem: responseData.lineItem || 'غير موجود',
+            itemNumber: responseData.itemNumber,
+            rfqNumber: responseData.rfqNumber,
+            hasAllDataRows: !!responseData.allDataRows,
+            allDataRowsCount: responseData.allDataRows?.length || 0
+          });
+          
           res.status(200).json(responseData);
           return;
+        } else {
+          console.log(`❌ لم يتم العثور على البند ${itemId} في قائمة العناصر الجاهزة للتسعير`);
         }
       }
       
