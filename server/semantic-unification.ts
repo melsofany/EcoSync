@@ -134,17 +134,27 @@ export class SemanticUnificationService {
     try {
       this.status.aiCallCount++;
       
-      const prompt = `مقارنة سريعة للمنتجات:
-1: "${desc1}"
-2: "${desc2}"
+      const prompt = `هل هذان المنتجان من نفس النوع/الفئة رغم اختلاف التفاصيل؟
 
-قواعد:
-- التوصيف والوظيفة أولاً
-- تجاهل الاختلافات اللغوية
-- كونتاكتور 25A = Contactor 25A ✅
-- كونتاكتور 25A ≠ 40A ❌
+المنتج 1: "${desc1}"
+المنتج 2: "${desc2}"
 
-JSON فقط:
+قواعد التطابق:
+✅ نفس النوع - تفاصيل مختلفة:
+- تلفزيون 32" = تلفزيون 42" = TV 55"
+- كونتاكتور 25A = كونتاكتور 40A  
+- مفتاح كهرباء = مفتاح إضاءة
+- كابل 2.5mm = كابل 4mm
+- مصباح LED = لمبة LED
+
+❌ منتجات مختلفة:
+- تلفزيون ≠ ثلاجة
+- كونتاكتور ≠ ريلاي
+- مفتاح ≠ فيشة
+
+الهدف: توحيد المنتجات المتشابهة حتى مع اختلاف المواصفات
+
+JSON:
 {"similar":true/false,"score":0.0-1.0,"reason":"سبب"}`;
 
       const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -186,12 +196,14 @@ JSON فقط:
         
         const similar = content.toLowerCase().includes('true') || 
                        content.includes('متشابه') || 
-                       content.includes('نفس');
+                       content.includes('نفس') ||
+                       content.includes('مشابه') ||
+                       content.includes('نوع');
         
         return {
           similar,
-          score: similar ? 0.8 : 0.2,
-          reason: 'تحليل نصي بديل'
+          score: similar ? 0.75 : 0.2,
+          reason: 'تحليل نصي بديل للفئة'
         };
       }
 
@@ -444,15 +456,15 @@ JSON فقط:
               bestMatchId = unifiedId;
             }
 
-            // إذا وجدنا تطابق عالي، توقف
-            if (bestMatchScore >= 0.85) {
+            // إذا وجدنا تطابق جيد للفئة، توقف
+            if (bestMatchScore >= 0.75) {
               break;
             }
           }
         }
 
-        // إذا وجد تطابق، أضف إلى المجموعة الموجودة
-        if (bestMatchId && bestMatchScore >= 0.7) {
+        // إذا وجد تطابق للفئة، أضف إلى المجموعة الموجودة
+        if (bestMatchId && bestMatchScore >= 0.65) {
           product.unifiedId = bestMatchId;
           this.unifiedGroups.get(bestMatchId)!.push(product);
           this.status.unified++;
