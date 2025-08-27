@@ -1109,6 +1109,7 @@ export class GoogleSheetsRealtimeData {
       }
       
       // إذا لم نجد البند برقمه، نبحث بـ Part Number + RFQ
+      let correctItemNumber = itemId; // الافتراضي هو المعرف الأصلي
       if (!lineItemFromAnyRow && customerItemData) {
         console.log(`🔍 البحث الذكي: البحث بـ Part Number "${customerItemData.partNumber}" + RFQ "${rfqNumber}"`);
         
@@ -1122,10 +1123,11 @@ export class GoogleSheetsRealtimeData {
             lineItemFromAnyRow = row[2] || ''; // العمود C - LINE ITEM
             console.log(`🎯 البحث الذكي نجح! وجدت LINE ITEM في الصف ${i + 2} للبند ذو Part Number "${rowPartNumber}": LINE ITEM="${lineItemFromAnyRow}"`);
             
-            // تحديث رقم البند الصحيح
-            const correctItemNumber = row[0] || '';
+            // تحديث رقم البند الصحيح من صفحة DATA
+            correctItemNumber = row[0] || itemId; // استخدم المعرف من DATA إن وجد
             if (correctItemNumber && correctItemNumber !== itemId) {
               console.log(`⚠️ تصحيح رقم البند: الرقم في تسعير_العملاء=${itemId}, الرقم الصحيح في DATA=${correctItemNumber}`);
+              customerItemData.itemNumber = correctItemNumber; // تحديث المعرف في البيانات المرجعة
             }
             break;
           }
@@ -1143,15 +1145,21 @@ export class GoogleSheetsRealtimeData {
               lineItemFromAnyRow = row[2] || ''; // العمود C - LINE ITEM
               console.log(`✅ البحث الذكي نجح! وجدت LINE ITEM بـ Part Number في الصف ${i + 2}: "${lineItemFromAnyRow}"`);
               
-              // تحديث رقم البند الصحيح
-              const correctItemNumber = row[0] || '';
+              // تحديث رقم البند الصحيح من صفحة DATA
+              correctItemNumber = row[0] || itemId; // استخدم المعرف من DATA إن وجد
               if (correctItemNumber && correctItemNumber !== itemId) {
                 console.log(`⚠️ تصحيح رقم البند: الرقم في تسعير_العملاء=${itemId}, الرقم الصحيح في DATA=${correctItemNumber}`);
+                customerItemData.itemNumber = correctItemNumber; // تحديث المعرف في البيانات المرجعة
               }
               break;
             }
           }
         }
+      }
+      
+      // تحديث معرف البند في كل الحالات إذا تم العثور على المعرف الصحيح
+      if (correctItemNumber !== itemId) {
+        customerItemData.itemNumber = correctItemNumber;
       }
       
       // البحث في ورقة تسعير الموردين للحصول على سعر المورد واسم المورد
