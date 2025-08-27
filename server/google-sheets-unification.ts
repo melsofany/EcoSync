@@ -835,6 +835,46 @@ export class GoogleSheetsUnification {
       message: 'تم إيقاف عملية التوحيد مؤقتاً'
     };
   }
+
+  stopUnification(): { success: boolean; message: string } {
+    if (!this.isRunning) {
+      return {
+        success: false,
+        message: 'لا توجد عملية توحيد نشطة للإيقاف'
+      };
+    }
+
+    this.isRunning = false;
+    this.currentProgress = 0;
+    this.currentRow = 0;
+    this.currentItemName = '';
+    this.processedItems = 0;
+    this.unifiedItems = 0;
+    console.log('⛔ تم إيقاف عملية التوحيد نهائياً');
+    
+    return {
+      success: true,
+      message: 'تم إيقاف عملية التوحيد نهائياً'
+    };
+  }
+
+  resetUnification(): { success: boolean; message: string } {
+    this.isRunning = false;
+    this.currentProgress = 0;
+    this.currentRow = 0;
+    this.currentItemName = '';
+    this.processedItems = 0;
+    this.unifiedItems = 0;
+    this.startTime = '';
+    this.totalRows = 0;
+    this.nextItemId = 1;
+    console.log('🔄 تم إعادة تعيين حالة التوحيد');
+    
+    return {
+      success: true,
+      message: 'تم إعادة تعيين حالة التوحيد بنجاح'
+    };
+  }
 }
 
 export const googleSheetsUnification = GoogleSheetsUnification.getInstance();

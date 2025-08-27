@@ -7160,6 +7160,48 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // إيقاف عملية التوحيد نهائياً
+  app.post("/api/unification/stop", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { googleSheetsUnification } = await import('./google-sheets-unification.js');
+      const result = googleSheetsUnification.stopUnification();
+      
+      if (result.success) {
+        await logActivity(req, "stop_unification", "unification", "google-sheets", result.message);
+      }
+
+      res.json(result);
+
+    } catch (error) {
+      console.error('❌ خطأ في إيقاف التوحيد:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في إيقاف عملية التوحيد"
+      });
+    }
+  });
+
+  // إعادة تعيين عملية التوحيد
+  app.post("/api/unification/reset", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      const { googleSheetsUnification } = await import('./google-sheets-unification.js');
+      const result = googleSheetsUnification.resetUnification();
+      
+      if (result.success) {
+        await logActivity(req, "reset_unification", "unification", "google-sheets", result.message);
+      }
+
+      res.json(result);
+
+    } catch (error) {
+      console.error('❌ خطأ في إعادة تعيين التوحيد:', error);
+      res.status(500).json({
+        success: false,
+        message: "خطأ في إعادة تعيين عملية التوحيد"
+      });
+    }
+  });
+
   app.get("/api/unification-status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       const { smartItemMatcher } = await import('./smart-item-matcher.js');
