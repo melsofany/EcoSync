@@ -1,6 +1,6 @@
 // Using DeepSeek API for AI analysis
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-const DEEPSEEK_API_KEY = process.env.OPENAI_API_KEY; // Using same env var for DeepSeek
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY; // Using DeepSeek API key
 
 async function callDeepSeekAPI(messages: any[], temperature = 0.3) {
   const response = await fetch(DEEPSEEK_API_URL, {
@@ -94,8 +94,16 @@ function groupSimilarItems(items: ItemForAnalysis[]): ItemForAnalysis[][] {
       .replace(/\s+/g, ' ')
       .trim();
     
-    // Group by first 50 characters + part number
-    const groupKey = `${normalizedDesc.substring(0, 50)}_${item.part_number}`;
+    const normalizedLineItem = (item.line_item || '')
+      .toUpperCase()
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, '')
+      .trim();
+    
+    // Group by LINE ITEM first (if exists), then part number + description
+    const groupKey = normalizedLineItem 
+      ? normalizedLineItem 
+      : `${normalizedDesc.substring(0, 50)}_${item.part_number}`;
     
     if (!groups.has(groupKey)) {
       groups.set(groupKey, []);
@@ -129,9 +137,15 @@ Return your analysis in JSON format with this structure:
   "reason": "string explaining why these are considered duplicates or not"
 }
 
+IMPORTANT MATCHING CRITERIA (in order of priority):
+1. LINE ITEM - If items have the exact same LINE ITEM, they are definitely duplicates
+2. PART NUMBER - Same or similar part numbers indicate duplicate items
+3. DESCRIPTION - Similar descriptions, accounting for typos, abbreviations, different languages
+
 Consider items duplicates if they have:
-- Very similar descriptions (accounting for typos, abbreviations, different languages)
+- Exactly matching LINE ITEM (highest priority - always consider as duplicates)
 - Same or similar part numbers
+- Very similar descriptions (accounting for typos, abbreviations, different languages)
 - Same functionality despite different wording
 - Minor variations in specifications that don't affect the core item
 
@@ -141,7 +155,7 @@ Be conservative - only group items as duplicates if you're confident they repres
     const responseContent = await callDeepSeekAPI([
       {
         role: "system",
-        content: "You are an expert industrial parts analyst. Provide accurate JSON responses for duplicate detection."
+        content: "You are an expert industrial parts analyst specializing in identifying duplicate items based on LINE ITEM, PART NUMBER, and DESCRIPTION. Always consider items with identical LINE ITEM as duplicates. Provide accurate JSON responses for duplicate detection."
       },
       {
         role: "user", 

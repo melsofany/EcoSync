@@ -117,21 +117,28 @@ export class SmartUnificationEngine extends EventEmitter {
       const prompt = `أنت خبير في تحليل قطع الغيار والمنتجات الصناعية. قارن بين هذين البندين وحدد هل هما نفس المنتج أم لا.
 
 البند الأول:
+- LINE ITEM: ${item1.lineItem || 'غير محدد'}
 - Part Number: ${item1.partNumber || 'غير محدد'}
 - الوصف: ${item1.description || 'غير محدد'}
 
 البند الثاني:
+- LINE ITEM: ${item2.lineItem || 'غير محدد'}
 - Part Number: ${item2.partNumber || 'غير محدد'}
 - الوصف: ${item2.description || 'غير محدد'}
 
-ركز على:
-1. الموديل والرقم الفني
-2. المواصفات الكهربائية (الفولت، الأمبير، القدرة)
-3. الماركة والشركة المصنعة
-4. الاستخدام والتطبيق
+المعايير الأساسية للمطابقة (بالأولوية):
+1. LINE ITEM - إذا كان متطابقاً تماماً فهما نفس المنتج
+2. Part Number - الرقم الفني أو رقم القطعة
+3. الوصف - المواصفات والماركة والتطبيق
+
+ركز أيضاً على:
+- الموديل والرقم الفني
+- المواصفات الكهربائية (الفولت، الأمبير، القدرة)
+- الماركة والشركة المصنعة
+- الاستخدام والتطبيق
 
 أجب بـ "نعم" إذا كانا نفس المنتج أو "لا" إذا كانا مختلفين.
-أضف شرح مختصر جداً (كلمتين أو ثلاث) عن السبب.`;
+أضف شرح مختصر جداً (كلمتين أو ثلاث) عن السبب.
 
       const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
@@ -142,7 +149,7 @@ export class SmartUnificationEngine extends EventEmitter {
         body: JSON.stringify({
           model: 'deepseek-chat',
           messages: [
-            { role: 'system', content: 'أنت خبير فني متخصص في تحليل قطع الغيار الصناعية.' },
+            { role: 'system', content: 'أنت خبير فني متخصص في تحليل قطع الغيار الصناعية. تطابق LINE ITEM بدقة 100% يعني أن البندين متطابقين. اهتم أيضاً بمطابقة Part Number والوصف.' },
             { role: 'user', content: prompt }
           ],
           temperature: 0.1,
@@ -160,13 +167,15 @@ export class SmartUnificationEngine extends EventEmitter {
       
       // تحليل الإجابة
       if (answer.includes('نعم') || answer.includes('yes')) {
+        console.log(`🤖 DeepSeek AI: تطابق بناءً على LINE ITEM/PART NO/الوصف`);
         this.emit('log', { 
-          message: `🤖 DeepSeek: تم توحيد البندين - ${answer}`, 
+          message: `🤖 DeepSeek AI: تم توحيد البندين - ${answer}`, 
           type: 'success' 
         });
         return true;
       }
       
+      console.log(`🤖 DeepSeek AI: عدم تطابق - ${answer}`);
       return false;
       
     } catch (error: any) {
@@ -233,7 +242,7 @@ export class SmartUnificationEngine extends EventEmitter {
   
   // استخراج معلومات المنتج
   private extractProductInfo(item: UnificationItem): { model: string; specs: string[] } {
-    const text = `${item.partNumber || ''} ${item.description || ''}`.toUpperCase();
+    const text = `${item.lineItem || ''} ${item.partNumber || ''} ${item.description || ''}`.toUpperCase();
     
     // استخراج الموديل (مثل LC1D32M7)
     const modelMatch = text.match(/LC\d+D\s*\d+\s*[A-Z]\d+/gi) || 
