@@ -406,72 +406,77 @@ export class SmartUnificationEngine extends EventEmitter {
     return commonWords / Math.max(words1.length, words2.length);
   }
 
-  // عملية التجميع السريع بدون AI
+  // عملية التجميع الصحيحة - البدء من الصف الأول ومقارنته مع كل الصفوف
   private async createUnificationGroupsFast(items: UnificationItem[], startingId: number = 1): Promise<UnificationGroup[]> {
     const groups: UnificationGroup[] = [];
-    const processedItems = new Set<number>();
-    let processedCount = 0;
+    const processedRowIndices = new Set<number>();
+    let nextGroupId = startingId;
 
-    this.emit('log', { message: `🚀 بدء التجميع السريع لـ ${items.length} صنف...`, type: 'info' });
+    this.emit('log', { message: `🔍 بدء المعالجة الشاملة لـ ${items.length} بند...`, type: 'info' });
 
+    // معالجة كل صف بالترتيب من الأول للأخير
     for (let i = 0; i < items.length; i++) {
-      if (processedItems.has(i)) continue;
+      const masterItem = items[i];
+      
+      // تخطي الصفوف التي تمت معالجتها بالفعل
+      if (processedRowIndices.has(masterItem.rowIndex)) continue;
 
-      const currentItem = items[i];
-      // استخدام المعرف الحالي إذا كان موجوداً أو إنشاء معرف جديد
-      const existingId = currentItem.currentId && currentItem.currentId.startsWith('P-') 
-        ? currentItem.currentId 
-        : null;
+      // إنشاء معرف جديد للمجموعة
+      const groupId = `P-${nextGroupId.toString().padStart(7, '0')}`;
+      nextGroupId++;
       
       const group: UnificationGroup = {
-        masterId: existingId || `P-${(startingId + groups.length).toString().padStart(7, '0')}`,
-        items: [currentItem],
-        masterPartNumber: currentItem.partNumber,
-        masterDescription: currentItem.description
+        masterId: groupId,
+        items: [masterItem],
+        masterPartNumber: masterItem.partNumber,
+        masterDescription: masterItem.description
       };
 
-      processedItems.add(i);
-      processedCount++;
+      // وضع علامة على هذا الصف كمُعالج
+      processedRowIndices.add(masterItem.rowIndex);
 
-      // البحث السريع عن العناصر المشابهة
+      // البحث عن كل الصفوف المشابهة في البيانات بأكملها
       for (let j = i + 1; j < items.length; j++) {
-        if (processedItems.has(j)) continue;
-
         const compareItem = items[j];
         
-        // مقارنة سريعة بدون AI
-        if (this.quickMatch(currentItem, compareItem)) {
+        // تخطي الصفوف التي تمت معالجتها
+        if (processedRowIndices.has(compareItem.rowIndex)) continue;
+
+        // المقارنة بناءً على المعايير الثلاثة
+        const isSimilar = this.quickMatch(masterItem, compareItem);
+        
+        if (isSimilar) {
+          // إضافة العنصر المشابه للمجموعة
           group.items.push(compareItem);
-          processedItems.add(j);
-          processedCount++;
+          processedRowIndices.add(compareItem.rowIndex);
           
-          if (compareItem.description.length > group.masterDescription.length) {
+          // تحديث الوصف الرئيسي إذا كان الوصف الجديد أفضل
+          if (compareItem.description && compareItem.description.length > group.masterDescription.length) {
             group.masterDescription = compareItem.description;
           }
+          
+          console.log(`🔗 ربط الصف ${compareItem.rowIndex} مع الصف ${masterItem.rowIndex} في المجموعة ${groupId}`);
         }
       }
 
       groups.push(group);
       
-      // تحديث التقدم بشكل تدريجي
-      this.stats.processed = processedCount;
-      this.stats.remainingItems = Math.max(0, this.stats.total - processedCount);
-      this.stats.progress = Math.min(100, Math.round((processedCount / this.stats.total) * 100));
+      // تحديث التقدم
+      this.stats.processed = processedRowIndices.size;
+      this.stats.remainingItems = Math.max(0, this.stats.total - processedRowIndices.size);
+      this.stats.progress = Math.min(100, Math.round((processedRowIndices.size / this.stats.total) * 100));
       
-      // تحديث الوقت كل 50 عنصر
-      if (processedCount % 50 === 0 && this.stats.startTime) {
-        this.stats.elapsedTime = Math.floor((new Date().getTime() - this.stats.startTime.getTime()) / 1000);
-        if (processedCount > 0) {
-          const timePerItem = this.stats.elapsedTime / processedCount;
-          this.stats.estimatedTimeRemaining = Math.ceil(timePerItem * this.stats.remainingItems);
-        }
-      }
-      
+      // تسجيل معلومات المجموعة
       if (group.items.length > 1) {
         this.stats.duplicatesFound += group.items.length - 1;
         this.emit('log', { 
-          message: `📦 مجموعة ${group.masterId}: ${group.items.length} عنصر مكرر`, 
+          message: `📦 المجموعة ${group.masterId}: ${group.items.length} بند متشابه (الصفوف: ${group.items.map(item => item.rowIndex).join(', ')})`, 
           type: 'success' 
+        });
+      } else {
+        this.emit('log', { 
+          message: `📌 البند ${group.masterId}: بند فريد في الصف ${masterItem.rowIndex}`, 
+          type: 'info' 
         });
       }
     }
