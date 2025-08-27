@@ -78,14 +78,26 @@ export default function AIDataUnification() {
 
   // بدء عملية التوحيد
   const startUnification = useMutation({
-    mutationFn: () => apiRequest("/api/ai-unification/start", {
-      method: "POST",
-      body: JSON.stringify({
-        mode: "full",
-        targetAccuracy: 100,
-        batchSize: 10
-      })
-    }),
+    mutationFn: async () => {
+      const response = await fetch("/api/ai-unification/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mode: "full",
+          targetAccuracy: 100,
+          batchSize: 10
+        }),
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "✨ بدء التوحيد الذكي",
@@ -105,7 +117,21 @@ export default function AIDataUnification() {
 
   // إيقاف عملية التوحيد مؤقتاً
   const pauseUnification = useMutation({
-    mutationFn: () => apiRequest("/api/ai-unification/pause", { method: "POST" }),
+    mutationFn: async () => {
+      const response = await fetch("/api/ai-unification/pause", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "⏸️ إيقاف مؤقت",
@@ -117,7 +143,21 @@ export default function AIDataUnification() {
 
   // استئناف عملية التوحيد
   const resumeUnification = useMutation({
-    mutationFn: () => apiRequest("/api/ai-unification/resume", { method: "POST" }),
+    mutationFn: async () => {
+      const response = await fetch("/api/ai-unification/resume", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "▶️ استئناف التوحيد",
@@ -129,7 +169,21 @@ export default function AIDataUnification() {
 
   // إيقاف عملية التوحيد نهائياً
   const stopUnification = useMutation({
-    mutationFn: () => apiRequest("/api/ai-unification/stop", { method: "POST" }),
+    mutationFn: async () => {
+      const response = await fetch("/api/ai-unification/stop", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "🛑 إيقاف التوحيد",
@@ -142,7 +196,21 @@ export default function AIDataUnification() {
 
   // إعادة تعيين التوحيد
   const resetUnification = useMutation({
-    mutationFn: () => apiRequest("/api/ai-unification/reset", { method: "POST" }),
+    mutationFn: async () => {
+      const response = await fetch("/api/ai-unification/reset", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
     onSuccess: () => {
       toast({
         title: "🔄 إعادة تعيين",
