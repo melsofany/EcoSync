@@ -450,13 +450,13 @@ export default function AIDataUnification() {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">معدل التوحيد</span>
                   <Badge className="bg-green-600 text-lg px-3 py-1">
-                    {stats?.unificationRate?.toFixed(1) || 0}%
+                    {typeof stats?.unificationRate === 'number' ? stats.unificationRate.toFixed(1) : (stats?.unificationRate || 0)}%
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">متوسط الثقة</span>
                   <Badge className="bg-purple-600 text-lg px-3 py-1">
-                    {stats?.averageConfidence?.toFixed(1) || 0}%
+                    {typeof stats?.averageConfidence === 'number' ? stats.averageConfidence.toFixed(1) : (stats?.averageConfidence || 0)}%
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
