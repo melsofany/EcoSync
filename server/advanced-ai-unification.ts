@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import { authenticateGoogle } from './google-auth.js';
-import OpenAI from 'openai';
+import fetch from 'node-fetch';
 
 interface ItemData {
   row: number;
@@ -42,9 +42,9 @@ export class AdvancedAIUnificationService {
   private startTime: string | null = null;
   private estimatedTimeRemaining: number | null = null;
 
-  // DeepSeek client (OpenAI-compatible)
-  private deepseek: OpenAI | null = null;
-  private deepseekModel = process.env.DEEPSEEK_MODEL || 'deepseek-chat';
+  // DeepSeek API configuration
+  private deepseekApiKey: string | null = null;
+  private deepseekModel = process.env.DEEPSEEK_MODEL || 'deepseek-reasoner';
 
   constructor() {
     console.log('🧠 تهيئة خدمة التوحيد الذكي المتقدم (DeepSeek-first)...');
@@ -54,17 +54,13 @@ export class AdvancedAIUnificationService {
     const auth = await authenticateGoogle();
     this.sheets = google.sheets({ version: 'v4', auth });
 
-    // NOTE: DeepSeek exposes an OpenAI-compatible API. Configure baseURL + key via env.
-    //   DEEPSEEK_API_KEY (required)
-    //   DEEPSEEK_BASE_URL (optional; defaults to vendor base)
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    const baseURL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
-
-    if (!apiKey) {
+    // DeepSeek API setup
+    this.deepseekApiKey = process.env.DEEPSEEK_API_KEY || null;
+    
+    if (!this.deepseekApiKey) {
       console.warn('⚠️ لم يتم ضبط DEEPSEEK_API_KEY في المتغيرات البيئية. سيتم استخدام وضع Fallback.');
     } else {
-      this.deepseek = new OpenAI({ apiKey, baseURL });
-      console.log('✅ تم تهيئة DeepSeek client');
+      console.log('✅ تم تهيئة DeepSeek API مع Deep Thinking');
     }
 
     console.log('✅ تم تهيئة Google Sheets');
@@ -158,63 +154,95 @@ export class AdvancedAIUnificationService {
     descB: string,
     pnB: string,
   ): Promise<AIJudgment | null> {
-    if (!this.deepseek) return null; // No API key → skip
+    if (!this.deepseekApiKey) return null; // No API key → skip
 
     // Extract before sending to the model to guide it and reduce hallucinations.
     const partsA = this.extractAllPartNumbers(descA, pnA);
     const partsB = this.extractAllPartNumbers(descB, pnB);
 
-    const prompt = `You are an industrial parts expert. Determine if two line items refer to the SAME physical product, even if one uses a technical part number and the other uses a commercial/catalog number.
+    const prompt = `<thinking>
+I need to analyze two industrial parts to determine if they refer to the same physical product. Let me examine each item carefully:
 
-Return STRICT JSON only, matching this schema exactly:
+Item A:
+- Part Number: ${this.normalizePart(pnA) || 'N/A'}
+- Description: ${this.normalizeText(descA)}
+- Extracted Parts: ${partsA.join(', ') || 'N/A'}
+
+Item B:
+- Part Number: ${this.normalizePart(pnB) || 'N/A'}
+- Description: ${this.normalizeText(descB)}
+- Extracted Parts: ${partsB.join(', ') || 'N/A'}
+
+Let me think step by step:
+1. Are these from the same manufacturer/brand?
+2. Do the technical specifications match (voltage, current, power, size)?
+3. Are the part numbers equivalent (one technical, one commercial)?
+4. Do any alternative part numbers match between the two items?
+5. Are there any clear differences that would make them different products?
+
+Special attention to Schneider Electric/Telemecanique products where LC1D codes are technical and numeric codes like 2102049 are commercial equivalents.
+</thinking>
+
+You are an industrial parts expert with deep knowledge of electrical components, especially Schneider Electric/Telemecanique products. Analyze if these two items refer to the SAME physical product.
+
+Return STRICT JSON only:
 {
   "sameProduct": boolean,
-  "confidence": number,  // 0..1
-  "canonicalPart": string | null, // choose the most standard vendor part number if possible (e.g., LC1D32M7)
+  "confidence": number,
+  "canonicalPart": string | null,
   "reasons": string[],
   "extractedPartsA": string[],
   "extractedPartsB": string[]
 }
 
 Rules:
-- Size/voltage/current/power must match. Different size (e.g., 32\" vs 43\") or voltage (110V vs 220V) → not the same.
-- If parts appear equivalent (e.g., LC1D32M7 ≈ 2102049) and specs & brand match → sameProduct = true.
-- Prefer Schneider/Telemecanique canonical codes when applicable.
-- If unsure, set sameProduct=false with low confidence.
+- Different specifications (size, voltage, current) = different products
+- LC1D32M7 ≈ 2102049 for Schneider contactors (same product, different part number formats)
+- Prefer technical part numbers (LC1D format) as canonical
+- High confidence only when certain
 
-Item A:
-- Part: ${this.normalizePart(pnA) || 'N/A'}
-- Desc: ${this.normalizeText(descA)}
-- Candidate parts in A: ${partsA.join(', ') || 'N/A'}
-
-Item B:
-- Part: ${this.normalizePart(pnB) || 'N/A'}
-- Desc: ${this.normalizeText(descB)}
-- Candidate parts in B: ${partsB.join(', ') || 'N/A'}
-`;
+Item A: Part=${this.normalizePart(pnA) || 'N/A'}, Desc=${this.normalizeText(descA)}
+Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(descB)}`;
 
     // Robust retry with exponential backoff
     const maxRetries = 3;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const resp = await this.deepseek.chat.completions.create({
-          model: this.deepseekModel,
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.1,
-          max_tokens: 300,
+        const response = await fetch('https://api.deepseek.com/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.deepseekApiKey}`,
+          },
+          body: JSON.stringify({
+            model: this.deepseekModel,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.1,
+            max_tokens: 400,
+          }),
         });
-        const raw = resp.choices?.[0]?.message?.content?.trim() || '';
+
+        if (!response.ok) {
+          throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const raw = data.choices?.[0]?.message?.content?.trim() || '';
+        
         // Extract first JSON object from the reply
         const jsonStr = this.safeExtractJSON(raw);
-        const data = JSON.parse(jsonStr) as AIJudgment;
+        const result = JSON.parse(jsonStr) as AIJudgment;
+        
         // Validate
-        if (typeof data.sameProduct !== 'boolean') throw new Error('Invalid sameProduct');
-        if (typeof data.confidence !== 'number') throw new Error('Invalid confidence');
-        if (data.canonicalPart !== null && typeof data.canonicalPart !== 'string') throw new Error('Invalid canonicalPart');
-        data.canonicalPart = data.canonicalPart ? this.normalizePart(data.canonicalPart) : null;
-        data.extractedPartsA = Array.isArray(data.extractedPartsA) ? data.extractedPartsA.map(this.normalizePart) : [];
-        data.extractedPartsB = Array.isArray(data.extractedPartsB) ? data.extractedPartsB.map(this.normalizePart) : [];
-        return data;
+        if (typeof result.sameProduct !== 'boolean') throw new Error('Invalid sameProduct');
+        if (typeof result.confidence !== 'number') throw new Error('Invalid confidence');
+        if (result.canonicalPart !== null && typeof result.canonicalPart !== 'string') throw new Error('Invalid canonicalPart');
+        
+        result.canonicalPart = result.canonicalPart ? this.normalizePart(result.canonicalPart) : null;
+        result.extractedPartsA = Array.isArray(result.extractedPartsA) ? result.extractedPartsA.map((p: string) => this.normalizePart(p)) : [];
+        result.extractedPartsB = Array.isArray(result.extractedPartsB) ? result.extractedPartsB.map((p: string) => this.normalizePart(p)) : [];
+        
+        return result;
       } catch (err: any) {
         console.warn(`DeepSeek attempt ${attempt} failed:`, err?.message || err);
         if (attempt === maxRetries) return null;
@@ -518,7 +546,8 @@ export const advancedAIUnification = new AdvancedAIUnificationService();
 
 advancedAIUnification.initialize()
   .then(() => {
-    console.log('✅ خدمة التوحيد جاهزة');
-    console.log('🧠 DeepSeek Semantic Mapping جاهز');
+    console.log('✅ خدمة التوحيد الذكي المتقدم جاهزة');
+    console.log('🧠 DeepSeek Deep Thinking التحليل الدلالي جاهز');
+    console.log('🔥 نظام التوحيد بـ Part Number المحسن مفعل');
   })
-  .catch(err => console.error('❌ خطأ في التهيئة:', err));
+  .catch(err => console.error('❌ خطأ في تهيئة التوحيد الذكي:', err));
