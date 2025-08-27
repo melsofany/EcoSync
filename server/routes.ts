@@ -254,7 +254,7 @@ function createUnifiedItem(items: any[], index: number): any {
   const bestPartNumber = items.find(item => item.partNumber && item.partNumber.trim())?.partNumber || '';
   const bestDescription = items.find(item => item.description && item.description.trim())?.description || '';
   const bestLineItem = items.find(item => item.lineItem && item.lineItem.trim())?.lineItem || '';
-  const bestUnit = items.find(item => item.unit && item.unit.trim())?.unit || 'Each';
+  const bestUnit = items.find(item => item.unit && item.unit.trim())?.unit || 'EACH';
   
   // جمع جميع المعرفات الفريدة من العمود A
   const allUniqueIds = [...new Set(items.map(item => item.uniqueSheetId).filter(Boolean))];
