@@ -1071,8 +1071,21 @@ export class GoogleSheetsRealtimeData {
       }
       
       // لم نجد مطابقة كاملة (رقم البند + رقم طلب التسعير)
-      console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${itemId} مع طلب التسعير ${rfqNumber}`);
-      console.log(`📝 البند موجود في Google Sheets لكن مع أرقام طلبات تسعير مختلفة`);
+      // لكن دعنا نبحث عن البند فقط بغض النظر عن رقم طلب التسعير
+      console.log(`⚠️ لم يتم العثور على تطابق كامل، البحث عن البند ${itemId} بدون قيد RFQ`);
+      
+      let lineItemFromAnyRow = '';
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        const rowItemNumber = (row[0] || '').trim(); // العمود A - Item Number
+        
+        // إذا وجدنا البند، نأخذ LINE ITEM منه
+        if (rowItemNumber === itemId) {
+          lineItemFromAnyRow = row[2] || ''; // العمود C - LINE ITEM
+          console.log(`✅ وجدت LINE ITEM للبند ${itemId} في الصف ${i + 2}: "${lineItemFromAnyRow}"`);
+          break;
+        }
+      }
       
       // البحث في ورقة تسعير الموردين للحصول على سعر المورد واسم المورد
       console.log(`🔍 البحث عن سعر المورد في ورقة تسعير الموردين`);
@@ -1133,17 +1146,21 @@ export class GoogleSheetsRealtimeData {
         console.error('❌ خطأ في البحث عن سعر المورد:', error);
       }
       
-      // إرجاع البيانات من صفحة تسعير العملاء بدون LINE ITEM لكن مع سعر المورد واسم المورد من ورقة تسعير الموردين
-      const dataWithoutLineItem = {
+      // إرجاع البيانات من صفحة تسعير العملاء مع LINE ITEM من صفحة DATA (إن وُجد)
+      const dataWithLineItem = {
         ...customerItemData,
         itemId: itemId,
-        lineItem: '', // لا يوجد LINE ITEM لهذا التطابق المحدد
+        lineItem: lineItemFromAnyRow || '', // استخدام LINE ITEM من صفحة DATA إن وُجد
         supplierUnitPrice: supplierPrice || customerItemData.supplierUnitPrice, // استخدام سعر المورد من ورقة تسعير الموردين إن وجد
         supplierName: supplierName, // اسم المورد من ورقة تسعير الموردين
       };
       
-      console.log(`📊 البيانات المُرجعة (بدون LINE ITEM):`, dataWithoutLineItem);
-      return dataWithoutLineItem;
+      if (lineItemFromAnyRow) {
+        console.log(`📊 البيانات المُرجعة (مع LINE ITEM="${lineItemFromAnyRow}"):`, dataWithLineItem);
+      } else {
+        console.log(`📊 البيانات المُرجعة (بدون LINE ITEM):`, dataWithLineItem);
+      }
+      return dataWithLineItem;
     } catch (error) {
       console.error('❌ خطأ في الحصول على تفاصيل البند:', (error as Error).message);
       return null;
