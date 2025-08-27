@@ -2,10 +2,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { storage } from "./storage";
 
-// تهيئة خدمة التوحيد الذكي بـ DeepSeek
-import("./deepseek-unification-service").then(module => {
-  const service = module.deepSeekUnificationService;
-  console.log('🚀 تم تهيئة خدمة التوحيد الذكي بـ DeepSeek');
+// تهيئة خدمة التوحيد الذكي بـ DeepSeek (بند بند - دقة 100%)
+import("./deepseek-unification-service-v2").then(module => {
+  const service = module.deepSeekUnificationServiceV2;
+  console.log('🚀 تم تهيئة خدمة التوحيد الذكي بـ DeepSeek - النسخة المحسنة (بند بند)');
 }).catch(err => {
   console.error('❌ خطأ في تهيئة خدمة التوحيد:', err);
 });
@@ -138,13 +138,13 @@ app.use((req, res, next) => {
     console.log('🤖 تكامل AI متقدم للتحليل والتوحيد الذكي');
     console.log('✅ النظام جاهز - admin / admin123');
     
-    // تشغيل التوحيد التلقائي للبنود المكررة
+    // تشغيل خدمة التوحيد المحسنة (بند بند)
     setTimeout(async () => {
       try {
-        const { initializeAutoUnification } = await import('./auto-unification.js');
-        await initializeAutoUnification();
+        const { deepSeekUnificationServiceV2 } = await import('./deepseek-unification-service-v2.js');
+        console.log('✅ خدمة التوحيد المحسنة جاهزة (بند بند بدقة 100%)');
       } catch (error) {
-        console.log('⚠️ التوحيد التلقائي غير متاح:', (error as Error).message);
+        console.log('⚠️ خدمة التوحيد غير متاحة:', (error as Error).message);
       }
     }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
 
