@@ -45,6 +45,8 @@ export class AdvancedAIUnificationService {
   // DeepSeek API configuration
   private deepseekApiKey: string | null = null;
   private deepseekModel = process.env.DEEPSEEK_MODEL || 'deepseek-reasoner';
+  private aiCallCount = 0;
+  private textOnlyCount = 0;
 
   constructor() {
     console.log('🧠 تهيئة خدمة التوحيد الذكي المتقدم (DeepSeek-first)...');
@@ -298,28 +300,39 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
       return { score: 1, sameProductByAI: true, canonicalPart: canonical };
     }
 
-    // 4) Ask DeepSeek (authoritative)
-    const ai = await this.deepseekJudge(desc1, part1, desc2, part2);
-    if (ai) {
-      if (ai.sameProduct && ai.confidence >= 0.75) {
-        return { score: Math.max(0.85, ai.confidence), sameProductByAI: true, canonicalPart: ai.canonicalPart || (np1 || np2) || null };
-      }
-      // If AI said not same with decent confidence → keep apart strongly
-      if (!ai.sameProduct && ai.confidence >= 0.65) {
-        return { score: 0.05, sameProductByAI: false, canonicalPart: null };
-      }
-    }
-
-    // 5) Soft fallback: textual similarity + keyword/spec match
+    // 4) Quick similarity check first - only use AI for borderline cases
     const s = this.levenshteinSimilarity(desc1, desc2);
-    // Heuristic: if specs tokens overlap strongly, bump score slightly
     const tokens = (t: string) => this.normalizeText(t).split(' ').filter(w => w.length > 1);
     const A = new Set(tokens(desc1));
     const B = new Set(tokens(desc2));
     const inter = Array.from(A).filter(x => B.has(x));
     const kwScore = inter.length / Math.max(1, new Set([...A, ...B]).size);
-    const score = (s * 0.6) + (kwScore * 0.4);
-    return { score, sameProductByAI: false, canonicalPart: null };
+    const textScore = (s * 0.6) + (kwScore * 0.4);
+    
+    // Only call AI for uncertain cases (between 0.5 and 0.75)
+    if (textScore >= 0.75) {
+      this.textOnlyCount++;
+      return { score: textScore, sameProductByAI: false, canonicalPart: np1 || np2 || null };
+    }
+    if (textScore <= 0.5) {
+      this.textOnlyCount++;
+      return { score: textScore, sameProductByAI: false, canonicalPart: null };
+    }
+    
+    // Call AI only for borderline cases
+    this.aiCallCount++;
+    const ai = await this.deepseekJudge(desc1, part1, desc2, part2);
+    if (ai) {
+      if (ai.sameProduct && ai.confidence >= 0.75) {
+        return { score: Math.max(0.85, ai.confidence), sameProductByAI: true, canonicalPart: ai.canonicalPart || (np1 || np2) || null };
+      }
+      if (!ai.sameProduct && ai.confidence >= 0.65) {
+        return { score: 0.05, sameProductByAI: false, canonicalPart: null };
+      }
+    }
+
+    // 5) Fallback to calculated text score
+    return { score: textScore, sameProductByAI: false, canonicalPart: null };
   }
 
   // ==========================
@@ -378,6 +391,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
     this.currentItem = null;
     this.startTime = null;
     this.estimatedTimeRemaining = null;
+    this.aiCallCount = 0;
+    this.textOnlyCount = 0;
   }
 
   // ==========================
@@ -428,7 +443,7 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
       const makeGroupKey = (canonical?: string | null) =>
         canonical ? `P-${canonical}` : `P-${String(seq).padStart(7, '0')}`;
 
-      console.log('🔍 بدء التحليل الدلالي (DeepSeek-first)...');
+      console.log('⚡ بدء التحليل السريع (AI فقط للحالات المتشابهة)...');
 
       for (let i = 0; i < items.length; i++) {
         while (this.isPaused && this.isRunning) {
@@ -467,8 +482,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
             chosenCanonical = canonicalPart;
           }
 
-          // Rate-limit DeepSeek usage
-          await this.sleep(120);
+          // Fast rate-limit for speed
+          await this.sleep(50);
         }
 
         if (chosenKey) {
@@ -497,8 +512,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
           this.estimatedTimeRemaining = Math.round(remain * avg / 1000);
         }
 
-        if ((i + 1) % 50 === 0) {
-          console.log(`⏳ تقدم: ${i + 1}/${this.total} صف`);
+        if ((i + 1) % 200 === 0) {
+          console.log(`⚡ تقدم سريع: ${i + 1}/${this.total} صف (${((i + 1) / this.total * 100).toFixed(1)}%) - AI: ${this.aiCallCount}, نصي: ${this.textOnlyCount}`);
         }
       }
 
@@ -517,8 +532,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
       this.currentItem = null;
 
       const msg = this.processed === this.total
-        ? `🧠 اكتمل التوحيد! تم تحليل ${this.processed} بند وإنشاء ${groups.size} مجموعة`
-        : `⚠️ تم الإيقاف. تم تحليل ${this.processed} من ${this.total} بند`;
+        ? `🧠 اكتمل التوحيد! تم تحليل ${this.processed} بند وإنشاء ${groups.size} مجموعة (AI: ${this.aiCallCount}, نصي: ${this.textOnlyCount})`
+        : `⚠️ تم الإيقاف. تم تحليل ${this.processed} من ${this.total} بند (AI: ${this.aiCallCount}, نصي: ${this.textOnlyCount})`;
 
       console.log(msg);
       return {
