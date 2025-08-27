@@ -1108,6 +1108,52 @@ export class GoogleSheetsRealtimeData {
         }
       }
       
+      // إذا لم نجد البند برقمه، نبحث بـ Part Number + RFQ
+      if (!lineItemFromAnyRow && customerItemData) {
+        console.log(`🔍 البحث الذكي: البحث بـ Part Number "${customerItemData.partNumber}" + RFQ "${rfqNumber}"`);
+        
+        for (let i = 0; i < dataRows.length; i++) {
+          const row = dataRows[i];
+          const rowPartNumber = (row[3] || '').trim(); // العمود D - Part Number
+          const rowRfqNumber = (row[5] || '').trim(); // العمود F - RFQ Number
+          
+          // البحث بـ Part Number + RFQ
+          if (rowPartNumber === customerItemData.partNumber && rowRfqNumber === rfqNumber) {
+            lineItemFromAnyRow = row[2] || ''; // العمود C - LINE ITEM
+            console.log(`🎯 البحث الذكي نجح! وجدت LINE ITEM في الصف ${i + 2} للبند ذو Part Number "${rowPartNumber}": LINE ITEM="${lineItemFromAnyRow}"`);
+            
+            // تحديث رقم البند الصحيح
+            const correctItemNumber = row[0] || '';
+            if (correctItemNumber && correctItemNumber !== itemId) {
+              console.log(`⚠️ تصحيح رقم البند: الرقم في تسعير_العملاء=${itemId}, الرقم الصحيح في DATA=${correctItemNumber}`);
+            }
+            break;
+          }
+        }
+        
+        // إذا لم نجد بـ Part Number + RFQ، نبحث بـ Part Number فقط
+        if (!lineItemFromAnyRow) {
+          console.log(`🔍 البحث الذكي: البحث بـ Part Number فقط "${customerItemData.partNumber}"`);
+          
+          for (let i = 0; i < dataRows.length; i++) {
+            const row = dataRows[i];
+            const rowPartNumber = (row[3] || '').trim(); // العمود D - Part Number
+            
+            if (rowPartNumber === customerItemData.partNumber) {
+              lineItemFromAnyRow = row[2] || ''; // العمود C - LINE ITEM
+              console.log(`✅ البحث الذكي نجح! وجدت LINE ITEM بـ Part Number في الصف ${i + 2}: "${lineItemFromAnyRow}"`);
+              
+              // تحديث رقم البند الصحيح
+              const correctItemNumber = row[0] || '';
+              if (correctItemNumber && correctItemNumber !== itemId) {
+                console.log(`⚠️ تصحيح رقم البند: الرقم في تسعير_العملاء=${itemId}, الرقم الصحيح في DATA=${correctItemNumber}`);
+              }
+              break;
+            }
+          }
+        }
+      }
+      
       // البحث في ورقة تسعير الموردين للحصول على سعر المورد واسم المورد
       console.log(`🔍 البحث عن سعر المورد في ورقة تسعير الموردين`);
       
