@@ -570,7 +570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           const item = {
             id: row[0] || '', // العمود A - معرف البند
-            lineItem: row[1] || '', // العمود B - وحدة القياس
+            lineItem: row[2] || '', // العمود C - LINE ITEM
             partNumber: row[2] || '', // العمود C - رقم القطعة
             description: row[3] || '', // العمود D - الوصف
             uom: row[4] || '', // العمود E - الوصف الكامل
@@ -1025,7 +1025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sheetsData = {
         items: rawData.map((row: any[], index: number) => ({
           id: row[0] || `P-${String(index + 1).padStart(7, '0')}`, // العمود A - معرف البند
-          lineItem: row[1] || '', // العمود B - LINE ITEM
+          lineItem: row[2] || '', // العمود C - LINE ITEM
           partNumber: row[2] || '', // العمود C - PART NO  
           description: row[3] || '', // العمود D - الوصف
           uom: row[4] || '', // العمود E - وحدة القياس
@@ -1072,7 +1072,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (poNumberK === cleanPOId || poDateL === cleanPOId) {
           const item = {
             id: itemId,
-            lineItem: row[1] || '',
+            lineItem: row[2] || '', // العمود C - LINE ITEM
             partNumber: row[2] || '',  
             description: row[3] || '',
             uom: row[4] || '',
@@ -6424,7 +6424,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const formattedData = {
         items: rawData.map((row: any[], index: number) => ({
           id: row[0] || `P-${String(index + 1).padStart(7, '0')}`,
-          lineItem: row[1] || '',
+          lineItem: row[2] || '', // العمود C - LINE ITEM
           partNumber: row[2] || '',
           description: row[3] || '',
           uom: row[4] || '',
