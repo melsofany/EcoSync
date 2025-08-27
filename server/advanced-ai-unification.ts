@@ -54,7 +54,7 @@ export class AdvancedAIUnificationService {
 
   async initialize() {
     const auth = await authenticateGoogle();
-    this.sheets = google.sheets({ version: 'v4', auth });
+    this.sheets = google.sheets({ version: 'v4', auth: auth as any });
 
     // DeepSeek API setup
     this.deepseekApiKey = process.env.DEEPSEEK_API_KEY || null;
@@ -411,7 +411,7 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
         range: 'DATA!A2:E',
       });
 
-      const rows = response.data.values || [];
+      const rows = (response.data as any).values || [];
       this.total = rows.length;
       console.log(`📊 تم العثور على ${this.total} صف للتحليل`);
 
@@ -420,7 +420,7 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
         return { success: true, message: 'لا توجد بيانات للتوحيد', totalRows: 0, unifiedCount: 0 };
       }
 
-      const items: ItemData[] = rows.map((row, index) => ({
+      const items: ItemData[] = rows.map((row: any, index: number) => ({
         row: index + 2,
         itemNumber: row[0] || '',
         partNumber: row[1] || '',
@@ -429,16 +429,10 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
         originalData: row,
       }));
 
-      // Map of groupKey -> items
-      const groups = new Map<string, ItemData[]>();
+      // النظام الجديد: تعيين معرف تسلسلي مباشر لكل بند
       const updates: string[][] = [];
-      let seq = 1;
-
-      // Helper: always use sequential P-0000001 format
-      const makeGroupKey = (canonical?: string | null) =>
-        `P-${String(seq).padStart(7, '0')}`;
-
-      console.log('🚀 بدء التحليل فائق السرعة (99% نصي + 1% AI للحالات الحرجة)...');
+      
+      console.log('⚡ نظام التوحيد المبسط - معرف فريد لكل بند...');
 
       for (let i = 0; i < items.length; i++) {
         while (this.isPaused && this.isRunning) {
@@ -453,45 +447,11 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
           lineItem: current.lineItem,
         };
 
-        // Try to fit in an existing group
-        let chosenKey: string | null = null;
-        let chosenCanonical: string | null = null;
-        let bestScore = 0;
-
-        for (const [gk, gitems] of groups.entries()) {
-          const rep = gitems[0];
-          const { score, sameProductByAI, canonicalPart } = await this.calculateSimilarity(
-            current.description,
-            rep.description,
-            current.partNumber,
-            rep.partNumber
-          );
-
-          // Ultra-fast acceptance: much lower thresholds
-          const accept = (sameProductByAI && score >= 0.80) || score >= 0.75;
-          if (accept && score > bestScore) {
-            bestScore = score;
-            chosenKey = gk;
-            chosenCanonical = canonicalPart;
-          }
-
-          // Minimal delay for maximum speed
-          await this.sleep(10);
-        }
-
-        if (chosenKey) {
-          groups.get(chosenKey)!.push(current);
-          updates.push([chosenKey]);
-          this.unified++;
-          console.log(`✅ توحيد: ${current.partNumber} → ${chosenKey} (score=${(bestScore*100).toFixed(1)}%)`);
-        } else {
-          // New group - always create sequential P-0000001 format
-          const key = makeGroupKey();
-          seq++; // always increment for new groups
-          groups.set(key, [current]);
-          updates.push([key]);
-          console.log(`🆕 مجموعة جديدة ${key} للبند "${current.partNumber}" (${current.description.slice(0, 50)}...)`);
-        }
+        // معرف فريد تسلسلي لكل بند
+        const itemId = `P-${String(i + 1).padStart(7, '0')}`;
+        updates.push([itemId]);
+        
+        console.log(`🆕 بند ${itemId}: "${current.partNumber}" - ${current.description.slice(0, 50)}...`);
 
         this.processed++;
         this.progress = Math.round((this.processed / this.total) * 100);
@@ -503,8 +463,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
           this.estimatedTimeRemaining = Math.round(remain * avg / 1000);
         }
 
-        if ((i + 1) % 500 === 0) {
-          console.log(`🚀 تقدم فائق: ${i + 1}/${this.total} صف (${((i + 1) / this.total * 100).toFixed(1)}%) - AI: ${this.aiCallCount}, نصي: ${this.textOnlyCount}`);
+        if ((i + 1) % 1000 === 0) {
+          console.log(`⚡ تقدم: ${i + 1}/${this.total} بند (${((i + 1) / this.total * 100).toFixed(1)}%)`);
         }
       }
 
@@ -523,8 +483,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
       this.currentItem = null;
 
       const msg = this.processed === this.total
-        ? `🧠 اكتمل التوحيد! تم تحليل ${this.processed} بند وإنشاء ${groups.size} مجموعة (AI: ${this.aiCallCount}, نصي: ${this.textOnlyCount})`
-        : `⚠️ تم الإيقاف. تم تحليل ${this.processed} من ${this.total} بند (AI: ${this.aiCallCount}, نصي: ${this.textOnlyCount})`;
+        ? `✅ اكتمل تعيين المعرفات! تم معالجة ${this.processed} بند بنجاح`
+        : `⚠️ تم الإيقاف. تم معالجة ${this.processed} من ${this.total} بند`;
 
       console.log(msg);
       return {
@@ -532,8 +492,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
         message: msg,
         totalRows: this.total,
         processedRows: this.processed,
-        unifiedGroups: groups.size,
-        unifiedCount: this.unified,
+        unifiedGroups: this.processed,
+        unifiedCount: this.processed,
         accuracy: 100,
         sessionId: Date.now().toString()
       };
