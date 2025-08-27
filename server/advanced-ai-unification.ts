@@ -429,10 +429,12 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
         originalData: row,
       }));
 
-      // النظام الجديد: تعيين معرف تسلسلي مباشر لكل بند
+      // النظام الجديد: مقارنات AI سريعة مع معرفات ذكية
+      const processedItems = new Map<string, ItemData[]>();
       const updates: string[][] = [];
+      let groupCounter = 1;
       
-      console.log('⚡ نظام التوحيد المبسط - معرف فريد لكل بند...');
+      console.log('🧠 نظام التوحيد الذكي - DeepSeek Deep Thinking بسرعة فائقة...');
 
       for (let i = 0; i < items.length; i++) {
         while (this.isPaused && this.isRunning) {
@@ -447,12 +449,50 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
           lineItem: current.lineItem,
         };
 
-        // معرف فريد تسلسلي لكل بند
-        const itemId = `P-${String(i + 1).padStart(7, '0')}`;
-        updates.push([itemId]);
-        
-        console.log(`🆕 بند ${itemId}: "${current.partNumber}" - ${current.description.slice(0, 50)}...`);
+        // البحث عن تطابق مع البنود المُعالجة
+        let matchedGroupId: string | null = null;
+        let bestScore = 0;
 
+        // مقارنة سريعة مع كل مجموعة موجودة
+        for (const [groupId, groupItems] of processedItems.entries()) {
+          const representative = groupItems[0];
+          
+          // مقارنة AI سريعة
+          const { score, sameProductByAI } = await this.calculateSimilarity(
+            current.description,
+            representative.description,
+            current.partNumber,
+            representative.partNumber
+          );
+
+          // عتبة قبول ذكية
+          if ((sameProductByAI && score >= 0.75) || score >= 0.85) {
+            if (score > bestScore) {
+              bestScore = score;
+              matchedGroupId = groupId;
+            }
+          }
+
+          // تأخير بسيط للسرعة
+          await this.sleep(5);
+        }
+
+        let itemId: string;
+        if (matchedGroupId) {
+          // إضافة للمجموعة الموجودة
+          processedItems.get(matchedGroupId)!.push(current);
+          itemId = matchedGroupId;
+          this.unified++;
+          console.log(`🔗 توحيد: "${current.partNumber}" → ${itemId} (تطابق: ${(bestScore*100).toFixed(1)}%)`);
+        } else {
+          // مجموعة جديدة
+          itemId = `P-${String(groupCounter).padStart(7, '0')}`;
+          processedItems.set(itemId, [current]);
+          groupCounter++;
+          console.log(`🆕 مجموعة جديدة ${itemId}: "${current.partNumber}" - ${current.description.slice(0, 50)}...`);
+        }
+
+        updates.push([itemId]);
         this.processed++;
         this.progress = Math.round((this.processed / this.total) * 100);
 
@@ -463,8 +503,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
           this.estimatedTimeRemaining = Math.round(remain * avg / 1000);
         }
 
-        if ((i + 1) % 1000 === 0) {
-          console.log(`⚡ تقدم: ${i + 1}/${this.total} بند (${((i + 1) / this.total * 100).toFixed(1)}%)`);
+        if ((i + 1) % 500 === 0) {
+          console.log(`🧠 تقدم ذكي: ${i + 1}/${this.total} بند (${((i + 1) / this.total * 100).toFixed(1)}%) - مجموعات: ${processedItems.size}, AI: ${this.aiCallCount}`);
         }
       }
 
@@ -483,8 +523,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
       this.currentItem = null;
 
       const msg = this.processed === this.total
-        ? `✅ اكتمل تعيين المعرفات! تم معالجة ${this.processed} بند بنجاح`
-        : `⚠️ تم الإيقاف. تم معالجة ${this.processed} من ${this.total} بند`;
+        ? `🧠 اكتمل التوحيد الذكي! تم معالجة ${this.processed} بند، إنشاء ${processedItems.size} مجموعة، توحيد ${this.unified} بند (AI: ${this.aiCallCount})`
+        : `⚠️ تم الإيقاف. تم معالجة ${this.processed} من ${this.total} بند (مجموعات: ${processedItems.size}, AI: ${this.aiCallCount})`;
 
       console.log(msg);
       return {
@@ -492,8 +532,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
         message: msg,
         totalRows: this.total,
         processedRows: this.processed,
-        unifiedGroups: this.processed,
-        unifiedCount: this.processed,
+        unifiedGroups: processedItems.size,
+        unifiedCount: this.unified,
         accuracy: 100,
         sessionId: Date.now().toString()
       };
