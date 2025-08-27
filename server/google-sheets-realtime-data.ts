@@ -808,7 +808,9 @@ export class GoogleSheetsRealtimeData {
 
           // مطابقة كل بند مع LINE ITEM من صفحة DATA
           for (const item of items) {
-            // البحث عن تطابق دقيق بين Item Number (العمود A) و RFQ Number (العمود F)
+            let foundWithRfq = false;
+            
+            // أولاً: البحث عن تطابق دقيق بين Item Number (العمود A) و RFQ Number (العمود F)
             for (const dataRow of dataRows) {
               const dataItemNumber = dataRow[0]; // العمود A - Item Number
               const dataLineItem = dataRow[2]; // العمود C - LINE ITEM
@@ -816,13 +818,32 @@ export class GoogleSheetsRealtimeData {
 
               if (dataItemNumber === item.itemNumber && dataRfqNumber === item.rfqNumber) {
                 item.lineItem = dataLineItem || '';
-                console.log(`✅ تم العثور على LINE ITEM للبند ${item.itemNumber} في RFQ ${item.rfqNumber}: ${dataLineItem}`);
+                foundWithRfq = true;
+                if (dataLineItem) {
+                  console.log(`✅ تم العثور على LINE ITEM للبند ${item.itemNumber} في RFQ ${item.rfqNumber}: ${dataLineItem}`);
+                }
                 break;
               }
             }
             
+            // إذا لم نجد تطابق كامل، نبحث عن البند فقط
+            if (!foundWithRfq) {
+              for (const dataRow of dataRows) {
+                const dataItemNumber = dataRow[0]; // العمود A - Item Number
+                const dataLineItem = dataRow[2]; // العمود C - LINE ITEM
+                
+                if (dataItemNumber === item.itemNumber) {
+                  item.lineItem = dataLineItem || '';
+                  if (dataLineItem) {
+                    console.log(`✅ وجدت LINE ITEM للبند ${item.itemNumber} (بدون تطابق RFQ): ${dataLineItem}`);
+                  }
+                  break;
+                }
+              }
+            }
+            
             if (!item.lineItem) {
-              console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${item.itemNumber} في RFQ ${item.rfqNumber}`);
+              console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${item.itemNumber}`);
             }
           }
         } catch (dataError) {
