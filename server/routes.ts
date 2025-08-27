@@ -7092,101 +7092,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // إضافة API التوحيد الذكي المحسن
-  const aiMonitorRouter = await import('./new-ai-monitor-api.js');
-  app.use('/api/ai-monitor', aiMonitorRouter.default);
 
-  // إضافة route مباشر لشاشة التوحيد الذكي
-  app.get('/ai-unification-monitor', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public/ai-unification-monitor/index.html'));
-  });
 
-  app.get('/ai-unification-monitor/', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public/ai-unification-monitor/index.html'));
-  });
-
-  // API routes for unification progress monitoring
-  app.get("/api/unification-progress", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
-    try {
-      const { unificationTracker } = await import('./unification-progress-tracker.js');
-      const currentSession = unificationTracker.getCurrentSession();
-      
-      if (!currentSession) {
-        return res.json(null);
-      }
-
-      res.json(currentSession);
-    } catch (error) {
-      console.error("Get unification progress error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.post("/api/start-unification", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
-    try {
-      const { batchSize = 50, startFromRow = 5 } = req.body;
-      
-      const { smartItemMatcher } = await import('./smart-item-matcher.js');
-      const sessionId = await smartItemMatcher.startUnification(startFromRow, batchSize);
-
-      await logActivity(req, "start_unification", "unification", sessionId, "Started AI-powered item unification process");
-
-      res.json({ 
-        sessionId,
-        message: "تم بدء عملية التوحيد بنجاح",
-        startFromRow,
-        batchSize
-      });
-    } catch (error) {
-      console.error("Start unification error:", error);
-      if (error.message === 'عملية التوحيد قيد التشغيل بالفعل') {
-        return res.status(409).json({ message: error.message });
-      }
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.post("/api/pause-unification", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
-    try {
-      const { smartItemMatcher } = await import('./smart-item-matcher.js');
-      smartItemMatcher.pauseUnification();
-
-      await logActivity(req, "pause_unification", "unification", "current", "Paused item unification process");
-
-      res.json({ message: "تم إيقاف عملية التوحيد مؤقتاً" });
-    } catch (error) {
-      console.error("Pause unification error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.post("/api/resume-unification", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
-    try {
-      const { smartItemMatcher } = await import('./smart-item-matcher.js');
-      smartItemMatcher.resumeUnification();
-
-      await logActivity(req, "resume_unification", "unification", "current", "Resumed item unification process");
-
-      res.json({ message: "تم استئناف عملية التوحيد" });
-    } catch (error) {
-      console.error("Resume unification error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.post("/api/stop-unification", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
-    try {
-      const { smartItemMatcher } = await import('./smart-item-matcher.js');
-      smartItemMatcher.stopUnification();
-
-      await logActivity(req, "stop_unification", "unification", "current", "Stopped item unification process");
-
-      res.json({ message: "تم إيقاف عملية التوحيد نهائياً" });
-    } catch (error) {
-      console.error("Stop unification error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
 
   // Endpoint محدث لحالة التوحيد مع Google Sheets
   app.get("/api/unification/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
@@ -7299,17 +7206,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  app.get("/api/unification-status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
-    try {
-      const { smartItemMatcher } = await import('./smart-item-matcher.js');
-      const status = smartItemMatcher.getProcessingStatus();
-
-      res.json(status);
-    } catch (error) {
-      console.error("Get unification status error:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
 
   // إدراج طلب تسعير جديد في Google Sheets
   app.post('/api/quotations/google-sheets', requireAuth, requireRole(['manager', 'it_admin', 'data_entry']), async (req: Request, res: Response) => {

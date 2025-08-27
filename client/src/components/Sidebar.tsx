@@ -183,12 +183,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "admin",
     },
     {
-      title: "شاشة التوحيد المتقدمة",
-      href: "/unification-progress",
-      icon: BarChart,
-      section: "admin",
-    },
-    {
       title: "الأوامر الصوتية",
       href: "/voice-control",
       icon: Mic,

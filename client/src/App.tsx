@@ -29,8 +29,6 @@ import ItemDataSheet from "@/pages/ItemDataSheet";
 import NotFound from "@/pages/not-found";
 import TelegramBot from "@/pages/TelegramBot";
 import { VoiceControlPage } from "@/pages/VoiceControlPage";
-import DataUnification from "@/pages/DataUnification";
-import UnificationProgress from "@/pages/UnificationProgress";
 import SimpleUserPermissions from "@/pages/SimpleUserPermissions";
 import GeneralAdmin from "@/pages/GeneralAdmin";
 
@@ -81,8 +79,6 @@ function Router() {
         <Route path="/admin" component={GeneralAdmin} />
         <Route path="/telegram-bot" component={TelegramBot} />
         <Route path="/voice-control" component={VoiceControlPage} />
-        <Route path="/data-unification" component={DataUnification} />
-        <Route path="/unification-progress" component={UnificationProgress} />
         <Route path="/user-permissions" component={SimpleUserPermissions} />
 
         <Route path="/change-password" component={ChangePassword} />
