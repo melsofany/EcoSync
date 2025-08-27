@@ -53,29 +53,26 @@ export class SemanticUnificationService {
     try {
       this.aiCallCount++;
       
-      const prompt = `أنت خبير في المنتجات الصناعية والكهربائية. قارن بين هذين البندين وحدد إذا كانا نفس المنتج أم لا.
+      const prompt = `أنت خبير في توحيد المنتجات الصناعية والكهربائية. مهمتك تحديد إذا كان البندان نفس المنتج أم لا.
 
-البند الأول:
-- رقم القطعة: "${item1.partNumber}"
-- التوصيف: "${item1.description}"
-- البند: "${item1.lineItem}"
+التوصيف الأول: "${item1.description}"
+التوصيف الثاني: "${item2.description}"
 
-البند الثاني:
-- رقم القطعة: "${item2.partNumber}"
-- التوصيف: "${item2.description}"
-- البند: "${item2.lineItem}"
-
-ملاحظات مهمة:
-- نفس المنتج قد يكون له أرقام قطع مختلفة (تجاري/فني)
-- ركز على الوظيفة والمواصفات وليس النص فقط
-- منتجات شنايدر مثل LC1D25 و LC1D25M7 قد تكون نفس الكونتاكتور
-- الكونتاكتورات والريلايات والمفاتيح لها أنواع متعددة
+القواعد الأساسية:
+- الأولوية الكاملة للتوصيف والمعنى والوظيفة
+- نفس المنتج قد يكون له أوصاف مختلفة (عربي/إنجليزي)
+- ركز على المعنى والوظيفة، ليس النص
+- فقط للمنتجات المتطابقة فعلاً:
+  ✅ كونتاكتور 25A = Contactor 25 Amp
+  ✅ ريلاي 24V = Relay 24VDC  
+  ❌ كونتاكتور 25A ≠ كونتاكتور 40A
+  ❌ كونتاكتور ≠ ريلاي
 
 أجب فقط بـ JSON:
 {
   "similar": true/false,
   "score": 0.0-1.0,
-  "reason": "سبب القرار باختصار"
+  "reason": "سبب مختصر"
 }`;
 
       const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
@@ -310,33 +307,34 @@ export class SemanticUnificationService {
         let matchedGroupId: string | null = null;
         let bestMatch = { score: 0, reason: '', needsAI: false };
 
-        // مرحلة 1: مقارنة نصية سريعة
+        // مقارنة ذكية بـ DeepSeek AI لكل مجموعة
         for (const [groupId, groupItems] of semanticGroups.entries()) {
           const representative = groupItems[0];
           
-          const fastComparison = this.basicTextComparison(current, representative);
-          
-          if (fastComparison.similar && fastComparison.score > bestMatch.score) {
-            bestMatch = {
-              score: fastComparison.score,
-              reason: fastComparison.reason,
-              needsAI: fastComparison.score < 0.9 // AI فقط للحالات المشكوك فيها
-            };
-            matchedGroupId = groupId;
-          }
-        }
-
-        // مرحلة 2: AI للحالات المشكوك فيها فقط
-        if (bestMatch.needsAI && matchedGroupId && this.deepseekApiKey) {
-          const representative = semanticGroups.get(matchedGroupId)![0];
-          const aiComparison = await this.compareSemanticMeaning(current, representative);
-          
-          if (aiComparison.similar) {
-            bestMatch.score = Math.max(bestMatch.score, aiComparison.score);
-            bestMatch.reason = `AI: ${aiComparison.reason}`;
+          // استخدام AI مباشرة للمقارنة الدقيقة
+          if (this.deepseekApiKey) {
+            const aiComparison = await this.compareSemanticMeaning(current, representative);
+            
+            if (aiComparison.similar && aiComparison.score > bestMatch.score) {
+              bestMatch = {
+                score: aiComparison.score,
+                reason: aiComparison.reason,
+                needsAI: false
+              };
+              matchedGroupId = groupId;
+            }
           } else {
-            matchedGroupId = null; // AI رفض المطابقة
-            bestMatch.score = 0;
+            // Fallback للمقارنة النصية فقط إذا لم يكن AI متاح
+            const fastComparison = this.basicTextComparison(current, representative);
+            
+            if (fastComparison.similar && fastComparison.score > bestMatch.score) {
+              bestMatch = {
+                score: fastComparison.score,
+                reason: fastComparison.reason,
+                needsAI: false
+              };
+              matchedGroupId = groupId;
+            }
           }
         }
 
