@@ -367,21 +367,50 @@ JSON فقط:
         this.status.progress = (this.status.processed / this.status.total) * 100;
 
         // تحديث الوقت المتبقي المقدر (بالثواني)
-        if (i > 10) { // بدء التقدير بعد 10 عناصر لدقة أفضل
+        if (i > 5) { // بدء التقدير بعد 5 عناصر
           const elapsedTime = new Date().getTime() - new Date(this.status.startTime).getTime();
-          const avgTimePerItem = elapsedTime / i;
-          const remainingItems = products.length - i;
-          this.status.estimatedTimeRemaining = Math.round((remainingItems * avgTimePerItem) / 1000); // بالثواني
+          const avgTimePerItem = elapsedTime / (i + 1); // تصحيح العداد
+          const remainingItems = products.length - (i + 1);
+          
+          // حساب الوقت المتبقي بدقة أكبر
+          let estimatedMs = remainingItems * avgTimePerItem;
+          
+          // تقييد الحد الأقصى ليكون منطقي (مثلاً 4 ساعات كحد أقصى)
+          const maxTimeMs = 4 * 60 * 60 * 1000; // 4 ساعات
+          estimatedMs = Math.min(estimatedMs, maxTimeMs);
+          
+          this.status.estimatedTimeRemaining = Math.round(estimatedMs / 1000); // بالثواني
+          
+          // إضافة log للتحقق
+          if (i % 100 === 0) {
+            console.log(`🔍 تصحيح الوقت - معالج: ${i+1}, متبقي: ${remainingItems}, متوسط: ${(avgTimePerItem/1000).toFixed(2)}ث/بند`);
+          }
         } else {
           this.status.estimatedTimeRemaining = 0;
         }
 
-        // عرض التقدم كل 250 بند مع سرعة والوقت المتبقي
-        if (i % 250 === 0 && i > 0) {
+        // عرض التقدم كل 100 بند مع سرعة والوقت المتبقي المحسن
+        if (i % 100 === 0 && i > 0) {
           const elapsed = Date.now() - new Date(this.status.startTime).getTime();
-          const speed = Math.round((i / elapsed) * 1000 * 60); // عناصر/دقيقة
-          const remainingMinutes = Math.round(this.status.estimatedTimeRemaining / 60);
-          console.log(`⚡ معالجة سريعة: ${i}/${products.length} (${speed} بند/دقيقة) - متبقي: ${remainingMinutes}م - AI: ${this.status.aiCallCount}`);
+          const speed = Math.round(((i + 1) / elapsed) * 1000 * 60); // عناصر/دقيقة محسنة
+          
+          // حساب الوقت المتبقي بتنسيق أفضل
+          const remainingSeconds = this.status.estimatedTimeRemaining;
+          let timeDisplay = "";
+          
+          if (remainingSeconds < 60) {
+            timeDisplay = `${remainingSeconds}ث`;
+          } else if (remainingSeconds < 3600) {
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            timeDisplay = `${minutes}د ${seconds}ث`;
+          } else {
+            const hours = Math.floor(remainingSeconds / 3600);
+            const minutes = Math.floor((remainingSeconds % 3600) / 60);
+            timeDisplay = `${hours}س ${minutes}د`;
+          }
+          
+          console.log(`⚡ معالجة: ${i+1}/${products.length} (${speed} بند/دقيقة) - متبقي: ${timeDisplay} - AI: ${this.status.aiCallCount}`);
         }
 
         // البحث السريع عن تطابق مع التحسينات
