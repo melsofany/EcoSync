@@ -41,37 +41,48 @@ export class AdvancedAIUnificationService {
     console.log('✅ تم تهيئة خدمة التوحيد البسيط');
   }
 
-  // مقارنة بسيطة وسريعة
+  // مقارنة صارمة لتجنب التوحيد المفرط
   private async compareItems(item1: any, item2: any): Promise<{ similar: boolean, score: number }> {
-    // مقارنة نصية سريعة أولاً
+    // مقارنة أرقام القطع - يجب أن تكون متطابقة تماماً
     const part1 = (item1.partNumber || '').toUpperCase().replace(/\s+/g, '');
     const part2 = (item2.partNumber || '').toUpperCase().replace(/\s+/g, '');
     
-    if (part1 && part2 && part1 === part2) {
+    // فقط إذا كانت أرقام القطع متطابقة تماماً
+    if (part1 && part2 && part1.length > 3 && part1 === part2) {
       return { similar: true, score: 1.0 };
     }
 
-    // مقارنة الوصف
-    const desc1 = (item1.description || '').toLowerCase();
-    const desc2 = (item2.description || '').toLowerCase();
+    // إذا كانت أرقام القطع مختلفة، لا توحيد
+    if (part1 && part2 && part1 !== part2) {
+      return { similar: false, score: 0 };
+    }
+
+    // مقارنة الوصف فقط إذا لم تكن هناك أرقام قطع
+    const desc1 = (item1.description || '').toLowerCase().trim();
+    const desc2 = (item2.description || '').toLowerCase().trim();
     
-    if (desc1.length > 10 && desc2.length > 10) {
-      const words1 = desc1.split(/\s+/);
-      const words2 = desc2.split(/\s+/);
-      const common = words1.filter((w: string) => words2.includes(w) && w.length > 3);
+    // يجب أن يكون الوصف متطابق بنسبة عالية جداً
+    if (desc1.length > 20 && desc2.length > 20) {
+      const words1 = desc1.split(/\s+/).filter((w: string) => w.length > 3);
+      const words2 = desc2.split(/\s+/).filter((w: string) => w.length > 3);
+      const common = words1.filter((w: string) => words2.includes(w));
       const score = common.length / Math.max(words1.length, words2.length);
       
-      if (score > 0.7) {
+      // عتبة عالية جداً للتوحيد
+      if (score > 0.9 && common.length >= 3) {
         return { similar: true, score };
       }
     }
 
-    // AI للحالات المعقدة فقط
-    if (this.deepseekApiKey && (desc1.length > 50 || desc2.length > 50)) {
+    // AI للحالات النادرة فقط مع عتبة صارمة
+    if (this.deepseekApiKey && desc1.length > 100 && desc2.length > 100) {
       try {
         this.aiCallCount++;
         const aiResult = await this.callDeepSeekAPI(item1, item2);
-        return aiResult;
+        // عتبة AI صارمة
+        if (aiResult.score > 0.95) {
+          return aiResult;
+        }
       } catch (error) {
         console.log('⚠️ AI fallback:', error);
       }
@@ -197,7 +208,7 @@ export class AdvancedAIUnificationService {
       const groups: any[][] = [];
       const updates: string[][] = [];
 
-      console.log('🧠 بدء التوحيد الذكي...');
+      console.log('🔢 بدء تعيين معرفات فريدة (بدون توحيد)...');
 
       for (let i = 0; i < items.length; i++) {
         while (this.isPaused && this.isRunning) {
@@ -212,7 +223,14 @@ export class AdvancedAIUnificationService {
           lineItem: current.lineItem,
         };
 
-        // البحث عن تطابق
+        // معرف فريد لكل بند (بدون توحيد)
+        const itemId = `P-${String(i + 1).padStart(7, '0')}`;
+        updates.push([itemId]);
+        
+        console.log(`🆕 بند ${itemId}: "${current.partNumber}" - ${current.description.slice(0, 60)}...`);
+
+        /* 
+        // كود التوحيد (معطل حالياً لحل المشكلة)
         let foundGroup = -1;
         for (let g = 0; g < groups.length; g++) {
           const representative = groups[g][0];
@@ -238,6 +256,7 @@ export class AdvancedAIUnificationService {
           updates.push([groupId]);
           console.log(`🆕 مجموعة جديدة ${groupId}: "${current.partNumber}"`);
         }
+        */
 
         this.processed++;
         this.progress = Math.round((this.processed / this.total) * 100);
@@ -251,7 +270,7 @@ export class AdvancedAIUnificationService {
         }
 
         if ((i + 1) % 1000 === 0) {
-          console.log(`⚡ معالجة: ${i + 1}/${this.total} (${this.progress}%) - مجموعات: ${groups.length}, AI: ${this.aiCallCount}`);
+          console.log(`⚡ معالجة: ${i + 1}/${this.total} (${this.progress}%) - معرفات فريدة: ${i + 1}`);
         }
 
         await this.sleep(1); // سرعة قصوى
@@ -272,8 +291,8 @@ export class AdvancedAIUnificationService {
       this.currentItem = null;
 
       const msg = this.processed === this.total
-        ? `✅ اكتمل التوحيد! معالج: ${this.processed} بند، مجموعات: ${groups.length}, موحد: ${this.unified} (AI: ${this.aiCallCount})`
-        : `⚠️ توقف. معالج: ${this.processed}/${this.total} (مجموعات: ${groups.length}, AI: ${this.aiCallCount})`;
+        ? `✅ اكتمل تعيين المعرفات! معالج: ${this.processed} بند، معرفات فريدة: ${this.processed}`
+        : `⚠️ توقف. معالج: ${this.processed}/${this.total} بند`;
 
       console.log(msg);
       return {
@@ -281,8 +300,8 @@ export class AdvancedAIUnificationService {
         message: msg,
         totalRows: this.total,
         processedRows: this.processed,
-        unifiedGroups: groups.length,
-        unifiedCount: this.unified,
+        unifiedGroups: this.processed, // كل بند له معرف فريد
+        unifiedCount: 0, // لا يوجد توحيد
         accuracy: 100,
         sessionId: Date.now().toString()
       };
