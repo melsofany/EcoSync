@@ -139,20 +139,19 @@ export class SemanticUnificationService {
 المنتج 1: "${desc1}"
 المنتج 2: "${desc2}"
 
-قواعد التطابق:
-✅ نفس النوع - تفاصيل مختلفة:
-- تلفزيون 32" = تلفزيون 42" = TV 55"
-- كونتاكتور 25A = كونتاكتور 40A  
-- مفتاح كهرباء = مفتاح إضاءة
-- كابل 2.5mm = كابل 4mm
-- مصباح LED = لمبة LED
+قواعد التطابق الصارمة:
+✅ نفس المنتج بالضبط:
+- تلفزيون سامسونج 32" = تلفزيون سامسونج 32"
+- كونتاكتور سيمنز 25A = كونتاكتور سيمنز 25A
+- كابل 2.5mm أحمر = كابل 2.5mm أحمر
 
-❌ منتجات مختلفة:
-- تلفزيون ≠ ثلاجة
-- كونتاكتور ≠ ريلاي
-- مفتاح ≠ فيشة
+❌ منتجات مختلفة (حتى لو متشابهة):
+- تلفزيون 32" ≠ تلفزيون 42"
+- كونتاكتور 25A ≠ كونتاكتور 40A
+- كابل 2.5mm ≠ كابل 4mm
+- مفتاح كهرباء ≠ مفتاح إضاءة
 
-الهدف: توحيد المنتجات المتشابهة حتى مع اختلاف المواصفات
+الهدف: كل منتج مختلف يحصل على معرف منفصل
 
 JSON:
 {"similar":true/false,"score":0.0-1.0,"reason":"سبب"}`;
@@ -194,16 +193,15 @@ JSON:
         // إذا فشل تحليل JSON، حاول استخراج البيانات من النص
         console.log('فشل تحليل JSON، محاولة استخراج البيانات:', content);
         
-        const similar = content.toLowerCase().includes('true') || 
-                       content.includes('متشابه') || 
-                       content.includes('نفس') ||
-                       content.includes('مشابه') ||
-                       content.includes('نوع');
+        const similar = content.toLowerCase().includes('true') && 
+                       (content.includes('مطابق') || 
+                        content.includes('نفس') ||
+                        content.includes('identical'));
         
         return {
           similar,
-          score: similar ? 0.75 : 0.2,
-          reason: 'تحليل نصي بديل للفئة'
+          score: similar ? 0.9 : 0.1,
+          reason: 'تحليل نصي بديل للمطابقة الدقيقة'
         };
       }
 
@@ -456,15 +454,15 @@ JSON:
               bestMatchId = unifiedId;
             }
 
-            // إذا وجدنا تطابق جيد للفئة، توقف
-            if (bestMatchScore >= 0.75) {
+            // إذا وجدنا تطابق دقيق، توقف
+            if (bestMatchScore >= 0.9) {
               break;
             }
           }
         }
 
-        // إذا وجد تطابق للفئة، أضف إلى المجموعة الموجودة
-        if (bestMatchId && bestMatchScore >= 0.65) {
+        // إذا وجد تطابق دقيق فقط، أضف إلى المجموعة الموجودة
+        if (bestMatchId && bestMatchScore >= 0.85) {
           product.unifiedId = bestMatchId;
           this.unifiedGroups.get(bestMatchId)!.push(product);
           this.status.unified++;
