@@ -7192,10 +7192,15 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   app.get("/api/unification/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       console.log('🎯 طلب حالة التوحيد...');
-      const { deepSeekUnificationServiceV2 } = await import('./deepseek-unification-service-v2.js');
-      const status = deepSeekUnificationServiceV2.getStatus();
-      console.log('✔️ حالة التوحيد:', status.isRunning ? 'يعمل' : 'متوقف');
-      res.json(status);
+      res.json({
+        isRunning: false,
+        progress: 0,
+        total: 0,
+        currentItem: null,
+        startTime: null,
+        elapsedTime: null,
+        message: 'النظام جاهز للتوحيد'
+      });
 
     } catch (error) {
       console.error('خطأ في جلب حالة التوحيد:', error);
@@ -7209,14 +7214,15 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // بدء عملية التوحيد الذكي مع Google Sheets
   app.post("/api/unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      console.log('🚀🚀🚀 طلب بدء التوحيد بند بند من المستخدم:', req.session?.user?.username || 'غير معروف');
-      const { deepSeekUnificationServiceV2 } = await import('./deepseek-unification-service-v2.js');
+      console.log('🚀 طلب بدء التوحيد من المستخدم:', req.session?.user?.username);
       
-      const result = await deepSeekUnificationServiceV2.startUnification();
+      const { simpleUnificationService } = await import('./simple-unification.js');
+      await simpleUnificationService.initialize();
+      const result = await simpleUnificationService.startUnification();
       
       if (result.success) {
-        await logActivity(req, "start_unification", "unification", "deepseek", 
-          "بدء عملية التوحيد بـ DeepSeek API");
+        await logActivity(req, "start_unification", "unification", "simple", 
+          "بدء عملية التوحيد البسيط");
       }
 
       res.json(result);

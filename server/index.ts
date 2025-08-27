@@ -2,12 +2,12 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { storage } from "./storage";
 
-// تهيئة خدمة التوحيد الذكي بـ DeepSeek (بند بند - دقة 100%)
-import("./deepseek-unification-service-v2").then(module => {
-  const service = module.deepSeekUnificationServiceV2;
-  console.log('🚀 تم تهيئة خدمة التوحيد الذكي بـ DeepSeek - النسخة المحسنة (بند بند)');
+// تهيئة خدمة التوحيد البسيط
+import("./simple-unification").then(module => {
+  const service = module.simpleUnificationService;
+  console.log('✅ تم تهيئة خدمة التوحيد البسيط');
 }).catch(err => {
-  console.error('❌ خطأ في تهيئة خدمة التوحيد:', err);
+  console.error('⚠️ خطأ في تهيئة خدمة التوحيد:', err);
 });
 
 // تهيئة البوت التليجرام فقط في التطوير
@@ -138,15 +138,17 @@ app.use((req, res, next) => {
     console.log('🤖 تكامل AI متقدم للتحليل والتوحيد الذكي');
     console.log('✅ النظام جاهز - admin / admin123');
     
-    // تشغيل خدمة التوحيد المحسنة (بند بند)
+    // تشغيل خدمة التوحيد البسيط
     setTimeout(async () => {
       try {
-        const { deepSeekUnificationServiceV2 } = await import('./deepseek-unification-service-v2.js');
-        console.log('✅ خدمة التوحيد المحسنة جاهزة (بند بند بدقة 100%)');
+        const { simpleUnificationService } = await import('./simple-unification.js');
+        await simpleUnificationService.initialize();
+        console.log('✅ خدمة التوحيد البسيط جاهزة');
+        console.log('🔵 اضغط على زر "بدء التوحيد الآن" في صفحة توحيد البيانات');
       } catch (error) {
         console.log('⚠️ خدمة التوحيد غير متاحة:', (error as Error).message);
       }
-    }, 10000); // تأخير 10 ثوان لضمان استقرار النظام
+    }, 5000); // تأخير 5 ثوان لضمان استقرار النظام
 
     // تفعيل مزامنة البيانات الجديدة
     setTimeout(async () => {
