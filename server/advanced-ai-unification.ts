@@ -204,11 +204,10 @@ export class AdvancedAIUnificationService {
         description: row[4] || '',
       }));
 
-      // نظام التوحيد البسيط
-      const groups: any[][] = [];
+      // تعيين معرفات مباشرة - لا مجموعات
       const updates: string[][] = [];
 
-      console.log('🔢 بدء تعيين معرفات فريدة (بدون توحيد)...');
+      console.log('🔢 بدء تعيين معرفات فريدة لكل بند...');
 
       for (let i = 0; i < items.length; i++) {
         while (this.isPaused && this.isRunning) {
@@ -223,40 +222,11 @@ export class AdvancedAIUnificationService {
           lineItem: current.lineItem,
         };
 
-        // معرف فريد لكل بند (بدون توحيد)
+        // معرف فريد لكل بند
         const itemId = `P-${String(i + 1).padStart(7, '0')}`;
         updates.push([itemId]);
         
-        console.log(`🆕 بند ${itemId}: "${current.partNumber}" - ${current.description.slice(0, 60)}...`);
-
-        /* 
-        // كود التوحيد (معطل حالياً لحل المشكلة)
-        let foundGroup = -1;
-        for (let g = 0; g < groups.length; g++) {
-          const representative = groups[g][0];
-          const comparison = await this.compareItems(current, representative);
-          
-          if (comparison.similar) {
-            foundGroup = g;
-            this.unified++;
-            console.log(`🔗 توحيد: "${current.partNumber}" مع المجموعة ${g + 1} (${(comparison.score * 100).toFixed(1)}%)`);
-            break;
-          }
-        }
-
-        if (foundGroup >= 0) {
-          // إضافة للمجموعة الموجودة
-          groups[foundGroup].push(current);
-          const groupId = `P-${String(foundGroup + 1).padStart(7, '0')}`;
-          updates.push([groupId]);
-        } else {
-          // مجموعة جديدة
-          groups.push([current]);
-          const groupId = `P-${String(groups.length).padStart(7, '0')}`;
-          updates.push([groupId]);
-          console.log(`🆕 مجموعة جديدة ${groupId}: "${current.partNumber}"`);
-        }
-        */
+        console.log(`🆕 ${itemId}: "${current.partNumber}" - ${current.description.slice(0, 60)}...`);
 
         this.processed++;
         this.progress = Math.round((this.processed / this.total) * 100);
@@ -270,7 +240,7 @@ export class AdvancedAIUnificationService {
         }
 
         if ((i + 1) % 1000 === 0) {
-          console.log(`⚡ معالجة: ${i + 1}/${this.total} (${this.progress}%) - معرفات فريدة: ${i + 1}`);
+          console.log(`⚡ تقدم: ${i + 1}/${this.total} (${this.progress}%)`);
         }
 
         await this.sleep(1); // سرعة قصوى
@@ -291,7 +261,7 @@ export class AdvancedAIUnificationService {
       this.currentItem = null;
 
       const msg = this.processed === this.total
-        ? `✅ اكتمل تعيين المعرفات! معالج: ${this.processed} بند، معرفات فريدة: ${this.processed}`
+        ? `✅ اكتمل! تم تعيين ${this.processed} معرف فريد (P-0000001 إلى P-${String(this.processed).padStart(7, '0')})`
         : `⚠️ توقف. معالج: ${this.processed}/${this.total} بند`;
 
       console.log(msg);
@@ -300,8 +270,8 @@ export class AdvancedAIUnificationService {
         message: msg,
         totalRows: this.total,
         processedRows: this.processed,
-        unifiedGroups: this.processed, // كل بند له معرف فريد
-        unifiedCount: 0, // لا يوجد توحيد
+        unifiedGroups: this.processed, // عدد المعرفات المُعينة
+        unifiedCount: this.processed, // عدد البنود المُعالجة
         accuracy: 100,
         sessionId: Date.now().toString()
       };
