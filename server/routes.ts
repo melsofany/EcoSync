@@ -7101,8 +7101,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log('🎯 طلب حالة التوحيد الذكي...');
       
       // جلب حالة التوحيد من خدمة التوحيد البسيط
-      const { advancedAIUnification } = await import('./advanced-ai-unification.js');
-      const status = advancedAIUnification.getStatus();
+      const { semanticUnification } = await import('./semantic-unification.js');
+      const status = semanticUnification.getStatus();
       
       res.json({
         isRunning: status.isRunning || false,
@@ -7173,8 +7173,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🤖 بدء التوحيد الذكي بـ DeepSeek AI من المستخدم:', req.session?.user?.username);
       
-      const { advancedAIUnification } = await import('./advanced-ai-unification.js');
-      const result = await advancedAIUnification.startUnification();
+      const { semanticUnification } = await import('./semantic-unification.js');
+      const result = await semanticUnification.runSemanticUnification();
       
       if (result.success) {
         await logActivity(req, "start_ai_unification", "ai_unification", "deepseek", "بدء التوحيد الذكي بـ DeepSeek AI");
@@ -7204,8 +7204,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إيقاف التوحيد مؤقتاً
   app.post("/api/ai-unification/pause", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { advancedAIUnification } = await import('./advanced-ai-unification.js');
-      advancedAIUnification.pauseUnification();
+      const { semanticUnification } = await import('./semantic-unification.js');
+      semanticUnification.pause();
       
       await logActivity(req, "pause_ai_unification", "ai_unification", "deepseek", "إيقاف التوحيد الذكي مؤقتاً");
       
@@ -7227,8 +7227,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // استئناف التوحيد
   app.post("/api/ai-unification/resume", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { advancedAIUnification } = await import('./advanced-ai-unification.js');
-      advancedAIUnification.resumeUnification();
+      const { semanticUnification } = await import('./semantic-unification.js');
+      semanticUnification.resume();
       
       await logActivity(req, "resume_ai_unification", "ai_unification", "deepseek", "استئناف التوحيد الذكي");
       
@@ -7250,8 +7250,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إيقاف التوحيد نهائياً
   app.post("/api/ai-unification/stop", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { advancedAIUnification } = await import('./advanced-ai-unification.js');
-      advancedAIUnification.stopUnification();
+      const { semanticUnification } = await import('./semantic-unification.js');
+      semanticUnification.stop();
       
       await logActivity(req, "stop_ai_unification", "ai_unification", "deepseek", "إيقاف التوحيد الذكي نهائياً");
       
@@ -7273,8 +7273,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إعادة تعيين التوحيد
   app.post("/api/ai-unification/reset", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { advancedAIUnification } = await import('./advanced-ai-unification.js');
-      const result = advancedAIUnification.resetUnification();
+      const { semanticUnification } = await import('./semantic-unification.js');
+      semanticUnification.stop(); // إيقاف وإعادة تعيين
       
       await logActivity(req, "reset_ai_unification", "ai_unification", "deepseek", "إعادة تعيين التوحيد الذكي");
       
