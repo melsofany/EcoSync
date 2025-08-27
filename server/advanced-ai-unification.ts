@@ -343,12 +343,12 @@ export class AdvancedAIUnificationService {
         }
       }
 
-      // تحديث Google Sheets
+      // تحديث Google Sheets - كتابة معرفات البنود في العمود A
       if (this.isRunning && updates.length > 0) {
-        console.log('💾 تحديث Google Sheets بـ معرفات التوحيد الذكي...');
+        console.log('💾 تحديث Google Sheets بـ معرفات التوحيد الذكي في العمود A...');
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'DATA!D2',
+          range: 'DATA!A2',
           valueInputOption: 'RAW',
           requestBody: {
             values: updates
