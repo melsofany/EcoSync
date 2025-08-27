@@ -81,9 +81,12 @@ function ItemDetailedPricing({ item }: { item: any }) {
           lineItemElement.style.border = '3px solid #008000';
         }
         
+        // التأكد من وجود lineItem من البيانات الواردة
+        const lineItemFromData = data.lineItem || data.LINE_ITEM || data['lineItem'] || '';
+        
         const newData = {
           ...data,
-          lineItem: lineItemValue,
+          lineItem: lineItemFromData || lineItemValue,
           itemId: data.itemId || data.itemNumber || '',
           partNumber: data.partNumber || '',
           description: data.description || '',
@@ -235,7 +238,9 @@ function ItemDetailedPricing({ item }: { item: any }) {
             </div>
             <div className="text-center">
               <label className="text-sm font-medium block">LINE ITEM:</label>
-              <p className="font-mono text-purple-600 font-bold">{detailedPricing?.lineItem || ""}</p>
+              <p className="font-mono text-purple-600 font-bold bg-purple-50 p-2 rounded border border-purple-200">
+                {detailedPricing?.lineItem || detailedPricing?.LINE_ITEM || "غير متوفر"}
+              </p>
             </div>
             <div>
               <label className="text-sm font-medium">رقم القطعة:</label>
@@ -449,9 +454,11 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           quotationId: null, // لا نربط بعرض سعر محدد
-          itemId: item.item.id,
+          itemId: item.itemNumber || item.id || item.item?.id, // استخدام itemNumber أولاً
+          rfqNumber: item.rfqNumber || item.requestNumber || '', // إضافة رقم طلب التسعير
           supplierPricingId: item.supplierPricing?.id,
           costPrice: costPrice,
+          customerUnitPrice: Number(formData.sellingPrice), // استخدام customerUnitPrice
           sellingPrice: Number(formData.sellingPrice),
           quantity: Number(formData.quantity),
           profitMargin,
