@@ -79,6 +79,53 @@ export class AdvancedAIUnificationService {
         return 1.0;
       }
 
+      // فحص Part Numbers بديلة داخل الوصف - تحسين أفضل
+      const altPartRegex = /(ref\.?\s*pn[:\/-]?\s*|pn\s*[:\/]?\s*|part\s*no\.?\s*[:\/]?\s*)(\w[\w\-\.\/\s]+)/gi;
+      const allParts1 = [normalizedPart1];
+      const allParts2 = [normalizedPart2];
+
+      // استخراج Part Numbers من البند الأول
+      let match;
+      while ((match = altPartRegex.exec(desc1))) {
+        const extracted = this.normalizeText(match[2].trim());
+        if (extracted && extracted.length > 2) {
+          allParts1.push(extracted);
+        }
+      }
+
+      // إعادة تعيين الـ regex للبند الثاني
+      altPartRegex.lastIndex = 0;
+      while ((match = altPartRegex.exec(desc2))) {
+        const extracted = this.normalizeText(match[2].trim());
+        if (extracted && extracted.length > 2) {
+          allParts2.push(extracted);
+        }
+      }
+
+      // لو في أي Part Number مشترك بين القائمتين = منتج واحد
+      if (allParts1.some(p => allParts2.includes(p))) {
+        console.log(`🔗 Part Number بديل متطابق: ${allParts1} ↔ ${allParts2} - نسبة التشابه: 100%`);
+        return 1.0;
+      }
+
+      // إضافة جدول Mapping للرموز المعروفة
+      const knownMappings = new Map([
+        ['lc1d32m7', '2102049'],
+        ['lc1d32m7', '2102034'],
+        ['lc1d25m7', '2102025'],
+        ['lc1d18m7', '2102018'],
+        ['lc1d50m7', '2102050']
+      ]);
+
+      // فحص الـ Mapping المعروف
+      for (const [key, value] of knownMappings) {
+        if ((normalizedPart1 === key && normalizedPart2 === value) || 
+            (normalizedPart1 === value && normalizedPart2 === key)) {
+          console.log(`🗂️ Mapping معروف: "${part1}" ↔ "${part2}" - نسبة التشابه: 100%`);
+          return 1.0;
+        }
+      }
+
       // فحص سريع للحالات الواضحة (أحجام مختلفة)
       const sizePattern1 = desc1.match(/\d+[\s]*["']\s*(?:LED|TV|SCREEN|INCH)/i);
       const sizePattern2 = desc2.match(/\d+[\s]*["']\s*(?:LED|TV|SCREEN|INCH)/i);
@@ -160,19 +207,32 @@ export class AdvancedAIUnificationService {
 
 **أرجع رقماً واحداً فقط من 0.00 إلى 1.00 (مثل 0.95)**:`;
 
-      const response = await this.deepSeek.chat.completions.create({
-        model: 'deepseek-chat',
-        messages: [
-          {
-            role: 'user',
-            content: deepThinkingPrompt
-          }
-        ],
-        max_tokens: 200,
-        temperature: 0.1
+      const response = await fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            {
+              role: 'user',
+              content: deepThinkingPrompt
+            }
+          ],
+          max_tokens: 200,
+          temperature: 0.1
+        })
       });
 
-      const aiResponse = response.choices[0]?.message?.content?.trim() || '0';
+      if (!response.ok) {
+        throw new Error(`DeepSeek API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const aiResponse = data.choices[0]?.message?.content?.trim() || '0';
       const aiSimilarity = parseFloat(aiResponse.match(/\d+\.?\d*/)?.[0] || '0');
       const normalizedSimilarity = Math.max(0, Math.min(1, aiSimilarity));
 
