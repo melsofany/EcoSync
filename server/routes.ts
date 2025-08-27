@@ -7161,12 +7161,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // بدء عملية التوحيد الذكي مع Google Sheets
   app.post("/api/unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      // استخدام المنطق الصحيح للتوحيد
-      const { CompleteUnificationFix } = await import('./complete-unification-fix.js');
-      const fixedUnification = new CompleteUnificationFix();
+      // استخدام الإصلاح النهائي للتوحيد مع الكتابة المباشرة
+      const { ForceWriteUnification } = await import('./force-write-unification.js');
+      const forceUnification = new ForceWriteUnification();
       
-      // بدء عملية التوحيد الصحيحة والكتابة إلى Google Sheets
-      const result = await fixedUnification.runCompleteUnification();
+      // بدء عملية التوحيد مع الكتابة المباشرة إلى Google Sheets
+      const result = await forceUnification.runForceUnification();
       
       if (result.success) {
         await logActivity(req, "start_unification", "unification", "google-sheets", 
@@ -7175,9 +7175,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
       res.json({
         success: true,
-        message: `تم التوحيد بنجاح: ${result.groups} مجموعة من ${result.totalItems} بند`,
+        message: `تم التوحيد بنجاح: ${result.groups} مجموعة من ${result.totalItems} بند - تم كتابة ${result.updatesWritten} معرف في Google Sheets`,
         groups: result.groups,
-        totalItems: result.totalItems
+        totalItems: result.totalItems,
+        updatesWritten: result.updatesWritten,
+        totalMatches: result.totalMatches
       });
 
     } catch (error: any) {
