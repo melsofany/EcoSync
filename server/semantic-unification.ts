@@ -399,8 +399,8 @@ JSON:
           this.status.estimatedTimeRemaining = 0;
         }
 
-        // عرض التقدم كل 100 بند مع سرعة والوقت المتبقي المحسن
-        if (i % 100 === 0 && i > 0) {
+        // عرض التقدم كل 50 بند للمراقبة المكثفة
+        if (i % 50 === 0 && i > 0) {
           const elapsed = Date.now() - new Date(this.status.startTime).getTime();
           const speed = Math.round(((i + 1) / elapsed) * 1000 * 60); // عناصر/دقيقة محسنة
           
@@ -428,30 +428,45 @@ JSON:
         let bestMatchId: string | null = null;
         let bestMatchScore = 0;
 
-        // مرحلة 1: فلترة سريعة بناء على طول النص
+        // مرحلة 1: فلترة سريعة + مقارنة نصية أولاً
         const productDesc = product.description.toLowerCase().trim();
         if (productDesc.length < 3) {
           // تخطي الأوصاف القصيرة جداً
         } else {
-          // مرحلة 2: مقارنة مع ممثل واحد فقط لكل مجموعة
+          // مرحلة 2: بحث سريع مع تحسينات قصوى
           for (const [unifiedId, groupProducts] of this.unifiedGroups.entries()) {
-            const representative = groupProducts[0]; // فقط الممثل الأول
-            
-            // فحص سريع للطول أولاً
+            const representative = groupProducts[0];
             const repDesc = representative.description.toLowerCase().trim();
-            if (Math.abs(productDesc.length - repDesc.length) > productDesc.length * 0.5) {
-              continue; // تخطي إذا كان الفرق في الطول كبير جداً
+            
+            // فحص التطابق الكامل أولاً (بدون AI)
+            if (productDesc === repDesc) {
+              bestMatchScore = 1.0;
+              bestMatchId = unifiedId;
+              break;
+            }
+            
+            // فحص سريع للطول
+            if (Math.abs(productDesc.length - repDesc.length) > productDesc.length * 0.3) {
+              continue;
             }
 
-            // استخدام DeepSeek للمقارنة الدقيقة
-            const comparisonResult = await this.compareDescriptions(
-              product.description,
-              representative.description
-            );
+            // فحص الكلمات المشتركة (بدون AI)
+            const words1 = productDesc.split(/\s+/);
+            const words2 = repDesc.split(/\s+/);
+            const commonWords = words1.filter(w => words2.includes(w) && w.length > 2);
+            const similarity = commonWords.length / Math.max(words1.length, words2.length);
+            
+            if (similarity > 0.8) {
+              // استخدام AI فقط للحالات المشكوك فيها
+              const comparisonResult = await this.compareDescriptions(
+                product.description,
+                representative.description
+              );
 
-            if (comparisonResult.similar && comparisonResult.score > bestMatchScore) {
-              bestMatchScore = comparisonResult.score;
-              bestMatchId = unifiedId;
+              if (comparisonResult.similar && comparisonResult.score > bestMatchScore) {
+                bestMatchScore = comparisonResult.score;
+                bestMatchId = unifiedId;
+              }
             }
 
             // إذا وجدنا تطابق دقيق، توقف
@@ -479,10 +494,10 @@ JSON:
 
         this.processedItems.push(product);
 
-        // تجميع الكتابة للعمليات المجمعة (كل 100 بند)
-        if (i % 100 === 99 || i === products.length - 1) {
-          // كتابة مجمعة للآخر 100 بند
-          const batchUpdates = this.processedItems.slice(-Math.min(100, this.processedItems.length))
+        // تجميع الكتابة السريع (كل 50 بند)
+        if (i % 50 === 49 || i === products.length - 1) {
+          // كتابة مجمعة سريعة للآخر 50 بند
+          const batchUpdates = this.processedItems.slice(-Math.min(50, this.processedItems.length))
             .map(item => [item.unifiedId]);
           
           const startRow = Math.max(2, product.rowIndex - batchUpdates.length + 1);
