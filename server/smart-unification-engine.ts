@@ -138,7 +138,7 @@ export class SmartUnificationEngine extends EventEmitter {
 - الاستخدام والتطبيق
 
 أجب بـ "نعم" إذا كانا نفس المنتج أو "لا" إذا كانا مختلفين.
-أضف شرح مختصر جداً (كلمتين أو ثلاث) عن السبب.
+أضف شرح مختصر جداً (كلمتين أو ثلاث) عن السبب.`;
 
       const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
