@@ -7448,29 +7448,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   });
 
   // جلب جميع الصلاحيات من Google Sheets
-  app.get("/api/permissions", requireAuth, async (req: Request, res: Response) => {
+  app.get("/api/permissions", requireAuth, requireRole(["manager", "it_admin"]), async (req: Request, res: Response) => {
     try {
-      // السماح لجميع المستخدمين المسجلين بعرض الصلاحيات
-      if (!req.session.user) {
-        return res.status(401).json({
-          success: false,
-          message: "غير مصرح - يجب تسجيل الدخول"
-        });
-      }
-      
-      const userRole = req.session.user.role;
-      const hasAccess = userRole === 'manager' || 
-                       userRole === 'it_admin' || 
-                       req.session.user.permissions?.includes('perm-036') ||
-                       req.session.user.permissions?.includes('admin.userManagement');
-      
-      if (!hasAccess) {
-        return res.status(403).json({
-          success: false,
-          message: "لا توجد صلاحيات كافية لعرض هذه الصفحة"
-        });
-      }
-      
       console.log('🔐 جلب الصلاحيات من Google Sheets...');
       const permissions = await usersGoogleSheetsManager.getAllPermissions();
       
@@ -7484,32 +7463,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       res.status(500).json({
         success: false,
         message: "خطأ في الوصول إلى بيانات الصلاحيات"
-      });
-    }
-  });
-
-  // تحديث الصلاحيات الافتراضية في Google Sheets
-  app.post("/api/permissions/update-defaults", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
-    try {
-      console.log('🔄 تحديث الصلاحيات الافتراضية...');
-      const updated = await usersGoogleSheetsManager.updateDefaultPermissions();
-      
-      if (updated) {
-        res.json({
-          success: true,
-          message: "تم تحديث الصلاحيات الافتراضية بنجاح"
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: "فشل تحديث الصلاحيات"
-        });
-      }
-    } catch (error) {
-      console.error('❌ خطأ في تحديث الصلاحيات:', error);
-      res.status(500).json({
-        success: false,
-        message: "خطأ في تحديث الصلاحيات الافتراضية"
       });
     }
   });
