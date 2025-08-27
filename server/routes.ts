@@ -7161,20 +7161,30 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // بدء عملية التوحيد الذكي مع Google Sheets
   app.post("/api/unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { googleSheetsUnification } = await import('./google-sheets-unification.js');
-      const result = await googleSheetsUnification.startUnification();
+      // استخدام المنطق الصحيح للتوحيد
+      const { CompleteUnificationFix } = await import('./complete-unification-fix.js');
+      const fixedUnification = new CompleteUnificationFix();
+      
+      // بدء عملية التوحيد الصحيحة والكتابة إلى Google Sheets
+      const result = await fixedUnification.runCompleteUnification();
       
       if (result.success) {
-        await logActivity(req, "start_unification", "unification", "google-sheets", result.message);
+        await logActivity(req, "start_unification", "unification", "google-sheets", 
+          `تم توحيد ${result.totalItems} بند في ${result.groups} مجموعة`);
       }
 
-      res.json(result);
+      res.json({
+        success: true,
+        message: `تم التوحيد بنجاح: ${result.groups} مجموعة من ${result.totalItems} بند`,
+        groups: result.groups,
+        totalItems: result.totalItems
+      });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ خطأ في بدء التوحيد:', error);
       res.status(500).json({
         success: false,
-        message: "خطأ في بدء عملية التوحيد"
+        message: error.message || "خطأ في بدء عملية التوحيد"
       });
     }
   });
