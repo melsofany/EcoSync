@@ -21,42 +21,60 @@ export class CustomerPricingUpdater {
       // قراءة البيانات الحالية من ورقة DATA
       const response = await this.googleSheets.sheets.spreadsheets.values.get({
         spreadsheetId: this.googleSheets.spreadsheetId,
-        range: `${sheetName}!A1:S20000` // قراءة حتى 20000 صف لضمان قراءة كل البيانات
+        range: `${sheetName}!A:S` // قراءة كل الصفوف بدون تحديد نطاق
       });
 
       const rows = response.data.values || [];
       console.log(`📊 عدد الصفوف المقروءة من DATA: ${rows.length}`);
+      
+      // التأكد من قراءة كل الصفوف
+      if (rows.length < 600) {
+        console.error(`⚠️ تحذير: تم قراءة ${rows.length} صف فقط، قد تكون البيانات ناقصة`);
+      }
       
       // البحث عن الصف المطابق بناءً على معرف البند
       let targetRowIndex = -1;
       let foundRows = [];
       let lastCheckedRow = 0;
       
+      // محاولة البحث بطرق مختلفة للتأكد من العثور على البند
+      console.log(`🔎 البحث عن البند: "${itemId}" (طول: ${itemId.length} حرف)`);
+      
       for (let i = 1; i < rows.length; i++) { // البداية من الصف 2 (تخطي الرؤوس)
         const itemNumber = (rows[i][0] || '').toString().trim(); // العمود A - معرف البند
         const rfqCol = (rows[i][5] || '').toString().trim(); // العمود F - RFQ
+        const dateCol = (rows[i][6] || '').toString().trim(); // العمود G - التاريخ
         lastCheckedRow = i + 1;
         
-        // طباعة تفاصيل للصفوف الأخيرة
-        if (i >= rows.length - 15) {
-          console.log(`🔍 الصف ${i + 1}: البند="${itemNumber}", RFQ="${rfqCol}"`);
-        }
+        // مقارنة مباشرة مع تنظيف كامل
+        const itemIdClean = itemId.replace(/\s+/g, '').toUpperCase();
+        const itemNumberClean = itemNumber.replace(/\s+/g, '').toUpperCase();
         
-        // مقارنة دقيقة مع تنظيف المسافات
-        if (itemNumber && itemNumber.toUpperCase() === itemId.trim().toUpperCase()) {
+        // المطابقة الدقيقة
+        if (itemNumberClean === itemIdClean) {
           foundRows.push({
             index: i + 1,
             rfq: rfqCol || '',
             hasCustomerPrice: !!(rows[i][8]) // العمود I - سعر العميل
           });
-          console.log(`📍 وجد البند ${itemId} في الصف ${i + 1} مع RFQ="${rfqCol}"`);
+          console.log(`✅ وجد البند ${itemId} في الصف ${i + 1} | RFQ="${rfqCol}" | التاريخ="${dateCol}"`);
           
           // إذا كان لدينا RFQ محدد، نبحث عن تطابق كامل
           if (rfqNumber && rfqCol === rfqNumber.trim()) {
             targetRowIndex = i + 1;
-            console.log(`✅ وجد تطابق كامل في الصف ${targetRowIndex} للبند ${itemId} مع RFQ ${rfqNumber}`);
+            console.log(`🎯 تطابق كامل! الصف ${targetRowIndex} للبند ${itemId} مع RFQ ${rfqNumber}`);
             break;
           }
+        } 
+        // البحث عن التواريخ أيضاً (للبنود بدون معرف P-)
+        else if (dateCol === itemId || (dateCol && itemId.includes(dateCol))) {
+          console.log(`📅 وجد تطابق بالتاريخ في الصف ${i + 1}: التاريخ="${dateCol}" مع البند="${itemNumber}"`);
+          foundRows.push({
+            index: i + 1,
+            rfq: rfqCol || '',
+            hasCustomerPrice: !!(rows[i][8]),
+            isDateMatch: true
+          });
         }
       }
       
