@@ -175,9 +175,25 @@ JSON فقط:
       }
 
       const data = await response.json();
-      const content = data.choices[0].message.content;
-      const result: DeepSeekResponse = JSON.parse(content);
-      return result;
+      const content = data.choices[0].message.content.trim();
+      
+      try {
+        const result: DeepSeekResponse = JSON.parse(content);
+        return result;
+      } catch (parseError) {
+        // إذا فشل تحليل JSON، حاول استخراج البيانات من النص
+        console.log('فشل تحليل JSON، محاولة استخراج البيانات:', content);
+        
+        const similar = content.toLowerCase().includes('true') || 
+                       content.includes('متشابه') || 
+                       content.includes('نفس');
+        
+        return {
+          similar,
+          score: similar ? 0.8 : 0.2,
+          reason: 'تحليل نصي بديل'
+        };
+      }
 
     } catch (error) {
       console.error('فشل في استدعاء DeepSeek API:', error);
@@ -350,18 +366,22 @@ JSON فقط:
         this.status.processed = i + 1;
         this.status.progress = (this.status.processed / this.status.total) * 100;
 
-        // تحديث الوقت المتبقي المقدر
-        if (i > 0) {
+        // تحديث الوقت المتبقي المقدر (بالثواني)
+        if (i > 10) { // بدء التقدير بعد 10 عناصر لدقة أفضل
           const elapsedTime = new Date().getTime() - new Date(this.status.startTime).getTime();
-          const timePerItem = elapsedTime / i;
-          this.status.estimatedTimeRemaining = (products.length - i) * timePerItem;
+          const avgTimePerItem = elapsedTime / i;
+          const remainingItems = products.length - i;
+          this.status.estimatedTimeRemaining = Math.round((remainingItems * avgTimePerItem) / 1000); // بالثواني
+        } else {
+          this.status.estimatedTimeRemaining = 0;
         }
 
-        // عرض التقدم كل 250 بند مع سرعة
+        // عرض التقدم كل 250 بند مع سرعة والوقت المتبقي
         if (i % 250 === 0 && i > 0) {
           const elapsed = Date.now() - new Date(this.status.startTime).getTime();
           const speed = Math.round((i / elapsed) * 1000 * 60); // عناصر/دقيقة
-          console.log(`⚡ معالجة سريعة: ${i}/${products.length} (${speed} بند/دقيقة) - AI: ${this.status.aiCallCount}`);
+          const remainingMinutes = Math.round(this.status.estimatedTimeRemaining / 60);
+          console.log(`⚡ معالجة سريعة: ${i}/${products.length} (${speed} بند/دقيقة) - متبقي: ${remainingMinutes}م - AI: ${this.status.aiCallCount}`);
         }
 
         // البحث السريع عن تطابق مع التحسينات
