@@ -2457,42 +2457,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/monitor/start", async (req: Request, res: Response) => {
     try {
-      // إنشاء محرك جديد فقط إذا لم يكن موجودا أو إعادة تعيينه إذا كان موجودا
-      if (!smartEngine) {
-        const { SmartUnificationEngine } = await import('./smart-unification-engine');
-        smartEngine = new SmartUnificationEngine();
-      } else {
-        // إعادة تعيين الحالة للبدء من جديد
-        smartEngine.resetStats();
-      }
+      console.log('🚀 بدء نظام التوحيد الذكي الجديد...');
       
-      console.log('🚀 محاولة بدء التوحيد الذكي...');
+      // استخدام child_process لتشغيل نظام التوحيد الجديد
+      const { spawn } = await import('child_process');
       
-      // بدء التوحيد الذكي المتقدم بشكل غير متزامن
-      smartEngine.startSmartUnification()
-        .then(() => {
-          console.log('✅ اكتمل التوحيد الذكي بنجاح');
-        })
-        .catch((error: any) => {
-          console.error('❌ خطأ في التوحيد الذكي:', error);
-          console.error('تفاصيل الخطأ:', error.message);
-          if (error.response) {
-            console.error('استجابة الخطأ:', error.response.data);
-          }
-        });
+      // تشغيل ملف التوحيد الجديد
+      const unificationProcess = spawn('node', ['unification-system.mjs'], {
+        cwd: process.cwd(),
+        env: process.env,
+        detached: true,
+        stdio: 'inherit'
+      });
       
-      // انتظار قليل للتأكد من بدء العملية
-      await new Promise(resolve => setTimeout(resolve, 500));
+      unificationProcess.on('error', (error) => {
+        console.error('❌ خطأ في تشغيل التوحيد:', error);
+      });
+      
+      unificationProcess.on('exit', (code) => {
+        console.log(`✅ انتهت عملية التوحيد مع الكود: ${code}`);
+      });
+      
+      // فصل العملية عن العملية الأساسية
+      unificationProcess.unref();
       
       res.json({
         success: true,
-        message: "تم بدء التوحيد الذكي المتقدم - تحقق من السجلات لمتابعة التقدم"
+        message: "تم بدء نظام التوحيد الذكي الجديد - تحقق من السجلات لمتابعة التقدم"
       });
     } catch (error: any) {
-      console.error('❌ خطأ في إنشاء محرك التوحيد:', error);
+      console.error('❌ خطأ في بدء التوحيد:', error);
       res.status(500).json({
         success: false,
-        message: "خطأ في بدء التوحيد الذكي: " + error.message
+        message: "خطأ في بدء التوحيد: " + error.message
       });
     }
   });
