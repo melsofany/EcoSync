@@ -127,11 +127,16 @@ export class SemanticUnificationService {
 
   // مقارنة نصية محسنة وسريعة
   private basicTextComparison(item1: any, item2: any): { similar: boolean, score: number, reason: string } {
-    const part1 = (item1.partNumber || '').toUpperCase().replace(/\s+/g, '');
-    const part2 = (item2.partNumber || '').toUpperCase().replace(/\s+/g, '');
+    const part1 = (item1.partNumber || '').toUpperCase().replace(/\s+/g, '').trim();
+    const part2 = (item2.partNumber || '').toUpperCase().replace(/\s+/g, '').trim();
     
-    // مقارنة أرقام القطع (الأولوية العليا)
-    if (part1 && part2 && part1.length > 3 && part2.length > 3) {
+    // تجاهل القيم العامة والفارغة
+    const invalidParts = ['', 'EACH', 'PCS', 'PIECE', 'ITEM', 'N/A', 'NA', '-', '0'];
+    const isPart1Valid = part1 && !invalidParts.includes(part1) && part1.length > 2;
+    const isPart2Valid = part2 && !invalidParts.includes(part2) && part2.length > 2;
+    
+    // مقارنة أرقام القطع (الأولوية العليا) - فقط إذا كانت صالحة
+    if (isPart1Valid && isPart2Valid) {
       // نفس الرقم تماماً
       if (part1 === part2) {
         return { similar: true, score: 1.0, reason: 'رقم قطعة مطابق' };
@@ -145,7 +150,7 @@ export class SemanticUnificationService {
       }
       
       // رقم قطعة يحتوي على الآخر
-      if (part1.includes(part2) || part2.includes(part1)) {
+      if (part1.length > 4 && part2.length > 4 && (part1.includes(part2) || part2.includes(part1))) {
         return { similar: true, score: 0.9, reason: 'رقم قطعة متضمن' };
       }
     }
@@ -275,6 +280,18 @@ export class SemanticUnificationService {
       let groupCounter = 1;
 
       console.log('⚡ نظام التوحيد السريع: مقارنة نصية محسنة + AI انتقائي');
+      console.log('🧹 مسح البيانات السابقة من العمود A...');
+      
+      // مسح العمود A أولاً
+      try {
+        await this.sheets.spreadsheets.values.clear({
+          spreadsheetId: this.spreadsheetId,
+          range: 'DATA!A2:A',
+        });
+        console.log('✅ تم مسح البيانات السابقة');
+      } catch (error) {
+        console.log('⚠️ تعذر مسح البيانات السابقة:', error);
+      }
 
       for (let i = 0; i < items.length; i++) {
         while (this.isPaused && this.isRunning) {
