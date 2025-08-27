@@ -852,7 +852,7 @@ export class GoogleSheetsRealtimeData {
 
       const dataResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z10000', // نقرأ حتى الصف 10000 لنضمن قراءة الصف 5577
+        range: 'DATA!A2:Z20000', // نقرأ حتى الصف 20000 لضمان قراءة كل البيانات
       });
 
       const dataRows = dataResponse.data.values || [];
@@ -957,7 +957,7 @@ export class GoogleSheetsRealtimeData {
       // ثانياً: البحث في صفحة DATA للحصول على LINE ITEM إذا لم يكن موجوداً
       const dataResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:Z80000', // قراءة أول 80,000 صف
+        range: 'DATA!A2:Z20000', // نقرأ حتى الصف 20000 لضمان قراءة كل البيانات
       });
 
       const dataRows = dataResponse.data.values || [];

@@ -21,7 +21,7 @@ export class CustomerPricingUpdater {
       // قراءة البيانات الحالية من ورقة DATA
       const response = await this.googleSheets.sheets.spreadsheets.values.get({
         spreadsheetId: this.googleSheets.spreadsheetId,
-        range: `${sheetName}!A:S`
+        range: `${sheetName}!A1:S20000` // قراءة حتى 20000 صف لضمان قراءة كل البيانات
       });
 
       const rows = response.data.values || [];
@@ -37,12 +37,13 @@ export class CustomerPricingUpdater {
         const rfqCol = (rows[i][5] || '').toString().trim(); // العمود F - RFQ
         lastCheckedRow = i + 1;
         
-        // طباعة تفاصيل البحث للصفوف القريبة من 5577
-        if (i >= 5575 && i <= 5580) {
-          console.log(`🔍 الصف ${i + 1}: البند="${itemNumber}", RFQ="${rfqCol}" (يُبحث عن: البند="${itemId}", RFQ="${rfqNumber}")`);
+        // طباعة تفاصيل للصفوف الأخيرة
+        if (i >= rows.length - 15) {
+          console.log(`🔍 الصف ${i + 1}: البند="${itemNumber}", RFQ="${rfqCol}"`);
         }
         
-        if (itemNumber === itemId.trim()) {
+        // مقارنة دقيقة مع تنظيف المسافات
+        if (itemNumber && itemNumber.toUpperCase() === itemId.trim().toUpperCase()) {
           foundRows.push({
             index: i + 1,
             rfq: rfqCol || '',
