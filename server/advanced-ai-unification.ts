@@ -298,14 +298,14 @@ export class AdvancedAIUnificationService {
             representativeItem.partNumber
           );
 
-          // عتبة التشابه 85% للتوحيد
-          if (similarity >= 0.85 && similarity > bestSimilarity) {
+          // عتبة التشابه 70% للتوحيد الذكي (لضمان توحيد البنود المتشابهة)
+          if (similarity >= 0.70 && similarity > bestSimilarity) {
             bestSimilarity = similarity;
             bestGroupKey = groupKey;
           }
         }
 
-        if (bestSimilarity >= 0.85) {
+        if (bestSimilarity >= 0.70) {
           // إضافة للمجموعة الموجودة
           assignedGroup = bestGroupKey;
           groups.get(bestGroupKey)!.push(currentItem);
