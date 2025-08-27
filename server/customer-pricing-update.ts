@@ -16,35 +16,126 @@ export class CustomerPricingUpdater {
   }): Promise<void> {
     try {
       const sheetName = 'DATA';
-      console.log(`🔄 تحديث سعر العميل للبند ${itemId} مع RFQ ${rfqNumber} في ورقة DATA`);
+      console.log(`🔄 تحديث سعر العميل للبند ${itemId} مع RFQ ${rfqNumber || 'بدون RFQ'} في ورقة DATA`);
 
       // قراءة البيانات الحالية من ورقة DATA
       const response = await this.googleSheets.sheets.spreadsheets.values.get({
         spreadsheetId: this.googleSheets.spreadsheetId,
-        range: `${sheetName}!A:Q`
+        range: `${sheetName}!A:S`
       });
 
       const rows = response.data.values || [];
       
-      // البحث عن الصف المطابق بناءً على معرف البند ورقم RFQ
+      // البحث عن الصف المطابق بناءً على معرف البند
       let targetRowIndex = -1;
+      let foundRows = [];
+      
       for (let i = 1; i < rows.length; i++) { // البداية من الصف 2 (تخطي الرؤوس)
         const itemNumber = rows[i][0]; // العمود A - معرف البند
         const rfqCol = rows[i][5]; // العمود F - RFQ
         
-        if (itemNumber === itemId && rfqCol === rfqNumber) {
-          targetRowIndex = i + 1; // +1 للحصول على رقم الصف الفعلي
-          console.log(`✅ وجد الصف ${targetRowIndex} للبند ${itemId} مع RFQ ${rfqNumber}`);
-          break;
+        if (itemNumber === itemId) {
+          foundRows.push({
+            index: i + 1,
+            rfq: rfqCol || '',
+            hasCustomerPrice: !!(rows[i][8]) // العمود I - سعر العميل
+          });
+          
+          // إذا كان لدينا RFQ محدد، نبحث عن تطابق كامل
+          if (rfqNumber && rfqCol === rfqNumber) {
+            targetRowIndex = i + 1;
+            console.log(`✅ وجد تطابق كامل في الصف ${targetRowIndex} للبند ${itemId} مع RFQ ${rfqNumber}`);
+            break;
+          }
+        }
+      }
+      
+      // إذا لم نجد تطابق كامل، نستخدم أول صف للبند بدون سعر عميل
+      if (targetRowIndex === -1 && foundRows.length > 0) {
+        // نبحث عن أول صف بدون سعر عميل
+        const emptyPriceRow = foundRows.find(r => !r.hasCustomerPrice);
+        if (emptyPriceRow) {
+          targetRowIndex = emptyPriceRow.index;
+          console.log(`⚠️ لم يوجد تطابق RFQ، استخدام الصف ${targetRowIndex} بدون سعر عميل`);
+        } else {
+          // إذا كل الصفوف لديها أسعار، نستخدم أول صف
+          targetRowIndex = foundRows[0].index;
+          console.log(`⚠️ كل الصفوف لديها أسعار، استخدام الصف الأول ${targetRowIndex}`);
         }
       }
 
+      // إذا لم نجد البند، نضيفه كصف جديد
       if (targetRowIndex === -1) {
-        console.error(`❌ لم يتم العثور على البند ${itemId} مع RFQ ${rfqNumber} في ورقة DATA`);
-        throw new Error(`Item ${itemId} with RFQ ${rfqNumber} not found in DATA sheet`);
+        console.log(`⚠️ البند ${itemId} غير موجود في ورقة DATA، سيتم إضافته`);
+        
+        // البحث عن بيانات البند من صفحة تسعير العملاء
+        const customerResponse = await this.googleSheets.sheets.spreadsheets.values.get({
+          spreadsheetId: this.googleSheets.spreadsheetId,
+          range: 'تسعير_العملاء!A:Q'
+        });
+        
+        const customerRows = customerResponse.data.values || [];
+        let itemData = null;
+        
+        for (let i = 1; i < customerRows.length; i++) {
+          if (customerRows[i][0] === itemId) {
+            itemData = {
+              itemNumber: customerRows[i][0] || itemId,
+              uom: customerRows[i][1] || 'EACH',
+              lineItem: '', // سيكون فارغًا للبنود الجديدة
+              partNumber: customerRows[i][2] || '',
+              description: customerRows[i][3] || '',
+              rfqNumber: rfqNumber || customerRows[i][5] || '',
+              requestDate: customerRows[i][6] || '',
+              quantity: customerRows[i][7] || '1',
+              clientName: customerRows[i][10] || ''
+            };
+            break;
+          }
+        }
+        
+        if (!itemData) {
+          throw new Error(`لم يتم العثور على بيانات البند ${itemId}`);
+        }
+        
+        // إضافة صف جديد في DATA
+        const newRow = [
+          itemData.itemNumber,  // A - معرف البند
+          itemData.uom,         // B - الوحدة
+          itemData.lineItem,    // C - LINE ITEM
+          itemData.partNumber,  // D - رقم القطعة
+          itemData.description, // E - الوصف
+          itemData.rfqNumber,   // F - RFQ
+          itemData.requestDate, // G - تاريخ الطلب
+          itemData.quantity,    // H - الكمية
+          pricingData.customerUnitPrice || '', // I - سعر العميل
+          '',                   // J - فارغ
+          '',                   // K - PO
+          '',                   // L - تاريخ PO
+          '',                   // M - كمية PO
+          '',                   // N - إجمالي PO
+          '',                   // O - فارغ
+          '',                   // P - فارغ
+          '',                   // Q - فارغ
+          '',                   // R - فارغ
+          pricingData.employeeName // S - اسم الموظف
+        ];
+        
+        // إضافة الصف الجديد
+        await this.googleSheets.sheets.spreadsheets.values.append({
+          spreadsheetId: this.googleSheets.spreadsheetId,
+          range: `${sheetName}!A:S`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [newRow]
+          }
+        });
+        
+        console.log(`✅ تم إضافة البند ${itemId} إلى ورقة DATA مع سعر العميل`);
+        return;
       }
 
-      // تحديث العمود I (سعر العميل) والعمود S (اسم الموظف)
+      // تحديث العمود I (سعر العميل) والعمود S (اسم الموظف) للصف الموجود
       const updateRequests = [];
       
       // تحديث العمود I - سعر العميل

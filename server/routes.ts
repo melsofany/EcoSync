@@ -5579,19 +5579,29 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       const pricingData = req.body;
       
-      // استخدام النظام المحسن لتحديث تسعير العملاء مع اسم الموظف
-      const { CustomerPricingUpdater } = await import('./customer-pricing-update.js');
-      const customerPricingUpdater = new CustomerPricingUpdater();
+      console.log(`📝 طلب حفظ تسعير العميل:`, {
+        itemId: pricingData.itemId,
+        rfqNumber: pricingData.rfqNumber,
+        customerUnitPrice: pricingData.customerUnitPrice
+      });
       
-      // تحديث السعر في العمود I في ورقة DATA
-      await customerPricingUpdater.updateCustomerPricingInDataSheet(
-        pricingData.itemId,
-        pricingData.rfqNumber || "",
-        {
-          customerUnitPrice: pricingData.customerUnitPrice || "",
-          employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
-        }
-      );
+      // محاولة الحفظ في صفحة DATA أولاً
+      try {
+        const { CustomerPricingUpdater } = await import('./customer-pricing-update.js');
+        const customerPricingUpdater = new CustomerPricingUpdater();
+        
+        await customerPricingUpdater.updateCustomerPricingInDataSheet(
+          pricingData.itemId,
+          pricingData.rfqNumber || "",
+          {
+            customerUnitPrice: pricingData.customerUnitPrice || "",
+            employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
+          }
+        );
+      } catch (dataError) {
+        console.warn(`⚠️ لم يتم العثور على البند في صفحة DATA، سيتم الحفظ في صفحة تسعير العملاء فقط`);
+        // في حالة فشل الحفظ في DATA، نستمر ونحفظ في صفحة تسعير العملاء
+      }
       
       await logActivity(req, "create_customer_pricing", "pricing", pricingData.itemId, 
         `Added customer pricing for item ${pricingData.itemId} by ${req.session.user?.fullName || req.session.user?.username}`);
