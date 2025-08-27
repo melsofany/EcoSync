@@ -183,6 +183,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "admin",
     },
     {
+      title: "توحيد البيانات بالAI",
+      href: "/ai-data-unification",
+      icon: Merge,
+      section: "admin",
+    },
+    {
       title: "الأوامر الصوتية",
       href: "/voice-control",
       icon: Mic,

@@ -31,6 +31,7 @@ import TelegramBot from "@/pages/TelegramBot";
 import { VoiceControlPage } from "@/pages/VoiceControlPage";
 import SimpleUserPermissions from "@/pages/SimpleUserPermissions";
 import GeneralAdmin from "@/pages/GeneralAdmin";
+import AIDataUnification from "@/pages/AIDataUnification";
 
 function Router() {
   const { user, isLoading } = useAuth();
@@ -79,6 +80,7 @@ function Router() {
         <Route path="/admin" component={GeneralAdmin} />
         <Route path="/telegram-bot" component={TelegramBot} />
         <Route path="/voice-control" component={VoiceControlPage} />
+        <Route path="/ai-data-unification" component={AIDataUnification} />
         <Route path="/user-permissions" component={SimpleUserPermissions} />
 
         <Route path="/change-password" component={ChangePassword} />

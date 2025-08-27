@@ -402,10 +402,10 @@ export default function Dashboard() {
               </p>
               <div className="flex items-center space-x-4 space-x-reverse">
                 <Button
-                  onClick={() => window.location.href = '/data-unification'}
-                  className="flex items-center space-x-2 space-x-reverse"
+                  onClick={() => window.location.href = '/ai-data-unification'}
+                  className="flex items-center space-x-2 space-x-reverse bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  <Database className="h-4 w-4" />
+                  <Brain className="h-4 w-4" />
                   <span>الانتقال لشاشة التوحيد</span>
                 </Button>
                 <div className="text-xs text-gray-500">
