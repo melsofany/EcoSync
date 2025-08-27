@@ -7100,9 +7100,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🎯 طلب حالة التوحيد الذكي...');
       
-      // جلب حالة التوحيد من خدمة التوحيد البسيط
-      const { semanticUnification } = await import('./semantic-unification.js');
-      const status = semanticUnification.getStatus();
+      // جلب حالة التوحيد من خدمة التوحيد في الخلفية
+      const { backgroundUnification } = await import('./background-unification.js');
+      const status = backgroundUnification.getAutoStatus();
       
       res.json({
         isRunning: status.isRunning || false,
@@ -7173,23 +7173,19 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🤖 بدء التوحيد الذكي بـ DeepSeek AI من المستخدم:', req.session?.user?.username);
       
-      const { semanticUnification } = await import('./semantic-unification.js');
-      const result = await semanticUnification.runSemanticUnification();
+      const { backgroundUnification } = await import('./background-unification.js');
       
-      if (result.success) {
-        await logActivity(req, "start_ai_unification", "ai_unification", "deepseek", "بدء التوحيد الذكي بـ DeepSeek AI");
-        
-        res.json({
-          success: true,
-          message: "تم بدء التوحيد الذكي بـ DeepSeek AI بنجاح",
-          sessionId: result.sessionId || Date.now().toString()
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          message: result.message || "فشل في بدء التوحيد"
-        });
-      }
+      // بدء التوحيد في الخلفية
+      await backgroundUnification.startAutoUnification();
+      
+      await logActivity(req, "start_ai_unification", "ai_unification", "deepseek", "بدء التوحيد الذكي التلقائي بـ DeepSeek AI");
+      
+      res.json({
+        success: true,
+        message: "تم بدء التوحيد الذكي التلقائي في الخلفية بنجاح - سيعمل حتى لو تم إغلاق المتصفح",
+        sessionId: Date.now().toString(),
+        backgroundMode: true
+      });
 
     } catch (error) {
       console.error('خطأ في بدء التوحيد الذكي:', error);
@@ -7204,8 +7200,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إيقاف التوحيد مؤقتاً
   app.post("/api/ai-unification/pause", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { semanticUnification } = await import('./semantic-unification.js');
-      semanticUnification.pause();
+      const { backgroundUnification } = await import('./background-unification.js');
+      backgroundUnification.pauseAutoUnification();
       
       await logActivity(req, "pause_ai_unification", "ai_unification", "deepseek", "إيقاف التوحيد الذكي مؤقتاً");
       
@@ -7227,8 +7223,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // استئناف التوحيد
   app.post("/api/ai-unification/resume", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { semanticUnification } = await import('./semantic-unification.js');
-      semanticUnification.resume();
+      const { backgroundUnification } = await import('./background-unification.js');
+      backgroundUnification.resumeAutoUnification();
       
       await logActivity(req, "resume_ai_unification", "ai_unification", "deepseek", "استئناف التوحيد الذكي");
       
@@ -7250,8 +7246,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إيقاف التوحيد نهائياً
   app.post("/api/ai-unification/stop", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { semanticUnification } = await import('./semantic-unification.js');
-      semanticUnification.stop();
+      const { backgroundUnification } = await import('./background-unification.js');
+      backgroundUnification.stopAutoUnification();
       
       await logActivity(req, "stop_ai_unification", "ai_unification", "deepseek", "إيقاف التوحيد الذكي نهائياً");
       
