@@ -340,6 +340,47 @@ export class SmartUnificationEngine extends EventEmitter {
       .replace(/[^\w\d]/g, '');
   }
 
+  // تحديد نوع المنتج لمنع التطابقات الخاطئة
+  private getProductType(description: string): string | null {
+    const desc = description.toUpperCase();
+    
+    // قائمة بأنواع المنتجات المختلفة من البيانات
+    const productTypes = {
+      'PLUG': ['PLUG', '2PIN', '3PIN', 'SOCKET', 'BEMIS'],
+      'LIGHT': ['LIGHT', 'LAMP', 'LED', 'FLASHING', 'BEACON', 'SH-264'],
+      'CONTACTOR': ['CONTACTOR', 'RELAY', 'TESYS', 'LC1D32'],
+      'VALVE': ['VALVE', 'EXPANSION', 'SOLENOID', 'R404A'],
+      'BATTERY': ['BATTERY', 'LITHIUM', 'CR2032', 'ER34615'],
+      'WATER_HEATER': ['WATER HEATER', 'ARISTON', 'THERMOR', 'RUBIS'],
+      'CABLE': ['CABLE', 'WIRE', 'CONDUCTOR', 'PROFINET'],
+      'FAN': ['FAN', 'CROSS FLOW', 'MOTOR', 'S4E420'],
+      'CAPACITOR': ['CAPACITOR', 'MFD', 'VAC', 'DUAL'],
+      'COMPRESSOR': ['COMPRESSOR', 'GMCC', 'BTU', 'ASF205'],
+      'OUTLET': ['OUTLET', 'STRIP', 'POWER STRIP'],
+      'THERMOSTAT': ['THERMOSTAT', 'TEMPERATURE', 'EGO'],
+      'MIXER': ['MIXER', 'FLOUR', 'BEATER', 'PRISMA'],
+      'GENERATOR': ['GENERATOR', 'DIESEL', 'KVA', 'APT'],
+      'SPRAY': ['SPRAY', 'WD-40', 'RUST'],
+      'AMPLIFIER': ['AMPLIFIER', 'MIXER', 'ZONE'],
+      'GASKET': ['GASKET', 'SEAL', 'RUBBER', 'O-RING'],
+      'METER': ['METER', 'ENERGY', 'PM2220'],
+      'HINGE': ['HINGE', 'DOOR', 'PANEL'],
+      'REDUCER': ['REDUCER', 'NPT', 'BRASS'],
+      'CONNECTOR': ['CONNECTOR', 'SPLICE', 'AWG'],
+      'MAGNETRON': ['MAGNETRON', 'MICROWAVE', 'GALANZ']
+    };
+    
+    for (const [type, keywords] of Object.entries(productTypes)) {
+      for (const keyword of keywords) {
+        if (desc.includes(keyword)) {
+          return type;
+        }
+      }
+    }
+    
+    return null;
+  }
+
   private normalizeDescription(description: string): string {
     return description
       .trim()
@@ -366,7 +407,7 @@ export class SmartUnificationEngine extends EventEmitter {
   }
 
   // عملية التجميع السريع بدون AI
-  private async createUnificationGroupsFast(items: UnificationItem[]): Promise<UnificationGroup[]> {
+  private async createUnificationGroupsFast(items: UnificationItem[], startingId: number = 1): Promise<UnificationGroup[]> {
     const groups: UnificationGroup[] = [];
     const processedItems = new Set<number>();
     let processedCount = 0;
@@ -377,8 +418,13 @@ export class SmartUnificationEngine extends EventEmitter {
       if (processedItems.has(i)) continue;
 
       const currentItem = items[i];
+      // استخدام المعرف الحالي إذا كان موجوداً أو إنشاء معرف جديد
+      const existingId = currentItem.currentId && currentItem.currentId.startsWith('P-') 
+        ? currentItem.currentId 
+        : null;
+      
       const group: UnificationGroup = {
-        masterId: `P-${(groups.length + 1).toString().padStart(7, '0')}`,
+        masterId: existingId || `P-${(startingId + groups.length).toString().padStart(7, '0')}`,
         items: [currentItem],
         masterPartNumber: currentItem.partNumber,
         masterDescription: currentItem.description
@@ -448,62 +494,46 @@ export class SmartUnificationEngine extends EventEmitter {
     return groups;
   }
   
-  // مقارنة سريعة بدون AI
+  // مقارنة سريعة بدون AI - أكثر صرامة لتجنب التطابقات الخاطئة
   private quickMatch(item1: UnificationItem, item2: UnificationItem): boolean {
-    // 1. تطابق LINE ITEM
+    // 1. تطابق LINE ITEM - يجب أن يكون متطابقاً تماماً 100%
     if (item1.lineItem && item2.lineItem) {
-      if (item1.lineItem.trim().toUpperCase() === item2.lineItem.trim().toUpperCase()) {
+      const clean1 = item1.lineItem.trim().toUpperCase().replace(/\s+/g, '');
+      const clean2 = item2.lineItem.trim().toUpperCase().replace(/\s+/g, '');
+      if (clean1 === clean2 && clean1.length > 5) { // يجب أن يكون LINE ITEM ذو معنى
         return true;
       }
     }
     
-    // 2. تطابق PART NUMBER بعد التنظيف
+    // 2. تطابق PART NUMBER - يجب أن يكون متطابقاً تماماً
     if (item1.partNumber && item2.partNumber) {
       const clean1 = this.normalizePartNumber(item1.partNumber);
       const clean2 = this.normalizePartNumber(item2.partNumber);
-      if (clean1 === clean2) {
-        return true;
-      }
       
-      // تحقق من احتواء أحدهما على الآخر
-      if (clean1.length > 4 && clean2.length > 4) {
-        if (clean1.includes(clean2) || clean2.includes(clean1)) {
-          // تحقق إضافي من الوصف
-          if (item1.description && item2.description) {
-            const desc1 = item1.description.toUpperCase();
-            const desc2 = item2.description.toUpperCase();
-            // البحث عن نفس الماركة
-            const brands = ['SCHNEIDER', 'SCHNIEDER', 'TELEMECANIQUE', 'ABB', 'SIEMENS'];
-            for (const brand of brands) {
-              if (desc1.includes(brand) && desc2.includes(brand)) {
-                return true;
-              }
-            }
+      // تطابق كامل فقط لل Part Number
+      if (clean1 === clean2 && clean1.length > 3) {
+        // تحقق أن الوصف متشابه أيضاً
+        if (item1.description && item2.description) {
+          const desc1 = item1.description.toUpperCase();
+          const desc2 = item2.description.toUpperCase();
+          
+          // التحقق من أن الوصف متشابه بما فيه الكفاية
+          const similarity = this.calculateTextSimilarity(
+            this.normalizeDescription(item1.description),
+            this.normalizeDescription(item2.description)
+          );
+          
+          // يجب أن يكون التشابه عالياً
+          if (similarity >= 0.8) {
+            return true;
           }
         }
       }
     }
     
-    // 3. تطابق المواصفات للمنتجات الكهربائية
-    if (item1.description && item2.description) {
-      const info1 = this.extractProductInfo(item1);
-      const info2 = this.extractProductInfo(item2);
-      
-      // إذا كان نفس الموديل
-      if (info1.model && info2.model && info1.model === info2.model) {
-        return true;
-      }
-      
-      // إذا كانت المواصفات الكهربائية متطابقة
-      const specs1 = info1.specs.sort().join(',');
-      const specs2 = info2.specs.sort().join(',');
-      if (specs1 && specs2 && specs1 === specs2) {
-        // تحقق من الماركة
-        if (this.haveSameBrand(item1.description, item2.description)) {
-          return true;
-        }
-      }
-    }
+    // 3. لا نقبل التطابق بناءً على الوصف فقط
+    // يجب أن يكون هناك LINE ITEM أو PART NUMBER للتطابق
+    // هذا لمنع تطابق بنود مختلفة تماماً مثل PLUG مع LIGHT أو CONTACTOR
     
     return false;
   }
@@ -674,6 +704,8 @@ export class SmartUnificationEngine extends EventEmitter {
       let unifiedCount = 0;
       
       // معالجة البنود على دفعات
+      let globalGroupCount = 0; // عداد عام للمجموعات
+      
       for (let i = 0; i < items.length; i += batchSize) {
         if (!this.isRunning) break;
         
@@ -687,9 +719,10 @@ export class SmartUnificationEngine extends EventEmitter {
           this.stats.currentRow = firstItem.rowIndex;
         }
         
-        // معالجة الدفعة الحالية
-        const batchGroups = await this.createUnificationGroupsFast(batch);
+        // معالجة الدفعة الحالية مع تمرير المعرف العام
+        const batchGroups = await this.createUnificationGroupsFast(batch, globalGroupCount + 1);
         groups.push(...batchGroups);
+        globalGroupCount += batchGroups.length;
         
         // تحديث الإحصائيات لكل دفعة
         this.stats.processed = Math.min(i + batch.length, items.length);
