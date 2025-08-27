@@ -32,49 +32,115 @@ export class CustomerPricingUpdater {
         console.error(`⚠️ تحذير: تم قراءة ${rows.length} صف فقط، قد تكون البيانات ناقصة`);
       }
       
-      // البحث عن الصف المطابق بناءً على معرف البند
+      // البحث عن الصف المطابق باستخدام معايير متعددة
       let targetRowIndex = -1;
       let foundRows = [];
       let lastCheckedRow = 0;
       
-      // محاولة البحث بطرق مختلفة للتأكد من العثور على البند
-      console.log(`🔎 البحث عن البند: "${itemId}" (طول: ${itemId.length} حرف)`);
+      // استخراج معلومات إضافية من البند إذا كانت متاحة
+      console.log(`🔎 البحث المتقدم عن البند: "${itemId}"`);
+      console.log(`📋 RFQ: "${rfqNumber || 'غير محدد'}"`);
+      
+      // الحصول على معلومات إضافية من البيانات الأصلية إذا توفرت
+      let searchCriteria = {
+        itemId: itemId.trim(),
+        rfq: rfqNumber ? rfqNumber.trim() : '',
+        lineItem: pricingData.lineItem || '',
+        partNumber: pricingData.partNumber || '',
+        quantity: pricingData.quantity || ''
+      };
+      
+      console.log(`🔍 معايير البحث:`, searchCriteria);
       
       for (let i = 1; i < rows.length; i++) { // البداية من الصف 2 (تخطي الرؤوس)
-        const itemNumber = (rows[i][0] || '').toString().trim(); // العمود A - معرف البند
-        const rfqCol = (rows[i][5] || '').toString().trim(); // العمود F - RFQ
-        const dateCol = (rows[i][6] || '').toString().trim(); // العمود G - التاريخ
+        const row = rows[i];
+        const itemNumber = (row[0] || '').toString().trim(); // العمود A - معرف البند
+        const lineItem = (row[2] || '').toString().trim(); // العمود C - LINE ITEM  
+        const partNumber = (row[3] || '').toString().trim(); // العمود D - Part Number
+        const rfqCol = (row[5] || '').toString().trim(); // العمود F - RFQ
+        const dateCol = (row[6] || '').toString().trim(); // العمود G - التاريخ
+        const quantity = (row[7] || '').toString().trim(); // العمود H - الكمية
         lastCheckedRow = i + 1;
         
-        // مقارنة مباشرة مع تنظيف كامل
-        const itemIdClean = itemId.replace(/\s+/g, '').toUpperCase();
-        const itemNumberClean = itemNumber.replace(/\s+/g, '').toUpperCase();
+        // نظام نقاط للمطابقة - كل معيار يحصل على نقطة
+        let matchScore = 0;
+        let matchDetails = [];
         
-        // المطابقة الدقيقة
-        if (itemNumberClean === itemIdClean) {
-          foundRows.push({
+        // 1. مطابقة معرف البند (الأولوية القصوى)
+        if (itemNumber && itemNumber.toUpperCase() === searchCriteria.itemId.toUpperCase()) {
+          matchScore += 3; // وزن أعلى لمعرف البند
+          matchDetails.push(`معرف البند: ${itemNumber}`);
+        }
+        
+        // 2. مطابقة رقم الطلب RFQ
+        if (searchCriteria.rfq && rfqCol === searchCriteria.rfq) {
+          matchScore += 2;
+          matchDetails.push(`RFQ: ${rfqCol}`);
+        }
+        
+        // 3. مطابقة LINE ITEM
+        if (searchCriteria.lineItem && lineItem && lineItem === searchCriteria.lineItem) {
+          matchScore += 2;
+          matchDetails.push(`LINE ITEM: ${lineItem}`);
+        }
+        
+        // 4. مطابقة Part Number
+        if (searchCriteria.partNumber && partNumber && 
+            partNumber.toUpperCase().includes(searchCriteria.partNumber.toUpperCase())) {
+          matchScore += 1;
+          matchDetails.push(`Part#: ${partNumber}`);
+        }
+        
+        // 5. مطابقة الكمية
+        if (searchCriteria.quantity && quantity === searchCriteria.quantity.toString()) {
+          matchScore += 1;
+          matchDetails.push(`الكمية: ${quantity}`);
+        }
+        
+        // إذا حصلنا على أي مطابقة
+        if (matchScore > 0) {
+          const rowInfo = {
             index: i + 1,
-            rfq: rfqCol || '',
-            hasCustomerPrice: !!(rows[i][8]) // العمود I - سعر العميل
-          });
-          console.log(`✅ وجد البند ${itemId} في الصف ${i + 1} | RFQ="${rfqCol}" | التاريخ="${dateCol}"`);
+            rfq: rfqCol,
+            hasCustomerPrice: !!(row[8]),
+            matchScore: matchScore,
+            matchDetails: matchDetails.join(' | ')
+          };
           
-          // إذا كان لدينا RFQ محدد، نبحث عن تطابق كامل
-          if (rfqNumber && rfqCol === rfqNumber.trim()) {
+          foundRows.push(rowInfo);
+          console.log(`📊 الصف ${i + 1}: نقاط المطابقة=${matchScore} - ${matchDetails.join(' | ')}`);
+          
+          // إذا حصلنا على مطابقة قوية (معرف البند + معيار آخر على الأقل)
+          if (matchScore >= 4) {
             targetRowIndex = i + 1;
-            console.log(`🎯 تطابق كامل! الصف ${targetRowIndex} للبند ${itemId} مع RFQ ${rfqNumber}`);
+            console.log(`🎯 مطابقة قوية! الصف ${targetRowIndex} بنقاط ${matchScore}`);
             break;
           }
-        } 
-        // البحث عن التواريخ أيضاً (للبنود بدون معرف P-)
-        else if (dateCol === itemId || (dateCol && itemId.includes(dateCol))) {
-          console.log(`📅 وجد تطابق بالتاريخ في الصف ${i + 1}: التاريخ="${dateCol}" مع البند="${itemNumber}"`);
+        }
+        
+        // البحث الإضافي بالتاريخ للبنود القديمة
+        if (!targetRowIndex && dateCol && (dateCol === itemId || itemId.includes(dateCol))) {
+          console.log(`📅 تطابق بالتاريخ في الصف ${i + 1}: ${dateCol}`);
           foundRows.push({
             index: i + 1,
-            rfq: rfqCol || '',
-            hasCustomerPrice: !!(rows[i][8]),
-            isDateMatch: true
+            rfq: rfqCol,
+            hasCustomerPrice: !!(row[8]),
+            matchScore: 1,
+            matchDetails: `تاريخ: ${dateCol}`
           });
+        }
+      }
+      
+      // إذا لم نجد مطابقة قوية، نختار أفضل مطابقة
+      if (targetRowIndex === -1 && foundRows.length > 0) {
+        // ترتيب حسب النقاط
+        foundRows.sort((a, b) => b.matchScore - a.matchScore);
+        
+        // اختيار أفضل مطابقة
+        const bestMatch = foundRows[0];
+        if (bestMatch.matchScore >= 3) {
+          targetRowIndex = bestMatch.index;
+          console.log(`✅ اختيار أفضل مطابقة: الصف ${targetRowIndex} بنقاط ${bestMatch.matchScore}`);
         }
       }
       
