@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -67,16 +68,17 @@ export default function DataUnification() {
 
   // بدء التوحيد
   const startMutation = useMutation({
-    mutationFn: async (batchSize: number) => {
-      const response = await apiRequest("POST", "/api/unification/start", {
-        batchSize
-      });
-      return response.json();
+    mutationFn: async () => {
+      console.log('🚀 بدء التوحيد بند بند...');
+      const response = await apiRequest("POST", "/api/unification/start");
+      const result = await response.json();
+      console.log('📥 نتيجة الاستجابة:', result);
+      return result;
     },
     onSuccess: () => {
       toast({
         title: "تم بدء التوحيد",
-        description: "بدأت عملية التوحيد بالذكاء الاصطناعي",
+        description: "بدأت عملية التوحيد بند بند بدقة 100%",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/unification/status"] });
     },
@@ -259,38 +261,27 @@ export default function DataUnification() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* اختيار حجم الدفعة */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                حجم الدفعة
-              </label>
-              <div className="flex gap-2">
-                {[25, 50, 100, 200].map((size) => (
-                  <Button
-                    key={size}
-                    variant={selectedBatchSize === size ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedBatchSize(size)}
-                    disabled={status?.isRunning}
-                  >
-                    {size}
-                  </Button>
-                ))}
+            {/* معلومات عن المعالجة */}
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="h-4 w-4 text-blue-600" />
+                <h4 className="text-sm font-medium text-blue-900">معالجة بند بند - دقة 100%</h4>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                حجم أصغر = دقة أكبر، حجم أكبر = سرعة أكبر
+              <p className="text-xs text-blue-700">
+                النظام يعالج كل بند مع جميع البنود الأخرى لضمان أعلى دقة.
+                قد تستغرق العملية 15-30 دقيقة للحصول على نتائج دقيقة.
               </p>
             </div>
 
             {/* الأزرار */}
             <div className="flex gap-3">
               <Button
-                onClick={() => startMutation.mutate(selectedBatchSize)}
+                onClick={() => startMutation.mutate()}
                 disabled={status?.isRunning || startMutation.isPending}
                 className="flex-1"
               >
                 <Play className="h-4 w-4 ml-2" />
-                {startMutation.isPending ? "جاري البدء..." : "بدء التوحيد"}
+                {startMutation.isPending ? "جاري البدء..." : "بدء التوحيد بند بند"}
               </Button>
               
               <Button

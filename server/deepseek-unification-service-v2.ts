@@ -11,7 +11,7 @@ class DeepSeekUnificationServiceV2 {
   private static instance: DeepSeekUnificationServiceV2;
   private sheets: any;
   private spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
-  private DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+  private DEEPSEEK_API_KEY: string | undefined;
   
   // حالة التوحيد
   private isRunning = false;
@@ -31,6 +31,7 @@ class DeepSeekUnificationServiceV2 {
 
   private constructor() {
     console.log('🚀 تهيئة خدمة التوحيد المحسّنة (بند بند)...');
+    this.DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
     this.initializeGoogleSheets();
   }
 
@@ -84,7 +85,10 @@ class DeepSeekUnificationServiceV2 {
 
     if (!this.DEEPSEEK_API_KEY) {
       console.error('❌ DEEPSEEK_API_KEY غير موجود!');
-      return { success: false, message: 'DEEPSEEK_API_KEY غير موجود في متغيرات البيئة' };
+      this.DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || '';
+      if (!this.DEEPSEEK_API_KEY) {
+        return { success: false, message: 'DEEPSEEK_API_KEY غير موجود في متغيرات البيئة' };
+      }
     }
 
     this.isRunning = true;

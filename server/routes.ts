@@ -7209,7 +7209,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // بدء عملية التوحيد الذكي مع Google Sheets
   app.post("/api/unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      console.log('🚀 طلب بدء التوحيد بند بند...');
+      console.log('🚀🚀🚀 طلب بدء التوحيد بند بند من المستخدم:', req.session?.user?.username || 'غير معروف');
       const { deepSeekUnificationServiceV2 } = await import('./deepseek-unification-service-v2.js');
       
       const result = await deepSeekUnificationServiceV2.startUnification();
