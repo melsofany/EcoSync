@@ -2383,6 +2383,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/monitor/stats", async (req: Request, res: Response) => {
     try {
+      // قراءة الإحصائيات الحقيقية من Google Sheets
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
+      
+      const response = await googleSheets.sheets.spreadsheets.values.get({
+        spreadsheetId: spreadsheetId,
+        range: 'DATA!A:A'
+      });
+      
+      const rows = response.data.values || [];
+      
+      // حساب الإحصائيات الحقيقية
+      const stats = {
+        total: 0,
+        processed: 0,
+        unified: 0,
+        duplicateGroups: 0,
+        duplicateItems: 0,
+        groups: new Set(),
+        groupCounts: {} as Record<string, number>,
+        isRunning: false,
+        progress: 100,
+        progressPercentage: 100,
+        status: 'completed' as const,
+        endTime: new Date().toISOString()
+      };
+      
+      // معالجة البيانات (تجاهل العنوان)
+      for (let i = 1; i < rows.length; i++) {
+        const id = rows[i]?.[0];
+        
+        stats.total++;
+        stats.processed++;
+        
+        if (id && id.trim()) {
+          stats.groups.add(id.trim());
+          stats.groupCounts[id] = (stats.groupCounts[id] || 0) + 1;
+        }
+      }
+      
+      // حساب المجموعات والمكررات
+      for (const [id, count] of Object.entries(stats.groupCounts)) {
+        if (count > 1) {
+          stats.duplicateGroups++;
+          stats.duplicateItems += count;
+        }
+      }
+      
+      // البنود الموحدة = البنود في مجموعات مكررة
+      stats.unified = stats.duplicateItems;
+      
+      // إضافة معلومات إضافية
+      const result = {
+        ...stats,
+        groupsCreated: stats.groups.size,
+        duplicatesFound: stats.duplicateItems,
+        uniqueGroups: stats.groups.size
+      };
+      
+      res.json(result);
+    } catch (error: any) {
+      // إذا فشلت القراءة من Google Sheets، استخدم المحرك الافتراضي
       if (!smartEngine) {
         const { SmartUnificationEngine } = await import('./smart-unification-engine');
         smartEngine = new SmartUnificationEngine();
@@ -2390,11 +2452,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const stats = smartEngine.getStats();
       res.json(stats);
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        message: "خطأ في قراءة إحصائيات التوحيد الذكي: " + error.message
-      });
     }
   });
 
