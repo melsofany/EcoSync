@@ -655,58 +655,74 @@ export class SmartUnificationEngine extends EventEmitter {
       this.emit('log', { message: `📊 تم تحميل ${items.length} صنف للمعالجة`, type: 'info' });
       console.log('📊 بدء التجميع الذكي للبنود...');
 
-      // التجميع الذكي - معالجة سريعة بدون DeepSeek أولاً
-      const groups = await this.createUnificationGroupsFast(items);
-      this.stats.groupsCreated = groups.length;
-      console.log(`✅ تم إنشاء ${groups.length} مجموعة`);
-
-      // إعداد التحديثات
+      // التجميع الذكي - معالجة تدريجية لإظهار التقدم
+      console.log('📊 بدء التجميع الذكي للبنود...');
+      
+      // معالجة البنود على دفعات لإظهار التقدم
+      const batchSize = 100; // معالجة 100 بند في كل مرة
+      const groups: UnificationGroup[] = [];
       const updates: Array<{ range: string; values: any[][] }> = [];
       let unifiedCount = 0;
-
-      let groupIndex = 0;
-      for (const group of groups) {
-        groupIndex++;
+      
+      // معالجة البنود على دفعات
+      for (let i = 0; i < items.length; i += batchSize) {
+        if (!this.isRunning) break;
+        
+        const batch = items.slice(i, Math.min(i + batchSize, items.length));
         
         // تحديث البند الحالي
-        this.currentItemName = group.masterDescription || group.masterPartNumber || `مجموعة ${groupIndex}`;
-        this.stats.currentItem = this.currentItemName;
-        
-        for (const item of group.items) {
-          if (item.currentId !== group.masterId) {
-            updates.push({
-              range: `DATA!A${item.rowIndex}`,
-              values: [[group.masterId]]
-            });
-            unifiedCount++;
-          }
-          
-          // تحديث الصف الحالي
-          this.currentRowIndex = item.rowIndex;
-          this.stats.currentRow = item.rowIndex;
+        if (batch.length > 0) {
+          const firstItem = batch[0];
+          this.currentItemName = firstItem.description || firstItem.partNumber || `بند ${i + 1}`;
+          this.stats.currentItem = this.currentItemName;
+          this.stats.currentRow = firstItem.rowIndex;
         }
         
-        this.stats.processed += group.items.length;
-        this.stats.remainingItems = Math.max(0, this.stats.total - this.stats.processed);
+        // معالجة الدفعة الحالية
+        const batchGroups = await this.createUnificationGroupsFast(batch);
+        groups.push(...batchGroups);
         
-        // حساب نسبة التقدم
-        this.stats.progress = Math.round((this.stats.processed / this.stats.total) * 100);
+        // تحديث الإحصائيات لكل دفعة
+        this.stats.processed = Math.min(i + batch.length, items.length);
+        this.stats.remainingItems = Math.max(0, items.length - this.stats.processed);
+        this.stats.progress = Math.round((this.stats.processed / items.length) * 100);
         
-        // حساب الوقت المستغرق
+        // حساب الوقت المتبقي
         if (this.stats.startTime) {
           this.stats.elapsedTime = Math.floor((new Date().getTime() - this.stats.startTime.getTime()) / 1000);
-          
-          // حساب الوقت المتبقي المتوقع
           if (this.stats.processed > 0) {
             const timePerItem = this.stats.elapsedTime / this.stats.processed;
             this.stats.estimatedTimeRemaining = Math.ceil(timePerItem * this.stats.remainingItems);
           }
         }
         
-        if (group.items.length > 1) {
-          this.stats.duplicatesFound += group.items.length - 1;
+        // إضافة التحديثات للدفعة
+        for (const group of batchGroups) {
+          for (const item of group.items) {
+            if (item.currentId !== group.masterId) {
+              updates.push({
+                range: `DATA!A${item.rowIndex}`,
+                values: [[group.masterId]]
+              });
+              unifiedCount++;
+            }
+          }
+          
+          if (group.items.length > 1) {
+            this.stats.duplicatesFound += group.items.length - 1;
+          }
         }
+        
+        // تحديث عدد المجموعات
+        this.stats.groupsCreated = groups.length;
+        
+        // انتظار قليل لإعطاء فرصة للواجهة لتحديث نفسها
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        console.log(`⏳ معالجة: ${this.stats.processed}/${items.length} (${this.stats.progress}%)`);
       }
+      
+      console.log(`✅ تم إنشاء ${groups.length} مجموعة`);
 
       this.stats.unified = unifiedCount;
 
