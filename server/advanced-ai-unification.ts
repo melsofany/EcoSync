@@ -66,19 +66,125 @@ export class AdvancedAIUnificationService {
     return [...new Set(importantWords)]; // إزالة التكرار
   }
 
-  // حساب التشابه بين نصين
-  private calculateSimilarity(desc1: string, desc2: string, part1: string, part2: string): number {
-    // تنظيف النصوص
+  // حساب التشابه بين نصين باستخدام Deep Thinking AI
+  private async calculateSimilarity(desc1: string, desc2: string, part1: string, part2: string): Promise<number> {
+    try {
+      // تحليل أولي سريع للحالات الواضحة
+      const normalizedPart1 = this.normalizeText(part1);
+      const normalizedPart2 = this.normalizeText(part2);
+      
+      // إذا كان Part Number متطابق تماماً
+      if (normalizedPart1 && normalizedPart2 && normalizedPart1 === normalizedPart2) {
+        console.log(`🎯 تطابق مباشر في Part Number: "${part1}" = "${part2}" - نسبة التشابه: 100%`);
+        return 1.0;
+      }
+
+      // استخدام DeepSeek AI مع Deep Thinking للتحليل المتقدم
+      const deepThinkingPrompt = `<think>
+أحتاج إلى تحليل عميق لهذين البندين لتحديد ما إذا كانا يمثلان نفس المنتج أم لا.
+
+البند الأول:
+- Part Number: ${part1 || 'غير محدد'}
+- التوصيف: ${desc1 || 'غير محدد'}
+
+البند الثاني:
+- Part Number: ${part2 || 'غير محدد'}
+- التوصيف: ${desc2 || 'غير محدد'}
+
+سأقوم بالتحليل التالي:
+
+1. تحليل Part Numbers:
+   - هل الرقمان يشيران لنفس المنتج؟
+   - هل أحدهما رمز تجاري والآخر رمز فني؟
+   - هل هناك أرقام مشتركة تدل على نفس العائلة؟
+   - هل الاختلاف مجرد تنسيق (مسافات، شرطات، نقاط)؟
+
+2. تحليل التوصيف الدلالي:
+   - ما هي الوظيفة الأساسية لكل بند؟
+   - هل يؤديان نفس الوظيفة؟
+   - هل هما من نفس الفئة (مثل: موصلات، مقاومات، إلخ)؟
+   - هل الاختلاف مجرد في التهجئة أو اللغة؟
+
+3. تحليل المواصفات التقنية:
+   - هل المواصفات التقنية متشابهة؟
+   - هل الجهد والتيار والقدرة متطابقة؟
+   - هل الأبعاد والمقاييس متشابهة؟
+
+4. تحليل الماركة والشركة المصنعة:
+   - هل البندان من نفس الشركة المصنعة؟
+   - هل أحدهما بديل للآخر من نفس الشركة؟
+
+5. تحليل الاستخدام والتطبيق:
+   - هل يُستخدمان في نفس التطبيق؟
+   - هل أحدهما إصدار محدث من الآخر؟
+
+بناءً على هذا التحليل العميق، سأحدد نسبة التشابه بدقة.
+</think>
+
+أنت خبير متخصص في تحليل القطع الصناعية والكهربائية. قم بتحليل عميق لهذين البندين:
+
+البند الأول:
+- Part Number: ${part1 || 'غير محدد'}
+- التوصيف: ${desc1 || 'غير محدد'}
+
+البند الثاني:  
+- Part Number: ${part2 || 'غير محدد'}
+- التوصيف: ${desc2 || 'غير محدد'}
+
+قم بالتحليل العميق التالي:
+
+1. **تحليل Part Numbers**: هل يشيران لنفس المنتج؟ (رموز تجارية vs فنية، أرقام مشتركة، تنسيق مختلف)
+
+2. **تحليل دلالي للتوصيف**: ما هي الوظيفة الأساسية؟ هل يؤديان نفس الوظيفة؟ هل من نفس الفئة؟
+
+3. **تحليل المواصفات**: جهد، تيار، قدرة، أبعاد - هل متطابقة؟
+
+4. **تحليل الشركة المصنعة**: نفس الماركة؟ بدائل؟
+
+5. **تحليل الاستخدام**: نفس التطبيق؟ إصدارات مختلفة؟
+
+أرجع نسبة التشابه من 0 إلى 1 فقط (مثل 0.95):`;
+
+      const response = await this.deepSeek.chat.completions.create({
+        model: 'deepseek-chat',
+        messages: [
+          {
+            role: 'user',
+            content: deepThinkingPrompt
+          }
+        ],
+        max_tokens: 200,
+        temperature: 0.1
+      });
+
+      const aiResponse = response.choices[0]?.message?.content?.trim() || '0';
+      const aiSimilarity = parseFloat(aiResponse.match(/\d+\.?\d*/)?.[0] || '0');
+      const normalizedSimilarity = Math.max(0, Math.min(1, aiSimilarity));
+
+      console.log(`🧠 Deep Thinking AI: "${part1}" vs "${part2}"`);
+      console.log(`   🤖 تحليل الذكاء الاصطناعي: ${aiResponse.substring(0, 100)}...`);
+      console.log(`   🎯 نسبة التشابه النهائية: ${(normalizedSimilarity * 100).toFixed(1)}%`);
+
+      return normalizedSimilarity;
+
+    } catch (error) {
+      console.error('خطأ في تحليل AI - استخدام التحليل التقليدي:', error);
+      
+      // Fallback للتحليل التقليدي
+      return this.fallbackSimilarityCalculation(desc1, desc2, part1, part2);
+    }
+  }
+
+  // دالة الاحتياطي للتحليل التقليدي
+  private fallbackSimilarityCalculation(desc1: string, desc2: string, part1: string, part2: string): number {
     const normalizedDesc1 = this.normalizeText(desc1);
     const normalizedDesc2 = this.normalizeText(desc2);
     const normalizedPart1 = this.normalizeText(part1);
     const normalizedPart2 = this.normalizeText(part2);
     
-    // استخراج الكلمات المفتاحية
     const keywords1 = this.extractKeywords(desc1);
     const keywords2 = this.extractKeywords(desc2);
     
-    // حساب تشابه Part Numbers
     let partSimilarity = 0;
     if (normalizedPart1 && normalizedPart2) {
       if (normalizedPart1 === normalizedPart2) {
@@ -86,7 +192,6 @@ export class AdvancedAIUnificationService {
       } else if (normalizedPart1.includes(normalizedPart2) || normalizedPart2.includes(normalizedPart1)) {
         partSimilarity = 0.8;
       } else {
-        // فحص الأرقام المشتركة
         const numbers1 = normalizedPart1.match(/\d+/g) || [];
         const numbers2 = normalizedPart2.match(/\d+/g) || [];
         const commonNumbers = numbers1.filter(num => numbers2.includes(num));
@@ -96,23 +201,14 @@ export class AdvancedAIUnificationService {
       }
     }
     
-    // حساب تشابه الكلمات المفتاحية
     const commonKeywords = keywords1.filter(word => keywords2.includes(word));
     const totalKeywords = new Set([...keywords1, ...keywords2]).size;
     const keywordSimilarity = totalKeywords > 0 ? commonKeywords.length / totalKeywords : 0;
     
-    // حساب تشابه النص الكامل
     const textSimilarity = this.levenshteinSimilarity(normalizedDesc1, normalizedDesc2);
-    
-    // الوزن النهائي
     const finalScore = (partSimilarity * 0.4) + (keywordSimilarity * 0.4) + (textSimilarity * 0.2);
     
-    console.log(`🔍 مقارنة: "${part1}" vs "${part2}"`);
-    console.log(`   📊 تشابه Part Number: ${(partSimilarity * 100).toFixed(1)}%`);
-    console.log(`   🔤 تشابه الكلمات: ${(keywordSimilarity * 100).toFixed(1)}%`);
-    console.log(`   📝 تشابه النص: ${(textSimilarity * 100).toFixed(1)}%`);
-    console.log(`   🎯 النتيجة النهائية: ${(finalScore * 100).toFixed(1)}%`);
-    
+    console.log(`🔄 التحليل التقليدي: "${part1}" vs "${part2}" - ${(finalScore * 100).toFixed(1)}%`);
     return finalScore;
   }
 
@@ -291,7 +387,7 @@ export class AdvancedAIUnificationService {
         for (const [groupKey, groupItems] of groups.entries()) {
           const representativeItem = groupItems[0]; // استخدام أول عنصر كممثل للمجموعة
           
-          const similarity = this.calculateSimilarity(
+          const similarity = await this.calculateSimilarity(
             currentItem.description,
             representativeItem.description,
             currentItem.partNumber,
