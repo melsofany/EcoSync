@@ -309,29 +309,24 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
     const kwScore = inter.length / Math.max(1, new Set([...A, ...B]).size);
     const textScore = (s * 0.6) + (kwScore * 0.4);
     
-    // Only call AI for uncertain cases (between 0.5 and 0.75)
-    if (textScore >= 0.75) {
-      this.textOnlyCount++;
-      return { score: textScore, sameProductByAI: false, canonicalPart: np1 || np2 || null };
-    }
-    if (textScore <= 0.5) {
-      this.textOnlyCount++;
-      return { score: textScore, sameProductByAI: false, canonicalPart: null };
+    // HYPER SPEED: NO AI AT ALL - pure text analysis only
+    // Only use AI if we have 95%+ similarity AND specific vendor patterns
+    const hasSchneiderPattern = /LC1D|TELEMECANIQUE|SCHNEIDER|21020\d{2}/i.test(desc1 + ' ' + desc2);
+    
+    if (textScore >= 0.95 && hasSchneiderPattern) {
+      // Ultra-rare case: very high similarity + Schneider pattern - use AI
+      this.aiCallCount++;
+      const ai = await this.deepseekJudge(desc1, part1, desc2, part2);
+      if (ai && ai.sameProduct && ai.confidence >= 0.80) {
+        return { score: Math.max(0.90, ai.confidence), sameProductByAI: true, canonicalPart: ai.canonicalPart || (np1 || np2) || null };
+      }
     }
     
-    // Call AI only for borderline cases
-    this.aiCallCount++;
-    const ai = await this.deepseekJudge(desc1, part1, desc2, part2);
-    if (ai) {
-      if (ai.sameProduct && ai.confidence >= 0.75) {
-        return { score: Math.max(0.85, ai.confidence), sameProductByAI: true, canonicalPart: ai.canonicalPart || (np1 || np2) || null };
-      }
-      if (!ai.sameProduct && ai.confidence >= 0.65) {
-        return { score: 0.05, sameProductByAI: false, canonicalPart: null };
-      }
+    // Everything else - PURE SPEED, no AI
+    this.textOnlyCount++;
+    if (textScore >= 0.70) {
+      return { score: textScore, sameProductByAI: false, canonicalPart: np1 || np2 || null };
     }
-
-    // 5) Fallback to calculated text score
     return { score: textScore, sameProductByAI: false, canonicalPart: null };
   }
 
@@ -443,7 +438,7 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
       const makeGroupKey = (canonical?: string | null) =>
         canonical ? `P-${canonical}` : `P-${String(seq).padStart(7, '0')}`;
 
-      console.log('⚡ بدء التحليل السريع (AI فقط للحالات المتشابهة)...');
+      console.log('🚀 بدء التحليل فائق السرعة (99% نصي + 1% AI للحالات الحرجة)...');
 
       for (let i = 0; i < items.length; i++) {
         while (this.isPaused && this.isRunning) {
@@ -472,18 +467,16 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
             rep.partNumber
           );
 
-          // Strict acceptance:
-          // - If AI says same with high confidence OR identical alt P/Ns were found → accept immediately
-          // - Otherwise require strong similarity
-          const accept = (sameProductByAI && score >= 0.85) || score >= 0.92;
+          // Ultra-fast acceptance: much lower thresholds
+          const accept = (sameProductByAI && score >= 0.80) || score >= 0.75;
           if (accept && score > bestScore) {
             bestScore = score;
             chosenKey = gk;
             chosenCanonical = canonicalPart;
           }
 
-          // Fast rate-limit for speed
-          await this.sleep(50);
+          // Minimal delay for maximum speed
+          await this.sleep(10);
         }
 
         if (chosenKey) {
@@ -512,8 +505,8 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
           this.estimatedTimeRemaining = Math.round(remain * avg / 1000);
         }
 
-        if ((i + 1) % 200 === 0) {
-          console.log(`⚡ تقدم سريع: ${i + 1}/${this.total} صف (${((i + 1) / this.total * 100).toFixed(1)}%) - AI: ${this.aiCallCount}, نصي: ${this.textOnlyCount}`);
+        if ((i + 1) % 500 === 0) {
+          console.log(`🚀 تقدم فائق: ${i + 1}/${this.total} صف (${((i + 1) / this.total * 100).toFixed(1)}%) - AI: ${this.aiCallCount}, نصي: ${this.textOnlyCount}`);
         }
       }
 
