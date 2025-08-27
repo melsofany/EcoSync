@@ -7191,17 +7191,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Endpoint محدث لحالة التوحيد مع Google Sheets
   app.get("/api/unification/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { googleSheetsUnification } = await import('./google-sheets-unification.js');
-      const status = await googleSheetsUnification.getUnificationStatus();
-      
-      res.json({
-        status: status.status,
-        totalItems: status.totalItems,
-        unifiedItems: status.duplicateItems,
-        duplicateGroups: status.duplicateGroups,
-        progress: status.progress,
-        isRunning: status.isRunning
-      });
+      console.log('🎯 طلب حالة التوحيد...');
+      const { deepSeekUnificationService } = await import('./deepseek-unification-service.js');
+      const status = deepSeekUnificationService.getStatus();
+      console.log('✔️ حالة التوحيد:', status.isRunning ? 'يعمل' : 'متوقف');
+      res.json(status);
 
     } catch (error) {
       console.error('خطأ في جلب حالة التوحيد:', error);
@@ -7215,26 +7209,19 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // بدء عملية التوحيد الذكي مع Google Sheets
   app.post("/api/unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      // استخدام الإصلاح النهائي للتوحيد مع الكتابة المباشرة
-      const { ForceWriteUnification } = await import('./force-write-unification.js');
-      const forceUnification = new ForceWriteUnification();
+      console.log('🚀 طلب بدء التوحيد...');
+      const { batchSize = 50 } = req.body;
+      console.log(`📦 حجم الدفعة: ${batchSize}`);
+      const { deepSeekUnificationService } = await import('./deepseek-unification-service.js');
       
-      // بدء عملية التوحيد مع الكتابة المباشرة إلى Google Sheets
-      const result = await forceUnification.runForceUnification();
+      const result = await deepSeekUnificationService.startUnification(batchSize);
       
       if (result.success) {
-        await logActivity(req, "start_unification", "unification", "google-sheets", 
-          `تم توحيد ${result.totalItems} بند في ${result.groups} مجموعة`);
+        await logActivity(req, "start_unification", "unification", "deepseek", 
+          "بدء عملية التوحيد بـ DeepSeek API");
       }
 
-      res.json({
-        success: true,
-        message: `تم التوحيد بنجاح: ${result.groups} مجموعة من ${result.totalItems} بند - تم كتابة ${result.updatesWritten} معرف في Google Sheets`,
-        groups: result.groups,
-        totalItems: result.totalItems,
-        updatesWritten: result.updatesWritten,
-        totalMatches: result.totalMatches
-      });
+      res.json(result);
 
     } catch (error: any) {
       console.error('❌ خطأ في بدء التوحيد:', error);
@@ -7269,11 +7256,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إيقاف عملية التوحيد نهائياً
   app.post("/api/unification/stop", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { googleSheetsUnification } = await import('./google-sheets-unification.js');
-      const result = googleSheetsUnification.stopUnification();
+      const { deepSeekUnificationService } = await import('./deepseek-unification-service.js');
+      const result = deepSeekUnificationService.stopUnification();
       
       if (result.success) {
-        await logActivity(req, "stop_unification", "unification", "google-sheets", result.message);
+        await logActivity(req, "stop_unification", "unification", "deepseek", result.message);
       }
 
       res.json(result);
@@ -7290,11 +7277,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إعادة تعيين عملية التوحيد
   app.post("/api/unification/reset", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { googleSheetsUnification } = await import('./google-sheets-unification.js');
-      const result = googleSheetsUnification.resetUnification();
+      const { deepSeekUnificationService } = await import('./deepseek-unification-service.js');
+      const result = deepSeekUnificationService.resetUnification();
       
       if (result.success) {
-        await logActivity(req, "reset_unification", "unification", "google-sheets", result.message);
+        await logActivity(req, "reset_unification", "unification", "deepseek", result.message);
       }
 
       res.json(result);
