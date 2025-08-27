@@ -87,6 +87,7 @@ class DeepSeekUnificationService {
     console.log('🔍 محاولة بدء التوحيد الذكي...');
     
     if (this.isRunning) {
+      console.warn('⚠️ التوحيد يعمل بالفعل!');
       throw new Error('عملية التوحيد قيد التشغيل بالفعل');
     }
 
@@ -96,6 +97,7 @@ class DeepSeekUnificationService {
     }
     
     console.log('✅ DEEPSEEK_API_KEY موجود ومُعد بشكل صحيح');
+    console.log(`📦 بدء التوحيد بحجم دفعة: ${batchSize}`);
 
     this.isRunning = true;
     this.shouldStop = false;
@@ -199,6 +201,11 @@ class DeepSeekUnificationService {
     try {
       // قراءة البيانات من Google Sheets
       this.addLog('📖 قراءة البيانات من Google Sheets...');
+      
+      if (!this.sheets) {
+        await this.initializeGoogleSheets();
+      }
+      
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: 'DATA!A:E'

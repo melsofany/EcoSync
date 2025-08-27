@@ -2,6 +2,14 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { storage } from "./storage";
 
+// تهيئة خدمة التوحيد الذكي بـ DeepSeek
+import("./deepseek-unification-service").then(module => {
+  const service = module.deepSeekUnificationService;
+  console.log('🚀 تم تهيئة خدمة التوحيد الذكي بـ DeepSeek');
+}).catch(err => {
+  console.error('❌ خطأ في تهيئة خدمة التوحيد:', err);
+});
+
 // تهيئة البوت التليجرام فقط في التطوير
 if (process.env.NODE_ENV !== 'production') {
   import("./telegram-bot").then(() => {
