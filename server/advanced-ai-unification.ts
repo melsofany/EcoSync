@@ -434,9 +434,9 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
       const updates: string[][] = [];
       let seq = 1;
 
-      // Helper: choose a stable group key (prefer canonical P/N)
+      // Helper: always use sequential P-0000001 format
       const makeGroupKey = (canonical?: string | null) =>
-        canonical ? `P-${canonical}` : `P-${String(seq).padStart(7, '0')}`;
+        `P-${String(seq).padStart(7, '0')}`;
 
       console.log('🚀 بدء التحليل فائق السرعة (99% نصي + 1% AI للحالات الحرجة)...');
 
@@ -485,14 +485,12 @@ Item B: Part=${this.normalizePart(pnB) || 'N/A'}, Desc=${this.normalizeText(desc
           this.unified++;
           console.log(`✅ توحيد: ${current.partNumber} → ${chosenKey} (score=${(bestScore*100).toFixed(1)}%)`);
         } else {
-          // New group; try to derive canonical P/N from description
-          const all = this.extractAllPartNumbers(current.description, current.partNumber);
-          const canonical = all.find(x => /[A-Z]+\d/.test(x)) || all[0] || null; // prefer vendor-like codes
-          const key = makeGroupKey(canonical);
-          if (!canonical) seq++; // only increment numeric if we didn't attach to canonical
+          // New group - always create sequential P-0000001 format
+          const key = makeGroupKey();
+          seq++; // always increment for new groups
           groups.set(key, [current]);
           updates.push([key]);
-          console.log(`🆕 مجموعة جديدة ${key} للبند "${current.partNumber}"`);
+          console.log(`🆕 مجموعة جديدة ${key} للبند "${current.partNumber}" (${current.description.slice(0, 50)}...)`);
         }
 
         this.processed++;
