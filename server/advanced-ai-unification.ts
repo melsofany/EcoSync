@@ -229,7 +229,7 @@ export class AdvancedAIUnificationService {
       // قراءة البيانات
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:E',
+        range: 'DATA!A2:AA',
       });
 
       const rows = response.data.values || [];
@@ -249,10 +249,10 @@ export class AdvancedAIUnificationService {
       // تحضير البيانات للتحليل
       const items: ItemData[] = rows.map((row, index) => ({
         row: index + 2, // صف Google Sheets يبدأ من 2
-        itemNumber: row[0] || '',
-        partNumber: row[1] || '',
-        lineItem: row[2] || '',
-        description: row[4] || '',
+        itemNumber: row[0] || '', // العمود A - المعرف الحالي
+        partNumber: row[1] || '', // العمود B - الوحدة
+        lineItem: row[2] || '', // العمود C - LINE ITEM  
+        description: row[4] || '', // العمود E - الوصف
         originalData: row
       }));
 
@@ -343,12 +343,12 @@ export class AdvancedAIUnificationService {
         }
       }
 
-      // تحديث Google Sheets في العمود A
+      // تحديث Google Sheets في العمود AB (عمود جديد للمعرفات الموحدة)
       if (this.isRunning && updates.length > 0) {
-        console.log('💾 تحديث Google Sheets بـ معرفات التوحيد الذكي في العمود A...');
+        console.log('💾 تحديث Google Sheets بـ معرفات التوحيد الذكي في العمود AB...');
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
-          range: 'DATA!A2',
+          range: 'DATA!AB2',
           valueInputOption: 'RAW',
           requestBody: {
             values: updates
