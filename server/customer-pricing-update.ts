@@ -79,46 +79,49 @@ export class CustomerPricingUpdater {
         
         for (let i = 1; i < customerRows.length; i++) {
           if (customerRows[i][0] === itemId) {
+            // الأعمدة في صفحة تسعير_العملاء:
+            // A=ItemNumber, B=PartNumber, C=Description, D=UOM, E=Quantity
+            // F=RFQNumber, G=ClientName, H=RequestDate, I=ExpiryDate
             itemData = {
               itemNumber: customerRows[i][0] || itemId,
-              uom: customerRows[i][1] || 'EACH',
-              lineItem: '', // سيكون فارغًا للبنود الجديدة
-              partNumber: customerRows[i][2] || '',
-              description: customerRows[i][3] || '',
+              partNumber: customerRows[i][1] || '',
+              description: customerRows[i][2] || '',
+              uom: customerRows[i][3] || 'EACH',
+              quantity: customerRows[i][4] || '1',
               rfqNumber: rfqNumber || customerRows[i][5] || '',
-              requestDate: customerRows[i][6] || '',
-              quantity: customerRows[i][7] || '1',
-              clientName: customerRows[i][10] || ''
+              clientName: customerRows[i][6] || '',
+              requestDate: customerRows[i][7] || ''
             };
+            console.log(`✅ تم العثور على بيانات البند من صفحة تسعير العملاء:`, itemData);
             break;
           }
         }
         
         if (!itemData) {
-          throw new Error(`لم يتم العثور على بيانات البند ${itemId}`);
+          throw new Error(`لم يتم العثور على بيانات البند ${itemId} في صفحة تسعير العملاء`);
         }
         
         // إضافة صف جديد في DATA
         const newRow = [
           itemData.itemNumber,  // A - معرف البند
           itemData.uom,         // B - الوحدة
-          itemData.lineItem,    // C - LINE ITEM
+          '',                   // C - LINE ITEM (فارغ للبنود الجديدة)
           itemData.partNumber,  // D - رقم القطعة
           itemData.description, // E - الوصف
           itemData.rfqNumber,   // F - RFQ
           itemData.requestDate, // G - تاريخ الطلب
           itemData.quantity,    // H - الكمية
           pricingData.customerUnitPrice || '', // I - سعر العميل
-          '',                   // J - فارغ
+          '',                   // J - RES. DATE
           '',                   // K - PO
-          '',                   // L - تاريخ PO
-          '',                   // M - كمية PO
-          '',                   // N - إجمالي PO
-          '',                   // O - فارغ
-          '',                   // P - فارغ
-          '',                   // Q - فارغ
+          '',                   // L - DATE/PO
+          '',                   // M - Quantity/PO
+          '',                   // N - PRICE/PO
+          '',                   // O - TOTAL PO
+          itemData.clientName,  // P - العميل
+          '',                   // Q - الموظف المسؤول
           '',                   // R - فارغ
-          pricingData.employeeName // S - اسم الموظف
+          pricingData.employeeName // S - اسم الموظف (من قام بالتسعير)
         ];
         
         // إضافة الصف الجديد
@@ -131,7 +134,7 @@ export class CustomerPricingUpdater {
           }
         });
         
-        console.log(`✅ تم إضافة البند ${itemId} إلى ورقة DATA مع سعر العميل`);
+        console.log(`✅ تم إضافة البند ${itemId} إلى ورقة DATA مع سعر العميل ${pricingData.customerUnitPrice}`);
         return;
       }
 

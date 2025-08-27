@@ -243,7 +243,7 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 {detailedPricing?.lineItem ? (
                   <span className="text-lg">{detailedPricing.lineItem}</span>
                 ) : (
-                  <span className="text-gray-400">غير متوفر</span>
+                  <span className="text-gray-500 text-sm">بند جديد - لم يُحدد بعد</span>
                 )}
               </p>
             </div>
