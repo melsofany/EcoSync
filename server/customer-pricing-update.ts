@@ -25,29 +25,43 @@ export class CustomerPricingUpdater {
       });
 
       const rows = response.data.values || [];
+      console.log(`📊 عدد الصفوف المقروءة من DATA: ${rows.length}`);
       
       // البحث عن الصف المطابق بناءً على معرف البند
       let targetRowIndex = -1;
       let foundRows = [];
+      let lastCheckedRow = 0;
       
       for (let i = 1; i < rows.length; i++) { // البداية من الصف 2 (تخطي الرؤوس)
-        const itemNumber = rows[i][0]; // العمود A - معرف البند
-        const rfqCol = rows[i][5]; // العمود F - RFQ
+        const itemNumber = (rows[i][0] || '').toString().trim(); // العمود A - معرف البند
+        const rfqCol = (rows[i][5] || '').toString().trim(); // العمود F - RFQ
+        lastCheckedRow = i + 1;
         
-        if (itemNumber === itemId) {
+        // طباعة تفاصيل البحث للصفوف القريبة من 5577
+        if (i >= 5575 && i <= 5580) {
+          console.log(`🔍 الصف ${i + 1}: البند="${itemNumber}", RFQ="${rfqCol}" (يُبحث عن: البند="${itemId}", RFQ="${rfqNumber}")`);
+        }
+        
+        if (itemNumber === itemId.trim()) {
           foundRows.push({
             index: i + 1,
             rfq: rfqCol || '',
             hasCustomerPrice: !!(rows[i][8]) // العمود I - سعر العميل
           });
+          console.log(`📍 وجد البند ${itemId} في الصف ${i + 1} مع RFQ="${rfqCol}"`);
           
           // إذا كان لدينا RFQ محدد، نبحث عن تطابق كامل
-          if (rfqNumber && rfqCol === rfqNumber) {
+          if (rfqNumber && rfqCol === rfqNumber.trim()) {
             targetRowIndex = i + 1;
             console.log(`✅ وجد تطابق كامل في الصف ${targetRowIndex} للبند ${itemId} مع RFQ ${rfqNumber}`);
             break;
           }
         }
+      }
+      
+      console.log(`🔄 تم فحص ${lastCheckedRow} صف، وجد ${foundRows.length} صف للبند ${itemId}`);
+      if (foundRows.length > 0) {
+        console.log(`📋 الصفوف الموجودة:`, foundRows);
       }
       
       // إذا لم نجد تطابق كامل، نستخدم أول صف للبند بدون سعر عميل
