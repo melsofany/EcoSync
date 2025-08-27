@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فحص البنود</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .item {
+            margin: 10px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-right: 4px solid #007bff;
+        }
+        .item-number {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 18px;
+        }
+        .part-number {
+            color: #28a745;
+            margin: 5px 0;
+        }
+        .rfq-number {
+            color: #6c757d;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 20px;
+            color: #666;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>فحص معرفات البنود بعد التوحيد</h1>
+        <div id="status" class="loading">جاري تحميل البيانات...</div>
+        <div id="items"></div>
+    </div>
+
+    <script>
+        async function loadItems() {
+            const statusEl = document.getElementById('status');
+            const itemsEl = document.getElementById('items');
+            
+            try {
+                const response = await fetch('/api/customer-pricing/items');
+                const items = await response.json();
+                
+                if (items && items.length > 0) {
+                    // عرض أول 10 بنود
+                    const firstItems = items.slice(0, 10);
+                    
+                    statusEl.className = 'success';
+                    statusEl.textContent = `تم تحميل ${items.length} بند بنجاح. عرض أول 10 بنود:`;
+                    
+                    let html = '';
+                    firstItems.forEach((item, index) => {
+                        html += `
+                            <div class="item">
+                                <div class="item-number">البند ${index + 1}: ${item.itemNumber || 'غير محدد'}</div>
+                                <div class="part-number">Part Number: ${item.partNumber || 'غير محدد'}</div>
+                                <div class="rfq-number">RFQ: ${item.rfqNumber || 'غير محدد'}</div>
+                                <div class="rfq-number">LINE ITEM: ${item.lineItem || 'غير محدد'}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    itemsEl.innerHTML = html;
+                    
+                    // البحث عن البند P-0001646
+                    const oldItem = items.find(item => item.itemNumber === 'P-0001646');
+                    const newItem = items.find(item => item.itemNumber === 'P-0000068');
+                    
+                    if (oldItem) {
+                        console.log('⚠️ البند القديم P-0001646 لا يزال موجوداً:', oldItem);
+                    }
+                    if (newItem) {
+                        console.log('✅ البند الموحد P-0000068 موجود:', newItem);
+                    }
+                    
+                    // عرض نتيجة البحث
+                    if (oldItem) {
+                        itemsEl.innerHTML += `
+                            <div class="error">
+                                ⚠️ البند القديم P-0001646 لا يزال يظهر في القائمة!
+                                <br>Part Number: ${oldItem.partNumber}
+                                <br>RFQ: ${oldItem.rfqNumber}
+                            </div>
+                        `;
+                    } else if (newItem) {
+                        itemsEl.innerHTML += `
+                            <div class="success">
+                                ✅ تم تصحيح المعرف! البند الموحد P-0000068 يظهر الآن
+                                <br>Part Number: ${newItem.partNumber}
+                                <br>RFQ: ${newItem.rfqNumber}
+                            </div>
+                        `;
+                    }
+                    
+                } else {
+                    statusEl.className = 'error';
+                    statusEl.textContent = 'لا توجد بيانات للعرض';
+                }
+            } catch (error) {
+                statusEl.className = 'error';
+                statusEl.textContent = 'خطأ في تحميل البيانات: ' + error.message;
+                console.error(error);
+            }
+        }
+        
+        // تحميل البيانات عند فتح الصفحة
+        loadItems();
+    </script>
+</body>
+</html>

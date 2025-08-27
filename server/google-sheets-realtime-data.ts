@@ -806,9 +806,10 @@ export class GoogleSheetsRealtimeData {
           const dataRows = dataResponse.data.values || [];
           console.log(`📊 تم قراءة ${dataRows.length} صف من صفحة DATA للبحث عن LINE ITEM`);
 
-          // مطابقة كل بند مع LINE ITEM من صفحة DATA
+          // مطابقة كل بند مع LINE ITEM من صفحة DATA وتصحيح معرف البند بعد التوحيد
           for (const item of items) {
             let foundWithRfq = false;
+            let correctItemNumber = item.itemNumber; // الافتراضي هو المعرف الأصلي
             
             // أولاً: البحث عن تطابق دقيق بين Item Number (العمود A) و RFQ Number (العمود F)
             for (const dataRow of dataRows) {
@@ -826,8 +827,58 @@ export class GoogleSheetsRealtimeData {
               }
             }
             
-            // إذا لم نجد تطابق كامل، نبحث عن البند فقط
-            if (!foundWithRfq) {
+            // إذا لم نجد بمعرف البند، نبحث بـ Part Number + RFQ (البحث الذكي)
+            if (!foundWithRfq && item.partNumber) {
+              console.log(`🔍 البحث الذكي: البحث بـ Part Number "${item.partNumber}" + RFQ "${item.rfqNumber}"`);
+              
+              for (const dataRow of dataRows) {
+                const dataPartNumber = (dataRow[3] || '').trim(); // العمود D - Part Number
+                const dataRfqNumber = (dataRow[5] || '').trim(); // العمود F - RFQ Number
+                
+                if (dataPartNumber === item.partNumber && dataRfqNumber === item.rfqNumber) {
+                  item.lineItem = dataRow[2] || ''; // العمود C - LINE ITEM
+                  correctItemNumber = dataRow[0] || item.itemNumber; // المعرف الصحيح من DATA
+                  foundWithRfq = true;
+                  
+                  if (correctItemNumber !== item.itemNumber) {
+                    console.log(`⚠️ تصحيح معرف البند: ${item.itemNumber} → ${correctItemNumber}`);
+                    item.itemNumber = correctItemNumber; // تحديث المعرف الصحيح
+                  }
+                  
+                  if (item.lineItem) {
+                    console.log(`🎯 البحث الذكي نجح! LINE ITEM: ${item.lineItem}`);
+                  }
+                  break;
+                }
+              }
+            }
+            
+            // إذا لم نجد تطابق كامل، نبحث بـ Part Number فقط
+            if (!foundWithRfq && item.partNumber) {
+              console.log(`🔍 البحث الذكي: البحث بـ Part Number فقط "${item.partNumber}"`);
+              
+              for (const dataRow of dataRows) {
+                const dataPartNumber = (dataRow[3] || '').trim(); // العمود D - Part Number
+                
+                if (dataPartNumber === item.partNumber) {
+                  item.lineItem = dataRow[2] || ''; // العمود C - LINE ITEM
+                  correctItemNumber = dataRow[0] || item.itemNumber; // المعرف الصحيح من DATA
+                  
+                  if (correctItemNumber !== item.itemNumber) {
+                    console.log(`⚠️ تصحيح معرف البند: ${item.itemNumber} → ${correctItemNumber}`);
+                    item.itemNumber = correctItemNumber; // تحديث المعرف الصحيح
+                  }
+                  
+                  if (item.lineItem) {
+                    console.log(`✅ البحث الذكي نجح! LINE ITEM: ${item.lineItem}`);
+                  }
+                  break;
+                }
+              }
+            }
+            
+            // إذا لم نجد بالبحث الذكي، نبحث عن البند بمعرفه الأصلي فقط
+            if (!foundWithRfq && !item.lineItem) {
               for (const dataRow of dataRows) {
                 const dataItemNumber = dataRow[0]; // العمود A - Item Number
                 const dataLineItem = dataRow[2]; // العمود C - LINE ITEM
