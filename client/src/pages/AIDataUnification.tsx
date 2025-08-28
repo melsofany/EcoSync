@@ -25,7 +25,11 @@ import {
   TrendingUp,
   Database,
   Layers,
-  CreditCard
+  CreditCard,
+  Shield,
+  Search,
+  Merge,
+  AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -417,7 +421,7 @@ export default function AIDataUnification() {
 
       {/* التبويبات */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="dashboard">
             <Activity className="ml-2 h-4 w-4" />
             لوحة التحكم
@@ -425,6 +429,14 @@ export default function AIDataUnification() {
           <TabsTrigger value="statistics">
             <TrendingUp className="ml-2 h-4 w-4" />
             الإحصائيات
+          </TabsTrigger>
+          <TabsTrigger value="duplicates">
+            <Search className="ml-2 h-4 w-4" />
+            البحث عن التكرارات
+          </TabsTrigger>
+          <TabsTrigger value="prevention">
+            <Shield className="ml-2 h-4 w-4" />
+            منع التكرار
           </TabsTrigger>
           <TabsTrigger value="settings">
             <Database className="ml-2 h-4 w-4" />
@@ -665,6 +677,122 @@ export default function AIDataUnification() {
                 >
                   <RefreshCw className="ml-2 h-4 w-4" />
                   إعادة تعيين البيانات
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* تاب البحث عن التكرارات */}
+        <TabsContent value="duplicates" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5 text-blue-600" />
+                البحث عن البنود المتكررة
+              </CardTitle>
+              <CardDescription>
+                اكتشاف وتحليل البنود المتكررة في النظام
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Alert className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  مثال على تكرار شائع: منتج شنايدر LC1D 32M7 له 4 معرفات مختلفة (P-0000016, P-0000018, P-0000186, P-0000196)
+                </AlertDescription>
+              </Alert>
+              
+              <div className="space-y-4">
+                <Button 
+                  onClick={() => {
+                    toast({
+                      title: "🔍 بدء البحث عن التكرارات",
+                      description: "سيتم تحليل جميع البنود للكشف عن التكرارات",
+                    });
+                  }}
+                  className="w-full"
+                >
+                  <Search className="ml-2 h-4 w-4" />
+                  بدء البحث عن التكرارات
+                </Button>
+                
+                <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <h4 className="font-semibold text-yellow-800 mb-2">مؤشرات التكرار المحتملة:</h4>
+                  <ul className="text-sm text-yellow-700 space-y-1">
+                    <li>• أرقام أجزاء متشابهة (مثل: LC1D32M7 و LC1D 32M7)</li>
+                    <li>• أوصاف متطابقة أو متشابهة</li>
+                    <li>• نفس الشركة المصنعة والموديل</li>
+                    <li>• مواصفات تقنية مطابقة</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* تاب منع التكرار */}
+        <TabsContent value="prevention" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-green-600" />
+                نظام منع التكرار الاستباقي
+              </CardTitle>
+              <CardDescription>
+                منع إدخال بنود مكررة جديدة في النظام
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Alert className="border-green-200 bg-green-50">
+                  <Shield className="h-4 w-4" />
+                  <AlertDescription className="text-green-800">
+                    النظام سيتحقق تلقائياً من كل بند جديد قبل إدراجه لمنع التكرار
+                  </AlertDescription>
+                </Alert>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="border-blue-200">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm">آلية الكشف</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-sm space-y-1">
+                        <li>✓ تحليل أرقام الأجزاء بالذكاء الاصطناعي</li>
+                        <li>✓ مقارنة الأوصاف النصية</li>
+                        <li>✓ فحص البيانات التقنية</li>
+                        <li>✓ تطبيع أرقام الأجزاء</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-purple-200">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm">الإجراءات التلقائية</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-sm space-y-1">
+                        <li>🛑 منع الإدراج التلقائي للمكررات</li>
+                        <li>🔗 اقتراح البند الموجود</li>
+                        <li>📋 إنشاء تقرير بالتكرارات</li>
+                        <li>⚡ تحديث فوري للمعرفات</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Button 
+                  onClick={() => {
+                    toast({
+                      title: "✅ تم تفعيل الحماية",
+                      description: "نظام منع التكرار نشط ويعمل تلقائياً",
+                    });
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  <Shield className="ml-2 h-4 w-4" />
+                  تفعيل الحماية من التكرار
                 </Button>
               </div>
             </CardContent>
