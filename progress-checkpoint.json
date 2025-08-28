@@ -1,5 +1,5 @@
 {
-  "sessionId": "SESSION-1756390922358-1yr9hydx4",
+  "sessionId": "SESSION-1756391471389-ouekrorju",
   "lastProcessedIndex": 49,
   "status": {
     "isRunning": true,
@@ -7,7 +7,7 @@
     "progress": 0.8922198429693077,
     "total": 5604,
     "processed": 50,
-    "unified": 21,
+    "unified": 22,
     "skipped": 0,
     "errors": 0,
     "currentItem": {
@@ -17,7 +17,7 @@
       "unifiedId": "P-0000026"
     },
     "startTime": "2025-08-28T14:22:02.368Z",
-    "estimatedTimeRemaining": 46,
+    "estimatedTimeRemaining": 14400,
     "accuracy": 0,
     "aiCallCount": 0,
     "sessionId": "SESSION-1756390922358-1yr9hydx4",
@@ -430,6 +430,12 @@
           "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
           "partNumber": "",
           "unifiedId": "P-0000026"
+        },
+        {
+          "rowIndex": 51,
+          "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+          "partNumber": "",
+          "unifiedId": "P-0000026"
         }
       ]
     ],
@@ -773,8 +779,14 @@
       "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
       "partNumber": "",
       "unifiedId": "P-0000026"
+    },
+    {
+      "rowIndex": 51,
+      "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+      "partNumber": "",
+      "unifiedId": "P-0000026"
     }
   ],
   "nextId": 30,
-  "timestamp": "2025-08-28T14:22:02.785Z"
+  "timestamp": "2025-08-28T14:31:11.593Z"
 }

@@ -20,8 +20,8 @@ class BackgroundUnificationService {
    */
   async startAutoUnification() {
     if (this.isAutoRunning) {
-      console.log('⚠️ التوحيد التلقائي يعمل بالفعل');
-      return;
+      console.log('⚠️ التوحيد التلقائي يعمل بالفعل - إيقاف وإعادة بدء...');
+      this.stopAutoUnification();
     }
 
     try {
@@ -186,8 +186,8 @@ class BackgroundUnificationService {
 // إنشاء مثيل واحد للخدمة
 export const backgroundUnification = new BackgroundUnificationService();
 
-// بدء التشغيل التلقائي عند بدء الخادم
-console.log('🔄 تهيئة التوحيد التلقائي في الخلفية...');
-setTimeout(() => {
-  backgroundUnification.startAutoUnification();
-}, 10000); // بدء بعد 10 ثواني من تشغيل الخادم
+// بدء التشغيل التلقائي عند بدء الخادم - معطل مؤقتاً
+console.log('🔄 تهيئة التوحيد التلقائي في الخلفية - معطل حتى يتم الطلب صراحة...');
+// setTimeout(() => {
+//   backgroundUnification.startAutoUnification();
+// }, 10000); // بدء بعد 10 ثواني من تشغيل الخادم

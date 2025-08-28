@@ -7193,19 +7193,34 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🤖 بدء التوحيد الذكي بـ DeepSeek AI من المستخدم:', req.session?.user?.username);
       
-      const { backgroundUnification } = await import('./background-unification.js');
+      // استخدام النظام الدلالي مباشرة
+      const { semanticUnification } = await import('./semantic-unification.js');
       
-      // بدء التوحيد في الخلفية
-      await backgroundUnification.startAutoUnification();
+      // إعادة تعيين النظام أولاً
+      semanticUnification.resetSystem();
       
-      await logActivity(req, "start_ai_unification", "ai_unification", "deepseek", "بدء التوحيد الذكي التلقائي بـ DeepSeek AI");
+      // تهيئة النظام
+      await semanticUnification.initialize();
       
-      res.json({
-        success: true,
-        message: "تم بدء التوحيد الذكي التلقائي في الخلفية بنجاح - سيعمل حتى لو تم إغلاق المتصفح",
-        sessionId: Date.now().toString(),
-        backgroundMode: true
-      });
+      // بدء التوحيد
+      const result = await semanticUnification.runSemanticUnification();
+      
+      await logActivity(req, "start_ai_unification", "ai_unification", "deepseek", "بدء التوحيد الذكي بـ DeepSeek AI");
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: result.message || "تم بدء التوحيد الذكي بنجاح",
+          sessionId: result.sessionId,
+          totalRows: result.totalRows,
+          processedRows: result.processedRows
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: result.message || "فشل في بدء التوحيد"
+        });
+      }
 
     } catch (error) {
       console.error('خطأ في بدء التوحيد الذكي:', error);
