@@ -70,6 +70,7 @@ export class SemanticUnificationService {
   private processedItems: Product[] = [];
   private nextId: number = 1;
   private dualMatcher: DualMatchingSystem;
+  private usedIds: Set<string> = new Set(); // تتبع المعرفات المستخدمة
   private lastProcessedIndex: number = 0;
   private checkpointFile: string = './progress-checkpoint.json';
 
@@ -405,6 +406,11 @@ export class SemanticUnificationService {
         this.status.processed = i + 1;
         this.status.progress = (this.status.processed / this.status.total) * 100;
 
+        // تسجيل مفصل للبنود الحالية
+        if (i % 100 === 0) {
+          console.log(`🔍 معالجة البند ${i + 1}: "${product.description.substring(0, 50)}..." - صف ${product.rowIndex}`);
+        }
+
         // تحديث الوقت المتبقي المقدر (بالثواني)
         if (i > 5) { // بدء التقدير بعد 5 عناصر
           const elapsedTime = new Date().getTime() - new Date(this.status.startTime).getTime();
@@ -460,7 +466,12 @@ export class SemanticUnificationService {
         // مرحلة 1: فلترة سريعة + مقارنة نصية أولاً
         const productDesc = product.description.toLowerCase().trim();
         if (productDesc.length < 3) {
-          // تخطي الأوصاف القصيرة جداً
+          // تخطي الأوصاف القصيرة جداً - إنشاء معرف مباشر
+          const shortDescId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          this.nextId++;
+          product.unifiedId = shortDescId;
+          this.unifiedGroups.set(shortDescId, [product]);
+          matched = true;
         } else {
           // مرحلة 2: بحث سريع مع تحسينات قصوى
           for (const [unifiedId, groupProducts] of this.unifiedGroups.entries()) {
@@ -498,6 +509,11 @@ export class SemanticUnificationService {
                 if (comparisonResult.similar && comparisonResult.score > bestMatchScore) {
                   bestMatchScore = comparisonResult.score;
                   bestMatchId = unifiedId;
+                  
+                  // إذا وجدنا تطابق عالي، توقف عن البحث
+                  if (bestMatchScore >= 0.95) {
+                    break;
+                  }
                 }
               } catch (error: any) {
                 if (error.message === 'QUOTA_EXCEEDED') {
@@ -530,7 +546,19 @@ export class SemanticUnificationService {
 
         // إذا تم إيقاف العملية بسبب نفاد الرصيد، خروج من الحلقة الرئيسية
         if (this.status.quotaExceeded) {
-          break;
+          console.log('🚫 توقف النظام بسبب نفاد رصيد الـ AI');
+          this.status.isRunning = false;
+          return {
+            success: false,
+            message: 'تم إيقاف العملية - نفد رصيد الـ AI',
+            totalRows: this.status.total,
+            processedRows: this.status.processed,
+            unifiedGroups: this.unifiedGroups.size,
+            unifiedCount: this.status.unified,
+            aiCallsUsed: this.status.aiCallCount,
+            accuracy: this.calculateAccuracy(),
+            sessionId: this.sessionId
+          };
         }
 
         // إذا وجد تطابق دقيق فقط، أضف إلى المجموعة الموجودة
@@ -539,14 +567,41 @@ export class SemanticUnificationService {
           this.unifiedGroups.get(bestMatchId)!.push(product);
           this.status.unified++;
           matched = true;
+          
+          // تسجيل التطابق
+          if (i % 50 === 0) {
+            console.log(`✅ تطابق: البند ${i + 1} مع المجموعة ${bestMatchId} (نسبة: ${(bestMatchScore * 100).toFixed(1)}%)`);
+          }
         }
 
         // إذا لم يتم العثور على تطابق، إنشاء مجموعة جديدة
         if (!matched) {
-          const newUnifiedId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          let newUnifiedId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          
+          // التأكد من عدم تكرار المعرف
+          while (this.usedIds.has(newUnifiedId) || this.unifiedGroups.has(newUnifiedId)) {
+            this.nextId++;
+            newUnifiedId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          }
+          
           this.nextId++;
+          this.usedIds.add(newUnifiedId);
           product.unifiedId = newUnifiedId;
           this.unifiedGroups.set(newUnifiedId, [product]);
+          
+          // تسجيل المجموعة الجديدة
+          if (i % 50 === 0) {
+            console.log(`🆕 مجموعة جديدة: ${newUnifiedId} للبند ${i + 1}`);
+          }
+        }
+
+        // التأكد من أن كل بند له معرف واحد فقط
+        if (!product.unifiedId) {
+          console.error(`❌ خطأ: البند في الصف ${product.rowIndex} لم يحصل على معرف!`);
+          const emergencyId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          this.nextId++;
+          product.unifiedId = emergencyId;
+          this.unifiedGroups.set(emergencyId, [product]);
         }
 
         this.processedItems.push(product);
