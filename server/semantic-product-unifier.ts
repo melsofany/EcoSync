@@ -67,25 +67,38 @@ export class SemanticProductUnifier {
 
       // 1. جلب وتحليل جميع البيانات
       this.progress = 10;
+      console.log('📥 جاري جلب البيانات...');
+      
       const allItems = await this.loadAndAnalyzeItems();
       console.log(`📊 تم تحليل ${allItems.length} منتج`);
 
       // 2. تجميع المنتجات بالتحليل الدلالي
       this.progress = 30;
+      console.log('🔍 جاري البحث عن المجموعات الدلالية...');
+      
       const semanticGroups = await this.groupItemsBySemantics(allItems);
+      this.progress = 50;
       console.log(`🔍 تم العثور على ${semanticGroups.length} مجموعة دلالية`);
 
       // 3. توحيد المعرفات
       this.progress = 60;
+      console.log('⚡ جاري توحيد المعرفات...');
+      
       let totalUnified = 0;
       
-      for (const group of semanticGroups) {
+      for (let i = 0; i < semanticGroups.length; i++) {
+        const group = semanticGroups[i];
         await this.unifySemanticGroup(group);
         totalUnified += group.duplicates.length;
+        
+        // تحديث التقدم أثناء التوحيد
+        this.progress = 60 + ((i + 1) / semanticGroups.length) * 35;
+        
         console.log(`✅ توحيد ${group.duplicates.length} منتج تحت ${group.masterItem.itemNumber} (${group.confidence}% ثقة)`);
       }
 
       this.progress = 100;
+      console.log('🎉 تم إنهاء التوحيد الدلالي بنجاح!');
       const processingTime = Date.now() - startTime;
 
       const result: SemanticUnificationResult = {
@@ -109,29 +122,50 @@ export class SemanticProductUnifier {
   }
 
   private async loadAndAnalyzeItems(): Promise<ProductItem[]> {
-    const rawData = await this.googleSheetsData.readDataSheet();
-    
-    const items: ProductItem[] = [];
-    
-    for (let i = 0; i < rawData.length; i++) {
-      const row = rawData[i];
-      const description = (row[4] || '').toString().trim();
+    try {
+      const rawData = await this.googleSheetsData.readDataSheet();
+      console.log(`📋 تم جلب ${rawData.length} صف من Google Sheets`);
       
-      if (!description) continue;
+      const items: ProductItem[] = [];
       
-      const item: ProductItem = {
-        itemNumber: row[0] || `P-${String(i + 2).padStart(7, '0')}`,
-        description,
-        partNumber: (row[1] || '').toString().trim(),
-        lineItem: (row[2] || '').toString().trim(),
-        rowIndex: i + 2,
-        extractedSpecs: this.extractProductSpecs(description, row[1])
-      };
+      for (let i = 0; i < rawData.length; i++) {
+        try {
+          const row = rawData[i];
+          const description = (row[4] || '').toString().trim();
+          
+          if (!description) continue;
+          
+          const item: ProductItem = {
+            itemNumber: row[0] || `P-${String(i + 2).padStart(7, '0')}`,
+            description,
+            partNumber: (row[1] || '').toString().trim(),
+            lineItem: (row[2] || '').toString().trim(),
+            rowIndex: i + 2,
+            extractedSpecs: this.extractProductSpecs(description, row[1] || '')
+          };
+          
+          items.push(item);
+          
+          // تحديث تدريجي للتقدم
+          if (i % 500 === 0) {
+            this.progress = 10 + ((i / rawData.length) * 15); // من 10% إلى 25%
+            console.log(`⏳ تحليل البيانات: ${i}/${rawData.length} (${this.progress.toFixed(1)}%)`);
+          }
+          
+        } catch (itemError) {
+          console.warn(`⚠️ خطأ في تحليل الصف ${i + 2}:`, itemError);
+          continue; // تخطي هذا الصف والاستمرار
+        }
+      }
       
-      items.push(item);
+      this.progress = 25;
+      console.log(`✅ تم تحليل ${items.length} منتج من أصل ${rawData.length} صف`);
+      return items;
+      
+    } catch (error) {
+      console.error('❌ فشل في جلب البيانات:', error);
+      throw new Error('فشل في جلب البيانات من Google Sheets');
     }
-    
-    return items;
   }
 
   private extractProductSpecs(description: string, partNumber: string = ''): ProductSpecs {
