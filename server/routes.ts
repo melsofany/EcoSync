@@ -7122,11 +7122,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🎯 طلب حالة توحيد المعرفات...');
       
-      // جلب حالة نظام توحيد المعرفات الجديد
-      const { identifierUnificationService } = await import('./identifier-unification-service.js');
+      // جلب حالة النظام البسيط لتوحيد المعرفات
+      const { simpleIdentifierUnifier } = await import('./simple-identifier-unifier.js');
       
-      const isRunning = identifierUnificationService.isOperationRunning();
-      const progress = identifierUnificationService.getProgress();
+      const isRunning = simpleIdentifierUnifier.isOperationRunning();
+      const progress = simpleIdentifierUnifier.getProgress();
       
       res.json({
         isRunning,
@@ -7237,10 +7237,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🤖 بدء توحيد المعرفات بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
       
-      // استخدام نظام توحيد المعرفات الجديد
-      const { identifierUnificationService } = await import('./identifier-unification-service.js');
+      // استخدام النظام البسيط لتوحيد المعرفات
+      const { simpleIdentifierUnifier } = await import('./simple-identifier-unifier.js');
       
-      if (identifierUnificationService.isOperationRunning()) {
+      if (simpleIdentifierUnifier.isOperationRunning()) {
         return res.status(400).json({ 
           success: false,
           error: 'عملية التوحيد قيد التشغيل بالفعل' 
@@ -7248,7 +7248,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       }
 
       // بدء التوحيد في الخلفية
-      identifierUnificationService.startUnification()
+      simpleIdentifierUnifier.unifyDuplicateIdentifiers()
         .then((result) => {
           console.log('✅ تمت عملية توحيد المعرفات بنجاح:', result);
         })
