@@ -556,23 +556,24 @@ export class SemanticUnificationService {
             const descSimilarity = commonWords.length / Math.max(words1.length, words2.length);
             
             if (descSimilarity > 0.85) {
-              // تأكيد إضافي برقم القطعة إذا وُجد
+              // البند نفسه قد يكون له أكثر من part number - الاعتماد على التوصيف أهم
+              bestMatchScore = descSimilarity;
+              bestMatchId = unifiedId;
+              
+              // تأكيد إضافي برقم القطعة إذا وُجد (لكنه ليس شرط)
               if (productPartNum && repPartNum) {
                 const cleanPart1 = productPartNum.replace(/[\s\-_]/g, '');
                 const cleanPart2 = repPartNum.replace(/[\s\-_]/g, '');
                 if (cleanPart1 === cleanPart2) {
-                  bestMatchScore = 1.0;
-                  bestMatchId = unifiedId;
-                  console.log(`📝 تطابق توصيف عالي (${(descSimilarity*100).toFixed(1)}%) + رقم قطعة -> ${unifiedId}`);
-                  break;
+                  bestMatchScore = 1.0; // تأكيد كامل
+                  console.log(`📝 تطابق توصيف عالي (${(descSimilarity*100).toFixed(1)}%) + نفس رقم القطعة -> ${unifiedId}`);
+                } else {
+                  console.log(`📝 تطابق توصيف عالي (${(descSimilarity*100).toFixed(1)}%) مع رقم قطعة مختلف -> ${unifiedId}`);
                 }
               } else {
-                // بدون رقم قطعة، اعتماد على التوصيف فقط
-                bestMatchScore = descSimilarity;
-                bestMatchId = unifiedId;
                 console.log(`📝 تطابق توصيف عالي (${(descSimilarity*100).toFixed(1)}%) -> ${unifiedId}`);
-                break;
               }
+              break;
             }
             
             // 3. فحص متوسط التشابه في التوصيف (70%+) مع AI
