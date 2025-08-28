@@ -166,8 +166,9 @@ export class DualMatchingSystem {
 
       if (!response.ok) {
         if (response.status === 402) {
-          console.log('⚠️ انتهى رصيد DeepSeek API، استخدام التحليل المتقدم');
-          return this.advancedComparison(desc1, desc2, partNo1, partNo2);
+          console.log('🚫 انتهى رصيد DeepSeek API - خطأ 402');
+          // رمي خطأ خاص لنفاد الرصيد
+          throw new Error('QUOTA_EXCEEDED');
         }
         throw new Error(`DeepSeek API error: ${response.status}`);
       }

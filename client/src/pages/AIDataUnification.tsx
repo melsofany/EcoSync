@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -23,7 +24,8 @@ import {
   Activity,
   TrendingUp,
   Database,
-  Layers
+  Layers,
+  CreditCard
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -44,6 +46,8 @@ interface UnificationStatus {
   startTime?: string;
   estimatedTimeRemaining?: number;
   accuracy: number;
+  quotaExceeded?: boolean;
+  pauseReason?: string;
 }
 
 interface UnificationStats {
@@ -60,6 +64,7 @@ export default function AIDataUnification() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
 
   // جلب حالة التوحيد
   const { data: status, isLoading: statusLoading } = useQuery<UnificationStatus>({
@@ -69,6 +74,19 @@ export default function AIDataUnification() {
       return data?.isRunning ? 1000 : 5000;
     }
   });
+
+  // مراقبة نفاد الرصيد وعرض الرسالة المنبثقة
+  useEffect(() => {
+    if (status?.quotaExceeded && !showQuotaDialog) {
+      setShowQuotaDialog(true);
+      toast({
+        title: "🚫 نفد رصيد الـ AI",
+        description: "يرجى إعادة تعبئة رصيد الـ DeepSeek API لمتابعة التوحيد",
+        variant: "destructive",
+        duration: 10000
+      });
+    }
+  }, [status?.quotaExceeded, showQuotaDialog, toast]);
 
   // جلب إحصائيات التوحيد
   const { data: stats } = useQuery<UnificationStats>({
@@ -603,6 +621,54 @@ export default function AIDataUnification() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dialog لعرض رسالة نفاد الرصيد */}
+      <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <CreditCard className="h-5 w-5" />
+              نفد رصيد الـ AI
+            </DialogTitle>
+            <DialogDescription className="text-right">
+              تم إيقاف عملية التوحيد الذكي مؤقتاً بسبب انتهاء رصيد DeepSeek API.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                لمتابعة عملية التوحيد، يرجى إعادة تعبئة رصيد DeepSeek API من خلال:
+                <br />
+                • زيارة موقع DeepSeek
+                <br />
+                • إضافة رصيد إلى حسابك
+                <br />
+                • إعادة تشغيل عملية التوحيد
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowQuotaDialog(false)}
+              >
+                إغلاق
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowQuotaDialog(false);
+                  window.open('https://platform.deepseek.com/', '_blank');
+                }}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                فتح DeepSeek
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

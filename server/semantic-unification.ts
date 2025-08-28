@@ -10,10 +10,16 @@ interface Status {
   total: number;
   processed: number;
   unified: number;
-  currentItem: any;
+  skipped: number;
+  errors: number;
+  currentItem?: Product | null;
   startTime: string;
   estimatedTimeRemaining: number;
+  accuracy: number;
   aiCallCount: number;
+  sessionId: string;
+  quotaExceeded?: boolean;
+  pauseReason?: string;
 }
 
 // تعريف واجهة استجابة DeepSeek
@@ -76,10 +82,16 @@ export class SemanticUnificationService {
       total: 0,
       processed: 0,
       unified: 0,
+      skipped: 0,
+      errors: 0,
       currentItem: null,
       startTime: new Date().toISOString(),
       estimatedTimeRemaining: 0,
-      aiCallCount: 0
+      accuracy: 0,
+      aiCallCount: 0,
+      sessionId: this.sessionId,
+      quotaExceeded: false,
+      pauseReason: ''
     };
     
     console.log('🧠 تهيئة نظام التوحيد الدلالي الذكي المحسن...');
@@ -374,17 +386,34 @@ export class SemanticUnificationService {
             
             if (similarity > 0.8) {
               // استخدام النظام المزدوج للمطابقة
-              const comparisonResult = await this.dualMatcher.compareItems(
-                product.description,
-                representative.description,
-                product.partNumber || '',
-                representative.partNumber || ''
-              );
+              try {
+                const comparisonResult = await this.dualMatcher.compareItems(
+                  product.description,
+                  representative.description,
+                  product.partNumber || '',
+                  representative.partNumber || ''
+                );
 
-              if (comparisonResult.similar && comparisonResult.score > bestMatchScore) {
-                bestMatchScore = comparisonResult.score;
-                bestMatchId = unifiedId;
+                if (comparisonResult.similar && comparisonResult.score > bestMatchScore) {
+                  bestMatchScore = comparisonResult.score;
+                  bestMatchId = unifiedId;
+                }
+              } catch (error: any) {
+                if (error.message === 'QUOTA_EXCEEDED') {
+                  // إيقاف العملية مؤقتاً عند نفاد الرصيد
+                  this.status.quotaExceeded = true;
+                  this.status.isPaused = true;
+                  this.status.pauseReason = 'نفد رصيد الـ AI';
+                  console.log('🚫 تم إيقاف العملية مؤقتاً - نفد رصيد الـ AI');
+                  
+                  // إيقاف حلقة المعالجة
+                  break;
+                } else {
+                  console.error('خطأ في المطابقة:', error);
+                  this.status.errors++;
+                }
               }
+
             }
 
             // إذا وجدنا تطابق دقيق، توقف
@@ -392,6 +421,11 @@ export class SemanticUnificationService {
               break;
             }
           }
+        }
+
+        // إذا تم إيقاف العملية بسبب نفاد الرصيد، خروج من الحلقة الرئيسية
+        if (this.status.quotaExceeded) {
+          break;
         }
 
         // إذا وجد تطابق دقيق فقط، أضف إلى المجموعة الموجودة

@@ -21,6 +21,8 @@ interface UnificationStatus {
   startTime: Date | null;
   endTime: Date | null;
   logs: string[];
+  quotaExceeded?: boolean; // لتتبع نفاد الرصيد
+  pauseReason?: string; // سبب الإيقاف
 }
 
 class AIUnificationMonitor extends EventEmitter {
