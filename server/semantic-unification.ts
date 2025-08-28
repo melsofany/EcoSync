@@ -392,21 +392,12 @@ export class SemanticUnificationService {
       };
     }
 
-    // فحص إكمال العملية مسبقاً
-    if (this.status.progress >= 100 && this.status.processed > 0) {
-      console.log('✅ العملية مكتملة مسبقاً - لا حاجة لإعادة البدء');
-      return {
-        success: true,
-        message: 'العملية مكتملة مسبقاً',
-        totalRows: this.status.total,
-        processedRows: this.status.processed,
-        unifiedGroups: this.unifiedGroups.size,
-        unifiedCount: this.status.unified,
-        aiCallsUsed: this.status.aiCallCount,
-        accuracy: this.calculateAccuracy(),
-        sessionId: this.sessionId
-      };
-    }
+    // مسح العمود A أولاً لإزالة المعرفات القديمة
+    console.log('🗑️ مسح المعرفات القديمة من العمود A...');
+    await this.clearColumnA();
+    
+    // إعادة تعيين النظام بالكامل
+    this.resetSystem();
 
     this.isStopped = false;
     this.status.isRunning = true;
@@ -543,30 +534,53 @@ export class SemanticUnificationService {
           this.unifiedGroups.set(shortDescId, [product]);
           matched = true;
         } else {
-          // مرحلة 2: بحث سريع مع تحسينات قصوى
+          // مرحلة 2: بحث محسن مع فحص رقم القطعة والوصف
           for (const [unifiedId, groupProducts] of this.unifiedGroups.entries()) {
             const representative = groupProducts[0];
             const repDesc = representative.description.toLowerCase().trim();
+            const repPartNum = representative.partNumber?.toLowerCase().trim() || '';
+            const productPartNum = product.partNumber?.toLowerCase().trim() || '';
             
-            // فحص التطابق الكامل أولاً (بدون AI)
+            // فحص التطابق الكامل للوصف أولاً
             if (productDesc === repDesc) {
               bestMatchScore = 1.0;
               bestMatchId = unifiedId;
               break;
             }
             
+            // فحص التطابق في رقم القطعة (أهم شيء!)
+            if (productPartNum && repPartNum && productPartNum === repPartNum) {
+              bestMatchScore = 1.0;
+              bestMatchId = unifiedId;
+              console.log(`🎯 تطابق رقم قطعة: ${productPartNum} -> ${unifiedId}`);
+              break;
+            }
+            
+            // فحص التطابق في أرقام القطع المتشابهة (LC1D 32M7, LC1D32M7, etc.)
+            if (productPartNum && repPartNum) {
+              const cleanPart1 = productPartNum.replace(/[\s\-_]/g, '');
+              const cleanPart2 = repPartNum.replace(/[\s\-_]/g, '');
+              if (cleanPart1 === cleanPart2 && cleanPart1.length > 3) {
+                bestMatchScore = 0.95;
+                bestMatchId = unifiedId;
+                console.log(`🎯 تطابق رقم قطعة منظف: ${cleanPart1} -> ${unifiedId}`);
+                break;
+              }
+            }
+            
             // فحص سريع للطول
-            if (Math.abs(productDesc.length - repDesc.length) > productDesc.length * 0.3) {
+            if (Math.abs(productDesc.length - repDesc.length) > productDesc.length * 0.4) {
               continue;
             }
 
-            // فحص الكلمات المشتركة (بدون AI)
-            const words1 = productDesc.split(/\s+/);
-            const words2 = repDesc.split(/\s+/);
-            const commonWords = words1.filter(w => words2.includes(w) && w.length > 2);
+            // فحص الكلمات المشتركة المحسن
+            const words1 = productDesc.split(/\s+/).filter(w => w.length > 2);
+            const words2 = repDesc.split(/\s+/).filter(w => w.length > 2);
+            const commonWords = words1.filter(w => words2.includes(w));
             const similarity = commonWords.length / Math.max(words1.length, words2.length);
             
-            if (similarity > 0.8) {
+            // رفع حد التشابه للمطابقة النصية
+            if (similarity > 0.7) {
               // استخدام النظام المزدوج للمطابقة
               try {
                 const comparisonResult = await this.dualMatcher.compareItems(
