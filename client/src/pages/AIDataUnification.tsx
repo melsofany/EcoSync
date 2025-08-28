@@ -114,7 +114,44 @@ export default function AIDataUnification() {
     refetchInterval: 30000
   });
 
-  // بدء عملية التوحيد
+  // بدء عملية توحيد المعرفات الشاملة
+  const startIdentifierUnification = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/unification/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error('فشل في بدء عملية التوحيد');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "🚀 بدء التوحيد",
+        description: "تم بدء عملية توحيد المعرفات بنجاح",
+        className: "bg-gradient-to-r from-blue-500 to-purple-600 text-white",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/unification/status"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ خطأ",
+        description: error.message || "فشل في بدء عملية التوحيد",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // جلب حالة توحيد المعرفات
+  const { data: unificationStatus } = useQuery({
+    queryKey: ["/api/unification/status"],
+    refetchInterval: 2000
+  });
+
+  // بدء عملية التوحيد القديمة
   const startUnification = useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/ai-unification/start", {

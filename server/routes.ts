@@ -8420,5 +8420,73 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // ===== نهايات API لنظام التوحيد الشامل =====
+  
+  // بدء عملية توحيد المعرفات
+  app.post("/api/unification/start", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { identifierUnificationService } = await import('./identifier-unification-service.js');
+      
+      if (identifierUnificationService.isOperationRunning()) {
+        return res.status(400).json({ 
+          error: 'عملية التوحيد قيد التشغيل بالفعل' 
+        });
+      }
+
+      console.log('🚀 بدء عملية توحيد المعرفات الشاملة...');
+      
+      // تشغيل العملية في الخلفية
+      identifierUnificationService.startUnification()
+        .then((result) => {
+          console.log('✅ تمت عملية التوحيد بنجاح:', result);
+        })
+        .catch((error) => {
+          console.error('❌ فشلت عملية التوحيد:', error);
+        });
+
+      res.json({ 
+        success: true, 
+        message: 'تم بدء عملية توحيد المعرفات' 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في بدء التوحيد:', error);
+      res.status(500).json({ error: 'خطأ في بدء عملية التوحيد' });
+    }
+  });
+
+  // حالة عملية التوحيد
+  app.get("/api/unification/status", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { identifierUnificationService } = await import('./identifier-unification-service.js');
+      
+      const status = {
+        isRunning: identifierUnificationService.isOperationRunning(),
+        progress: identifierUnificationService.getProgress()
+      };
+
+      res.json(status);
+    } catch (error) {
+      console.error('❌ خطأ في جلب حالة التوحيد:', error);
+      res.status(500).json({ error: 'خطأ في جلب حالة التوحيد' });
+    }
+  });
+
+  // إيقاف عملية التوحيد
+  app.post("/api/unification/stop", requireAuth, requireRole(['it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { identifierUnificationService } = await import('./identifier-unification-service.js');
+      
+      await identifierUnificationService.stopUnification();
+      
+      res.json({ 
+        success: true, 
+        message: 'تم إيقاف عملية التوحيد' 
+      });
+    } catch (error) {
+      console.error('❌ خطأ في إيقاف التوحيد:', error);
+      res.status(500).json({ error: 'خطأ في إيقاف عملية التوحيد' });
+    }
+  });
+
   return httpServer;
 }
