@@ -47,6 +47,7 @@ export interface SemanticUnificationResult {
 export class SemanticProductUnifier {
   private googleSheetsData: GoogleSheetsRealtimeData;
   private isRunning = false;
+  private shouldStop = false;
   private progress = 0;
   private currentProcessingItem: {description: string, partNumber: string, lineItem: string} | null = null;
 
@@ -60,6 +61,7 @@ export class SemanticProductUnifier {
     }
 
     this.isRunning = true;
+    this.shouldStop = false;
     this.progress = 0;
     const startTime = Date.now();
 
@@ -118,8 +120,10 @@ export class SemanticProductUnifier {
       throw error;
     } finally {
       this.isRunning = false;
+      this.shouldStop = false;
       this.progress = 0;
       this.currentProcessingItem = null;
+      console.log('🛑 تم إيقاف العملية');
     }
   }
 
@@ -314,16 +318,27 @@ export class SemanticProductUnifier {
     console.log(`🔍 بدء تحليل ${items.length} منتج للبحث عن التطابقات...`);
 
     for (let i = 0; i < items.length; i++) {
+      // فحص طلب الإيقاف
+      if (this.shouldStop) {
+        console.log('🛑 تم طلب إيقاف العملية');
+        break;
+      }
+      
       const currentItem = items[i];
       
       // عرض البند الحالي الذي يتم تحليله
-      if (i % 100 === 0) {
+      if (i % 50 === 0) { // عرض أكثر تكراراً
         this.currentProcessingItem = {
           description: currentItem.description,
           partNumber: currentItem.partNumber,
           lineItem: currentItem.lineItem
         };
-        console.log(`🔍 تحليل البند ${i + 1}/${items.length}: ${currentItem.itemNumber} - ${currentItem.description.substring(0, 50)}...`);
+        console.log(`🔍 تحليل البند ${i + 1}/${items.length}:`);
+        console.log(`   📦 رقم المنتج: ${currentItem.itemNumber}`);
+        console.log(`   🏷️ رقم القطعة: ${currentItem.partNumber || 'غير محدد'}`);
+        console.log(`   📋 اسم البند: ${currentItem.lineItem || 'غير محدد'}`);
+        console.log(`   📝 التوصيف: ${currentItem.description.substring(0, 80)}...`);
+        console.log('   ─────────────────────────────────────────');
         this.progress = 30 + ((i / items.length) * 15); // من 30% إلى 45%
       }
       
@@ -335,13 +350,16 @@ export class SemanticProductUnifier {
         const otherItem = items[j];
         
         if (processed.has(otherItem.itemNumber)) continue;
+        
+        // تجنب مقارنة البند مع نفسه
+        if (currentItem.itemNumber === otherItem.itemNumber) continue;
 
         const similarity = this.calculateSemanticSimilarity(currentItem, otherItem);
         
-        if (similarity.score >= 0.7) { // عتبة منطقية للتطابق الدلالي
+        if (similarity.score >= 0.8) { // عتبة أعلى للتطابق الحقيقي
           duplicates.push(otherItem);
           processed.add(otherItem.itemNumber);
-          console.log(`  ✅ عثر على تطابق: ${otherItem.itemNumber} مع ${currentItem.itemNumber} (${Math.round(similarity.score * 100)}%)`);
+          console.log(`  ✅ تطابق حقيقي: ${otherItem.itemNumber} مع ${currentItem.itemNumber} (${Math.round(similarity.score * 100)}%) - ${similarity.reason}`);
         }
       }
 
@@ -362,58 +380,66 @@ export class SemanticProductUnifier {
   }
 
   private calculateSemanticSimilarity(item1: ProductItem, item2: ProductItem): {score: number, reason: string} {
+    // ❌ **تجنب تماماً مقارنة البند مع نفسه**
+    if (item1.itemNumber === item2.itemNumber) {
+      return { score: 0, reason: 'نفس البند - مرفوض' };
+    }
+    
+    // ❌ **تجنب مقارنة البنود المتشابهة في المحتوى بنسبة 100%**
+    if (item1.description === item2.description && 
+        item1.partNumber === item2.partNumber && 
+        item1.lineItem === item2.lineItem) {
+      return { score: 0, reason: 'محتوى متطابق تماماً - مشبوه' };
+    }
+    
     const specs1 = item1.extractedSpecs;
     const specs2 = item2.extractedSpecs;
     
     let score = 0;
     let reason = '';
 
-    // 1. نفس الشركة المصنعة والموديل (أهمية عليا)
-    if (specs1.manufacturer && specs2.manufacturer && specs1.manufacturer === specs2.manufacturer) {
-      score += 0.3;
+    // 1. مقارنة رقم الجزء الأساسي (الأهم)
+    if (item1.partNumber && item2.partNumber && 
+        item1.partNumber.trim() !== '' && item2.partNumber.trim() !== '') {
+      const normalizedPart1 = this.normalizePartNumber(item1.partNumber);
+      const normalizedPart2 = this.normalizePartNumber(item2.partNumber);
       
-      if (specs1.model && specs2.model && 
-          this.normalizePartNumber(specs1.model) === this.normalizePartNumber(specs2.model)) {
-        score += 0.4;
-        reason = `نفس الموديل: ${specs1.manufacturer} ${specs1.model}`;
+      if (normalizedPart1 === normalizedPart2 && normalizedPart1.length > 3) {
+        score += 0.6;
+        reason = `نفس رقم القطعة: ${item1.partNumber}`;
       }
     }
 
-    // 2. نفس رقم الجزء (مطبع)
-    if (specs1.partNumber && specs2.partNumber && 
-        this.normalizePartNumber(specs1.partNumber) === this.normalizePartNumber(specs2.partNumber)) {
-      score += 0.5;
-      reason = `نفس رقم الجزء: ${specs1.partNumber}`;
-    }
-
-    // 3. نفس المواصفات التقنية (جهد، تيار، قدرة)
-    if (specs1.voltage && specs2.voltage && specs1.voltage === specs2.voltage) score += 0.1;
-    if (specs1.current && specs2.current && specs1.current === specs2.current) score += 0.1;
-    if (specs1.power && specs2.power && specs1.power === specs2.power) score += 0.1;
-
-    // 4. نفس نوع المنتج
-    const commonSpecs = specs1.specifications.filter(spec => specs2.specifications.includes(spec));
-    if (commonSpecs.length > 0) {
+    // 2. مقارنة الشركة المصنعة والموديل
+    if (specs1.manufacturer && specs2.manufacturer && 
+        specs1.manufacturer !== 'UNKNOWN' && specs2.manufacturer !== 'UNKNOWN' &&
+        specs1.manufacturer === specs2.manufacturer) {
       score += 0.2;
-      if (!reason) reason = `نفس النوع: ${commonSpecs.join(', ')}`;
+      
+      if (specs1.model && specs2.model && 
+          specs1.model !== 'UNKNOWN' && specs2.model !== 'UNKNOWN' &&
+          this.normalizePartNumber(specs1.model) === this.normalizePartNumber(specs2.model)) {
+        score += 0.3;
+        reason = reason ? reason + ` + نفس الموديل: ${specs1.model}` : `موديل: ${specs1.manufacturer} ${specs1.model}`;
+      }
     }
 
-    // 5. تطابق الكلمات المفتاحية
-    const commonKeywords = specs1.keywords.filter(keyword => 
-      specs2.keywords.some(k => this.normalizePartNumber(k) === this.normalizePartNumber(keyword))
-    );
+    // 3. مقارنة المواصفات التقنية الأساسية
+    let specMatches = 0;
+    if (specs1.voltage && specs2.voltage && specs1.voltage === specs2.voltage) specMatches++;
+    if (specs1.current && specs2.current && specs1.current === specs2.current) specMatches++;
+    if (specs1.power && specs2.power && specs1.power === specs2.power) specMatches++;
     
-    if (commonKeywords.length >= 3) {
+    if (specMatches >= 2) {
       score += 0.1;
     }
 
-    // حالات خاصة: شنايدر LC1D 32M7
-    if (this.isSchneiderLC1D32M7(item1, item2)) {
-      score = 0.95;
-      reason = 'منتج شنايدر LC1D 32M7 مؤكد';
+    // ✅ **فقط إرجاع التطابق إذا كان حقيقياً ومعقولاً**
+    if (score >= 0.8 && reason) {
+      return { score: Math.min(score, 0.95), reason }; // حد أقصى 95%
     }
 
-    return { score: Math.min(score, 1), reason: reason || 'تشابه عام' };
+    return { score: 0, reason: 'لا يوجد تطابق دلالي كافي' };
   }
 
   private normalizePartNumber(partNum: string): string {
@@ -472,6 +498,11 @@ export class SemanticProductUnifier {
 
   isOperationRunning(): boolean {
     return this.isRunning;
+  }
+
+  stopOperation(): void {
+    console.log('🛑 تم طلب إيقاف العملية...');
+    this.shouldStop = true;
   }
 }
 
