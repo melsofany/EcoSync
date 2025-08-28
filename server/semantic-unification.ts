@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { authenticateGoogle } from './google-auth.js';
+import { DualMatchingSystem } from './dual-matching-system.js';
 
 // تعريف واجهة الحالة
 interface Status {
@@ -40,6 +41,7 @@ interface Product {
   rowIndex: number;
   id?: string;
   description: string;
+  partNumber?: string;
   unifiedId?: string;
 }
 
@@ -59,10 +61,12 @@ export class SemanticUnificationService {
   private sessionId: string;
   private processedItems: Product[] = [];
   private nextId: number = 1;
+  private dualMatcher: DualMatchingSystem;
 
   constructor(deepSeekApiKey?: string) {
     this.deepSeekApiKey = deepSeekApiKey || process.env.DEEPSEEK_API_KEY || '';
     this.sessionId = this.generateSessionId();
+    this.dualMatcher = new DualMatchingSystem(this.deepSeekApiKey);
     
     // تهيئة الحالة الافتراضية
     this.status = {
@@ -105,111 +109,22 @@ export class SemanticUnificationService {
     }
   }
 
-  // مقارنة أوصاف المنتجات باستخدام DeepSeek API
-  private async compareDescriptions(description1: string, description2: string): Promise<DeepSeekResponse> {
-    // فلترة سريعة للقيم غير الصالحة
-    const ignoredTerms = ['EACH', 'PCS', '', 'N/A', 'NULL', '-', '0'];
-    const desc1 = description1.trim();
-    const desc2 = description2.trim();
+  // مقارنة أوصاف المنتجات باستخدام النظام المزدوج
+  private async compareDescriptions(description1: string, description2: string, partNo1: string = '', partNo2: string = ''): Promise<DeepSeekResponse> {
+    // استخدام النظام المزدوج الجديد
+    const result = await this.dualMatcher.compareItems(description1, description2, partNo1, partNo2);
     
-    if (ignoredTerms.includes(desc1.toUpperCase()) || 
-        ignoredTerms.includes(desc2.toUpperCase()) ||
-        desc1.length < 3 || desc2.length < 3) {
-      return {
-        similar: false,
-        score: 0,
-        reason: 'وصف غير صالح للمقارنة'
-      };
-    }
-
-    // فحص سريع للتطابق الكامل
-    if (desc1.toLowerCase() === desc2.toLowerCase()) {
-      return {
-        similar: true,
-        score: 1.0,
-        reason: 'تطابق كامل'
-      };
-    }
-
-    try {
+    // تحديث عداد استخدام AI
+    if (result.method === 'semantic') {
       this.status.aiCallCount++;
-      
-      const prompt = `هل هذان المنتجان من نفس النوع/الفئة رغم اختلاف التفاصيل؟
-
-المنتج 1: "${desc1}"
-المنتج 2: "${desc2}"
-
-قواعد التطابق الصارمة:
-✅ نفس المنتج بالضبط:
-- تلفزيون سامسونج 32" = تلفزيون سامسونج 32"
-- كونتاكتور سيمنز 25A = كونتاكتور سيمنز 25A
-- كابل 2.5mm أحمر = كابل 2.5mm أحمر
-
-❌ منتجات مختلفة (حتى لو متشابهة):
-- تلفزيون 32" ≠ تلفزيون 42"
-- كونتاكتور 25A ≠ كونتاكتور 40A
-- كابل 2.5mm ≠ كابل 4mm
-- مفتاح كهرباء ≠ مفتاح إضاءة
-
-الهدف: كل منتج مختلف يحصل على معرف منفصل
-
-JSON:
-{"similar":true/false,"score":0.0-1.0,"reason":"سبب"}`;
-
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.deepSeekApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'deepseek-reasoner',
-          messages: [
-            {
-              role: 'system',
-              content: 'أنت مساعد مفيد في توحيد المنتجات الصناعية. يجب أن تجيب فقط بـ JSON بدون أي نص إضافي.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.1,
-          max_tokens: 150
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`DeepSeek API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const content = data.choices[0].message.content.trim();
-      
-      try {
-        const result: DeepSeekResponse = JSON.parse(content);
-        return result;
-      } catch (parseError) {
-        // إذا فشل تحليل JSON، حاول استخراج البيانات من النص
-        console.log('فشل تحليل JSON، محاولة استخراج البيانات:', content);
-        
-        const similar = content.toLowerCase().includes('true') && 
-                       (content.includes('مطابق') || 
-                        content.includes('نفس') ||
-                        content.includes('identical'));
-        
-        return {
-          similar,
-          score: similar ? 0.9 : 0.1,
-          reason: 'تحليل نصي بديل للمطابقة الدقيقة'
-        };
-      }
-
-    } catch (error) {
-      console.error('فشل في استدعاء DeepSeek API:', error);
-      // Fallback إلى المقارنة النصية البسيطة
-      return this.fallbackComparison(description1, description2);
     }
+    
+    // تحويل النتيجة لصيغة DeepSeekResponse
+    return {
+      similar: result.similar,
+      score: result.score,
+      reason: result.reason
+    };
   }
 
   // Fallback للمقارنة النصية إذا فشل DeepSeek
@@ -358,6 +273,7 @@ JSON:
       const products: Product[] = rows.map((row: any[], index: number) => ({
         rowIndex: index + 2, // الصفوف تبدأ من 2 لأن العنوان في الصف 1
         description: row[4] || '', // العمود E للتوصيف
+        partNumber: row[3] || '', // العمود D لرقم القطعة
       }));
 
       // 4. معالجة كل منتج
@@ -457,10 +373,12 @@ JSON:
             const similarity = commonWords.length / Math.max(words1.length, words2.length);
             
             if (similarity > 0.8) {
-              // استخدام AI فقط للحالات المشكوك فيها
-              const comparisonResult = await this.compareDescriptions(
+              // استخدام النظام المزدوج للمطابقة
+              const comparisonResult = await this.dualMatcher.compareItems(
                 product.description,
-                representative.description
+                representative.description,
+                product.partNumber || '',
+                representative.partNumber || ''
               );
 
               if (comparisonResult.similar && comparisonResult.score > bestMatchScore) {
