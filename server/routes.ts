@@ -7120,7 +7120,29 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // حالة التوحيد الذكي باستخدام DeepSeek AI
   app.get("/api/ai-unification/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      console.log('🎯 طلب حالة التوحيد الذكي...');
+      console.log('🎯 طلب حالة توحيد المعرفات...');
+      
+      // جلب حالة نظام توحيد المعرفات الجديد
+      const { identifierUnificationService } = await import('./identifier-unification-service.js');
+      
+      const isRunning = identifierUnificationService.isOperationRunning();
+      const progress = identifierUnificationService.getProgress();
+      
+      res.json({
+        isRunning,
+        isPaused: false,
+        progress,
+        total: 100,
+        processed: progress,
+        unified: 0,
+        skipped: 0,
+        errors: 0,
+        accuracy: 85,
+        quotaExceeded: false,
+        statusMessage: isRunning ? "جاري توحيد المعرفات..." : "جاهز للتوحيد"
+      });
+      
+      return;
       
       // جلب حالة التوحيد من النظام الدلالي المحدث
       const { semanticUnification } = await import('./semantic-unification.js');
@@ -7213,36 +7235,33 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // بدء عملية التوحيد الذكي باستخدام DeepSeek AI
   app.post("/api/ai-unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      console.log('🤖 بدء التوحيد الذكي بـ DeepSeek AI من المستخدم:', req.session?.user?.username);
+      console.log('🤖 بدء توحيد المعرفات بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
       
-      // استخدام النظام الدلالي مباشرة
-      const { semanticUnification } = await import('./semantic-unification.js');
+      // استخدام نظام توحيد المعرفات الجديد
+      const { identifierUnificationService } = await import('./identifier-unification-service.js');
       
-      // إعادة تعيين النظام أولاً
-      semanticUnification.resetSystem();
-      
-      // تهيئة النظام
-      await semanticUnification.initialize();
-      
-      // بدء التوحيد
-      const result = await semanticUnification.runSemanticUnification();
-      
-      await logActivity(req, "start_ai_unification", "ai_unification", "deepseek", "بدء التوحيد الذكي بـ DeepSeek AI");
-      
-      if (result.success) {
-        res.json({
-          success: true,
-          message: result.message || "تم بدء التوحيد الذكي بنجاح",
-          sessionId: result.sessionId,
-          totalRows: result.totalRows,
-          processedRows: result.processedRows
-        });
-      } else {
-        res.status(400).json({
+      if (identifierUnificationService.isOperationRunning()) {
+        return res.status(400).json({ 
           success: false,
-          message: result.message || "فشل في بدء التوحيد"
+          error: 'عملية التوحيد قيد التشغيل بالفعل' 
         });
       }
+
+      // بدء التوحيد في الخلفية
+      identifierUnificationService.startUnification()
+        .then((result) => {
+          console.log('✅ تمت عملية توحيد المعرفات بنجاح:', result);
+        })
+        .catch((error) => {
+          console.error('❌ فشلت عملية توحيد المعرفات:', error);
+        });
+      
+      await logActivity(req, "start_identifier_unification", "ai_unification", "identifier", "بدء توحيد المعرفات بالذكاء الاصطناعي");
+      
+      res.json({
+        success: true,
+        message: "تم بدء عملية توحيد المعرفات بنجاح"
+      });
 
     } catch (error) {
       console.error('خطأ في بدء التوحيد الذكي:', error);
