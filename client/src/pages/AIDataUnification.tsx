@@ -717,6 +717,46 @@ export default function AIDataUnification() {
                   بدء البحث عن التكرارات
                 </Button>
                 
+                <Button 
+                  onClick={async () => {
+                    try {
+                      toast({
+                        title: "🔧 توحيد شنايدر LC1D 32M7",
+                        description: "جاري توحيد المعرفات المكررة لهذا المنتج...",
+                      });
+                      
+                      // استدعاء نظام التوحيد العادي مع تركيز على هذا المنتج
+                      const response = await fetch("/api/ai-unification/start", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          mode: "targeted",
+                          searchTerms: ["LC1D", "32M7", "2102049", "SCHNEIDER", "TELEMECANIQUE"],
+                          targetAccuracy: 100
+                        })
+                      });
+                      
+                      if (response.ok) {
+                        toast({
+                          title: "✅ تم بدء التوحيد",
+                          description: "سيتم توحيد جميع معرفات شنايدر LC1D 32M7 المكررة",
+                          className: "bg-gradient-to-r from-green-500 to-emerald-600 text-white",
+                        });
+                      }
+                    } catch (error) {
+                      toast({
+                        title: "❌ خطأ في التوحيد",
+                        description: "فشل في بدء عملية توحيد شنايدر LC1D 32M7",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="w-full bg-orange-600 hover:bg-orange-700"
+                >
+                  <Merge className="ml-2 h-4 w-4" />
+                  توحيد شنايدر LC1D 32M7 المكرر
+                </Button>
+                
                 <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                   <h4 className="font-semibold text-yellow-800 mb-2">مؤشرات التكرار المحتملة:</h4>
                   <ul className="text-sm text-yellow-700 space-y-1">

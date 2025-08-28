@@ -83,6 +83,39 @@ export async function analyzeItemsForDuplicates(items: ItemForAnalysis[]): Promi
   }
 }
 
+// تطبيع رقم الجزء للكشف عن التشابه
+function normalizePartNumber(partNumber: string): string {
+  if (!partNumber) return '';
+  
+  return partNumber
+    .toUpperCase()
+    .replace(/[^\w\d]/g, '') // إزالة المسافات والرموز
+    .replace(/\s+/g, '')     // إزالة المسافات
+    .trim();
+}
+
+// استخراج المعرفات البديلة للمنتج (مثل 2102049 لـ LC1D32M7)
+function extractAlternatePartNumbers(description: string): string[] {
+  const alternates = [];
+  
+  // البحث عن أرقام الأجزاء في الوصف
+  const partMatches = description.match(/\b[A-Z0-9]{4,15}\b/g);
+  if (partMatches) {
+    alternates.push(...partMatches.map(normalizePartNumber));
+  }
+  
+  // البحث عن الأرقام المرجعية مثل REF PN/2102034
+  const refMatches = description.match(/(?:REF\.?\s*PN\/|P\/N\s*:?\s*)([A-Z0-9\s]+)/gi);
+  if (refMatches) {
+    refMatches.forEach(match => {
+      const partNum = match.replace(/(?:REF\.?\s*PN\/|P\/N\s*:?\s*)/gi, '').trim();
+      alternates.push(normalizePartNumber(partNum));
+    });
+  }
+  
+  return [...new Set(alternates.filter(p => p.length > 3))];
+}
+
 function groupSimilarItems(items: ItemForAnalysis[]): ItemForAnalysis[][] {
   const groups: Map<string, ItemForAnalysis[]> = new Map();
   
@@ -100,17 +133,27 @@ function groupSimilarItems(items: ItemForAnalysis[]): ItemForAnalysis[][] {
       .replace(/\s+/g, '')
       .trim();
     
+    // تطبيع رقم الجزء
+    const normalizedPartNumber = normalizePartNumber(item.part_number);
+    const alternatePartNumbers = extractAlternatePartNumbers(item.description);
+    
     // استخراج الكلمات المفتاحية من الوصف للتجميع الدلالي
     const keywords = extractSemanticKeywords(normalizedDesc);
     const brandKeyword = extractBrandKeyword(normalizedDesc);
     const typeKeyword = extractTypeKeyword(normalizedDesc);
     
-    // تجميع بناءً على المعايير الدلالية
+    // تجميع بناءً على المعايير الدلالية المحسنة
     let groupKey = '';
     
     if (normalizedLineItem) {
       // أعلى أولوية: LINE ITEM
       groupKey = `lineitem_${normalizedLineItem}`;
+    } else if (normalizedPartNumber && (normalizedPartNumber.includes('LC1D32M7') || alternatePartNumbers.some(alt => alt.includes('LC1D32M7')))) {
+      // حالة خاصة لشنايدر LC1D32M7 وبدائله
+      groupKey = `schneider_lc1d32m7_contactor`;
+    } else if (normalizedPartNumber && normalizedPartNumber.length > 4) {
+      // تجميع بناءً على رقم الجزء المطبع
+      groupKey = `partnum_${normalizedPartNumber}`;
     } else if (brandKeyword && typeKeyword) {
       // تجميع بناءً على العلامة التجارية ونوع المنتج
       groupKey = `semantic_${brandKeyword}_${typeKeyword}`;
@@ -119,7 +162,7 @@ function groupSimilarItems(items: ItemForAnalysis[]): ItemForAnalysis[][] {
       groupKey = `keywords_${keywords.slice(0, 3).join('_')}`;
     } else {
       // الحل الاحتياطي: باستخدام جزء من الوصف مع رقم الجزء
-      groupKey = `fallback_${normalizedDesc.substring(0, 30)}_${item.part_number || 'nopart'}`;
+      groupKey = `fallback_${normalizedDesc.substring(0, 30)}_${normalizedPartNumber || 'nopart'}`;
     }
     
     if (!groups.has(groupKey)) {
