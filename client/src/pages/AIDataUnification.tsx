@@ -23,6 +23,11 @@ import { motion } from "framer-motion";
 interface SemanticUnificationStatus {
   isRunning: boolean;
   progress: number;
+  currentItem?: {
+    description: string;
+    partNumber: string;
+    lineItem: string;
+  } | null;
 }
 
 interface SemanticUnificationStats {
@@ -159,7 +164,25 @@ export default function AIDataUnification() {
                 className="mt-3 p-3 bg-white rounded-lg border"
               >
                 <p className="text-sm font-medium mb-1">🧠 جاري التحليل الدلالي للمنتجات...</p>
-                <p className="text-xs text-gray-600">يتم تحليل معنى كل توصيف وإيجاد المنتجات المتطابقة دلالياً</p>
+                {status.currentItem && (
+                  <div className="mt-2 p-2 bg-gray-50 rounded border-r-4 border-blue-400">
+                    <p className="text-xs font-medium text-gray-700">🔍 البند الحالي:</p>
+                    <p className="text-xs text-gray-600 mt-1">
+                      <span className="font-medium">التوصيف:</span> {status.currentItem.description.substring(0, 80)}...
+                    </p>
+                    {status.currentItem.partNumber && (
+                      <p className="text-xs text-gray-600">
+                        <span className="font-medium">رقم القطعة:</span> {status.currentItem.partNumber}
+                      </p>
+                    )}
+                    {status.currentItem.lineItem && (
+                      <p className="text-xs text-gray-600">
+                        <span className="font-medium">اسم البند:</span> {status.currentItem.lineItem}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <p className="text-xs text-gray-600 mt-2">يتم تحليل معنى كل توصيف وإيجاد المنتجات المتطابقة دلالياً</p>
               </motion.div>
             )}
           </div>

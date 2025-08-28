@@ -48,6 +48,7 @@ export class SemanticProductUnifier {
   private googleSheetsData: GoogleSheetsRealtimeData;
   private isRunning = false;
   private progress = 0;
+  private currentProcessingItem: {description: string, partNumber: string, lineItem: string} | null = null;
 
   constructor() {
     this.googleSheetsData = new GoogleSheetsRealtimeData();
@@ -118,6 +119,7 @@ export class SemanticProductUnifier {
     } finally {
       this.isRunning = false;
       this.progress = 0;
+      this.currentProcessingItem = null;
     }
   }
 
@@ -308,9 +310,22 @@ export class SemanticProductUnifier {
   private async groupItemsBySemantics(items: ProductItem[]): Promise<SemanticGroup[]> {
     const groups: SemanticGroup[] = [];
     const processed = new Set<string>();
+    
+    console.log(`🔍 بدء تحليل ${items.length} منتج للبحث عن التطابقات...`);
 
     for (let i = 0; i < items.length; i++) {
       const currentItem = items[i];
+      
+      // عرض البند الحالي الذي يتم تحليله
+      if (i % 100 === 0) {
+        this.currentProcessingItem = {
+          description: currentItem.description,
+          partNumber: currentItem.partNumber,
+          lineItem: currentItem.lineItem
+        };
+        console.log(`🔍 تحليل البند ${i + 1}/${items.length}: ${currentItem.itemNumber} - ${currentItem.description.substring(0, 50)}...`);
+        this.progress = 30 + ((i / items.length) * 15); // من 30% إلى 45%
+      }
       
       if (processed.has(currentItem.itemNumber)) continue;
 
@@ -323,9 +338,10 @@ export class SemanticProductUnifier {
 
         const similarity = this.calculateSemanticSimilarity(currentItem, otherItem);
         
-        if (similarity.score >= 0.85) { // عتبة عالية للثقة
+        if (similarity.score >= 0.7) { // عتبة منطقية للتطابق الدلالي
           duplicates.push(otherItem);
           processed.add(otherItem.itemNumber);
+          console.log(`  ✅ عثر على تطابق: ${otherItem.itemNumber} مع ${currentItem.itemNumber} (${Math.round(similarity.score * 100)}%)`);
         }
       }
 
@@ -337,9 +353,11 @@ export class SemanticProductUnifier {
           matchReason: this.calculateSemanticSimilarity(currentItem, duplicates[0]).reason
         });
         processed.add(currentItem.itemNumber);
+        console.log(`📦 مجموعة جديدة: ${duplicates.length} بند مكرر تحت ${currentItem.itemNumber}`);
       }
     }
-
+    
+    console.log(`✅ انتهى التحليل: تم العثور على ${groups.length} مجموعة دلالية`);
     return groups;
   }
 
@@ -446,6 +464,10 @@ export class SemanticProductUnifier {
 
   getProgress(): number {
     return this.progress;
+  }
+
+  getCurrentProcessingItem(): {description: string, partNumber: string, lineItem: string} | null {
+    return this.currentProcessingItem;
   }
 
   isOperationRunning(): boolean {

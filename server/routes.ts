@@ -7128,6 +7128,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const isRunning = semanticProductUnifier.isOperationRunning();
       const progress = semanticProductUnifier.getProgress();
       
+      // الحصول على البند الحالي الذي يتم تحليله
+      const currentItem = semanticProductUnifier.getCurrentProcessingItem();
+      
       res.json({
         isRunning,
         isPaused: false,
@@ -7139,7 +7142,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         errors: 0,
         accuracy: 85,
         quotaExceeded: false,
-        statusMessage: isRunning ? "جاري توحيد المعرفات..." : "جاهز للتوحيد"
+        statusMessage: isRunning ? "جاري توحيد المعرفات..." : "جاهز للتوحيد",
+        currentItem: currentItem
       });
       
       return;
