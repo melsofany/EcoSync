@@ -232,7 +232,7 @@ export default function AIDataUnification() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-purple-700">
-              {stats?.unificationRate?.toFixed(1) || 0}%
+              {stats?.unificationRate ? stats.unificationRate.toFixed(1) : '0'}%
             </p>
             <p className="text-sm text-purple-600 mt-1">
               نسبة النجاح
