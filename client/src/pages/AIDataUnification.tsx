@@ -4,172 +4,74 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { 
   PlayCircle, 
-  PauseCircle, 
-  StopCircle, 
-  RefreshCw,
   CheckCircle2,
   Clock,
   AlertCircle,
-  Sparkles,
   Brain,
-  Zap,
   Target,
   Activity,
   TrendingUp,
   Database,
-  Layers,
-  CreditCard,
-  Shield,
-  Search,
-  Merge,
-  AlertTriangle
+  Layers
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-interface UnificationStatus {
+interface SemanticUnificationStatus {
   isRunning: boolean;
-  isPaused: boolean;
   progress: number;
-  total: number;
-  processed: number;
-  unified: number;
-  skipped: number;
-  errors: number;
-  currentItem?: {
-    description: string;
-    partNumber: string;
-    lineItem: string;
-  };
-  startTime?: string;
-  estimatedTimeRemaining?: number;
-  accuracy: number;
-  quotaExceeded?: boolean;
-  pauseReason?: string;
-  statusMessage?: string;
-  aiCallCount?: number;
 }
 
-interface UnificationStats {
+interface SemanticUnificationStats {
   totalItems: number;
   uniqueItems: number;
   duplicatesFound: number;
   unificationRate: number;
-  averageConfidence: number;
-  lastRunDate?: string;
-  totalRuns: number;
+}
+
+interface SemanticUnificationResult {
+  totalProcessed: number;
+  groupsFound: number;
+  itemsUnified: number;
+  processingTime: number;
 }
 
 export default function AIDataUnification() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
 
-  // جلب حالة التوحيد
-  const { data: status, isLoading: statusLoading } = useQuery<UnificationStatus>({
+  // جلب حالة التوحيد الدلالي
+  const { data: status, isLoading: statusLoading } = useQuery<SemanticUnificationStatus>({
     queryKey: ["/api/ai-unification/status"],
     refetchInterval: (query) => {
-      const data = query.state.data as UnificationStatus;
+      const data = query.state.data as SemanticUnificationStatus;
       return data?.isRunning ? 1000 : 5000;
     }
   });
 
-  // مراقبة نفاد الرصيد وعرض الرسالة المنبثقة
-  useEffect(() => {
-    if (status?.quotaExceeded && !showQuotaDialog) {
-      setShowQuotaDialog(true);
-      toast({
-        title: "🚫 نفد رصيد الـ AI",
-        description: "يرجى إعادة تعبئة رصيد الـ DeepSeek API لمتابعة التوحيد",
-        variant: "destructive",
-        duration: 10000
-      });
-    }
-  }, [status?.quotaExceeded, showQuotaDialog, toast]);
-
-  // مراقبة اكتمال العملية ومنع إعادة البدء التلقائي
-  useEffect(() => {
-    if (status && status.progress >= 100 && status.isRunning) {
-      // إيقاف العملية تلقائياً عند الوصول لـ 100%
-      stopUnification.mutate();
-      toast({
-        title: "✅ اكتمل التوحيد",
-        description: "تم إنجاز عملية توحيد البيانات بنجاح",
-        className: "bg-gradient-to-r from-green-500 to-emerald-600 text-white",
-        duration: 8000
-      });
-    }
-  }, [status?.progress, status?.isRunning]);
-
   // جلب إحصائيات التوحيد
-  const { data: stats } = useQuery<UnificationStats>({
+  const { data: stats } = useQuery<SemanticUnificationStats>({
     queryKey: ["/api/ai-unification/stats"],
     refetchInterval: 30000
   });
 
-  // بدء عملية توحيد المعرفات الشاملة
-  const startIdentifierUnification = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/unification/start", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      if (!response.ok) {
-        throw new Error('فشل في بدء عملية التوحيد');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "🚀 بدء التوحيد",
-        description: "تم بدء عملية توحيد المعرفات بنجاح",
-        className: "bg-gradient-to-r from-blue-500 to-purple-600 text-white",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/unification/status"] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "❌ خطأ",
-        description: error.message || "فشل في بدء عملية التوحيد",
-        variant: "destructive",
-      });
-    }
-  });
-
-  // جلب حالة توحيد المعرفات
-  const { data: unificationStatus } = useQuery({
-    queryKey: ["/api/unification/status"],
-    refetchInterval: 2000
-  });
-
-  // بدء عملية التوحيد القديمة
-  const startUnification = useMutation({
+  // بدء عملية التوحيد الدلالي
+  const startSemanticUnification = useMutation({
     mutationFn: async () => {
       const response = await fetch("/api/ai-unification/start", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          mode: "full",
-          targetAccuracy: 100,
-          batchSize: 10
-        }),
         credentials: "include"
       });
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `خطأ في الخادم: ${response.status}`);
+        throw new Error(errorData.error || `خطأ في الخادم: ${response.status}`);
       }
       
       return response.json();
@@ -177,14 +79,14 @@ export default function AIDataUnification() {
     onSuccess: (data) => {
       if (data.success) {
         toast({
-          title: "✨ بدء التوحيد الذكي",
-          description: data.message || "تم بدء عملية توحيد البيانات بالذكاء الاصطناعي",
+          title: "🧠 بدء التحليل الدلالي",
+          description: data.message || "تم بدء عملية التوحيد بالتحليل الدلالي للمعنى",
           className: "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
         });
       } else {
         toast({
           title: "تحذير",
-          description: data.message || "حدث خطأ في بدء التوحيد",
+          description: data.message || "حدث خطأ في بدء التوحيد الدلالي",
           variant: "destructive"
         });
       }
@@ -192,135 +94,14 @@ export default function AIDataUnification() {
     },
     onError: (error) => {
       toast({
-        title: "خطأ في بدء التوحيد",
+        title: "خطأ في التحليل الدلالي",
         description: error.message,
         variant: "destructive"
       });
     }
   });
 
-  // إيقاف عملية التوحيد مؤقتاً
-  const pauseUnification = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/ai-unification/pause", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include"
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "⏸️ إيقاف مؤقت",
-        description: "تم إيقاف عملية التوحيد مؤقتاً"
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
-    }
-  });
-
-  // استئناف عملية التوحيد
-  const resumeUnification = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/ai-unification/resume", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include"
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "▶️ استئناف التوحيد",
-        description: "تم استئناف عملية التوحيد"
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
-    }
-  });
-
-  // إيقاف عملية التوحيد نهائياً
-  const stopUnification = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/ai-unification/stop", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include"
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "🛑 إيقاف التوحيد",
-        description: "تم إيقاف عملية التوحيد نهائياً",
-        variant: "destructive"
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
-    }
-  });
-
-  // إعادة تعيين التوحيد
-  const resetUnification = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/ai-unification/reset", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include"
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "🔄 إعادة تعيين",
-        description: "تمت إعادة تعيين بيانات التوحيد"
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/stats"] });
-    }
-  });
-
-  const formatTime = (seconds?: number) => {
-    if (!seconds) return "--:--";
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hours > 0) {
-      return `${hours}س ${minutes}د`;
-    } else if (minutes > 0) {
-      return `${minutes}د ${secs}ث`;
-    } else {
-      return `${secs}ث`;
-    }
-  };
-
-  const progressPercentage = status?.total ? (status.processed / status.total) * 100 : 0;
+  const progressPercentage = status?.progress || 0;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -331,9 +112,9 @@ export default function AIDataUnification() {
         className="text-center mb-8"
       >
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-          توحيد البيانات بالذكاء الاصطناعي
+          توحيد المنتجات بالتحليل الدلالي
         </h1>
-        <p className="text-gray-600">نظام ذكي لتوحيد البنود المكررة وتحسين جودة البيانات باستخدام الذكاء الاصطناعي</p>
+        <p className="text-gray-600">نظام ذكي يفهم معنى التوصيف ويوحد المنتجات المتطابقة دلالياً</p>
       </motion.div>
 
       {/* شريط الحالة */}
@@ -342,549 +123,155 @@ export default function AIDataUnification() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className={`w-3 h-3 rounded-full animate-pulse ${
-                status?.isRunning ? 'bg-green-500' : 
-                status?.isPaused ? 'bg-yellow-500' : 'bg-gray-400'
+                status?.isRunning ? 'bg-green-500' : 'bg-gray-400'
               }`} />
               <span className="font-semibold text-lg">
-                {status?.statusMessage || 
-                 (status?.isRunning ? 'جاري التوحيد...' : 
-                  status?.isPaused ? `متوقف مؤقتاً${status.pauseReason ? ` - ${status.pauseReason}` : ''}` : 
-                  'في وضع الانتظار')}
+                {status?.isRunning ? 'جاري التحليل الدلالي...' : 'في وضع الانتظار'}
               </span>
             </div>
             
             <div className="flex items-center gap-2">
-              {!status?.isRunning && !status?.isPaused && (
-                <>
-                  <Button 
-                    onClick={() => startUnification.mutate()}
-                    disabled={startUnification.isPending || (status?.progress || 0) >= 100}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                  >
-                    <PlayCircle className="ml-2 h-4 w-4" />
-                    {(status?.progress || 0) >= 100 ? "مكتمل" : "بدء التوحيد بـ AI"}
-                  </Button>
-                  {(status?.progress || 0) >= 100 && (
-                    <Button 
-                      onClick={() => resetUnification.mutate()}
-                      variant="outline"
-                      disabled={resetUnification.isPending}
-                      className="border-orange-300 text-orange-600 hover:bg-orange-50"
-                    >
-                      <RefreshCw className="ml-2 h-4 w-4" />
-                      بدء جديد
-                    </Button>
-                  )}
-                </>
-              )}
-              
-              {status?.isRunning && (
-                <>
-                  <Button 
-                    onClick={() => pauseUnification.mutate()}
-                    variant="outline"
-                    disabled={pauseUnification.isPending}
-                  >
-                    <PauseCircle className="ml-2 h-4 w-4" />
-                    إيقاف مؤقت
-                  </Button>
-                  <Button 
-                    onClick={() => stopUnification.mutate()}
-                    variant="destructive"
-                    disabled={stopUnification.isPending}
-                  >
-                    <StopCircle className="ml-2 h-4 w-4" />
-                    إيقاف نهائي
-                  </Button>
-                </>
-              )}
-              
-              {status?.isPaused && (
+              {!status?.isRunning && (
                 <Button 
-                  onClick={() => resumeUnification.mutate()}
-                  className="bg-gradient-to-r from-green-500 to-teal-600"
-                  disabled={resumeUnification.isPending}
+                  onClick={() => startSemanticUnification.mutate()}
+                  disabled={startSemanticUnification.isPending}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  <PlayCircle className="ml-2 h-4 w-4" />
-                  استئناف
+                  <Brain className="ml-2 h-4 w-4" />
+                  بدء التوحيد الدلالي
                 </Button>
               )}
             </div>
           </div>
 
-          {/* تحذير نفاد الرصيد */}
-          {status?.quotaExceeded && (
-            <Alert className="bg-red-50 border-red-200 mb-4">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">
-                <strong>🚫 نفد رصيد الـ AI:</strong> يرجى إعادة تعبئة رصيد DeepSeek API للمتابعة
-              </AlertDescription>
-            </Alert>
-          )}
-
           {/* شريط التقدم */}
           <div className="space-y-3">
             <div className="flex justify-between text-sm text-gray-600">
-              <span>{status?.processed || 0} من {status?.total || 0}</span>
+              <span>التقدم</span>
               <span>{progressPercentage.toFixed(1)}%</span>
             </div>
             <Progress value={progressPercentage} className="h-3" />
             
-            {status?.currentItem && (
+            {status?.isRunning && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-3 p-3 bg-white rounded-lg border"
               >
-                <p className="text-sm font-medium mb-1">جاري معالجة:</p>
-                <p className="text-xs text-gray-600 truncate">{status.currentItem.description}</p>
-                <div className="flex gap-2 mt-2">
-                  {status.currentItem.partNumber && (
-                    <Badge variant="outline" className="text-xs">
-                      {status.currentItem.partNumber}
-                    </Badge>
-                  )}
-                  {status.currentItem.lineItem && (
-                    <Badge variant="outline" className="text-xs">
-                      {status.currentItem.lineItem}
-                    </Badge>
-                  )}
-                </div>
+                <p className="text-sm font-medium mb-1">🧠 جاري التحليل الدلالي للمنتجات...</p>
+                <p className="text-xs text-gray-600">يتم تحليل معنى كل توصيف وإيجاد المنتجات المتطابقة دلالياً</p>
               </motion.div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* التبويبات */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="dashboard">
-            <Activity className="ml-2 h-4 w-4" />
-            لوحة التحكم
-          </TabsTrigger>
-          <TabsTrigger value="statistics">
-            <TrendingUp className="ml-2 h-4 w-4" />
-            الإحصائيات
-          </TabsTrigger>
-          <TabsTrigger value="duplicates">
-            <Search className="ml-2 h-4 w-4" />
-            البحث عن التكرارات
-          </TabsTrigger>
-          <TabsTrigger value="prevention">
-            <Shield className="ml-2 h-4 w-4" />
-            منع التكرار
-          </TabsTrigger>
-          <TabsTrigger value="settings">
-            <Database className="ml-2 h-4 w-4" />
-            الإعدادات
-          </TabsTrigger>
-        </TabsList>
+      {/* الإحصائيات */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* إجمالي المنتجات */}
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center justify-between">
+              <span>إجمالي المنتجات</span>
+              <Database className="h-5 w-5 text-blue-600" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-blue-700">
+              {stats?.totalItems || 0}
+            </p>
+            <p className="text-sm text-blue-600 mt-1">
+              منتج في النظام
+            </p>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="dashboard" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* كارت البنود المعالجة */}
-            <Card className="border-green-200 bg-green-50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span>تم معالجتها</span>
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-green-700">
-                  {status?.processed || 0}
-                </p>
-                <p className="text-sm text-green-600 mt-1">
-                  بند تم تحليله
-                </p>
-              </CardContent>
-            </Card>
+        {/* المنتجات الفريدة */}
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center justify-between">
+              <span>منتجات فريدة</span>
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-green-700">
+              {stats?.uniqueItems || 0}
+            </p>
+            <p className="text-sm text-green-600 mt-1">
+              منتج مختلف
+            </p>
+          </CardContent>
+        </Card>
 
-            {/* كارت البنود الموحدة */}
-            <Card className="border-blue-200 bg-blue-50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span>تم توحيدها</span>
-                  <Layers className="h-5 w-5 text-blue-600" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-blue-700">
-                  {status?.unified || 0}
-                </p>
-                <p className="text-sm text-blue-600 mt-1">
-                  بند موحد
-                </p>
-              </CardContent>
-            </Card>
+        {/* المكررات المكتشفة */}
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center justify-between">
+              <span>مكررات مكتشفة</span>
+              <Layers className="h-5 w-5 text-orange-600" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-orange-700">
+              {stats?.duplicatesFound || 0}
+            </p>
+            <p className="text-sm text-orange-600 mt-1">
+              منتج مكرر
+            </p>
+          </CardContent>
+        </Card>
 
-            {/* كارت دقة التوحيد */}
-            <Card className="border-purple-200 bg-purple-50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span>دقة التوحيد</span>
-                  <Target className="h-5 w-5 text-purple-600" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-purple-700">
-                  {status?.accuracy || 100}%
-                </p>
-                <p className="text-sm text-purple-600 mt-1">
-                  مستوى الدقة
-                </p>
-              </CardContent>
-            </Card>
+        {/* معدل التوحيد */}
+        <Card className="border-purple-200 bg-purple-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center justify-between">
+              <span>معدل التوحيد</span>
+              <Target className="h-5 w-5 text-purple-600" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-purple-700">
+              {stats?.unificationRate?.toFixed(1) || 0}%
+            </p>
+            <p className="text-sm text-purple-600 mt-1">
+              نسبة النجاح
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
-            {/* كارت الوقت المتبقي */}
-            <Card className="border-orange-200 bg-orange-50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span>الوقت المتبقي</span>
-                  <Clock className="h-5 w-5 text-orange-600" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold text-orange-700">
-                  {formatTime(status?.estimatedTimeRemaining)}
-                </p>
-                <p className="text-sm text-orange-600 mt-1">
-                  تقديري
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* كارت البنود المتخطاة */}
-            <Card className="border-yellow-200 bg-yellow-50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span>تم تخطيها</span>
-                  <AlertCircle className="h-5 w-5 text-yellow-600" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-yellow-700">
-                  {status?.skipped || 0}
-                </p>
-                <p className="text-sm text-yellow-600 mt-1">
-                  بند متخطى
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* كارت الأخطاء */}
-            <Card className="border-red-200 bg-red-50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center justify-between">
-                  <span>أخطاء</span>
-                  <AlertCircle className="h-5 w-5 text-red-600" />
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-red-700">
-                  {status?.errors || 0}
-                </p>
-                <p className="text-sm text-red-600 mt-1">
-                  خطأ في المعالجة
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="statistics" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Brain className="h-5 w-5 text-blue-600" />
-                  إحصائيات عامة
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">إجمالي البنود</span>
-                  <Badge variant="secondary" className="text-lg px-3 py-1">
-                    {stats?.totalItems || 0}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">البنود الفريدة</span>
-                  <Badge className="bg-blue-600 text-lg px-3 py-1">
-                    {stats?.uniqueItems || 0}
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">المكررات المكتشفة</span>
-                  <Badge className="bg-orange-600 text-lg px-3 py-1">
-                    {stats?.duplicatesFound || 0}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-purple-600" />
-                  أداء النظام
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">معدل التوحيد</span>
-                  <Badge className="bg-green-600 text-lg px-3 py-1">
-                    {typeof stats?.unificationRate === 'number' ? stats.unificationRate.toFixed(1) : (stats?.unificationRate || 0)}%
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">متوسط الثقة</span>
-                  <Badge className="bg-purple-600 text-lg px-3 py-1">
-                    {typeof stats?.averageConfidence === 'number' ? stats.averageConfidence.toFixed(1) : (stats?.averageConfidence || 0)}%
-                  </Badge>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">عدد التشغيلات</span>
-                  <Badge variant="secondary" className="text-lg px-3 py-1">
-                    {stats?.totalRuns || 0}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {stats?.lastRunDate && (
-            <Alert className="mt-6">
-              <Clock className="h-4 w-4" />
-              <AlertDescription>
-                آخر عملية توحيد تمت في: {new Date(stats.lastRunDate).toLocaleString('ar-SA')}
-              </AlertDescription>
-            </Alert>
-          )}
-        </TabsContent>
-
-        <TabsContent value="settings" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-yellow-600" />
-                إعدادات التوحيد المتقدمة
-              </CardTitle>
-              <CardDescription>
-                تحكم في معاملات الذكاء الاصطناعي لتحقيق أفضل نتائج
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h3 className="font-semibold mb-2 text-blue-800">DeepSeek AI Configuration</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">النموذج المستخدم</span>
-                    <Badge>DeepSeek-V2</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">عتبة التشابه</span>
-                    <Badge variant="outline">85%</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">حجم الدفعة</span>
-                    <Badge variant="outline">10 بند</Badge>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">التحليل العميق</span>
-                    <Badge className="bg-green-600">مفعّل</Badge>
-                  </div>
-                </div>
-              </div>
-
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  النظام مُعد للعمل بدقة 100% باستخدام خوارزميات DeepSeek المتقدمة
-                  للتحليل الدلالي والمقارنة الذكية بين البنود
-                </AlertDescription>
-              </Alert>
-
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  onClick={() => resetUnification.mutate()}
-                  variant="outline"
-                  disabled={resetUnification.isPending || status?.isRunning}
-                >
-                  <RefreshCw className="ml-2 h-4 w-4" />
-                  إعادة تعيين البيانات
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* تاب البحث عن التكرارات */}
-        <TabsContent value="duplicates" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5 text-blue-600" />
-                البحث عن البنود المتكررة
-              </CardTitle>
-              <CardDescription>
-                اكتشاف وتحليل البنود المتكررة في النظام
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Alert className="mb-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  مثال على تكرار شائع: منتج شنايدر LC1D 32M7 له 4 معرفات مختلفة (P-0000016, P-0000018, P-0000186, P-0000196)
-                </AlertDescription>
-              </Alert>
-              
-              <div className="space-y-4">
-                <Button 
-                  onClick={() => {
-                    toast({
-                      title: "🔍 بدء البحث عن التكرارات",
-                      description: "سيتم تحليل جميع البنود للكشف عن التكرارات",
-                    });
-                  }}
-                  className="w-full"
-                >
-                  <Search className="ml-2 h-4 w-4" />
-                  بدء البحث عن التكرارات
-                </Button>
-                
-                
-                <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                  <h4 className="font-semibold text-yellow-800 mb-2">مؤشرات التكرار المحتملة:</h4>
-                  <ul className="text-sm text-yellow-700 space-y-1">
-                    <li>• أرقام أجزاء متشابهة (مثل: LC1D32M7 و LC1D 32M7)</li>
-                    <li>• أوصاف متطابقة أو متشابهة</li>
-                    <li>• نفس الشركة المصنعة والموديل</li>
-                    <li>• مواصفات تقنية مطابقة</li>
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* تاب منع التكرار */}
-        <TabsContent value="prevention" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-green-600" />
-                نظام منع التكرار الاستباقي
-              </CardTitle>
-              <CardDescription>
-                منع إدخال بنود مكررة جديدة في النظام
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Alert className="border-green-200 bg-green-50">
-                  <Shield className="h-4 w-4" />
-                  <AlertDescription className="text-green-800">
-                    النظام سيتحقق تلقائياً من كل بند جديد قبل إدراجه لمنع التكرار
-                  </AlertDescription>
-                </Alert>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="border-blue-200">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm">آلية الكشف</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="text-sm space-y-1">
-                        <li>✓ تحليل أرقام الأجزاء بالذكاء الاصطناعي</li>
-                        <li>✓ مقارنة الأوصاف النصية</li>
-                        <li>✓ فحص البيانات التقنية</li>
-                        <li>✓ تطبيع أرقام الأجزاء</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-purple-200">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm">الإجراءات التلقائية</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="text-sm space-y-1">
-                        <li>🛑 منع الإدراج التلقائي للمكررات</li>
-                        <li>🔗 اقتراح البند الموجود</li>
-                        <li>📋 إنشاء تقرير بالتكرارات</li>
-                        <li>⚡ تحديث فوري للمعرفات</li>
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Button 
-                  onClick={() => {
-                    toast({
-                      title: "✅ تم تفعيل الحماية",
-                      description: "نظام منع التكرار نشط ويعمل تلقائياً",
-                    });
-                  }}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
-                  <Shield className="ml-2 h-4 w-4" />
-                  تفعيل الحماية من التكرار
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Dialog لعرض رسالة نفاد الرصيد */}
-      <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
-        <DialogContent className="max-w-md" dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <CreditCard className="h-5 w-5" />
-              نفد رصيد الـ AI
-            </DialogTitle>
-            <DialogDescription className="text-right">
-              تم إيقاف عملية التوحيد الذكي مؤقتاً بسبب انتهاء رصيد DeepSeek API.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 mt-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                لمتابعة عملية التوحيد، يرجى إعادة تعبئة رصيد DeepSeek API من خلال:
-                <br />
-                • زيارة موقع DeepSeek
-                <br />
-                • إضافة رصيد إلى حسابك
-                <br />
-                • إعادة تشغيل عملية التوحيد
-              </AlertDescription>
-            </Alert>
-
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setShowQuotaDialog(false)}
-              >
-                إغلاق
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowQuotaDialog(false);
-                  window.open('https://platform.deepseek.com/', '_blank');
-                }}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                فتح DeepSeek
-              </Button>
+      {/* شرح النظام الدلالي */}
+      <Card className="border-green-200 bg-green-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-green-600" />
+            كيف يعمل التحليل الدلالي؟
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <h4 className="font-semibold text-green-700 mb-2">🔍 تحليل المعنى</h4>
+              <ul className="space-y-1 text-green-600">
+                <li>• يستخرج الشركة المصنعة والموديل</li>
+                <li>• يحلل المواصفات التقنية (جهد، تيار، قدرة)</li>
+                <li>• يطبع أرقام الجزء (LC1D-32-M7 = LC1D32M7)</li>
+                <li>• يفهم المرادفات والاختصارات</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-green-700 mb-2">⚡ أمثلة التوحيد</h4>
+              <ul className="space-y-1 text-green-600">
+                <li>• "LC1D 32 M7" + "LC1D-32-M7" = منتج واحد</li>
+                <li>• "شنايدر 32Amp" + "2102034" = منتج واحد</li>
+                <li>• نفس المواصفات بتوصيفات مختلفة</li>
+                <li>• تجاهل الأخطاء الإملائية والترقيم</li>
+              </ul>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </CardContent>
+      </Card>
     </div>
   );
 }
