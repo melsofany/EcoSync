@@ -198,7 +198,19 @@ export class DualMatchingSystem {
         };
       }
 
-    } catch (error) {
+    } catch (error: any) {
+      console.error('خطأ في DeepSeek API:', error);
+      
+      // معالجة خاصة لنفاد الرصيد - فحص دقيق
+      if (error.message === 'QUOTA_EXCEEDED' ||
+          error.status === 402 || 
+          error.message?.includes('insufficient_quota') || 
+          error.message?.includes('quota') ||
+          (error.response && error.response.status === 402)) {
+        console.log('🚫 تم اكتشاف نفاد رصيد AI - إيقاف العملية فوراً');
+        throw new Error('QUOTA_EXCEEDED');
+      }
+      
       console.log('⚠️ تم استخدام التحليل المتقدم بدلاً من AI');
       return this.advancedComparison(desc1, desc2, partNo1, partNo2);
     }

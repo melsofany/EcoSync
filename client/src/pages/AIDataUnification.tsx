@@ -88,6 +88,20 @@ export default function AIDataUnification() {
     }
   }, [status?.quotaExceeded, showQuotaDialog, toast]);
 
+  // مراقبة اكتمال العملية ومنع إعادة البدء التلقائي
+  useEffect(() => {
+    if (status && status.progress >= 100 && status.isRunning) {
+      // إيقاف العملية تلقائياً عند الوصول لـ 100%
+      stopUnification.mutate();
+      toast({
+        title: "✅ اكتمل التوحيد",
+        description: "تم إنجاز عملية توحيد البيانات بنجاح",
+        className: "bg-gradient-to-r from-green-500 to-emerald-600 text-white",
+        duration: 8000
+      });
+    }
+  }, [status?.progress, status?.isRunning]);
+
   // جلب إحصائيات التوحيد
   const { data: stats } = useQuery<UnificationStats>({
     queryKey: ["/api/ai-unification/stats"],
@@ -287,14 +301,27 @@ export default function AIDataUnification() {
             
             <div className="flex items-center gap-2">
               {!status?.isRunning && !status?.isPaused && (
-                <Button 
-                  onClick={() => startUnification.mutate()}
-                  disabled={startUnification.isPending}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                >
-                  <PlayCircle className="ml-2 h-4 w-4" />
-                  بدء التوحيد بـ AI
-                </Button>
+                <>
+                  <Button 
+                    onClick={() => startUnification.mutate()}
+                    disabled={startUnification.isPending || (status?.progress || 0) >= 100}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  >
+                    <PlayCircle className="ml-2 h-4 w-4" />
+                    {(status?.progress || 0) >= 100 ? "مكتمل" : "بدء التوحيد بـ AI"}
+                  </Button>
+                  {(status?.progress || 0) >= 100 && (
+                    <Button 
+                      onClick={() => resetUnification.mutate()}
+                      variant="outline"
+                      disabled={resetUnification.isPending}
+                      className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                    >
+                      <RefreshCw className="ml-2 h-4 w-4" />
+                      بدء جديد
+                    </Button>
+                  )}
+                </>
               )}
               
               {status?.isRunning && (

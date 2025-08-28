@@ -290,6 +290,35 @@ export class SemanticUnificationService {
     return { ...this.status };
   }
 
+  // إعادة تعيين النظام لبدء جديد
+  resetSystem(): void {
+    this.isStopped = false;
+    this.status.isRunning = false;
+    this.status.isPaused = false;
+    this.status.progress = 0;
+    this.status.total = 0;
+    this.status.processed = 0;
+    this.status.unified = 0;
+    this.status.skipped = 0;
+    this.status.errors = 0;
+    this.status.currentItem = null;
+    this.status.estimatedTimeRemaining = 0;
+    this.status.accuracy = 0;
+    this.status.aiCallCount = 0;
+    this.status.quotaExceeded = false;
+    this.status.pauseReason = '';
+    this.status.lastProcessedIndex = 0;
+    this.status.checkpointData = null;
+    
+    this.unifiedGroups.clear();
+    this.processedItems = [];
+    this.usedIds.clear();
+    this.lastProcessedIndex = 0;
+    this.nextId = 1;
+    
+    console.log('🔄 تم إعادة تعيين النظام للبدء من جديد');
+  }
+
   // مسح العمود A
   private async clearColumnA(): Promise<void> {
     try {
@@ -345,6 +374,22 @@ export class SemanticUnificationService {
       };
     }
 
+    // فحص إكمال العملية مسبقاً
+    if (this.status.progress >= 100 && this.status.processed > 0) {
+      console.log('✅ العملية مكتملة مسبقاً - لا حاجة لإعادة البدء');
+      return {
+        success: true,
+        message: 'العملية مكتملة مسبقاً',
+        totalRows: this.status.total,
+        processedRows: this.status.processed,
+        unifiedGroups: this.unifiedGroups.size,
+        unifiedCount: this.status.unified,
+        aiCallsUsed: this.status.aiCallCount,
+        accuracy: this.calculateAccuracy(),
+        sessionId: this.sessionId
+      };
+    }
+
     this.isStopped = false;
     this.status.isRunning = true;
     this.status.isPaused = false;
@@ -375,9 +420,11 @@ export class SemanticUnificationService {
       this.status.total = rows.length;
       console.log(`تم تحميل ${rows.length} عنصرًا للمعالجة`);
 
-      // 2. مسح العمود A قبل البدء
-      console.log('جاري مسح العمود A...');
-      await this.clearColumnA();
+      // 2. مسح العمود A قبل البدء (فقط في الجلسة الجديدة)
+      if (!resumedFromCheckpoint) {
+        console.log('جاري مسح العمود A...');
+        await this.clearColumnA();
+      }
 
       // 3. معالجة كل عنصر
       const products: Product[] = rows.map((row: any[], index: number) => ({
@@ -467,8 +514,13 @@ export class SemanticUnificationService {
         const productDesc = product.description.toLowerCase().trim();
         if (productDesc.length < 3) {
           // تخطي الأوصاف القصيرة جداً - إنشاء معرف مباشر
-          const shortDescId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          let shortDescId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          while (this.usedIds.has(shortDescId) || this.unifiedGroups.has(shortDescId)) {
+            this.nextId++;
+            shortDescId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          }
           this.nextId++;
+          this.usedIds.add(shortDescId);
           product.unifiedId = shortDescId;
           this.unifiedGroups.set(shortDescId, [product]);
           matched = true;
@@ -516,19 +568,30 @@ export class SemanticUnificationService {
                   }
                 }
               } catch (error: any) {
-                if (error.message === 'QUOTA_EXCEEDED') {
+                if (error.message === 'QUOTA_EXCEEDED' || error.status === 402) {
                   // حفظ التقدم فوراً قبل الإيقاف
                   await this.saveProgress();
                   
                   // إيقاف العملية مؤقتاً عند نفاد الرصيد
                   this.status.quotaExceeded = true;
                   this.status.isPaused = true;
+                  this.status.isRunning = false;
                   this.status.pauseReason = 'نفد رصيد الـ AI';
                   console.log('🚫 تم إيقاف العملية مؤقتاً - نفد رصيد الـ AI');
                   console.log('💾 تم حفظ التقدم للاستئناف لاحقاً');
                   
-                  // إيقاف حلقة المعالجة
-                  break;
+                  // إرجاع نتيجة فوري والخروج
+                  return {
+                    success: false,
+                    message: 'تم إيقاف العملية - نفد رصيد الـ AI',
+                    totalRows: this.status.total,
+                    processedRows: this.status.processed,
+                    unifiedGroups: this.unifiedGroups.size,
+                    unifiedCount: this.status.unified,
+                    aiCallsUsed: this.status.aiCallCount,
+                    accuracy: this.calculateAccuracy(),
+                    sessionId: this.sessionId
+                  };
                 } else {
                   console.error('خطأ في المطابقة:', error);
                   this.status.errors++;
@@ -544,25 +607,11 @@ export class SemanticUnificationService {
           }
         }
 
-        // إذا تم إيقاف العملية بسبب نفاد الرصيد، خروج من الحلقة الرئيسية
-        if (this.status.quotaExceeded) {
-          console.log('🚫 توقف النظام بسبب نفاد رصيد الـ AI');
-          this.status.isRunning = false;
-          return {
-            success: false,
-            message: 'تم إيقاف العملية - نفد رصيد الـ AI',
-            totalRows: this.status.total,
-            processedRows: this.status.processed,
-            unifiedGroups: this.unifiedGroups.size,
-            unifiedCount: this.status.unified,
-            aiCallsUsed: this.status.aiCallCount,
-            accuracy: this.calculateAccuracy(),
-            sessionId: this.sessionId
-          };
-        }
+        // إذا تم إيقاف العملية بسبب نفاد الرصيد، لا نصل هنا
+        // لأن الدالة تخرج مباشرة من catch
 
         // إذا وجد تطابق دقيق فقط، أضف إلى المجموعة الموجودة
-        if (bestMatchId && bestMatchScore >= 0.85) {
+        if (bestMatchId && bestMatchScore >= 0.85 && !matched) {
           product.unifiedId = bestMatchId;
           this.unifiedGroups.get(bestMatchId)!.push(product);
           this.status.unified++;
@@ -598,10 +647,18 @@ export class SemanticUnificationService {
         // التأكد من أن كل بند له معرف واحد فقط
         if (!product.unifiedId) {
           console.error(`❌ خطأ: البند في الصف ${product.rowIndex} لم يحصل على معرف!`);
-          const emergencyId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          let emergencyId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          while (this.usedIds.has(emergencyId) || this.unifiedGroups.has(emergencyId)) {
+            this.nextId++;
+            emergencyId = `P-${this.nextId.toString().padStart(7, '0')}`;
+          }
           this.nextId++;
+          this.usedIds.add(emergencyId);
           product.unifiedId = emergencyId;
           this.unifiedGroups.set(emergencyId, [product]);
+        } else if (product.unifiedId) {
+          // إضافة المعرف للمجموعة المستخدمة
+          this.usedIds.add(product.unifiedId);
         }
 
         this.processedItems.push(product);
@@ -647,7 +704,12 @@ export class SemanticUnificationService {
         sessionId: this.sessionId
       };
 
+      console.log('🎯 اكتمل التوحيد الدلالي الذكي: ' + this.unifiedGroups.size + ' مجموعة موحدة من ' + this.status.total + ' عنصر');
+      console.log('🧠 دقة النظام: ' + this.calculateAccuracy().toFixed(1) + '%');
+      console.log('🤖 عدد استخدامات AI: ' + this.status.aiCallCount);
+
       this.status.isRunning = false;
+      this.status.progress = 100; // تأكيد إكمال العملية
       
       // حذف ملف التقدم عند الانتهاء بنجاح
       await this.clearProgress();

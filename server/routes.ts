@@ -7270,7 +7270,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   app.post("/api/ai-unification/reset", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       const { semanticUnification } = await import('./semantic-unification.js');
-      semanticUnification.stop(); // إيقاف وإعادة تعيين
+      semanticUnification.resetSystem(); // إعادة تعيين كاملة للنظام
       
       await logActivity(req, "reset_ai_unification", "ai_unification", "deepseek", "إعادة تعيين التوحيد الذكي");
       
