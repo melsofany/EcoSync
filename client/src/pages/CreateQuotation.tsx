@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Save, Trash2, FileText, Calendar, User, Building, AlertCircle, Edit, Shield, Ban } from "lucide-react";
+import { Plus, Save, Trash2, FileText, Calendar, User, Building, AlertCircle, Edit } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,11 +52,6 @@ export default function CreateQuotation() {
   const [isCheckingRfq, setIsCheckingRfq] = useState(false);
   const [rfqWarning, setRfqWarning] = useState<string | null>(null);
   const [checkTimeout, setCheckTimeout] = useState<NodeJS.Timeout | null>(null);
-  
-  // 🛡️ نظام منع التكرار الجذري
-  const [duplicateWarning, setDuplicateWarning] = useState<any>(null);
-  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
-  const [isDuplicateBlocked, setIsDuplicateBlocked] = useState(false);
 
   const [quotation, setQuotation] = useState<NewQuotation>({
     clientName: '',
