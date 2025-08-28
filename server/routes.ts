@@ -7217,7 +7217,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         totalItems,
         uniqueItems: uniqueDescriptions.size,
         duplicatesFound,
-        unificationRate: unificationRate.toFixed(1),
+        unificationRate: parseFloat(unificationRate.toFixed(1)),
         averageConfidence: 98.5, // متوسط ثقة DeepSeek AI
         lastRunDate: new Date().toISOString(),
         totalRuns: 1
