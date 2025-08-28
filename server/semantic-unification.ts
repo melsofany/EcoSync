@@ -534,53 +534,49 @@ export class SemanticUnificationService {
           this.unifiedGroups.set(shortDescId, [product]);
           matched = true;
         } else {
-          // مرحلة 2: بحث محسن مع فحص رقم القطعة والوصف
+          // مرحلة 2: بحث محسن - الأولوية للتوصيف ثم رقم القطعة
           for (const [unifiedId, groupProducts] of this.unifiedGroups.entries()) {
             const representative = groupProducts[0];
             const repDesc = representative.description.toLowerCase().trim();
             const repPartNum = representative.partNumber?.toLowerCase().trim() || '';
             const productPartNum = product.partNumber?.toLowerCase().trim() || '';
             
-            // فحص التطابق الكامل للوصف أولاً
+            // 1. فحص التطابق الكامل للتوصيف أولاً (الأهم)
             if (productDesc === repDesc) {
               bestMatchScore = 1.0;
               bestMatchId = unifiedId;
+              console.log(`📝 تطابق توصيف كامل -> ${unifiedId}`);
               break;
             }
             
-            // فحص التطابق في رقم القطعة (أهم شيء!)
-            if (productPartNum && repPartNum && productPartNum === repPartNum) {
-              bestMatchScore = 1.0;
-              bestMatchId = unifiedId;
-              console.log(`🎯 تطابق رقم قطعة: ${productPartNum} -> ${unifiedId}`);
-              break;
-            }
+            // 2. فحص التشابه العالي في التوصيف (85%+)
+            const words1 = productDesc.split(/\s+/).filter(w => w.length > 2);
+            const words2 = repDesc.split(/\s+/).filter(w => w.length > 2);
+            const commonWords = words1.filter(w => words2.includes(w));
+            const descSimilarity = commonWords.length / Math.max(words1.length, words2.length);
             
-            // فحص التطابق في أرقام القطع المتشابهة (LC1D 32M7, LC1D32M7, etc.)
-            if (productPartNum && repPartNum) {
-              const cleanPart1 = productPartNum.replace(/[\s\-_]/g, '');
-              const cleanPart2 = repPartNum.replace(/[\s\-_]/g, '');
-              if (cleanPart1 === cleanPart2 && cleanPart1.length > 3) {
-                bestMatchScore = 0.95;
+            if (descSimilarity > 0.85) {
+              // تأكيد إضافي برقم القطعة إذا وُجد
+              if (productPartNum && repPartNum) {
+                const cleanPart1 = productPartNum.replace(/[\s\-_]/g, '');
+                const cleanPart2 = repPartNum.replace(/[\s\-_]/g, '');
+                if (cleanPart1 === cleanPart2) {
+                  bestMatchScore = 1.0;
+                  bestMatchId = unifiedId;
+                  console.log(`📝 تطابق توصيف عالي (${(descSimilarity*100).toFixed(1)}%) + رقم قطعة -> ${unifiedId}`);
+                  break;
+                }
+              } else {
+                // بدون رقم قطعة، اعتماد على التوصيف فقط
+                bestMatchScore = descSimilarity;
                 bestMatchId = unifiedId;
-                console.log(`🎯 تطابق رقم قطعة منظف: ${cleanPart1} -> ${unifiedId}`);
+                console.log(`📝 تطابق توصيف عالي (${(descSimilarity*100).toFixed(1)}%) -> ${unifiedId}`);
                 break;
               }
             }
             
-            // فحص سريع للطول
-            if (Math.abs(productDesc.length - repDesc.length) > productDesc.length * 0.4) {
-              continue;
-            }
-
-            // فحص الكلمات المشتركة المحسن
-            const words1 = productDesc.split(/\s+/).filter(w => w.length > 2);
-            const words2 = repDesc.split(/\s+/).filter(w => w.length > 2);
-            const commonWords = words1.filter(w => words2.includes(w));
-            const similarity = commonWords.length / Math.max(words1.length, words2.length);
-            
-            // رفع حد التشابه للمطابقة النصية
-            if (similarity > 0.7) {
+            // 3. فحص متوسط التشابه في التوصيف (70%+) مع AI
+            if (descSimilarity > 0.7) {
               // استخدام النظام المزدوج للمطابقة
               try {
                 const comparisonResult = await this.dualMatcher.compareItems(
