@@ -6561,6 +6561,116 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // نظام منع التكرار المحسن - فحص بند جديد
+  app.post('/api/check-duplicate', requireAuth, requireRole(['manager', 'it_admin', 'data_entry']), async (req: Request, res: Response) => {
+    try {
+      console.log('🔍 طلب فحص تكرار بند جديد...');
+      
+      const { GoogleSheetsUnificationService } = await import('./google-sheets-unification.js');
+      const unificationService = GoogleSheetsUnificationService.getInstance();
+      
+      const { itemData } = req.body;
+      if (!itemData) {
+        return res.status(400).json({
+          success: false,
+          message: 'بيانات البند مطلوبة'
+        });
+      }
+
+      const checkResult = await unificationService.checkNewItemBeforeInsertion({
+        id: itemData.id || `new_${Date.now()}`,
+        itemNumber: itemData.itemNumber || '',
+        partNumber: itemData.partNumber || '',
+        description: itemData.description || '',
+        lineItem: itemData.lineItem || '',
+        category: itemData.category || 'general'
+      });
+
+      res.json({
+        success: true,
+        shouldBlock: checkResult.shouldBlock,
+        existingItem: checkResult.existingItem,
+        confidence: checkResult.confidence,
+        reason: checkResult.reason,
+        suggestedAction: checkResult.suggestedAction
+      });
+
+    } catch (error) {
+      console.error('❌ خطأ في فحص التكرار:', error);
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في فحص التكرار',
+        error: error.message
+      });
+    }
+  });
+
+  // تطبيق التوحيد على البيانات الموجودة
+  app.post('/api/apply-unification', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
+    try {
+      console.log('🚀 طلب تطبيق التوحيد على البيانات الموجودة...');
+      
+      const { GoogleSheetsUnificationService } = await import('./google-sheets-unification.js');
+      const unificationService = GoogleSheetsUnificationService.getInstance();
+      
+      const result = await unificationService.unifyExistingData();
+
+      if (result.success) {
+        await logActivity(req, "apply_unification", "system", "", 
+          `تم توحيد ${result.processedGroups} مجموعة، تحديث ${result.updatedRows} صف`);
+        
+        res.json({
+          success: true,
+          message: `تم توحيد ${result.processedGroups} مجموعة بنجاح`,
+          processedGroups: result.processedGroups,
+          updatedRows: result.updatedRows,
+          unifiedItems: result.unifiedItems
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: 'فشل في تطبيق التوحيد',
+          errors: result.errors,
+          partialResults: {
+            processedGroups: result.processedGroups,
+            updatedRows: result.updatedRows
+          }
+        });
+      }
+
+    } catch (error) {
+      console.error('❌ خطأ في تطبيق التوحيد:', error);
+      res.status(500).json({
+        success: false,
+        message: 'خطأ داخلي في تطبيق التوحيد',
+        error: error.message
+      });
+    }
+  });
+
+  // الحصول على إحصائيات التوحيد
+  app.get('/api/unification-stats', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
+    try {
+      const { GoogleSheetsUnificationService } = await import('./google-sheets-unification.js');
+      const unificationService = GoogleSheetsUnificationService.getInstance();
+      
+      const stats = await unificationService.getUnificationStats();
+      
+      res.json({
+        success: true,
+        stats
+      });
+
+    } catch (error) {
+      console.error('❌ خطأ في جلب إحصائيات التوحيد:', error);
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في جلب الإحصائيات',
+        error: error.message
+      });
+    }
+  });
+
   // Analyze items for duplication with simple monitoring
   app.post('/api/analyze-duplicates', requireAuth, requireRole(['manager', 'it_admin']), async (req: Request, res: Response) => {
     try {

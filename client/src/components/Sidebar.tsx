@@ -189,6 +189,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       section: "admin",
     },
     {
+      title: "إدارة التكرارات",
+      href: "/duplicate-management",
+      icon: Shield,
+      section: "admin",
+    },
+    {
       title: "الأوامر الصوتية",
       href: "/voice-control",
       icon: Mic,

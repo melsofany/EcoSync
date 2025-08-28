@@ -58,6 +58,46 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
+  // تحديث معرف بند في جميع الصفوف (للتوحيد)
+  async updateItemId(oldItemId: string, newItemId: string): Promise<number> {
+    try {
+      if (!this.sheets) {
+        throw new Error('Google Sheets not initialized');
+      }
+
+      console.log(`🔄 تحديث معرف البند: ${oldItemId} → ${newItemId}`);
+      
+      // قراءة جميع البيانات من العمود A (معرفات البنود)
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A:A',
+      });
+
+      const rows = response.data.values || [];
+      let updatedCount = 0;
+      
+      // البحث عن الصفوف التي تحتوي على المعرف القديم وتحديثها
+      for (let i = 1; i < rows.length; i++) { // بدءاً من الصف 2 (index 1)
+        if (rows[i][0] === oldItemId) {
+          const cellAddress = `A${i + 1}`;
+          await this.updateCellValue(cellAddress, newItemId);
+          updatedCount++;
+          console.log(`   ✅ تم تحديث الصف ${i + 1}: ${cellAddress} → ${newItemId}`);
+          
+          // انتظار قصير لتجنب تحميل الخادم
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+      }
+
+      console.log(`🎯 تم تحديث ${updatedCount} صف للبند ${oldItemId}`);
+      return updatedCount;
+
+    } catch (error) {
+      console.error(`❌ خطأ في تحديث معرف البند ${oldItemId}:`, error);
+      throw error;
+    }
+  }
+
   async updateCellValue(cellAddress: string, value: string): Promise<void> {
     try {
       if (!this.sheets) {
