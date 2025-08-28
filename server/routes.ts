@@ -33,6 +33,7 @@ import {
   canUserAccessSection, 
   canUserPerformAction 
 } from "../shared/permission-mapping";
+import { radicalDuplicatePrevention } from './radical-duplicate-prevention.js';
 
 // استخدام الـ instance المُصدر من google-sheets-realtime-data.ts
 const googleSheetsRealTimeData = googleSheetsRealtimeData;
@@ -3546,28 +3547,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: userId,
       });
       
-      // Check for exact duplicates before creating the item
-      if (validatedData.partNumber) {
-        console.log('🔍 Checking for duplicate part number:', validatedData.partNumber);
+      // 🛡️ RADICAL DUPLICATE PREVENTION - Enhanced checking before creating the item
+      console.log('🛡️ فحص جذري للتكرار قبل إنشاء البند...');
+      const allItems = await storage.getAllItems();
+      const duplicateCheck = await radicalDuplicatePrevention.checkForDuplicates(
+        validatedData.partNumber || '',
+        validatedData.description || '',
+        validatedData.lineItem || '',
+        allItems
+      );
+      
+      if (duplicateCheck.isDuplicate) {
+        console.log(`🚨 RADICAL DUPLICATE BLOCKED: ${duplicateCheck.reason}`);
+        console.log(`📊 Confidence: ${duplicateCheck.confidence}% | Existing ID: ${duplicateCheck.existingId}`);
         
-        const similarItems = await storage.findSimilarItems(validatedData.description, validatedData.partNumber);
-        
-        // البحث عن تطابق دقيق أو مشابه في رقم القطعة
-        const exactMatch = similarItems.find(item => {
-          if (!item.partNumber) return false;
-          
-          const cleanExisting = item.partNumber.replace(/[\s\-_]/g, '').toUpperCase();
-          const cleanNew = validatedData.partNumber.replace(/[\s\-_]/g, '').toUpperCase();
-          
-          return cleanExisting === cleanNew;
-        });
-        
-        if (exactMatch) {
-          console.log('✅ Duplicate found, using existing item:', exactMatch.itemNumber);
-          await logActivity(req, "reused_existing_item", "item", exactMatch.id, `Reused existing item: ${exactMatch.itemNumber} - ${exactMatch.description}`);
-          
-          // إرجاع الصنف الموجود بدلاً من إنشاء صنف جديد
-          return res.status(200).json(exactMatch);
+        if (duplicateCheck.suggestedAction === 'use_existing') {
+          // منع التكرار تماماً وإرجاع المنتج الموجود
+          const existingItem = allItems.find(item => item.id === duplicateCheck.existingId);
+          if (existingItem) {
+            await logActivity(req, "blocked_duplicate", "item", existingItem.id, 
+              `Blocked duplicate creation: ${duplicateCheck.reason} (${duplicateCheck.confidence}% confidence)`);
+            
+            return res.status(409).json({
+              isDuplicate: true,
+              blocked: true,
+              message: 'تم منع إنشاء البند المكرر! يجب استخدام المعرف الموجود.',
+              reason: duplicateCheck.reason,
+              confidence: duplicateCheck.confidence,
+              existingItem: {
+                id: existingItem.id,
+                itemNumber: existingItem.itemNumber,
+                partNumber: existingItem.partNumber,
+                description: existingItem.description
+              },
+              matchedRule: duplicateCheck.matchedRule
+            });
+          }
         }
       }
       
@@ -5081,8 +5096,41 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         quotationId: quotationId,
       });
       
+      // 🛡️ RADICAL DUPLICATE PREVENTION - Check before saving
+      console.log('🛡️ جاري فحص البند للتكرار قبل الحفظ...');
+      const itemDetails = await storage.getItemById(validatedData.itemId);
+      if (itemDetails) {
+        const allItems = await storage.getAllItems();
+        const duplicateCheck = await radicalDuplicatePrevention.checkForDuplicates(
+          itemDetails.partNumber || '',
+          itemDetails.description || '',
+          itemDetails.lineItem || '',
+          allItems
+        );
+        
+        if (duplicateCheck.isDuplicate && duplicateCheck.suggestedAction === 'use_existing') {
+          console.log(`🚨 DUPLICATE DETECTED: ${itemDetails.id} → ${duplicateCheck.existingId}`);
+          console.log(`📊 Confidence: ${duplicateCheck.confidence}% | Reason: ${duplicateCheck.reason}`);
+          
+          // Return warning instead of blocking (for now)
+          return res.status(409).json({
+            isDuplicate: true,
+            message: `تم اكتشاف منتج مطابق! ${duplicateCheck.reason}`,
+            existingId: duplicateCheck.existingId,
+            confidence: duplicateCheck.confidence,
+            currentItem: {
+              id: itemDetails.id,
+              partNumber: itemDetails.partNumber,
+              description: itemDetails.description
+            },
+            suggestedAction: duplicateCheck.suggestedAction,
+            warning: 'يُنصح بشدة باستخدام المعرف الموجود بدلاً من إنشاء تكرار جديد'
+          });
+        }
+      }
+      
       const item = await storage.addQuotationItem(validatedData);
-      await logActivity(req, "add_quotation_item", "quotation_item", item.id, `Added item to quotation: ${quotationId}`);
+      await logActivity(req, "add_quotation_item", "quotation_item", item.id, `Added item to quotation: ${quotationId} (Duplicate Check: ${itemDetails ? 'Passed' : 'Skipped'})`);
 
       // Send Telegram analysis for all items added to quotations (even existing items)
       try {
