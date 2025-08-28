@@ -7122,11 +7122,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🎯 طلب حالة توحيد المعرفات...');
       
-      // جلب حالة النظام البسيط لتوحيد المعرفات
-      const { simpleIdentifierUnifier } = await import('./simple-identifier-unifier.js');
+      // جلب حالة النظام الدلالي لتوحيد المنتجات
+      const { semanticProductUnifier } = await import('./semantic-product-unifier.js');
       
-      const isRunning = simpleIdentifierUnifier.isOperationRunning();
-      const progress = simpleIdentifierUnifier.getProgress();
+      const isRunning = semanticProductUnifier.isOperationRunning();
+      const progress = semanticProductUnifier.getProgress();
       
       res.json({
         isRunning,
@@ -7237,23 +7237,23 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🤖 بدء توحيد المعرفات بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
       
-      // استخدام النظام البسيط لتوحيد المعرفات
-      const { simpleIdentifierUnifier } = await import('./simple-identifier-unifier.js');
+      // استخدام النظام الدلالي الجديد لتوحيد المنتجات
+      const { semanticProductUnifier } = await import('./semantic-product-unifier.js');
       
-      if (simpleIdentifierUnifier.isOperationRunning()) {
+      if (semanticProductUnifier.isOperationRunning()) {
         return res.status(400).json({ 
           success: false,
-          error: 'عملية التوحيد قيد التشغيل بالفعل' 
+          error: 'عملية التحليل الدلالي قيد التشغيل بالفعل' 
         });
       }
 
-      // بدء التوحيد في الخلفية
-      simpleIdentifierUnifier.unifyDuplicateIdentifiers()
+      // بدء التحليل الدلالي في الخلفية
+      semanticProductUnifier.unifyProductsBySemantics()
         .then((result) => {
-          console.log('✅ تمت عملية توحيد المعرفات بنجاح:', result);
+          console.log('✅ تمت عملية التوحيد الدلالي بنجاح:', result);
         })
         .catch((error) => {
-          console.error('❌ فشلت عملية توحيد المعرفات:', error);
+          console.error('❌ فشلت عملية التوحيد الدلالي:', error);
         });
       
       await logActivity(req, "start_identifier_unification", "ai_unification", "identifier", "بدء توحيد المعرفات بالذكاء الاصطناعي");
