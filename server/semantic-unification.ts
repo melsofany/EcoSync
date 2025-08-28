@@ -374,6 +374,24 @@ export class SemanticUnificationService {
       };
     }
 
+    // فحص توفر مفتاح DeepSeek API
+    if (!process.env.DEEPSEEK_API_KEY) {
+      console.log('⚠️ لا يوجد مفتاح DEEPSEEK_API_KEY - سيتم استخدام المطابقة النصية فقط');
+      this.status.quotaExceeded = true;
+      this.status.pauseReason = 'لا يوجد مفتاح API للذكاء الاصطناعي';
+      return {
+        success: false,
+        message: '🚫 لا يوجد مفتاح API للذكاء الاصطناعي - يرجى إضافة DEEPSEEK_API_KEY',
+        totalRows: 0,
+        processedRows: 0,
+        unifiedGroups: 0,
+        unifiedCount: 0,
+        aiCallsUsed: 0,
+        accuracy: 0,
+        sessionId: this.sessionId
+      };
+    }
+
     // فحص إكمال العملية مسبقاً
     if (this.status.progress >= 100 && this.status.processed > 0) {
       console.log('✅ العملية مكتملة مسبقاً - لا حاجة لإعادة البدء');

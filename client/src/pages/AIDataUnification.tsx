@@ -48,6 +48,8 @@ interface UnificationStatus {
   accuracy: number;
   quotaExceeded?: boolean;
   pauseReason?: string;
+  statusMessage?: string;
+  aiCallCount?: number;
 }
 
 interface UnificationStats {
@@ -125,17 +127,26 @@ export default function AIDataUnification() {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `خطأ في الخادم: ${response.status}`);
       }
       
       return response.json();
     },
-    onSuccess: () => {
-      toast({
-        title: "✨ بدء التوحيد الذكي",
-        description: "تم بدء عملية توحيد البيانات بالذكاء الاصطناعي",
-        className: "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-      });
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "✨ بدء التوحيد الذكي",
+          description: data.message || "تم بدء عملية توحيد البيانات بالذكاء الاصطناعي",
+          className: "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+        });
+      } else {
+        toast({
+          title: "تحذير",
+          description: data.message || "حدث خطأ في بدء التوحيد",
+          variant: "destructive"
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
     },
     onError: (error) => {
@@ -294,8 +305,10 @@ export default function AIDataUnification() {
                 status?.isPaused ? 'bg-yellow-500' : 'bg-gray-400'
               }`} />
               <span className="font-semibold text-lg">
-                {status?.isRunning ? 'جاري التوحيد...' : 
-                 status?.isPaused ? 'متوقف مؤقتاً' : 'في وضع الانتظار'}
+                {status?.statusMessage || 
+                 (status?.isRunning ? 'جاري التوحيد...' : 
+                  status?.isPaused ? `متوقف مؤقتاً${status.pauseReason ? ` - ${status.pauseReason}` : ''}` : 
+                  'في وضع الانتظار')}
               </span>
             </div>
             
@@ -357,6 +370,16 @@ export default function AIDataUnification() {
               )}
             </div>
           </div>
+
+          {/* تحذير نفاد الرصيد */}
+          {status?.quotaExceeded && (
+            <Alert className="bg-red-50 border-red-200 mb-4">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                <strong>🚫 نفد رصيد الـ AI:</strong> يرجى إعادة تعبئة رصيد DeepSeek API للمتابعة
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* شريط التقدم */}
           <div className="space-y-3">

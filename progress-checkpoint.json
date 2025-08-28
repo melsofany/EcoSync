@@ -1,0 +1,780 @@
+{
+  "sessionId": "SESSION-1756390922358-1yr9hydx4",
+  "lastProcessedIndex": 49,
+  "status": {
+    "isRunning": true,
+    "isPaused": false,
+    "progress": 0.8922198429693077,
+    "total": 5604,
+    "processed": 50,
+    "unified": 21,
+    "skipped": 0,
+    "errors": 0,
+    "currentItem": {
+      "rowIndex": 51,
+      "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+      "partNumber": "",
+      "unifiedId": "P-0000026"
+    },
+    "startTime": "2025-08-28T14:22:02.368Z",
+    "estimatedTimeRemaining": 46,
+    "accuracy": 0,
+    "aiCallCount": 0,
+    "sessionId": "SESSION-1756390922358-1yr9hydx4",
+    "quotaExceeded": false,
+    "pauseReason": "",
+    "lastProcessedIndex": 0,
+    "checkpointData": null
+  },
+  "unifiedGroups": [
+    [
+      "P-0000001",
+      [
+        {
+          "rowIndex": 2,
+          "description": "LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H",
+          "partNumber": "",
+          "unifiedId": "P-0000001"
+        }
+      ]
+    ],
+    [
+      "P-0000002",
+      [
+        {
+          "rowIndex": 3,
+          "description": "RIGHT BRACKET FOR A/C CARRIER QG\n42QG18H",
+          "partNumber": "",
+          "unifiedId": "P-0000002"
+        }
+      ]
+    ],
+    [
+      "P-0000003",
+      [
+        {
+          "rowIndex": 4,
+          "description": "ENERGIZER BATTERY 1,5V SIZE AA",
+          "partNumber": "",
+          "unifiedId": "P-0000003"
+        }
+      ]
+    ],
+    [
+      "P-0000004",
+      [
+        {
+          "rowIndex": 5,
+          "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
+          "partNumber": "",
+          "unifiedId": "P-0000004"
+        }
+      ]
+    ],
+    [
+      "P-0000005",
+      [
+        {
+          "rowIndex": 6,
+          "description": "P/N TRS/1 CR-A , HINGE DOOR HINGES (SET) REF/ 2101099 FOR ELECTRIC COOKER",
+          "partNumber": "TRS/1 CR-A",
+          "unifiedId": "P-0000005"
+        }
+      ]
+    ],
+    [
+      "P-0000006",
+      [
+        {
+          "rowIndex": 7,
+          "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
+          "partNumber": "11.33454.247",
+          "unifiedId": "P-0000006"
+        },
+        {
+          "rowIndex": 8,
+          "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
+          "partNumber": "11.33454.247",
+          "unifiedId": "P-0000006"
+        },
+        {
+          "rowIndex": 9,
+          "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
+          "partNumber": "11.33454.247",
+          "unifiedId": "P-0000006"
+        }
+      ]
+    ],
+    [
+      "P-0000007",
+      [
+        {
+          "rowIndex": 10,
+          "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
+          "partNumber": "WITH 4 OUTLET",
+          "unifiedId": "P-0000007"
+        }
+      ]
+    ],
+    [
+      "P-0000008",
+      [
+        {
+          "rowIndex": 11,
+          "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
+          "partNumber": "11.33473.338",
+          "unifiedId": "P-0000008"
+        },
+        {
+          "rowIndex": 12,
+          "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
+          "partNumber": "11.33473.338",
+          "unifiedId": "P-0000008"
+        },
+        {
+          "rowIndex": 13,
+          "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
+          "partNumber": "11.33473.338",
+          "unifiedId": "P-0000008"
+        }
+      ]
+    ],
+    [
+      "P-0000009",
+      [
+        {
+          "rowIndex": 14,
+          "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
+          "partNumber": "",
+          "unifiedId": "P-0000009"
+        },
+        {
+          "rowIndex": 15,
+          "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
+          "partNumber": "",
+          "unifiedId": "P-0000009"
+        }
+      ]
+    ],
+    [
+      "P-0000010",
+      [
+        {
+          "rowIndex": 16,
+          "description": "THERMAL INSULATION SIZE 12 MM , REF . PN 2101220 (ACCESSORY)",
+          "partNumber": "2101220",
+          "unifiedId": "P-0000010"
+        }
+      ]
+    ],
+    [
+      "P-0000011",
+      [
+        {
+          "rowIndex": 17,
+          "description": "DIXELL P/N XR10CX=XR10CH , DIGITAL THERMOSTAT - 220V 8(3)A 250VAC ITALY MADE REF PN/ 2101060 FOR SALAD REFRIGERATOR & VERTICAL REFRIGERATOR (OLD P/N : XR10CX-5N0C0)",
+          "partNumber": "XR10CX=XR10CH",
+          "unifiedId": "P-0000011"
+        }
+      ]
+    ],
+    [
+      "P-0000012",
+      [
+        {
+          "rowIndex": 18,
+          "description": "DOOR GASKET SIZE 635x430 MM , REF . PN/5713 FOR CONVECTION OVEN 6 GN 1/1",
+          "partNumber": "5713",
+          "unifiedId": "P-0000012"
+        }
+      ]
+    ],
+    [
+      "P-0000013",
+      [
+        {
+          "rowIndex": 19,
+          "description": "P/N : 2102043 , THERMOSTAT (EGO) GERMANY 100/180OC ,1042 SINGLE PH FOR DEEP FAT FRYER EGO P/N : (55.13032.140)",
+          "partNumber": "2102043",
+          "unifiedId": "P-0000013"
+        }
+      ]
+    ],
+    [
+      "P-0000014",
+      [
+        {
+          "rowIndex": 20,
+          "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+          "partNumber": "32\" LED",
+          "unifiedId": "P-0000014"
+        },
+        {
+          "rowIndex": 21,
+          "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+          "partNumber": "32\" LED",
+          "unifiedId": "P-0000014"
+        },
+        {
+          "rowIndex": 23,
+          "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+          "partNumber": "32\" LED",
+          "unifiedId": "P-0000014"
+        },
+        {
+          "rowIndex": 26,
+          "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+          "partNumber": "32\" LED",
+          "unifiedId": "P-0000014"
+        }
+      ]
+    ],
+    [
+      "P-0000015",
+      [
+        {
+          "rowIndex": 22,
+          "description": "T.V 43\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+          "partNumber": "43\" LED",
+          "unifiedId": "P-0000015"
+        },
+        {
+          "rowIndex": 25,
+          "description": "T.V 43\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+          "partNumber": "43\" LED",
+          "unifiedId": "P-0000015"
+        }
+      ]
+    ],
+    [
+      "P-0000016",
+      [
+        {
+          "rowIndex": 24,
+          "description": "T.V 55\" LED (SAMSUNG) 4K ULTRA HD SMART LED TV WITH BUILT - IN RECEIVER , MODEL : UA55CU7000UXEG",
+          "partNumber": "UA55CU7000UXEG",
+          "unifiedId": "P-0000016"
+        }
+      ]
+    ],
+    [
+      "P-0000017",
+      [
+        {
+          "rowIndex": 27,
+          "description": "P/N : LC1D 32 M7 , SCHNIEDER CONTACTOR FRANCE TELEMECANIQUE 220V 50/60HZ ITH 50A - 15 KW - 400V , REF PN/2102034 FOR  ELECTRIC GRILL & DEEP FAT FRYER",
+          "partNumber": "LC1D 32M7",
+          "unifiedId": "P-0000017"
+        }
+      ]
+    ],
+    [
+      "P-0000018",
+      [
+        {
+          "rowIndex": 28,
+          "description": "P/N : LC1D 25M7 , SCHNIEDER CONTACTOR FRANCE TELE-MECHANIQUE 220V 50/60HZ ITH 40A - 11 KW - 400V , REF PN/2102046 FOR  ELECTRIC COOKER & WATER BOILER & BAIN MARIE",
+          "partNumber": "LC1D 25M7",
+          "unifiedId": "P-0000018"
+        }
+      ]
+    ],
+    [
+      "P-0000019",
+      [
+        {
+          "rowIndex": 29,
+          "description": "EGO P/N : (43.27232.000) SWITCH EGO 8- POS 32 A , REF PN/ 0C6245 FOR CONVECTION OVEN 6 GN 1/1",
+          "partNumber": "43.27232.000",
+          "unifiedId": "P-0000019"
+        }
+      ]
+    ],
+    [
+      "P-0000020",
+      [
+        {
+          "rowIndex": 30,
+          "description": "MODEL JB3010 , BRAUN TRIBUTE COLLECTION BELENDER , 800WATT",
+          "partNumber": "",
+          "unifiedId": "P-0000020"
+        }
+      ]
+    ],
+    [
+      "P-0000021",
+      [
+        {
+          "rowIndex": 31,
+          "description": "WALL TYPE EXHAUST FAN INTERNAL DIM 30x30 CM WITH GUARD ( OLYMPIC , TOSHIBA)",
+          "partNumber": "",
+          "unifiedId": "P-0000021"
+        }
+      ]
+    ],
+    [
+      "P-0000022",
+      [
+        {
+          "rowIndex": 32,
+          "description": "P/N : B3 CT42030 , VACUUM CLEANER 80 LITER 3000 WATT CROWN",
+          "partNumber": "B3 CT42030V",
+          "unifiedId": "P-0000022"
+        }
+      ]
+    ],
+    [
+      "P-0000023",
+      [
+        {
+          "rowIndex": 33,
+          "description": "ASTRA MINI SATELLITE RECIVER HD",
+          "partNumber": "",
+          "unifiedId": "P-0000023"
+        },
+        {
+          "rowIndex": 40,
+          "description": "ASTRA MINI SATELLITE RECIVER HD",
+          "partNumber": "",
+          "unifiedId": "P-0000023"
+        },
+        {
+          "rowIndex": 41,
+          "description": "ASTRA MINI SATELLITE RECIVER HD",
+          "partNumber": "",
+          "unifiedId": "P-0000023"
+        },
+        {
+          "rowIndex": 47,
+          "description": "ASTRA MINI SATELLITE RECIVER HD",
+          "partNumber": "",
+          "unifiedId": "P-0000023"
+        }
+      ]
+    ],
+    [
+      "P-0000024",
+      [
+        {
+          "rowIndex": 34,
+          "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
+          "partNumber": "",
+          "unifiedId": "P-0000024"
+        },
+        {
+          "rowIndex": 42,
+          "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
+          "partNumber": "",
+          "unifiedId": "P-0000024"
+        },
+        {
+          "rowIndex": 48,
+          "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
+          "partNumber": "",
+          "unifiedId": "P-0000024"
+        }
+      ]
+    ],
+    [
+      "P-0000025",
+      [
+        {
+          "rowIndex": 35,
+          "description": "1x8 OUTPUT LNB",
+          "partNumber": "",
+          "unifiedId": "P-0000025"
+        },
+        {
+          "rowIndex": 37,
+          "description": "1x8 OUTPUT LNB",
+          "partNumber": "",
+          "unifiedId": "P-0000025"
+        },
+        {
+          "rowIndex": 43,
+          "description": "1x8 OUTPUT LNB",
+          "partNumber": "",
+          "unifiedId": "P-0000025"
+        },
+        {
+          "rowIndex": 45,
+          "description": "1x8 OUTPUT LNB",
+          "partNumber": "",
+          "unifiedId": "P-0000025"
+        },
+        {
+          "rowIndex": 49,
+          "description": "1x8 OUTPUT LNB",
+          "partNumber": "",
+          "unifiedId": "P-0000025"
+        }
+      ]
+    ],
+    [
+      "P-0000026",
+      [
+        {
+          "rowIndex": 36,
+          "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+          "partNumber": "",
+          "unifiedId": "P-0000026"
+        },
+        {
+          "rowIndex": 46,
+          "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+          "partNumber": "",
+          "unifiedId": "P-0000026"
+        },
+        {
+          "rowIndex": 51,
+          "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+          "partNumber": "",
+          "unifiedId": "P-0000026"
+        }
+      ]
+    ],
+    [
+      "P-0000027",
+      [
+        {
+          "rowIndex": 38,
+          "description": "SATELLITE DISH PREFIX 70",
+          "partNumber": "",
+          "unifiedId": "P-0000027"
+        },
+        {
+          "rowIndex": 50,
+          "description": "SATELLITE DISH PREFIX 70",
+          "partNumber": "",
+          "unifiedId": "P-0000027"
+        }
+      ]
+    ],
+    [
+      "P-0000028",
+      [
+        {
+          "rowIndex": 39,
+          "description": "LNB 1/4 QUAD",
+          "partNumber": "",
+          "unifiedId": "P-0000028"
+        }
+      ]
+    ],
+    [
+      "P-0000029",
+      [
+        {
+          "rowIndex": 44,
+          "description": "MODEL : TWF-16 , TORNADO WALL FAN - 16 INCH",
+          "partNumber": "",
+          "unifiedId": "P-0000029"
+        }
+      ]
+    ]
+  ],
+  "processedItems": [
+    {
+      "rowIndex": 2,
+      "description": "LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H",
+      "partNumber": "",
+      "unifiedId": "P-0000001"
+    },
+    {
+      "rowIndex": 3,
+      "description": "RIGHT BRACKET FOR A/C CARRIER QG\n42QG18H",
+      "partNumber": "",
+      "unifiedId": "P-0000002"
+    },
+    {
+      "rowIndex": 4,
+      "description": "ENERGIZER BATTERY 1,5V SIZE AA",
+      "partNumber": "",
+      "unifiedId": "P-0000003"
+    },
+    {
+      "rowIndex": 5,
+      "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
+      "partNumber": "",
+      "unifiedId": "P-0000004"
+    },
+    {
+      "rowIndex": 6,
+      "description": "P/N TRS/1 CR-A , HINGE DOOR HINGES (SET) REF/ 2101099 FOR ELECTRIC COOKER",
+      "partNumber": "TRS/1 CR-A",
+      "unifiedId": "P-0000005"
+    },
+    {
+      "rowIndex": 7,
+      "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
+      "partNumber": "11.33454.247",
+      "unifiedId": "P-0000006"
+    },
+    {
+      "rowIndex": 8,
+      "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
+      "partNumber": "11.33454.247",
+      "unifiedId": "P-0000006"
+    },
+    {
+      "rowIndex": 9,
+      "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
+      "partNumber": "11.33454.247",
+      "unifiedId": "P-0000006"
+    },
+    {
+      "rowIndex": 10,
+      "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
+      "partNumber": "WITH 4 OUTLET",
+      "unifiedId": "P-0000007"
+    },
+    {
+      "rowIndex": 11,
+      "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
+      "partNumber": "11.33473.338",
+      "unifiedId": "P-0000008"
+    },
+    {
+      "rowIndex": 12,
+      "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
+      "partNumber": "11.33473.338",
+      "unifiedId": "P-0000008"
+    },
+    {
+      "rowIndex": 13,
+      "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
+      "partNumber": "11.33473.338",
+      "unifiedId": "P-0000008"
+    },
+    {
+      "rowIndex": 14,
+      "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
+      "partNumber": "",
+      "unifiedId": "P-0000009"
+    },
+    {
+      "rowIndex": 15,
+      "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
+      "partNumber": "",
+      "unifiedId": "P-0000009"
+    },
+    {
+      "rowIndex": 16,
+      "description": "THERMAL INSULATION SIZE 12 MM , REF . PN 2101220 (ACCESSORY)",
+      "partNumber": "2101220",
+      "unifiedId": "P-0000010"
+    },
+    {
+      "rowIndex": 17,
+      "description": "DIXELL P/N XR10CX=XR10CH , DIGITAL THERMOSTAT - 220V 8(3)A 250VAC ITALY MADE REF PN/ 2101060 FOR SALAD REFRIGERATOR & VERTICAL REFRIGERATOR (OLD P/N : XR10CX-5N0C0)",
+      "partNumber": "XR10CX=XR10CH",
+      "unifiedId": "P-0000011"
+    },
+    {
+      "rowIndex": 18,
+      "description": "DOOR GASKET SIZE 635x430 MM , REF . PN/5713 FOR CONVECTION OVEN 6 GN 1/1",
+      "partNumber": "5713",
+      "unifiedId": "P-0000012"
+    },
+    {
+      "rowIndex": 19,
+      "description": "P/N : 2102043 , THERMOSTAT (EGO) GERMANY 100/180OC ,1042 SINGLE PH FOR DEEP FAT FRYER EGO P/N : (55.13032.140)",
+      "partNumber": "2102043",
+      "unifiedId": "P-0000013"
+    },
+    {
+      "rowIndex": 20,
+      "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+      "partNumber": "32\" LED",
+      "unifiedId": "P-0000014"
+    },
+    {
+      "rowIndex": 21,
+      "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+      "partNumber": "32\" LED",
+      "unifiedId": "P-0000014"
+    },
+    {
+      "rowIndex": 22,
+      "description": "T.V 43\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+      "partNumber": "43\" LED",
+      "unifiedId": "P-0000015"
+    },
+    {
+      "rowIndex": 23,
+      "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+      "partNumber": "32\" LED",
+      "unifiedId": "P-0000014"
+    },
+    {
+      "rowIndex": 24,
+      "description": "T.V 55\" LED (SAMSUNG) 4K ULTRA HD SMART LED TV WITH BUILT - IN RECEIVER , MODEL : UA55CU7000UXEG",
+      "partNumber": "UA55CU7000UXEG",
+      "unifiedId": "P-0000016"
+    },
+    {
+      "rowIndex": 25,
+      "description": "T.V 43\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+      "partNumber": "43\" LED",
+      "unifiedId": "P-0000015"
+    },
+    {
+      "rowIndex": 26,
+      "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
+      "partNumber": "32\" LED",
+      "unifiedId": "P-0000014"
+    },
+    {
+      "rowIndex": 27,
+      "description": "P/N : LC1D 32 M7 , SCHNIEDER CONTACTOR FRANCE TELEMECANIQUE 220V 50/60HZ ITH 50A - 15 KW - 400V , REF PN/2102034 FOR  ELECTRIC GRILL & DEEP FAT FRYER",
+      "partNumber": "LC1D 32M7",
+      "unifiedId": "P-0000017"
+    },
+    {
+      "rowIndex": 28,
+      "description": "P/N : LC1D 25M7 , SCHNIEDER CONTACTOR FRANCE TELE-MECHANIQUE 220V 50/60HZ ITH 40A - 11 KW - 400V , REF PN/2102046 FOR  ELECTRIC COOKER & WATER BOILER & BAIN MARIE",
+      "partNumber": "LC1D 25M7",
+      "unifiedId": "P-0000018"
+    },
+    {
+      "rowIndex": 29,
+      "description": "EGO P/N : (43.27232.000) SWITCH EGO 8- POS 32 A , REF PN/ 0C6245 FOR CONVECTION OVEN 6 GN 1/1",
+      "partNumber": "43.27232.000",
+      "unifiedId": "P-0000019"
+    },
+    {
+      "rowIndex": 30,
+      "description": "MODEL JB3010 , BRAUN TRIBUTE COLLECTION BELENDER , 800WATT",
+      "partNumber": "",
+      "unifiedId": "P-0000020"
+    },
+    {
+      "rowIndex": 31,
+      "description": "WALL TYPE EXHAUST FAN INTERNAL DIM 30x30 CM WITH GUARD ( OLYMPIC , TOSHIBA)",
+      "partNumber": "",
+      "unifiedId": "P-0000021"
+    },
+    {
+      "rowIndex": 32,
+      "description": "P/N : B3 CT42030 , VACUUM CLEANER 80 LITER 3000 WATT CROWN",
+      "partNumber": "B3 CT42030V",
+      "unifiedId": "P-0000022"
+    },
+    {
+      "rowIndex": 33,
+      "description": "ASTRA MINI SATELLITE RECIVER HD",
+      "partNumber": "",
+      "unifiedId": "P-0000023"
+    },
+    {
+      "rowIndex": 34,
+      "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
+      "partNumber": "",
+      "unifiedId": "P-0000024"
+    },
+    {
+      "rowIndex": 35,
+      "description": "1x8 OUTPUT LNB",
+      "partNumber": "",
+      "unifiedId": "P-0000025"
+    },
+    {
+      "rowIndex": 36,
+      "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+      "partNumber": "",
+      "unifiedId": "P-0000026"
+    },
+    {
+      "rowIndex": 37,
+      "description": "1x8 OUTPUT LNB",
+      "partNumber": "",
+      "unifiedId": "P-0000025"
+    },
+    {
+      "rowIndex": 38,
+      "description": "SATELLITE DISH PREFIX 70",
+      "partNumber": "",
+      "unifiedId": "P-0000027"
+    },
+    {
+      "rowIndex": 39,
+      "description": "LNB 1/4 QUAD",
+      "partNumber": "",
+      "unifiedId": "P-0000028"
+    },
+    {
+      "rowIndex": 40,
+      "description": "ASTRA MINI SATELLITE RECIVER HD",
+      "partNumber": "",
+      "unifiedId": "P-0000023"
+    },
+    {
+      "rowIndex": 41,
+      "description": "ASTRA MINI SATELLITE RECIVER HD",
+      "partNumber": "",
+      "unifiedId": "P-0000023"
+    },
+    {
+      "rowIndex": 42,
+      "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
+      "partNumber": "",
+      "unifiedId": "P-0000024"
+    },
+    {
+      "rowIndex": 43,
+      "description": "1x8 OUTPUT LNB",
+      "partNumber": "",
+      "unifiedId": "P-0000025"
+    },
+    {
+      "rowIndex": 44,
+      "description": "MODEL : TWF-16 , TORNADO WALL FAN - 16 INCH",
+      "partNumber": "",
+      "unifiedId": "P-0000029"
+    },
+    {
+      "rowIndex": 45,
+      "description": "1x8 OUTPUT LNB",
+      "partNumber": "",
+      "unifiedId": "P-0000025"
+    },
+    {
+      "rowIndex": 46,
+      "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+      "partNumber": "",
+      "unifiedId": "P-0000026"
+    },
+    {
+      "rowIndex": 47,
+      "description": "ASTRA MINI SATELLITE RECIVER HD",
+      "partNumber": "",
+      "unifiedId": "P-0000023"
+    },
+    {
+      "rowIndex": 48,
+      "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
+      "partNumber": "",
+      "unifiedId": "P-0000024"
+    },
+    {
+      "rowIndex": 49,
+      "description": "1x8 OUTPUT LNB",
+      "partNumber": "",
+      "unifiedId": "P-0000025"
+    },
+    {
+      "rowIndex": 50,
+      "description": "SATELLITE DISH PREFIX 70",
+      "partNumber": "",
+      "unifiedId": "P-0000027"
+    },
+    {
+      "rowIndex": 51,
+      "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
+      "partNumber": "",
+      "unifiedId": "P-0000026"
+    }
+  ],
+  "nextId": 30,
+  "timestamp": "2025-08-28T14:22:02.785Z"
+}

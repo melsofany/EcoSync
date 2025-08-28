@@ -7100,9 +7100,25 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('🎯 طلب حالة التوحيد الذكي...');
       
-      // جلب حالة التوحيد من خدمة التوحيد في الخلفية
-      const { backgroundUnification } = await import('./background-unification.js');
-      const status = backgroundUnification.getAutoStatus();
+      // جلب حالة التوحيد من النظام الدلالي المحدث
+      const { semanticUnification } = await import('./semantic-unification.js');
+      const status = semanticUnification.getStatus();
+      
+      // إضافة رسائل واضحة عن حالة النظام
+      let statusMessage = 'النظام جاهز للتوحيد';
+      let pauseReason = '';
+      
+      if (status.quotaExceeded) {
+        statusMessage = '🚫 توقف بسبب نفاد رصيد الـ AI';
+        pauseReason = 'نفد رصيد DeepSeek API - يرجى إعادة التعبئة للمتابعة';
+      } else if (status.isRunning) {
+        statusMessage = '🔄 جاري التوحيد الذكي...';
+      } else if (status.isPaused) {
+        statusMessage = '⏸️ متوقف مؤقتاً';
+        pauseReason = status.pauseReason || 'تم إيقاف العملية مؤقتاً';
+      } else if (status.progress >= 100) {
+        statusMessage = '✅ اكتمل التوحيد بنجاح';
+      }
       
       res.json({
         isRunning: status.isRunning || false,
@@ -7116,7 +7132,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         currentItem: status.currentItem || null,
         startTime: status.startTime || null,
         estimatedTimeRemaining: status.estimatedTimeRemaining || null,
-        accuracy: 100 // نظام DeepSeek يحقق دقة 100%
+        accuracy: status.accuracy || 0,
+        quotaExceeded: status.quotaExceeded || false,
+        pauseReason: pauseReason,
+        statusMessage: statusMessage,
+        aiCallCount: status.aiCallCount || 0
       });
 
     } catch (error) {
