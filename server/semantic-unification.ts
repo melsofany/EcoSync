@@ -20,6 +20,8 @@ interface Status {
   sessionId: string;
   quotaExceeded?: boolean;
   pauseReason?: string;
+  lastProcessedIndex?: number;
+  checkpointData?: any;
 }
 
 // تعريف واجهة استجابة DeepSeek
@@ -68,6 +70,8 @@ export class SemanticUnificationService {
   private processedItems: Product[] = [];
   private nextId: number = 1;
   private dualMatcher: DualMatchingSystem;
+  private lastProcessedIndex: number = 0;
+  private checkpointFile: string = './progress-checkpoint.json';
 
   constructor(deepSeekApiKey?: string) {
     this.deepSeekApiKey = deepSeekApiKey || process.env.DEEPSEEK_API_KEY || '';
@@ -91,7 +95,9 @@ export class SemanticUnificationService {
       aiCallCount: 0,
       sessionId: this.sessionId,
       quotaExceeded: false,
-      pauseReason: ''
+      pauseReason: '',
+      lastProcessedIndex: 0,
+      checkpointData: null
     };
     
     console.log('🧠 تهيئة نظام التوحيد الدلالي الذكي المحسن...');
@@ -100,6 +106,88 @@ export class SemanticUnificationService {
   // إنشاء معرف جلسة فريد
   private generateSessionId(): string {
     return `SESSION-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * حفظ التقدم في ملف checkpoint
+   */
+  private async saveProgress() {
+    try {
+      const fs = await import('fs/promises');
+      const checkpoint = {
+        sessionId: this.sessionId,
+        lastProcessedIndex: this.lastProcessedIndex,
+        status: this.status,
+        unifiedGroups: Array.from(this.unifiedGroups.entries()),
+        processedItems: this.processedItems,
+        nextId: this.nextId,
+        timestamp: new Date().toISOString()
+      };
+      
+      await fs.writeFile(this.checkpointFile, JSON.stringify(checkpoint, null, 2), 'utf8');
+      console.log(`💾 تم حفظ التقدم: البند ${this.lastProcessedIndex} من ${this.status.total}`);
+      
+      // تحديث الحالة
+      this.status.lastProcessedIndex = this.lastProcessedIndex;
+      this.status.checkpointData = checkpoint;
+      
+    } catch (error) {
+      console.error('❌ خطأ في حفظ التقدم:', error);
+    }
+  }
+
+  /**
+   * استئناف العمل من نقطة التوقف
+   */
+  private async loadProgress(): Promise<boolean> {
+    try {
+      const fs = await import('fs/promises');
+      
+      // فحص وجود ملف checkpoint
+      try {
+        await fs.access(this.checkpointFile);
+      } catch {
+        console.log('📋 لا يوجد ملف حفظ سابق - بدء جديد');
+        return false;
+      }
+      
+      const checkpointData = await fs.readFile(this.checkpointFile, 'utf8');
+      const checkpoint = JSON.parse(checkpointData);
+      
+      // استعادة البيانات
+      this.lastProcessedIndex = checkpoint.lastProcessedIndex || 0;
+      this.status = { ...this.status, ...checkpoint.status };
+      this.processedItems = checkpoint.processedItems || [];
+      this.nextId = checkpoint.nextId || 1;
+      
+      // استعادة المجموعات الموحدة
+      if (checkpoint.unifiedGroups) {
+        this.unifiedGroups = new Map(checkpoint.unifiedGroups);
+      }
+      
+      console.log(`🔄 تم استئناف العمل من البند ${this.lastProcessedIndex}`);
+      console.log(`📊 الحالة المحفوظة: ${this.status.processed} معالج، ${this.status.unified} موحد`);
+      
+      return true;
+      
+    } catch (error) {
+      console.error('❌ خطأ في تحميل التقدم المحفوظ:', error);
+      return false;
+    }
+  }
+
+  /**
+   * حذف ملف التقدم عند الانتهاء
+   */
+  private async clearProgress() {
+    try {
+      const fs = await import('fs/promises');
+      await fs.unlink(this.checkpointFile);
+      console.log('🗑️ تم حذف ملف التقدم المؤقت');
+    } catch (error) {
+      // لا مشكلة إذا لم يوجد الملف
+      console.log('📋 لم يوجد ملف تقدم للحذف');
+    }
   }
 
   // تهيئة الاتصال بـ Google Sheets API
@@ -259,7 +347,16 @@ export class SemanticUnificationService {
     this.isStopped = false;
     this.status.isRunning = true;
     this.status.isPaused = false;
-    this.status.startTime = new Date().toISOString();
+    
+    // محاولة تحميل التقدم المحفوظ
+    const resumedFromCheckpoint = await this.loadProgress();
+    
+    if (!resumedFromCheckpoint) {
+      this.status.startTime = new Date().toISOString();
+      console.log('🆕 بدء جلسة جديدة للتوحيد');
+    } else {
+      console.log('🔄 استئناف العمل من نقطة التوقف');
+    }
 
     try {
       // 1. قراءة البيانات من Google Sheets
@@ -288,8 +385,11 @@ export class SemanticUnificationService {
         partNumber: row[3] || '', // العمود D لرقم القطعة
       }));
 
-      // 4. معالجة كل منتج
-      for (let i = 0; i < products.length; i++) {
+      // 4. معالجة كل منتج - البدء من آخر نقطة توقف
+      const startIndex = resumedFromCheckpoint ? this.lastProcessedIndex : 0;
+      console.log(`📍 بدء المعالجة من البند ${startIndex + 1} من ${products.length}`);
+      
+      for (let i = startIndex; i < products.length; i++) {
         if (this.isStopped) break;
         
         while (this.status.isPaused && !this.isStopped) {
@@ -301,6 +401,7 @@ export class SemanticUnificationService {
 
         const product = products[i];
         this.status.currentItem = product;
+        this.lastProcessedIndex = i;
         this.status.processed = i + 1;
         this.status.progress = (this.status.processed / this.status.total) * 100;
 
@@ -400,11 +501,15 @@ export class SemanticUnificationService {
                 }
               } catch (error: any) {
                 if (error.message === 'QUOTA_EXCEEDED') {
+                  // حفظ التقدم فوراً قبل الإيقاف
+                  await this.saveProgress();
+                  
                   // إيقاف العملية مؤقتاً عند نفاد الرصيد
                   this.status.quotaExceeded = true;
                   this.status.isPaused = true;
                   this.status.pauseReason = 'نفد رصيد الـ AI';
                   console.log('🚫 تم إيقاف العملية مؤقتاً - نفد رصيد الـ AI');
+                  console.log('💾 تم حفظ التقدم للاستئناف لاحقاً');
                   
                   // إيقاف حلقة المعالجة
                   break;
@@ -446,6 +551,11 @@ export class SemanticUnificationService {
 
         this.processedItems.push(product);
 
+        // حفظ التقدم كل 50 بند
+        if (i % 50 === 49 || i === products.length - 1) {
+          await this.saveProgress();
+        }
+
         // تجميع الكتابة السريع (كل 50 بند)
         if (i % 50 === 49 || i === products.length - 1) {
           // كتابة مجمعة سريعة للآخر 50 بند
@@ -483,12 +593,20 @@ export class SemanticUnificationService {
       };
 
       this.status.isRunning = false;
+      
+      // حذف ملف التقدم عند الانتهاء بنجاح
+      await this.clearProgress();
+      
       return result;
 
     } catch (error: any) {
       console.error('حدث خطأ أثناء التنفيذ:', error);
       
       this.status.isRunning = false;
+      
+      // حفظ التقدم عند حدوث خطأ للاستئناف لاحقاً
+      await this.saveProgress();
+      
       return {
         success: false,
         message: `فشل في التنفيذ: ${error.message}`,

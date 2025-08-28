@@ -51,7 +51,11 @@ export class DualMatchingSystem {
         method: 'fallback'
       };
 
-    } catch (error) {
+    } catch (error: any) {
+      if (error.message === 'QUOTA_EXCEEDED' || error.status === 402) {
+        // إعادة إلقاء خطأ نفاد الرصيد للمعالجة العلوية
+        throw new Error('QUOTA_EXCEEDED');
+      }
       console.error('خطأ في المطابقة المزدوجة:', error);
       return this.basicComparison(desc1, desc2);
     }
