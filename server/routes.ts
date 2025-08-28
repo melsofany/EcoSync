@@ -191,18 +191,28 @@ async function runQuickMatchingForNewItems(newItems: any[]): Promise<void> {
 // فحص التشابه باستخدام DeepSeek AI
 async function checkAISimilarity(item1: any, item2: any): Promise<number> {
   try {
-    // التحقق من التطابق المباشر في PART NO
+    // التحقق من التطابق المباشر في LINE ITEM أولاً (أعلى أولوية)
+    if (item1.lineItem && item2.lineItem) {
+      const normalized1 = item1.lineItem.replace(/[\s\-_\.]/g, '').toUpperCase();
+      const normalized2 = item2.lineItem.replace(/[\s\-_\.]/g, '').toUpperCase();
+      
+      if (normalized1 === normalized2) {
+        return 1.0; // تطابق كامل في LINE ITEM
+      }
+    }
+    
+    // التحقق من التطابق المباشر في PART NO (أولوية ثانية)
     if (item1.partNumber && item2.partNumber) {
       const normalized1 = item1.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
       const normalized2 = item2.partNumber.replace(/[\s\-_\.]/g, '').toUpperCase();
       
       if (normalized1 === normalized2) {
-        return 1.0; // تطابق كامل
+        return 1.0; // تطابق كامل في PART NO
       }
     }
     
-    // استخدام AI للمقارنة الذكية
-    const prompt = `قارن بين هذين الصنفين وحدد مدى التشابه (0-1):
+    // استخدام AI للمقارنة الذكية - التركيز على الوظيفة والمواصفات
+    const prompt = `أنت خبير في تحليل قطع الغيار الصناعية. قارن بين هذين الصنفين وحدد مدى التشابه الوظيفي (0-1):
 
 الصنف الأول:
 - رقم القطعة: ${item1.partNumber || 'غير محدد'}
@@ -214,7 +224,16 @@ async function checkAISimilarity(item1: any, item2: any): Promise<number> {
 - التوصيف: ${item2.description || 'غير محدد'}
 - LINE ITEM: ${item2.lineItem || 'غير محدد'}
 
-أرجع رقماً فقط بين 0 و 1 (مثل 0.85) يمثل نسبة التشابه.`;
+معايير المقارنة (بالأولوية):
+1. نفس LINE ITEM = 1.0 (مطابقة كاملة)
+2. نفس الوظيفة والمواصفات الفنية = 0.85-0.95 (حتى لو أرقام القطع مختلفة)
+3. نفس الشركة المصنعة + نفس النوع = 0.75-0.85
+4. وظائف مشابهة لكن مواصفات مختلفة = 0.6-0.75
+5. منتجات مختلفة تماماً = 0.0-0.4
+
+مثال: LC1D 32M7 و 2102049 كلاهما Schneider contactors بنفس المواصفات = 0.9
+
+أرجع رقماً فقط بين 0 و 1 يمثل نسبة التشابه الوظيفي:`;
 
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',

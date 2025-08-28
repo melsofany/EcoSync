@@ -87,7 +87,7 @@ function groupSimilarItems(items: ItemForAnalysis[]): ItemForAnalysis[][] {
   const groups: Map<string, ItemForAnalysis[]> = new Map();
   
   for (const item of items) {
-    // Create a normalized key for grouping
+    // Create a normalized key for semantic grouping
     const normalizedDesc = item.description
       .toUpperCase()
       .replace(/[^\w\s]/g, '')
@@ -100,10 +100,27 @@ function groupSimilarItems(items: ItemForAnalysis[]): ItemForAnalysis[][] {
       .replace(/\s+/g, '')
       .trim();
     
-    // Group by LINE ITEM first (if exists), then part number + description
-    const groupKey = normalizedLineItem 
-      ? normalizedLineItem 
-      : `${normalizedDesc.substring(0, 50)}_${item.part_number}`;
+    // استخراج الكلمات المفتاحية من الوصف للتجميع الدلالي
+    const keywords = extractSemanticKeywords(normalizedDesc);
+    const brandKeyword = extractBrandKeyword(normalizedDesc);
+    const typeKeyword = extractTypeKeyword(normalizedDesc);
+    
+    // تجميع بناءً على المعايير الدلالية
+    let groupKey = '';
+    
+    if (normalizedLineItem) {
+      // أعلى أولوية: LINE ITEM
+      groupKey = `lineitem_${normalizedLineItem}`;
+    } else if (brandKeyword && typeKeyword) {
+      // تجميع بناءً على العلامة التجارية ونوع المنتج
+      groupKey = `semantic_${brandKeyword}_${typeKeyword}`;
+    } else if (keywords.length > 0) {
+      // تجميع بناءً على الكلمات المفتاحية
+      groupKey = `keywords_${keywords.slice(0, 3).join('_')}`;
+    } else {
+      // الحل الاحتياطي: باستخدام جزء من الوصف مع رقم الجزء
+      groupKey = `fallback_${normalizedDesc.substring(0, 30)}_${item.part_number || 'nopart'}`;
+    }
     
     if (!groups.has(groupKey)) {
       groups.set(groupKey, []);
@@ -114,10 +131,67 @@ function groupSimilarItems(items: ItemForAnalysis[]): ItemForAnalysis[][] {
   return Array.from(groups.values());
 }
 
+// استخراج الكلمات المفتاحية للمعنى
+function extractSemanticKeywords(description: string): string[] {
+  const keywords = [];
+  const desc = description.toLowerCase();
+  
+  // كلمات مفتاحية تقنية مهمة
+  const technicalKeywords = [
+    'contactor', 'relay', 'switch', 'motor', 'pump', 'valve', 'sensor',
+    'controller', 'inverter', 'transformer', 'breaker', 'fuse', 'cable',
+    'connector', 'terminal', 'housing', 'filter', 'bearing', 'seal'
+  ];
+  
+  for (const keyword of technicalKeywords) {
+    if (desc.includes(keyword)) {
+      keywords.push(keyword);
+    }
+  }
+  
+  return keywords;
+}
+
+// استخراج العلامة التجارية
+function extractBrandKeyword(description: string): string | null {
+  const desc = description.toLowerCase();
+  const brands = [
+    'schneider', 'siemens', 'abb', 'allen bradley', 'omron', 'mitsubishi',
+    'fanuc', 'yaskawa', 'delta', 'panasonic', 'keyence', 'sick', 'pepperl',
+    'turck', 'ifm', 'balluff', 'banner', 'telemecanique', 'square d'
+  ];
+  
+  for (const brand of brands) {
+    if (desc.includes(brand)) {
+      return brand.replace(/\s+/g, '');
+    }
+  }
+  
+  return null;
+}
+
+// استخراج نوع المنتج
+function extractTypeKeyword(description: string): string | null {
+  const desc = description.toLowerCase();
+  const types = [
+    'contactor', 'relay', 'switch', 'motor starter', 'circuit breaker',
+    'disconnect switch', 'push button', 'selector switch', 'pilot light',
+    'terminal block', 'power supply', 'drive', 'soft starter'
+  ];
+  
+  for (const type of types) {
+    if (desc.includes(type)) {
+      return type.replace(/\s+/g, '');
+    }
+  }
+  
+  return null;
+}
+
 async function analyzeGroupWithAI(group: ItemForAnalysis[]): Promise<DuplicateGroup | null> {
   try {
     const prompt = `
-You are an expert in analyzing industrial/mechanical items for duplicates. Analyze the following items and determine if they are duplicates or variations of the same item.
+You are an expert industrial engineer specializing in functional equivalence analysis. Your goal is to identify items that serve the same function with identical specifications, even if they have different part numbers. Focus on FUNCTION and TECHNICAL SPECS rather than part number differences.
 
 Items to analyze:
 ${group.map((item, index) => `
@@ -137,19 +211,34 @@ Return your analysis in JSON format with this structure:
   "reason": "string explaining why these are considered duplicates or not"
 }
 
-IMPORTANT MATCHING CRITERIA (in order of priority):
-1. LINE ITEM - If items have the exact same LINE ITEM, they are definitely duplicates
-2. PART NUMBER - Same or similar part numbers indicate duplicate items
-3. DESCRIPTION - Similar descriptions, accounting for typos, abbreviations, different languages
+ENHANCED MATCHING CRITERIA FOR FUNCTIONAL EQUIVALENCE (in priority order):
 
-Consider items duplicates if they have:
-- Exactly matching LINE ITEM (highest priority - always consider as duplicates)
-- Same or similar part numbers
-- Very similar descriptions (accounting for typos, abbreviations, different languages)
-- Same functionality despite different wording
-- Minor variations in specifications that don't affect the core item
+1. LINE ITEM EXACT MATCH - If items have identical LINE ITEM codes, they are definitely duplicates (100% match)
 
-Be conservative - only group items as duplicates if you're confident they represent the same physical item.
+2. FUNCTIONAL EQUIVALENCE - Items performing the same function with same specs should get same P-number:
+   - Same manufacturer + same model series + same specifications = 95% match
+   - Example: LC1D 32M7 and 2102049 are both Schneider 32A contactors = 90% match
+   - Same voltage, amperage, power ratings, and application = 85% match
+
+3. TECHNICAL SPECIFICATIONS PRIORITY:
+   - Voltage rating (220V, 240V, etc.)
+   - Current/Amperage rating (32A, 50A, etc.)
+   - Power rating (15KW, 20KW, etc.)
+   - Application purpose (contactor, relay, switch, etc.)
+   - Brand/Manufacturer compatibility
+
+4. PART NUMBER VARIATIONS:
+   - Different part numbers for same product from same manufacturer = 90% match
+   - Manufacturer's internal part number vs. catalog number = 90% match
+   - Regional variations of same product = 85% match
+
+5. DESCRIPTION SIMILARITY:
+   - Same technical specs in different languages/formats = 80% match
+   - Abbreviated vs. full descriptions of same item = 75% match
+
+KEY PRINCIPLE: Focus on WHAT the item DOES and its TECHNICAL SPECIFICATIONS rather than just part number matching. Two items with different part numbers but identical function and specs should be considered the same item.
+
+IMPORTANT: Be more generous in matching items with same functionality - we want to consolidate functionally identical items under the same P-number even if part numbers differ.
 `;
 
     const responseContent = await callDeepSeekAPI([
