@@ -58,6 +58,31 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
+  // دالة التحديث المجمع الجديدة للتوحيد الذكي
+  async batchUpdate(updates: {range: string, values: any[][]}[]): Promise<void> {
+    try {
+      if (!this.sheets || updates.length === 0) {
+        return;
+      }
+
+      console.log(`📝 تطبيق ${updates.length} تحديث مجمع...`);
+      
+      await this.sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: this.spreadsheetId,
+        resource: {
+          valueInputOption: 'RAW',
+          data: updates
+        }
+      });
+      
+      console.log(`✅ تم تطبيق التحديثات المجمعة بنجاح`);
+
+    } catch (error) {
+      console.error('❌ خطأ في التحديث المجمع:', error);
+      throw error;
+    }
+  }
+
   // 🚀 **دالة جديدة لتحديث عدة معرفات دفعة واحدة**
   async updateMultipleItemIds(updates: {oldId: string, newId: string}[]): Promise<number> {
     try {

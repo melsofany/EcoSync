@@ -8530,5 +8530,215 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // ============ نظام التوحيد الذكي الجديد ============
+  
+  // متغير لتخزين instance النظام
+  let aiBackgroundUnifier: any = null;
+  
+  // قائمة العملاء المتصلين للتحديثات المباشرة
+  const sseClients = new Set<Response>();
+
+  // دالة إرسال التحديثات للعملاء
+  const broadcastToClients = (data: any) => {
+    const message = `data: ${JSON.stringify(data)}\n\n`;
+    for (const client of sseClients) {
+      try {
+        client.write(message);
+      } catch (error) {
+        sseClients.delete(client);
+      }
+    }
+  };
+
+  // تهيئة نظام التوحيد الذكي
+  const initializeAIUnifier = async () => {
+    if (!aiBackgroundUnifier) {
+      const { AIBackgroundUnifier } = await import('./ai-background-unifier.js');
+      aiBackgroundUnifier = new AIBackgroundUnifier(googleSheetsRealTimeData);
+      
+      // ربط الأحداث بالتحديثات المباشرة
+      aiBackgroundUnifier.on('progress', (data: any) => {
+        broadcastToClients({ type: 'progress', payload: data });
+      });
+      
+      aiBackgroundUnifier.on('log', (data: any) => {
+        broadcastToClients({ type: 'log', payload: data });
+      });
+      
+      aiBackgroundUnifier.on('quotaExceeded', (data: any) => {
+        broadcastToClients({ type: 'quotaExceeded', payload: data });
+      });
+      
+      aiBackgroundUnifier.on('completed', (data: any) => {
+        broadcastToClients({ type: 'completed', payload: data });
+      });
+    }
+    return aiBackgroundUnifier;
+  };
+
+  // بدء التوحيد الذكي
+  app.post("/api/ai-unification/start", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('🚀 طلب بدء التوحيد الذكي');
+      
+      const unifier = await initializeAIUnifier();
+      await unifier.startBackgroundUnification();
+      
+      res.json({ 
+        success: true, 
+        message: 'تم بدء التوحيد الذكي في الخلفية' 
+      });
+      
+      // إرسال تحديث الحالة للعملاء
+      const status = unifier.getStatus();
+      broadcastToClients({ type: 'status', payload: status });
+      
+    } catch (error: any) {
+      console.error('❌ خطأ في بدء التوحيد الذكي:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error.message || 'خطأ في بدء التوحيد الذكي' 
+      });
+    }
+  });
+
+  // إيقاف مؤقت
+  app.post("/api/ai-unification/pause", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('⏸️ طلب إيقاف مؤقت للتوحيد الذكي');
+      
+      const unifier = await initializeAIUnifier();
+      unifier.pauseUnification();
+      
+      res.json({ 
+        success: true, 
+        message: 'تم إيقاف التوحيد مؤقتاً' 
+      });
+      
+      // إرسال تحديث الحالة
+      const status = unifier.getStatus();
+      broadcastToClients({ type: 'status', payload: status });
+      
+    } catch (error: any) {
+      console.error('❌ خطأ في الإيقاف المؤقت:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error.message || 'خطأ في الإيقاف المؤقت' 
+      });
+    }
+  });
+
+  // استئناف العمل
+  app.post("/api/ai-unification/resume", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('▶️ طلب استئناف التوحيد الذكي');
+      
+      const unifier = await initializeAIUnifier();
+      unifier.resumeUnification();
+      
+      res.json({ 
+        success: true, 
+        message: 'تم استئناف التوحيد' 
+      });
+      
+      // إرسال تحديث الحالة
+      const status = unifier.getStatus();
+      broadcastToClients({ type: 'status', payload: status });
+      
+    } catch (error: any) {
+      console.error('❌ خطأ في الاستئناف:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error.message || 'خطأ في الاستئناف' 
+      });
+    }
+  });
+
+  // إيقاف نهائي
+  app.post("/api/ai-unification/stop", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('🛑 طلب إيقاف نهائي للتوحيد الذكي');
+      
+      const unifier = await initializeAIUnifier();
+      unifier.stopUnification();
+      
+      res.json({ 
+        success: true, 
+        message: 'تم إيقاف التوحيد نهائياً' 
+      });
+      
+      // إرسال تحديث الحالة
+      const status = unifier.getStatus();
+      broadcastToClients({ type: 'status', payload: status });
+      
+    } catch (error: any) {
+      console.error('❌ خطأ في الإيقاف النهائي:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error.message || 'خطأ في الإيقاف النهائي' 
+      });
+    }
+  });
+
+  // جلب الحالة الحالية
+  app.get("/api/ai-unification/status", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      const unifier = await initializeAIUnifier();
+      const status = unifier.getStatus();
+      
+      res.json(status);
+      
+    } catch (error: any) {
+      console.error('❌ خطأ في جلب الحالة:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error.message || 'خطأ في جلب الحالة' 
+      });
+    }
+  });
+
+  // تدفق التحديثات المباشرة (Server-Sent Events)
+  app.get("/api/ai-unification/stream", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    console.log('📡 عميل جديد اتصل بتدفق التحديثات المباشرة');
+    
+    // إعداد SSE headers
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Cache-Control'
+    });
+
+    // إضافة العميل للقائمة
+    sseClients.add(res);
+    
+    // إرسال heartbeat كل 30 ثانية
+    const heartbeatInterval = setInterval(() => {
+      try {
+        res.write(`: heartbeat\n\n`);
+      } catch (error) {
+        clearInterval(heartbeatInterval);
+        sseClients.delete(res);
+      }
+    }, 30000);
+
+    // إرسال الحالة الحالية فوراً
+    try {
+      const unifier = await initializeAIUnifier();
+      const status = unifier.getStatus();
+      res.write(`data: ${JSON.stringify({ type: 'status', payload: status })}\n\n`);
+    } catch (error) {
+      console.error('خطأ في إرسال الحالة الحالية:', error);
+    }
+
+    // تنظيف عند قطع الاتصال
+    req.on('close', () => {
+      console.log('📡 تم قطع اتصال عميل التحديثات المباشرة');
+      clearInterval(heartbeatInterval);
+      sseClients.delete(res);
+    });
+  });
+
   return httpServer;
 }

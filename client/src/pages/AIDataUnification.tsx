@@ -5,196 +5,244 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   PlayCircle, 
+  Pause,
+  Square,
+  RotateCcw,
+  AlertTriangle,
   CheckCircle2,
   Clock,
-  AlertCircle,
-  Brain,
-  Target,
-  Activity,
-  TrendingUp,
+  Zap,
   Database,
-  Layers,
-  StopCircle,
-  Zap
+  TrendingUp,
+  Cpu
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface SemanticUnificationStatus {
+// واجهات البيانات
+interface UnificationStatus {
   isRunning: boolean;
-  progress: number;
-  currentItem?: {
-    description: string;
-    partNumber: string;
-    lineItem: string;
-  } | null;
-}
-
-interface SemanticUnificationStats {
+  isPaused: boolean;
+  currentIndex: number;
   totalItems: number;
-  uniqueItems: number;
-  duplicatesFound: number;
-  unificationRate: number;
+  processedItems: number;
+  unifiedItems: number;
+  quotaExceeded: boolean;
+  progress: number;
+  logs: string[];
 }
 
-interface SemanticUnificationResult {
-  totalProcessed: number;
-  groupsFound: number;
-  itemsUnified: number;
-  processingTime: number;
+interface LogEntry {
+  message: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  timestamp: string;
 }
 
 export default function AIDataUnification() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // حالة الواجهة
+  const [status, setStatus] = useState<UnificationStatus>({
+    isRunning: false,
+    isPaused: false,
+    currentIndex: 0,
+    totalItems: 0,
+    processedItems: 0,
+    unifiedItems: 0,
+    quotaExceeded: false,
+    progress: 0,
+    logs: []
+  });
+  
+  const [recentLogs, setRecentLogs] = useState<LogEntry[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
 
-  // جلب حالة التوحيد الدلالي
-  const { data: status, isLoading: statusLoading } = useQuery<SemanticUnificationStatus>({
-    queryKey: ["/api/ai-unification/status"],
-    refetchInterval: (query) => {
-      const data = query.state.data as SemanticUnificationStatus;
-      return data?.isRunning ? 1000 : 5000;
+  // الاتصال بالخادم للحصول على التحديثات المباشرة
+  useEffect(() => {
+    const eventSource = new EventSource('/api/ai-unification/stream');
+    
+    eventSource.onopen = () => {
+      setIsConnected(true);
+      console.log('✅ تم الاتصال بسيرفر التحديثات المباشرة');
+    };
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'status') {
+          setStatus(data.payload);
+        } else if (data.type === 'log') {
+          const logEntry: LogEntry = {
+            message: data.payload.message,
+            type: data.payload.type || 'info',
+            timestamp: new Date().toLocaleTimeString('ar-EG')
+          };
+          
+          setRecentLogs(prev => [...prev.slice(-49), logEntry]); // آخر 50 رسالة
+        }
+      } catch (error) {
+        console.error('خطأ في معالجة التحديث:', error);
+      }
+    };
+
+    eventSource.onerror = () => {
+      setIsConnected(false);
+      console.warn('⚠️ انقطع الاتصال بسيرفر التحديثات');
+    };
+
+    // تنظيف الاتصال عند إغلاق الصفحة
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
+  // جلب الحالة الحالية عند تحميل الصفحة
+  useEffect(() => {
+    fetchCurrentStatus();
+  }, []);
+
+  // جلب الحالة الحالية
+  const fetchCurrentStatus = async () => {
+    try {
+      const response = await fetch('/api/ai-unification/status', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setStatus(data);
+      }
+    } catch (error) {
+      console.error('خطأ في جلب الحالة:', error);
     }
-  });
+  };
 
-  // جلب إحصائيات التوحيد
-  const { data: stats } = useQuery<SemanticUnificationStats>({
-    queryKey: ["/api/ai-unification/stats"],
-    refetchInterval: 30000
-  });
-
-  // بدء عملية التوحيد البسيط
-  const startSimpleUnification = useMutation({
+  // بدء عملية التوحيد
+  const startUnification = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/simple-unification/start", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include"
+      const response = await fetch('/api/ai-unification/start', {
+        method: 'POST',
+        credentials: 'include'
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `خطأ في الخادم: ${response.status}`);
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || 'فشل في بدء التوحيد');
       }
       
       return response.json();
     },
-    onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "🚀 التوحيد البسيط",
-          description: `تم العثور على ${data.result?.groupsFound || 0} مجموعة، وتوحيد ${data.result?.itemsUnified || 0} منتج`,
-          className: "bg-gradient-to-r from-green-500 to-blue-600 text-white"
-        });
-      } else {
-        toast({
-          title: "تحذير",
-          description: data.message || "حدث خطأ في التوحيد البسيط",
-          variant: "destructive"
-        });
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
-    },
-    onError: (error) => {
+    onSuccess: () => {
       toast({
-        title: "خطأ في التوحيد البسيط",
+        title: "🚀 تم البدء",
+        description: "تم بدء عملية التوحيد في الخلفية",
+        className: "bg-green-50 border-green-200"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "خطأ في البدء",
         description: error.message,
         variant: "destructive"
       });
     }
   });
 
-  // بدء عملية التوحيد الدلالي
-  const startSemanticUnification = useMutation({
+  // إيقاف مؤقت
+  const pauseUnification = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/ai-unification/start", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include"
+      const response = await fetch('/api/ai-unification/pause', {
+        method: 'POST',
+        credentials: 'include'
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `خطأ في الخادم: ${response.status}`);
-      }
-      
       return response.json();
     },
-    onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "🧠 بدء التحليل الدلالي",
-          description: data.message || "تم بدء عملية التوحيد بالتحليل الدلالي للمعنى",
-          className: "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-        });
-      } else {
-        toast({
-          title: "تحذير",
-          description: data.message || "حدث خطأ في بدء التوحيد الدلالي",
-          variant: "destructive"
-        });
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
-    },
-    onError: (error) => {
+    onSuccess: () => {
       toast({
-        title: "خطأ في التحليل الدلالي",
-        description: error.message,
-        variant: "destructive"
+        title: "⏸️ تم الإيقاف",
+        description: "تم إيقاف العملية مؤقتاً",
+        className: "bg-yellow-50 border-yellow-200"
       });
     }
   });
 
-  // إيقاف عملية التوحيد الدلالي
-  const stopSemanticUnification = useMutation({
+  // استئناف
+  const resumeUnification = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/ai-unification/stop", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include"
+      const response = await fetch('/api/ai-unification/resume', {
+        method: 'POST',
+        credentials: 'include'
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `خطأ في الخادم: ${response.status}`);
-      }
-      
       return response.json();
     },
-    onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: "🛑 تم طلب إيقاف العملية",
-          description: data.message || "سيتم إيقاف التحليل الدلالي خلال ثوانٍ قليلة",
-          className: "bg-red-500 text-white"
-        });
-      } else {
-        toast({
-          title: "تحذير", 
-          description: data.message || "حدث خطأ في إيقاف العملية",
-          variant: "destructive"
-        });
-      }
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
-    },
-    onError: (error) => {
+    onSuccess: () => {
       toast({
-        title: "خطأ في إيقاف العملية",
-        description: error.message,
-        variant: "destructive"
+        title: "▶️ تم الاستئناف",
+        description: "تم استئناف العملية",
+        className: "bg-blue-50 border-blue-200"
       });
     }
   });
 
-  const progressPercentage = status?.progress || 0;
+  // إيقاف نهائي
+  const stopUnification = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/ai-unification/stop', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "🛑 تم الإيقاف",
+        description: "تم إيقاف العملية نهائياً",
+        className: "bg-red-50 border-red-200"
+      });
+    }
+  });
+
+  // تحديد حالة العملية
+  const getStatusInfo = () => {
+    if (status.quotaExceeded) {
+      return {
+        text: 'نفد رصيد API - متوقف',
+        color: 'bg-orange-500',
+        icon: AlertTriangle
+      };
+    } else if (status.isRunning && status.isPaused) {
+      return {
+        text: 'متوقف مؤقتاً',
+        color: 'bg-yellow-500',
+        icon: Pause
+      };
+    } else if (status.isRunning) {
+      return {
+        text: 'يعمل في الخلفية',
+        color: 'bg-green-500',
+        icon: Zap
+      };
+    } else if (status.processedItems > 0) {
+      return {
+        text: 'مكتمل',
+        color: 'bg-blue-500',
+        icon: CheckCircle2
+      };
+    } else {
+      return {
+        text: 'في انتظار البدء',
+        color: 'bg-gray-400',
+        icon: Clock
+      };
+    }
+  };
+
+  const statusInfo = getStatusInfo();
+  const StatusIcon = statusInfo.icon;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -205,189 +253,249 @@ export default function AIDataUnification() {
         className="text-center mb-8"
       >
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-          توحيد المنتجات بالتحليل الدلالي
+          التوحيد الذكي للمنتجات
         </h1>
-        <p className="text-gray-600">نظام ذكي يفهم معنى التوصيف ويوحد المنتجات المتطابقة دلالياً</p>
+        <p className="text-gray-600">نظام ذكي يعمل في الخلفية لتوحيد المنتجات المتطابقة باستخدام AI</p>
       </motion.div>
 
-      {/* شريط الحالة */}
-      <Card className="border-2 border-primary/20 shadow-xl bg-gradient-to-r from-blue-50 to-purple-50">
+      {/* شريط الاتصال */}
+      <Card className={`border-2 ${isConnected ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+            <span className="font-medium">
+              {isConnected ? '🔗 متصل - تحديثات مباشرة' : '📶 غير متصل - قم بإعادة تحميل الصفحة'}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* شريط التحكم والحالة */}
+      <Card className="border-2 border-primary/20 shadow-xl">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full animate-pulse ${
-                status?.isRunning ? 'bg-green-500' : 'bg-gray-400'
-              }`} />
-              <span className="font-semibold text-lg">
-                {status?.isRunning ? 'جاري التحليل الدلالي...' : 'في وضع الانتظار'}
-              </span>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className={`w-4 h-4 rounded-full ${statusInfo.color} animate-pulse`} />
+              <div>
+                <h3 className="font-semibold text-lg flex items-center gap-2">
+                  <StatusIcon className="h-5 w-5" />
+                  {statusInfo.text}
+                </h3>
+                {status.totalItems > 0 && (
+                  <p className="text-sm text-gray-600">
+                    البند {status.currentIndex + 1} من {status.totalItems}
+                  </p>
+                )}
+              </div>
             </div>
-            
+
+            {/* أزرار التحكم */}
             <div className="flex items-center gap-2">
-              {!status?.isRunning ? (
-                <Button 
-                  onClick={() => startSemanticUnification.mutate()}
-                  disabled={startSemanticUnification.isPending}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+              {!status.isRunning && (
+                <Button
+                  onClick={() => startUnification.mutate()}
+                  disabled={startUnification.isPending}
+                  className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
                 >
-                  <Brain className="ml-2 h-4 w-4" />
-                  بدء التوحيد الذكي
+                  <PlayCircle className="ml-2 h-4 w-4" />
+                  بدء التوحيد
                 </Button>
-              ) : (
-                <Button 
-                  onClick={() => stopSemanticUnification.mutate()}
-                  disabled={stopSemanticUnification.isPending}
-                  variant="destructive"
-                  className="bg-red-500 hover:bg-red-600"
+              )}
+
+              {status.isRunning && !status.isPaused && (
+                <Button
+                  onClick={() => pauseUnification.mutate()}
+                  disabled={pauseUnification.isPending}
+                  variant="outline"
+                  className="border-yellow-300 hover:bg-yellow-50"
                 >
-                  <StopCircle className="ml-2 h-4 w-4" />
-                  إيقاف العملية
+                  <Pause className="ml-2 h-4 w-4" />
+                  إيقاف مؤقت
+                </Button>
+              )}
+
+              {status.isRunning && status.isPaused && (
+                <Button
+                  onClick={() => resumeUnification.mutate()}
+                  disabled={resumeUnification.isPending}
+                  className="bg-blue-500 hover:bg-blue-600"
+                >
+                  <RotateCcw className="ml-2 h-4 w-4" />
+                  استئناف
+                </Button>
+              )}
+
+              {status.isRunning && (
+                <Button
+                  onClick={() => stopUnification.mutate()}
+                  disabled={stopUnification.isPending}
+                  variant="destructive"
+                >
+                  <Square className="ml-2 h-4 w-4" />
+                  إيقاف نهائي
                 </Button>
               )}
             </div>
           </div>
 
           {/* شريط التقدم */}
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>التقدم</span>
-              <span>{progressPercentage.toFixed(1)}%</span>
+          {status.totalItems > 0 && (
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>التقدم</span>
+                <span>{status.progress.toFixed(1)}%</span>
+              </div>
+              <Progress value={status.progress} className="h-3" />
             </div>
-            <Progress value={progressPercentage} className="h-3" />
-            
-            {status?.isRunning && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-3 p-3 bg-white rounded-lg border"
-              >
-                <p className="text-sm font-medium mb-1">🧠 جاري التحليل الدلالي للمنتجات...</p>
-                {status.currentItem && (
-                  <div className="mt-2 p-2 bg-gray-50 rounded border-r-4 border-blue-400">
-                    <p className="text-xs font-medium text-gray-700">🔍 البند الحالي:</p>
-                    <p className="text-xs text-gray-600 mt-1">
-                      <span className="font-medium">التوصيف:</span> {status.currentItem.description.substring(0, 80)}...
-                    </p>
-                    {status.currentItem.partNumber && (
-                      <p className="text-xs text-gray-600">
-                        <span className="font-medium">رقم القطعة:</span> {status.currentItem.partNumber}
-                      </p>
-                    )}
-                    {status.currentItem.lineItem && (
-                      <p className="text-xs text-gray-600">
-                        <span className="font-medium">اسم البند:</span> {status.currentItem.lineItem}
-                      </p>
-                    )}
-                  </div>
-                )}
-                <p className="text-xs text-gray-600 mt-2">يتم تحليل معنى كل توصيف وإيجاد المنتجات المتطابقة دلالياً</p>
-              </motion.div>
-            )}
-          </div>
+          )}
+
+          {/* تحذير نفاد الرصيد */}
+          {status.quotaExceeded && (
+            <Alert className="mt-4 border-orange-200 bg-orange-50">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>نفد رصيد DeepSeek API!</strong>
+                <br />
+                يمكنك إما انتظار إعادة تعبئة الرصيد أو سيتم استخدام المقارنة البسيطة.
+                <br />
+                العملية محفوظة ويمكن استئنافها في أي وقت.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
       {/* الإحصائيات */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* إجمالي المنتجات */}
         <Card className="border-blue-200 bg-blue-50">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
-              <span>إجمالي المنتجات</span>
+              <span>إجمالي البنود</span>
               <Database className="h-5 w-5 text-blue-600" />
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-blue-700">
-              {stats?.totalItems || 0}
-            </p>
-            <p className="text-sm text-blue-600 mt-1">
-              منتج في النظام
+              {status.totalItems.toLocaleString()}
             </p>
           </CardContent>
         </Card>
 
-        {/* المنتجات الفريدة */}
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center justify-between">
+              <span>تمت معالجتها</span>
+              <Cpu className="h-5 w-5 text-yellow-600" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold text-yellow-700">
+              {status.processedItems.toLocaleString()}
+            </p>
+          </CardContent>
+        </Card>
+
         <Card className="border-green-200 bg-green-50">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
-              <span>منتجات فريدة</span>
+              <span>تم توحيدها</span>
               <CheckCircle2 className="h-5 w-5 text-green-600" />
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-green-700">
-              {stats?.uniqueItems || 0}
-            </p>
-            <p className="text-sm text-green-600 mt-1">
-              منتج مختلف
+              {status.unifiedItems.toLocaleString()}
             </p>
           </CardContent>
         </Card>
 
-        {/* المكررات المكتشفة */}
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center justify-between">
-              <span>مكررات مكتشفة</span>
-              <Layers className="h-5 w-5 text-orange-600" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-orange-700">
-              {stats?.duplicatesFound || 0}
-            </p>
-            <p className="text-sm text-orange-600 mt-1">
-              منتج مكرر
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* معدل التوحيد */}
         <Card className="border-purple-200 bg-purple-50">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center justify-between">
               <span>معدل التوحيد</span>
-              <Target className="h-5 w-5 text-purple-600" />
+              <TrendingUp className="h-5 w-5 text-purple-600" />
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-purple-700">
-              {stats?.unificationRate ? stats.unificationRate.toFixed(1) : '0'}%
-            </p>
-            <p className="text-sm text-purple-600 mt-1">
-              نسبة النجاح
+              {status.processedItems > 0 ? 
+                ((status.unifiedItems / status.processedItems) * 100).toFixed(1) : '0'}%
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* شرح النظام الدلالي */}
-      <Card className="border-green-200 bg-green-50">
+      {/* سجل العمليات المباشر */}
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-green-600" />
-            كيف يعمل التحليل الدلالي؟
+            <motion.div
+              animate={{ rotate: status.isRunning && !status.isPaused ? 360 : 0 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            >
+              <Zap className="h-5 w-5 text-blue-600" />
+            </motion.div>
+            سجل العمليات المباشر
           </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="max-h-96 overflow-y-auto space-y-2 font-mono text-sm">
+            <AnimatePresence>
+              {recentLogs.map((log, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className={`p-3 rounded border-r-4 ${
+                    log.type === 'error' ? 'bg-red-50 border-red-400' :
+                    log.type === 'warning' ? 'bg-yellow-50 border-yellow-400' :
+                    log.type === 'success' ? 'bg-green-50 border-green-400' :
+                    'bg-blue-50 border-blue-400'
+                  }`}
+                >
+                  <div className="flex justify-between items-start">
+                    <span className="text-gray-800">{log.message}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {log.timestamp}
+                    </Badge>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            
+            {recentLogs.length === 0 && (
+              <div className="text-center text-gray-500 py-8">
+                لا توجد رسائل جديدة
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* معلومات النظام */}
+      <Card className="border-green-200 bg-green-50">
+        <CardHeader>
+          <CardTitle className="text-green-800">مميزات النظام الجديد</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <h4 className="font-semibold text-green-700 mb-2">🔍 تحليل المعنى</h4>
+              <h4 className="font-semibold text-green-700 mb-2">🔧 العمل في الخلفية</h4>
               <ul className="space-y-1 text-green-600">
-                <li>• يستخرج الشركة المصنعة والموديل</li>
-                <li>• يحلل المواصفات التقنية (جهد، تيار، قدرة)</li>
-                <li>• يطبع أرقام الجزء (LC1D-32-M7 = LC1D32M7)</li>
-                <li>• يفهم المرادفات والاختصارات</li>
+                <li>• يستمر العمل حتى بعد إغلاق المتصفح</li>
+                <li>• حفظ تلقائي للتقدم كل دقيقة</li>
+                <li>• إمكانية الاستئناف من حيث توقف</li>
+                <li>• تحديثات مباشرة عبر WebSocket</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-green-700 mb-2">⚡ أمثلة التوحيد</h4>
+              <h4 className="font-semibold text-green-700 mb-2">🤖 إدارة ذكية للـ API</h4>
               <ul className="space-y-1 text-green-600">
-                <li>• "LC1D 32 M7" + "LC1D-32-M7" = منتج واحد</li>
-                <li>• "شنايدر 32Amp" + "2102034" = منتج واحد</li>
-                <li>• نفس المواصفات بتوصيفات مختلفة</li>
-                <li>• تجاهل الأخطاء الإملائية والترقيم</li>
+                <li>• كشف نفاد الرصيد تلقائياً</li>
+                <li>• التبديل للمقارنة البسيطة عند الحاجة</li>
+                <li>• معالجة الأخطاء والإعادة التلقائية</li>
+                <li>• تحكم كامل: بدء/إيقاف/استئناف</li>
               </ul>
             </div>
           </div>
