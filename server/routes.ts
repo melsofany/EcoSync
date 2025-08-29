@@ -130,7 +130,44 @@ async function aiUnifyItems(items: any[]): Promise<any[]> {
   console.log(`🎯 نتائج التوحيد الذكي: ${items.length} → ${unifiedItems.length} (توفير ${items.length - unifiedItems.length} بند)`);
   console.log(`📈 معدل التوفير: ${((items.length - unifiedItems.length) / items.length * 100).toFixed(1)}%`);
   
+  // كتابة النتائج إلى Google Sheets
+  console.log('💾 كتابة النتائج الموحدة إلى Google Sheets...');
+  await writeUnifiedResultsToGoogleSheets(unifiedItems);
+  
   return unifiedItems;
+}
+
+// كتابة النتائج الموحدة إلى Google Sheets
+async function writeUnifiedResultsToGoogleSheets(unifiedItems: any[]): Promise<void> {
+  try {
+    const { googleSheetsRealTimeData } = await import('./google-sheets-realtime-data.js');
+    
+    console.log(`🔄 تحديث ${unifiedItems.length} معرف موحد في Google Sheets...`);
+    
+    // إعداد التحديثات المجمعة
+    const updates = [];
+    
+    for (const unifiedItem of unifiedItems) {
+      // تحديث جميع البنود الأصلية بالمعرف الموحد الجديد
+      for (const originalId of unifiedItem.originalIds) {
+        updates.push({
+          oldId: originalId,
+          newId: unifiedItem.itemNumber // P-0000XXX الجديد
+        });
+      }
+    }
+    
+    console.log(`📊 إرسال ${updates.length} تحديث مجمع إلى Google Sheets...`);
+    
+    // تطبيق التحديثات المجمعة
+    await googleSheetsRealTimeData.batchUpdateUnifiedIds(updates);
+    
+    console.log('✅ تم تحديث جميع المعرفات الموحدة في Google Sheets بنجاح!');
+    
+  } catch (error) {
+    console.error('❌ خطأ في كتابة النتائج إلى Google Sheets:', error);
+    throw error;
+  }
 }
 
 // نظام المطابقة الذكي باستخدام DeepSeek AI للبنود الجديدة
