@@ -7142,12 +7142,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         currentItem: null
       });
       
-      return;
-      
-      // جلب حالة التوحيد من النظام الدلالي المحدث
-      const { semanticUnification } = await import('./semantic-unification.js');
-      const status = semanticUnification.getStatus();
-      
       // إضافة رسائل واضحة عن حالة النظام
       let statusMessage = 'النظام جاهز للتوحيد';
       let pauseReason = '';
