@@ -359,7 +359,7 @@ export class SemanticProductUnifier {
       const currentItem = items[i];
       
       // عرض البند الحالي الذي يتم تحليله
-      if (i % 25 === 0) { // عرض أكثر تكراراً
+      if (i % 50 === 0) { // عرض أقل تكراراً لتحسين الأداء
         this.currentProcessingItem = {
           description: currentItem.description,
           partNumber: currentItem.partNumber,
@@ -372,6 +372,7 @@ export class SemanticProductUnifier {
         console.log(`   📝 التوصيف: ${currentItem.description.substring(0, 80)}...`);
         console.log('   ─────────────────────────────────────────');
         this.progress = 30 + ((i / items.length) * 15); // من 30% إلى 45%
+        console.log(`📊 التقدم: ${Math.round(this.progress)}% | تم فحص ${i} من ${items.length} منتج`);
       }
       
       if (processed.has(currentItem.itemNumber)) continue;
@@ -388,7 +389,7 @@ export class SemanticProductUnifier {
 
         const similarity = this.calculateSemanticSimilarity(currentItem, otherItem);
         
-        if (similarity.score >= 0.8) { // عتبة أعلى للتطابق الحقيقي
+        if (similarity.score >= 0.7) { // عتبة محسنة للتطابق الحقيقي
           duplicates.push(otherItem);
           processed.add(otherItem.itemNumber);
           console.log(`  ✅ تطابق حقيقي: ${otherItem.itemNumber} مع ${currentItem.itemNumber} (${Math.round(similarity.score * 100)}%) - ${similarity.reason}`);
@@ -492,12 +493,25 @@ export class SemanticProductUnifier {
       return { score: 0, reason: `فروق حرجة: ${differences.join(', ')}` };
     }
 
-    // ✅ **إرجاع النتيجة فقط إذا كانت عالية وموثوقة**
-    if (score >= 0.6 && reason) {
-      return { score: Math.min(score, 0.9), reason }; // حد أقصى 90%
+    // 🔥 **قاعدة جديدة: تطابق وصفي عالي للمنتجات المتشابهة**
+    if (score < 0.7) {
+      const descSimilarity = this.calculateDescriptionSimilarity(item1.description, item2.description);
+      if (descSimilarity >= 0.85) {
+        // تحقق من عدم وجود فروق حرجة
+        const criticalDiffs = this.findCriticalDifferences(specs1, specs2, item1, item2);
+        if (criticalDiffs.length === 0) {
+          score = descSimilarity;
+          reason = `تطابق وصفي عالي: ${Math.round(descSimilarity * 100)}%`;
+        }
+      }
     }
 
-    return { score: 0, reason: 'لا يوجد تطابق دلالي كافي' };
+    // ✅ **إرجاع النتيجة فقط إذا كانت عالية وموثوقة**
+    if (score >= 0.6 && reason) {
+      return { score: Math.min(score, 0.95), reason }; // حد أقصى 95%
+    }
+
+    return { score: score, reason: reason || 'لا يوجد تطابق دلالي كافي' };
   }
 
   // ✅ **دالة ذكية محسنة للعثور على الفروق الحرجة**
@@ -590,6 +604,35 @@ export class SemanticProductUnifier {
     }
     
     return null;
+  }
+
+  // 🔥 **دالة جديدة لحساب التشابه الوصفي**
+  private calculateDescriptionSimilarity(desc1: string, desc2: string): number {
+    if (!desc1 || !desc2) return 0;
+    
+    // تنظيف النصوص
+    const clean1 = desc1.toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const clean2 = desc2.toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // إذا كانا متطابقين تماماً
+    if (clean1 === clean2) return 0.95;
+    
+    // حساب التشابه بالكلمات المشتركة
+    const words1 = clean1.split(' ').filter(w => w.length > 2);
+    const words2 = clean2.split(' ').filter(w => w.length > 2);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    const commonWords = words1.filter(word => words2.includes(word));
+    const similarity = (commonWords.length * 2) / (words1.length + words2.length);
+    
+    return Math.min(similarity, 0.9); // حد أقصى 90% للتشابه الوصفي
   }
 
   private normalizePartNumber(partNum: string): string {
