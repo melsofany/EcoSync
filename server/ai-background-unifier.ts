@@ -96,6 +96,7 @@ export class AIBackgroundUnifier extends EventEmitter {
     this.addLog('📋 تحميل البيانات من Google Sheets...');
     
     const rawItems = await this.dataService.getAllItems();
+    this.addLog(`📊 تم جلب ${rawItems.length} بند خام من Google Sheets`);
     
     // تنظيف وفلترة البيانات
     this.items = rawItems
@@ -106,13 +107,29 @@ export class AIBackgroundUnifier extends EventEmitter {
         rowIndex: index + 2, // Google Sheets rows start from 2
         processed: false
       }))
-      .filter(item => 
-        item.description.length > 10 && 
-        !item.id.startsWith('P-') // تجاهل البنود الموحدة مسبقاً
-      );
+      .filter(item => {
+        const hasDesc = item.description.length > 5; // تقليل الحد الأدنى
+        const notUnified = !item.id.startsWith('P-'); // تجاهل البنود الموحدة مسبقاً
+        
+        if (!hasDesc) {
+          this.addLog(`⚠️ تجاهل بند بوصف قصير: ${item.id} - "${item.description}"`);
+        }
+        if (!notUnified) {
+          this.addLog(`⚠️ تجاهل بند موحد مسبقاً: ${item.id}`);
+        }
+        
+        return hasDesc && notUnified;
+      });
 
     this.state.totalItems = this.items.length;
-    this.addLog(`✅ تم تحميل ${this.items.length} بند للمعالجة`);
+    this.addLog(`✅ تم تحميل ${this.items.length} بند للمعالجة (من ${rawItems.length} بند إجمالي)`);
+    
+    if (this.items.length === 0) {
+      this.addLog(`🔍 تفاصيل البيانات المتاحة:`);
+      rawItems.slice(0, 5).forEach((item, index) => {
+        this.addLog(`📝 البند ${index + 1}: ID=${item.itemNumber || item.id || 'غير محدد'}, Desc="${(item.description || '').substring(0, 50)}..."`);
+      });
+    }
   }
 
   // بدء المعالجة
