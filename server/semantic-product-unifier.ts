@@ -215,11 +215,17 @@ export class SemanticProductUnifier {
   }
 
   private extractManufacturer(text: string): string {
+    // ✅ **قائمة شاملة للشركات المصنعة**
     const manufacturers = [
+      // شركات الكهرباء والتحكم
       'SCHNEIDER', 'SCHNIEDER', 'TELEMECANIQUE',
       'ABB', 'SIEMENS', 'ALLEN BRADLEY', 'OMRON',
       'MITSUBISHI', 'FUJI', 'EATON', 'LOVATO',
-      'TORNADO', 'TOSHIBA', 'SAMSUNG', 'LG', 'SONY', 'TCL'
+      // شركات الأجهزة الإلكترونية
+      'TORNADO', 'TOSHIBA', 'SAMSUNG', 'LG', 'SONY', 'TCL',
+      'PHILIPS', 'PANASONIC', 'SHARP', 'HISENSE',
+      // شركات أخرى
+      'BOSCH', 'HONEYWELL', 'DANFOSS', 'MOELLER'
     ];
     
     for (const mfg of manufacturers) {
@@ -232,16 +238,22 @@ export class SemanticProductUnifier {
   }
 
   private extractModel(text: string): string {
-    // نماذج شائعة
+    // ✅ **أنماط ذكية لاستخراج الموديلات**
     const patterns = [
+      // أنماط الكهرباء والتحكم
       /LC1D\s*[-_]?\s*\d+\s*[-_]?\s*[A-Z]\d*/g,
-      /\b[A-Z]{2,4}\d+[A-Z]*\d*\b/g
+      /\b[A-Z]{2,4}\d+[A-Z]*\d*\b/g,
+      // أنماط الأجهزة الإلكترونية
+      /UA\d+[A-Z]+\d+[A-Z]+/g,        // Samsung TVs
+      /\d+US\d+[A-Z]/g,              // Tornado TVs
+      /MODEL\s*:?\s*([A-Z0-9\-_]+)/gi,
+      /\b[A-Z]\d{2,}[A-Z]*\d*\b/g    // نمط عام للموديلات
     ];
     
     for (const pattern of patterns) {
       const matches = text.match(pattern);
       if (matches) {
-        return matches[0].replace(/\s+/g, '');
+        return matches[0].replace(/\s+/g, '').replace(/MODEL\s*:?\s*/gi, '');
       }
     }
     
@@ -389,7 +401,7 @@ export class SemanticProductUnifier {
       return { score: 0, reason: 'نفس البند - مرفوض' };
     }
     
-    // ❌ **تجنب مقارنة البنود المتشابهة في المحتوى بنسبة 100%**
+    // ❌ **تجنب مقارنة البنود المتطابقة تماماً**
     if (item1.description === item2.description && 
         item1.partNumber === item2.partNumber && 
         item1.lineItem === item2.lineItem) {
@@ -401,49 +413,88 @@ export class SemanticProductUnifier {
     
     let score = 0;
     let reason = '';
+    let differences = [];
 
-    // 1. مقارنة رقم الجزء الأساسي (الأهم)
+    // ✅ **1. القاعدة الأساسية: رقم القطعة المطابق تماماً**
     if (item1.partNumber && item2.partNumber && 
         item1.partNumber.trim() !== '' && item2.partNumber.trim() !== '') {
       const normalizedPart1 = this.normalizePartNumber(item1.partNumber);
       const normalizedPart2 = this.normalizePartNumber(item2.partNumber);
       
       if (normalizedPart1 === normalizedPart2 && normalizedPart1.length > 3) {
-        score += 0.6;
-        reason = `نفس رقم القطعة: ${item1.partNumber}`;
+        // ✅ **لكن تأكد من عدم وجود فروق جوهرية أخرى**
+        const criticalDiffs = this.findCriticalDifferences(specs1, specs2);
+        if (criticalDiffs.length === 0) {
+          score += 0.7;
+          reason = `نفس رقم القطعة: ${item1.partNumber}`;
+        } else {
+          differences.push(...criticalDiffs);
+        }
       }
     }
 
-    // 2. مقارنة الشركة المصنعة والموديل
+    // ✅ **2. القاعدة الثانية: الشركة + الموديل مع مواصفات متطابقة**
     if (specs1.manufacturer && specs2.manufacturer && 
-        specs1.manufacturer !== 'UNKNOWN' && specs2.manufacturer !== 'UNKNOWN' &&
-        specs1.manufacturer === specs2.manufacturer) {
-      score += 0.2;
+        specs1.manufacturer === specs2.manufacturer && specs1.manufacturer !== '') {
       
       if (specs1.model && specs2.model && 
-          specs1.model !== 'UNKNOWN' && specs2.model !== 'UNKNOWN' &&
-          this.normalizePartNumber(specs1.model) === this.normalizePartNumber(specs2.model)) {
-        score += 0.3;
-        reason = reason ? reason + ` + نفس الموديل: ${specs1.model}` : `موديل: ${specs1.manufacturer} ${specs1.model}`;
+          this.normalizePartNumber(specs1.model) === this.normalizePartNumber(specs2.model) &&
+          specs1.model !== '') {
+        
+        // ✅ **تأكد من عدم وجود فروق حرجة**
+        const criticalDiffs = this.findCriticalDifferences(specs1, specs2);
+        if (criticalDiffs.length === 0) {
+          score += 0.6;
+          reason = reason ? reason + ` + نفس الموديل: ${specs1.model}` : 
+                  `موديل: ${specs1.manufacturer} ${specs1.model}`;
+        } else {
+          differences.push(...criticalDiffs);
+        }
       }
     }
 
-    // 3. مقارنة المواصفات التقنية الأساسية
-    let specMatches = 0;
-    if (specs1.voltage && specs2.voltage && specs1.voltage === specs2.voltage) specMatches++;
-    if (specs1.current && specs2.current && specs1.current === specs2.current) specMatches++;
-    if (specs1.power && specs2.power && specs1.power === specs2.power) specMatches++;
-    
-    if (specMatches >= 2) {
-      score += 0.1;
+    // ❌ **رفض التطابق إذا كانت هناك فروق حرجة**
+    if (differences.length > 0) {
+      return { score: 0, reason: `فروق حرجة: ${differences.join(', ')}` };
     }
 
-    // ✅ **فقط إرجاع التطابق إذا كان حقيقياً ومعقولاً**
-    if (score >= 0.8 && reason) {
-      return { score: Math.min(score, 0.95), reason }; // حد أقصى 95%
+    // ✅ **إرجاع النتيجة فقط إذا كانت عالية وموثوقة**
+    if (score >= 0.6 && reason) {
+      return { score: Math.min(score, 0.9), reason }; // حد أقصى 90%
     }
 
     return { score: 0, reason: 'لا يوجد تطابق دلالي كافي' };
+  }
+
+  // ✅ **دالة ذكية للعثور على الفروق الحرجة**
+  private findCriticalDifferences(specs1: ProductSpecs, specs2: ProductSpecs): string[] {
+    const differences = [];
+
+    // فحص الحجم (للشاشات والأجهزة)
+    if (specs1.screenSize && specs2.screenSize && 
+        specs1.screenSize !== specs2.screenSize) {
+      differences.push(`حجم مختلف: ${specs1.screenSize} vs ${specs2.screenSize}`);
+    }
+
+    // فحص الجهد
+    if (specs1.voltage && specs2.voltage && 
+        specs1.voltage !== specs2.voltage) {
+      differences.push(`جهد مختلف: ${specs1.voltage} vs ${specs2.voltage}`);
+    }
+
+    // فحص القدرة
+    if (specs1.power && specs2.power && 
+        specs1.power !== specs2.power) {
+      differences.push(`قدرة مختلفة: ${specs1.power} vs ${specs2.power}`);
+    }
+
+    // فحص التيار
+    if (specs1.current && specs2.current && 
+        specs1.current !== specs2.current) {
+      differences.push(`تيار مختلف: ${specs1.current} vs ${specs2.current}`);
+    }
+
+    return differences;
   }
 
   private normalizePartNumber(partNum: string): string {
