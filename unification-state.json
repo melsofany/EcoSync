@@ -2,115 +2,115 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 148,
+    "currentIndex": 237,
     "totalItems": 5604,
-    "processedItems": 147,
+    "processedItems": 236,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
-    "lastSaveTime": "2025-08-29T16:58:12.816Z",
+    "lastSaveTime": "2025-08-29T17:06:01.598Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٤:٥٨:٣٥ م] ✅ تم معالجة البند 116: P-0000135",
-      "[٤:٥٨:٣٥ م] 📊 التقدم: 115/5604 (2%)",
-      "[٤:٥٨:٣٦ م] 🔍 معالجة البند 117/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
-      "[٤:٥٨:٣٦ م] ✅ تم معالجة البند 117: P-0000135",
-      "[٤:٥٨:٣٦ م] 📊 التقدم: 116/5604 (2%)",
-      "[٤:٥٨:٣٧ م] 🔍 معالجة البند 118/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
-      "[٤:٥٨:٣٧ م] ✅ تم معالجة البند 118: P-0000135",
-      "[٤:٥٨:٣٧ م] 📊 التقدم: 117/5604 (2%)",
-      "[٤:٥٨:٣٨ م] 🔍 معالجة البند 119/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
-      "[٤:٥٨:٣٨ م] ✅ تم معالجة البند 119: P-0000135",
-      "[٤:٥٨:٣٨ م] 📊 التقدم: 118/5604 (2%)",
-      "[٤:٥٩:٤٧ م] 🔄 تم استعادة الحالة المحفوظة - البند 120 من 5604",
-      "[٤:٥٩:٤٧ م] 📊 بدء المعالجة من البند 120 من 5604",
-      "[٤:٥٩:٤٩ م] 🔍 معالجة البند 120/5604: P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, ...",
-      "[٤:٥٩:٤٩ م] ✅ تم معالجة البند 120: P-0000135",
-      "[٤:٥٩:٤٩ م] 📊 التقدم: 119/5604 (2%)",
-      "[٤:٥٩:٥١ م] 🔍 معالجة البند 121/5604: P/N : 23047 , EARTH-LEAKAGE CIRCUIT BREAKER , 4 PO...",
-      "[٤:٥٩:٥١ م] ✅ تم معالجة البند 121: P-0000135",
-      "[٤:٥٩:٥١ م] 📊 التقدم: 120/5604 (2%)",
-      "[٤:٥٩:٥٣ م] 🔍 معالجة البند 122/5604: P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER ...",
-      "[٤:٥٩:٥٣ م] ✅ تم معالجة البند 122: P-0000135",
-      "[٤:٥٩:٥٣ م] 📊 التقدم: 121/5604 (2%)",
-      "[٤:٥٩:٥٥ م] 🔍 معالجة البند 123/5604: P/N : LC1-D18 , MOULD LC1-D18 AC CONTACTOR WITH CO...",
-      "[٤:٥٩:٥٥ م] ✅ تم معالجة البند 123: P-0000135",
-      "[٤:٥٩:٥٥ م] 📊 التقدم: 122/5604 (2%)",
-      "[٤:٥٩:٥٧ م] 🔍 معالجة البند 124/5604: 1/2\" NON-RETURN VALVE 3.5 +/- 0.5 BAR / 8 BAR (REF...",
-      "[٤:٥٩:٥٧ م] ✅ تم معالجة البند 124: P-0000135",
-      "[٤:٥٩:٥٧ م] 📊 التقدم: 123/5604 (2%)",
-      "[٤:٥٩:٥٩ م] 🔍 معالجة البند 125/5604: P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER ...",
-      "[٤:٥٩:٥٩ م] ✅ تم معالجة البند 125: P-0000135",
-      "[٤:٥٩:٥٩ م] 📊 التقدم: 124/5604 (2%)",
-      "[٥:٠٠:٠١ م] 🔍 معالجة البند 126/5604: P/N : LRD12 , THERMAL OVERLOAD RELAY , TESYS LRD, ...",
-      "[٥:٠٠:٠١ م] ✅ تم معالجة البند 126: P-0000135",
-      "[٥:٠٠:٠١ م] 📊 التقدم: 125/5604 (2%)",
-      "[٥:٠٠:٠٣ م] 🔍 معالجة البند 127/5604: P/N : LC1D18M7 , TESYS D CONTACTOR - 3P(3NO) - AC-...",
-      "[٥:٠٠:٠٣ م] ✅ تم معالجة البند 127: P-0000135",
-      "[٥:٠٠:٠٣ م] 📊 التقدم: 126/5604 (2%)",
-      "[٥:٠٠:٠٥ م] 🔍 معالجة البند 128/5604: P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER ...",
-      "[٥:٠٠:٠٥ م] ✅ تم معالجة البند 128: P-0000135",
-      "[٥:٠٠:٠٥ م] 📊 التقدم: 127/5604 (2%)",
-      "[٥:٠٠:٠٧ م] 🔍 معالجة البند 129/5604: P/N : 23047 , EARTH-LEAKAGE CIRCUIT BREAKER , 4 PO...",
-      "[٥:٠٠:٠٧ م] ✅ تم معالجة البند 129: P-0000135",
-      "[٥:٠٠:٠٧ م] 📊 التقدم: 128/5604 (2%)",
-      "[٥:٠٠:٠٩ م] 🔍 معالجة البند 130/5604: P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER ...",
-      "[٥:٠٠:٠٩ م] ✅ تم معالجة البند 130: P-0000135",
-      "[٥:٠٠:٠٩ م] 📊 التقدم: 129/5604 (2%)",
-      "[٥:٠٠:١١ م] 🔍 معالجة البند 131/5604: GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR ...",
-      "[٥:٠٠:١١ م] ✅ تم معالجة البند 131: P-0000135",
-      "[٥:٠٠:١١ م] 📊 التقدم: 130/5604 (2%)",
-      "[٥:٠٠:١٣ م] 🔍 معالجة البند 132/5604: P/N : HRES03-450 , SUCTION FAN FOR GALLEY ( ROSENB...",
-      "[٥:٠٠:١٣ م] ✅ تم معالجة البند 132: P-0000135",
-      "[٥:٠٠:١٣ م] 📊 التقدم: 131/5604 (2%)",
-      "[٥:٠٠:١٥ م] 🔍 معالجة البند 133/5604: P/N : UNO-67-500-4D , FRESH AIR FAN\nFOR GALLEY ( R...",
-      "[٥:٠٠:١٥ م] ✅ تم معالجة البند 133: P-0000135",
-      "[٥:٠٠:١٥ م] 📊 التقدم: 132/5604 (2%)",
-      "[٥:٠٠:١٧ م] 🔍 معالجة البند 134/5604: GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR ...",
-      "[٥:٠٠:١٧ م] ✅ تم معالجة البند 134: P-0000135",
-      "[٥:٠٠:١٧ م] 📊 التقدم: 133/5604 (2%)",
-      "[٥:٠٠:١٩ م] 🔍 معالجة البند 135/5604: GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR ...",
-      "[٥:٠٠:١٩ م] ✅ تم معالجة البند 135: P-0000135",
-      "[٥:٠٠:١٩ م] 📊 التقدم: 134/5604 (2%)",
-      "[٥:٠٠:٢١ م] 🔍 معالجة البند 136/5604: OPTICAL SMOKE & HEAT DETECTOR IP22\nWITH ISOLATOR B...",
-      "[٥:٠٠:٢١ م] ✅ تم معالجة البند 136: P-0000135",
-      "[٥:٠٠:٢١ م] 📊 التقدم: 135/5604 (2%)",
-      "[٥:٠٠:٢٣ م] 🔍 معالجة البند 137/5604: P/N : 430559 , SMOKE DETECTOR FOR\nENGINE ROOM MODE...",
-      "[٥:٠٠:٢٣ م] ✅ تم معالجة البند 137: P-0000135",
-      "[٥:٠٠:٢٣ م] 📊 التقدم: 136/5604 (2%)",
-      "[٥:٠٠:٢٥ م] 🔍 معالجة البند 138/5604: P/N : SPXCDALMTXF , XCD IR & FLAMMABLE\nLEL TRANSMI...",
-      "[٥:٠٠:٢٥ م] ✅ تم معالجة البند 138: P-0000135",
-      "[٥:٠٠:٢٥ م] 📊 التقدم: 137/5604 (2%)",
-      "[٥:٠٠:٢٧ م] 🔍 معالجة البند 139/5604: P/N : SPXCDALMTXT , XCD TOXIC\nTRANSMITTER H2S (WIT...",
-      "[٥:٠٠:٢٧ م] ✅ تم معالجة البند 139: P-0000135",
-      "[٥:٠٠:٢٧ م] 📊 التقدم: 138/5604 (2%)",
-      "[٥:٠٠:٢٩ م] 🔍 معالجة البند 140/5604: P/N : 430559 , SMOKE DETECTOR FOR\nENGINE ROOM MODE...",
-      "[٥:٠٠:٢٩ م] ✅ تم معالجة البند 140: P-0000135",
-      "[٥:٠٠:٢٩ م] 📊 التقدم: 139/5604 (2%)",
-      "[٥:٠٠:٣١ م] 🔍 معالجة البند 141/5604: P/N : SPXCDALMFX , XCD GAS DETECTOR, 4\nTO 20 MA OU...",
-      "[٥:٠٠:٣١ م] ✅ تم معالجة البند 141: P-0000135",
-      "[٥:٠٠:٣١ م] 📊 التقدم: 140/5604 (2%)",
-      "[٥:٠٠:٣٣ م] 🔍 معالجة البند 142/5604: COTTER PIN 3\" LENGNTH 1/8\" DIA\nSTAINLESS STEEL Mad...",
-      "[٥:٠٠:٣٣ م] ✅ تم معالجة البند 142: P-0000135",
-      "[٥:٠٠:٣٣ م] 📊 التقدم: 141/5604 (3%)",
-      "[٥:٠٠:٣٥ م] 🔍 معالجة البند 143/5604: COTTER PIN 4\" LENGNTH 1/4\" DIA\nSTAINLESS STEEL Mad...",
-      "[٥:٠٠:٣٥ م] ✅ تم معالجة البند 143: P-0000135",
-      "[٥:٠٠:٣٥ م] 📊 التقدم: 142/5604 (3%)",
-      "[٥:٠٠:٣٧ م] 🔍 معالجة البند 144/5604: COTTER PIN 5\" LENGNTH 5/16\" DIA STAINLESS STEEL Ma...",
-      "[٥:٠٠:٣٧ م] ✅ تم معالجة البند 144: P-0000135",
-      "[٥:٠٠:٣٧ م] 📊 التقدم: 143/5604 (3%)",
-      "[٥:٠٠:٣٩ م] 🔍 معالجة البند 145/5604: COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 IN...",
-      "[٥:٠٠:٣٩ م] ✅ تم معالجة البند 145: P-0000135",
-      "[٥:٠٠:٣٩ م] 📊 التقدم: 144/5604 (3%)",
-      "[٥:٠٠:٤١ م] 🔍 معالجة البند 146/5604: BRENNENSTUHL CORD REEL WITH 50 MTR  ELECTRIC CABLE...",
-      "[٥:٠٠:٤١ م] ✅ تم معالجة البند 146: P-0000135",
-      "[٥:٠٠:٤١ م] 📊 التقدم: 145/5604 (3%)",
-      "[٥:٠٠:٤٣ م] 🔍 معالجة البند 147/5604: COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 IN...",
-      "[٥:٠٠:٤٣ م] ✅ تم معالجة البند 147: P-0000135",
-      "[٥:٠٠:٤٣ م] 📊 التقدم: 146/5604 (3%)",
-      "[٥:٠٠:٤٥ م] 🔍 معالجة البند 148/5604: 70 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN ...",
-      "[٥:٠٠:٤٥ م] ✅ تم معالجة البند 148: P-0000135",
-      "[٥:٠٠:٤٥ م] 📊 التقدم: 147/5604 (3%)"
+      "[٥:٠٥:٥٣ م] 📊 التقدم: 203/5604 (4%)",
+      "[٥:٠٥:٥٥ م] 🔍 معالجة البند 205/5604: 1 CONDUCTOR X 50 SQUERE MM \nYELLOW/GREEN SOFT ( EL...",
+      "[٥:٠٥:٥٥ م] ✅ تم معالجة البند 205: P-0000135",
+      "[٥:٠٥:٥٥ م] 📊 التقدم: 204/5604 (4%)",
+      "[٥:٠٥:٥٧ م] 🔍 معالجة البند 206/5604: PN: FSKD5-15 , APPLETON 15AMP,125V \nRECEPTACLE WIT...",
+      "[٥:٠٥:٥٧ م] ✅ تم معالجة البند 206: P-0000135",
+      "[٥:٠٥:٥٧ م] 📊 التقدم: 205/5604 (4%)",
+      "[٥:٠٥:٥٩ م] 🔍 معالجة البند 207/5604: 70 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER...",
+      "[٥:٠٥:٥٩ م] ✅ تم معالجة البند 207: P-0000135",
+      "[٥:٠٥:٥٩ م] 📊 التقدم: 206/5604 (4%)",
+      "[٥:٠٦:٠١ م] 🔍 معالجة البند 208/5604: 50 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER...",
+      "[٥:٠٦:٠١ م] ✅ تم معالجة البند 208: P-0000135",
+      "[٥:٠٦:٠١ م] 📊 التقدم: 207/5604 (4%)",
+      "[٥:٠٦:٠٣ م] 🔍 معالجة البند 209/5604: 70 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN...",
+      "[٥:٠٦:٠٣ م] ✅ تم معالجة البند 209: P-0000135",
+      "[٥:٠٦:٠٣ م] 📊 التقدم: 208/5604 (4%)",
+      "[٥:٠٦:٠٥ م] 🔍 معالجة البند 210/5604: 50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN...",
+      "[٥:٠٦:٠٥ م] ✅ تم معالجة البند 210: P-0000135",
+      "[٥:٠٦:٠٥ م] 📊 التقدم: 209/5604 (4%)",
+      "[٥:٠٦:٠٧ م] 🔍 معالجة البند 211/5604: 50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN...",
+      "[٥:٠٦:٠٧ م] ✅ تم معالجة البند 211: P-0000135",
+      "[٥:٠٦:٠٧ م] 📊 التقدم: 210/5604 (4%)",
+      "[٥:٠٦:٠٩ م] 🔍 معالجة البند 212/5604: 50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN...",
+      "[٥:٠٦:٠٩ م] ✅ تم معالجة البند 212: P-0000135",
+      "[٥:٠٦:٠٩ م] 📊 التقدم: 211/5604 (4%)",
+      "[٥:٠٦:١١ م] 🔍 معالجة البند 213/5604: 10 MM2CABLE LUGS WITH 6 MM HOLE DIAMETER MADE IN C...",
+      "[٥:٠٦:١١ م] ✅ تم معالجة البند 213: P-0000135",
+      "[٥:٠٦:١١ م] 📊 التقدم: 212/5604 (4%)",
+      "[٥:٠٦:١٣ م] 🔍 معالجة البند 214/5604: 6 MM2CABLE LUGS WITH 6 MM HOLE \nDIAMETER MADE IN C...",
+      "[٥:٠٦:١٣ م] ✅ تم معالجة البند 214: P-0000135",
+      "[٥:٠٦:١٣ م] 📊 التقدم: 213/5604 (4%)",
+      "[٥:٠٦:١٥ م] 🔍 معالجة البند 215/5604: COPPER CLAD, POINTED SECTIONAL \nGROUND ROD - 3/4 I...",
+      "[٥:٠٦:١٥ م] ✅ تم معالجة البند 215: P-0000135",
+      "[٥:٠٦:١٥ م] 📊 التقدم: 214/5604 (4%)",
+      "[٥:٠٦:١٧ م] 🔍 معالجة البند 216/5604: 1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( EL...",
+      "[٥:٠٦:١٧ م] ✅ تم معالجة البند 216: P-0000135",
+      "[٥:٠٦:١٧ م] 📊 التقدم: 215/5604 (4%)",
+      "[٥:٠٦:١٩ م] 🔍 معالجة البند 217/5604: PN: 28209 , EYE BOLT FOR MAR LIGHT \nFIXTURES...",
+      "[٥:٠٦:١٩ م] ✅ تم معالجة البند 217: P-0000135",
+      "[٥:٠٦:١٩ م] 📊 التقدم: 216/5604 (4%)",
+      "[٥:٠٦:٢١ م] 🔍 معالجة البند 218/5604: P/N : 109R0624S4021 , DC FAN, 60 * 25 MM, 24 \nVDC....",
+      "[٥:٠٦:٢١ م] ✅ تم معالجة البند 218: P-0000135",
+      "[٥:٠٦:٢١ م] 📊 التقدم: 217/5604 (4%)",
+      "[٥:٠٦:٢٣ م] 🔍 معالجة البند 219/5604: 1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( EL...",
+      "[٥:٠٦:٢٣ م] ✅ تم معالجة البند 219: P-0000135",
+      "[٥:٠٦:٢٣ م] 📊 التقدم: 218/5604 (4%)",
+      "[٥:٠٦:٢٥ م] 🔍 معالجة البند 220/5604: 70 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER...",
+      "[٥:٠٦:٢٥ م] ✅ تم معالجة البند 220: P-0000135",
+      "[٥:٠٦:٢٥ م] 📊 التقدم: 219/5604 (4%)",
+      "[٥:٠٦:٢٧ م] 🔍 معالجة البند 221/5604: 70 SQ.MM, ,WELDING CABLE, COPPER ( EACH\n= METER...",
+      "[٥:٠٦:٢٧ م] ✅ تم معالجة البند 221: P-0000135",
+      "[٥:٠٦:٢٧ م] 📊 التقدم: 220/5604 (4%)",
+      "[٥:٠٦:٢٩ م] 🔍 معالجة البند 222/5604: LONG-BARREL SPLICE, 4 AWG WIRE GAUGE, \nGREEN COLOR...",
+      "[٥:٠٦:٢٩ م] ✅ تم معالجة البند 222: P-0000135",
+      "[٥:٠٦:٢٩ م] 📊 التقدم: 221/5604 (4%)",
+      "[٥:٠٦:٣١ م] 🔍 معالجة البند 223/5604: LONG-BARREL SPLICE, BLUE, 6 AWG WIRE \nGAUGE, ( REF...",
+      "[٥:٠٦:٣١ م] ✅ تم معالجة البند 223: P-0000135",
+      "[٥:٠٦:٣١ م] 📊 التقدم: 222/5604 (4%)",
+      "[٥:٠٦:٣٣ م] 🔍 معالجة البند 224/5604: P/N : A9F77440 & A9F77440 ,MINIATUR \nCIRCUIT-BREAK...",
+      "[٥:٠٦:٣٣ م] ✅ تم معالجة البند 224: P-0000135",
+      "[٥:٠٦:٣٣ م] 📊 التقدم: 223/5604 (4%)",
+      "[٥:٠٦:٣٥ م] 🔍 معالجة البند 225/5604: P/N : LRD340C , \nLRD THERMAL OVERLOAD RELAY ( \nSCH...",
+      "[٥:٠٦:٣٥ م] ✅ تم معالجة البند 225: P-0000135",
+      "[٥:٠٦:٣٥ م] 📊 التقدم: 224/5604 (4%)",
+      "[٥:٠٦:٣٧ م] 🔍 معالجة البند 226/5604: P/N : A9D31620 , RESIDUAL CURRENT \nBREAKER WITH OV...",
+      "[٥:٠٦:٣٧ م] ✅ تم معالجة البند 226: P-0000135",
+      "[٥:٠٦:٣٧ م] 📊 التقدم: 225/5604 (4%)",
+      "[٥:٠٦:٣٩ م] 🔍 معالجة البند 227/5604: LED FLOOD LIGHT,100 WATT, FOR CAMP \nCARAVAN ( OUT ...",
+      "[٥:٠٦:٣٩ م] ✅ تم معالجة البند 227: P-0000135",
+      "[٥:٠٦:٣٩ م] 📊 التقدم: 226/5604 (4%)",
+      "[٥:٠٦:٤١ م] 🔍 معالجة البند 228/5604: P/N : LC1D09M7 , 9A TP CONTACTOR 230V \nFOR MAIN FR...",
+      "[٥:٠٦:٤١ م] ✅ تم معالجة البند 228: P-0000135",
+      "[٥:٠٦:٤١ م] 📊 التقدم: 227/5604 (4%)",
+      "[٥:٠٦:٤٣ م] 🔍 معالجة البند 229/5604: P/N : LRD32 , \nLRD THERMAL OVERLOAD RELAY ( SCHNEI...",
+      "[٥:٠٦:٤٣ م] ✅ تم معالجة البند 229: P-0000135",
+      "[٥:٠٦:٤٣ م] 📊 التقدم: 228/5604 (4%)",
+      "[٥:٠٦:٤٥ م] 🔍 معالجة البند 230/5604: P/N : TP1616SS , CIRCUIT BREAKER, 3P, 600V,\n1600AM...",
+      "[٥:٠٦:٤٥ م] ✅ تم معالجة البند 230: P-0000135",
+      "[٥:٠٦:٤٥ م] 📊 التقدم: 229/5604 (4%)",
+      "[٥:٠٦:٤٧ م] 🔍 معالجة البند 231/5604: P/N : EGH3100FFG , CIRCUIT BREAKER 100 \nAMPS , STY...",
+      "[٥:٠٦:٤٧ م] ✅ تم معالجة البند 231: P-0000135",
+      "[٥:٠٦:٤٧ م] 📊 التقدم: 230/5604 (4%)",
+      "[٥:٠٦:٤٩ م] 🔍 معالجة البند 232/5604: P/N : OVA44013 , EXIWAY LIGHT, UP TO \n250LM, IP65,...",
+      "[٥:٠٦:٤٩ م] ✅ تم معالجة البند 232: P-0000135",
+      "[٥:٠٦:٤٩ م] 📊 التقدم: 231/5604 (4%)",
+      "[٥:٠٦:٥١ م] 🔍 معالجة البند 233/5604: DIN 3 RAIL WITH CENTERLINE, 7.5MM DEEP, \n1M LONG (...",
+      "[٥:٠٦:٥١ م] ✅ تم معالجة البند 233: P-0000135",
+      "[٥:٠٦:٥١ م] 📊 التقدم: 232/5604 (4%)",
+      "[٥:٠٦:٥٣ م] 🔍 معالجة البند 234/5604: EUROPEAN TO AMERICAN ADAPTER PLUG...",
+      "[٥:٠٦:٥٣ م] ✅ تم معالجة البند 234: P-0000135",
+      "[٥:٠٦:٥٣ م] 📊 التقدم: 233/5604 (4%)",
+      "[٥:٠٦:٥٥ م] 🔍 معالجة البند 235/5604: CONNECTOR, POWER, QD, PIN/FLNG, \nBULKHD, WHITE , 1...",
+      "[٥:٠٦:٥٥ م] ✅ تم معالجة البند 235: P-0000135",
+      "[٥:٠٦:٥٥ م] 📊 التقدم: 234/5604 (4%)",
+      "[٥:٠٦:٥٧ م] 🔍 معالجة البند 236/5604: COPPER CLAD, POINTED SECTIONAL \nGROUND ROD - 3/4 I...",
+      "[٥:٠٦:٥٧ م] ✅ تم معالجة البند 236: P-0000135",
+      "[٥:٠٦:٥٧ م] 📊 التقدم: 235/5604 (4%)",
+      "[٥:٠٦:٥٩ م] 🔍 معالجة البند 237/5604: 1 CONDUCTOR X 50 SQUERE MM \nYELLOW/GREEN SOFT ( EL...",
+      "[٥:٠٦:٥٩ م] ✅ تم معالجة البند 237: P-0000135",
+      "[٥:٠٦:٥٩ م] 📊 التقدم: 236/5604 (4%)"
     ]
   },
   "items": [
@@ -1155,623 +1155,623 @@
       "description": "50 MM2CABLE LUGS WITH 10 MM HOLE  DIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 150,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "25 MM2CABLE LUGS WITH 8 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 151,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "10 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 152,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "6 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 153,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "THERMAL SOFT STRANDED WIRE 6 SQ. MM",
       "partNumber": "",
       "rowIndex": 154,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "THERMAL SOFT STRANDED WIRE 10 SQ. MM",
       "partNumber": "",
       "rowIndex": 155,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 25 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 156,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 157,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 158,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "25 MM2CABLE LUGS WITH 8 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 159,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "10 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 160,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "6 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 161,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 INCH X 10 FEET PRODUCT\nABB TYPE 7510S , ABB STAMPED ON ROD",
       "partNumber": "",
       "rowIndex": 162,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 163,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 164,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER",
       "partNumber": "",
       "rowIndex": 165,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER",
       "partNumber": "",
       "rowIndex": 166,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 INCH X 10 FEET PRODUCT\nABB TYPE 7510S , ABB STAMPED ON ROD",
       "partNumber": "",
       "rowIndex": 167,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 168,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 169,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER",
       "partNumber": "",
       "rowIndex": 170,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 12 MM HOLE DIAMETER",
       "partNumber": "",
       "rowIndex": 171,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 25 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 172,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 95 SQ. MM SOFT STRANDED\nYELLOW/GREEN CABLE (EL SEWEDY) ( PCE EQUAL MTR )",
       "partNumber": "1CONDACTORX95SQ.MM",
       "rowIndex": 173,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4\nOUTLET",
       "rowIndex": 174,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 175,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 176,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 177,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 178,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 25 SQUERE MM YELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 179,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 180,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4.7MM W X 186MM) PK=100 PCE MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 181,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4.7MM W X 186MM) PK=100 PCE MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 182,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4.7MM W X 186MM) PK=100 PCE MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 183,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000069",
       "description": "TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3MM W X 92MM) PK=100 PCE MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 184,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN CHINA ( REF CODE 1001.001.USED.0047 )",
       "partNumber": "",
       "rowIndex": 185,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 186,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 INCH X 10 FEET PRODUCTABB TYPE 7510S , ABB STAMPED ON ROD",
       "partNumber": "",
       "rowIndex": 187,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 12 MM HOLE DIAMETER",
       "partNumber": "",
       "rowIndex": 188,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4.7MM W X 186MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 189,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4.7MM W X 186MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 190,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4.7MM W X 186MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 191,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY RAP CABLE TIE TY-527M, CV-360, KSS ,\nBLACK , (6.9MM W X 343MM) (PCE=PACK OF\n100) MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 192,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS, BLACK (7.7MM W X 762MM) PK=100 PCE MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 193,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000069",
       "description": "TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3MM W X 92MM) PK=100 PCE MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 194,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH INDICATOR LIGHT AND FUSED",
       "partNumber": "",
       "rowIndex": 195,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3 X 2.5 MM2 FLEXIBLE POWER CABLE,\nRUBBER INSULATED FOR ELAND CABLES\nLIGHTING SYSTEM H07RN-F EACH = 1 MTR ( REF. ONLY P/N : A5G03025 )",
       "partNumber": "",
       "rowIndex": 196,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SC 70-12, LUGS FOR ELECTRIC CABLE",
       "partNumber": "SC 70-12",
       "rowIndex": 197,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3 CONDUCTORS X 1.5 SQ.MM RUBBER CABLE\n( 1 EACH = 1 METER ) , EL SWEEDY OR ITALIAN MADE",
       "partNumber": "",
       "rowIndex": 198,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "4 CONDUCTORS X 2.5 SQ.MM RUBBER CABLE\n( 1 EACH = 1 METER ) , EL SWEEDY OR ITALIAN MADE",
       "partNumber": "",
       "rowIndex": 199,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 200,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 201,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LAMP PILOT 6.3V,1W MODEL : BA9S 120 V ( \nREF. P/N : 6VF17 GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 202,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 120CM, 18W, 1750LM ( EL \nSEWEEDY",
       "partNumber": "",
       "rowIndex": 203,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 60 CM, 9W, 855LM ( EL \nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 204,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 205,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM \nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 206,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: FSKD5-15 , APPLETON 15AMP,125V \nRECEPTACLE WITH DUPLEX COVER FOR \nNON LOCKING BLADE PLUGS",
       "partNumber": "FSKD5-15",
       "rowIndex": 207,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER",
       "partNumber": "",
       "rowIndex": 208,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER",
       "partNumber": "",
       "rowIndex": 209,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN CHINA ( REF CODE \n1001.001.USED.0047 )",
       "partNumber": "",
       "rowIndex": 210,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 211,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 212,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 213,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "10 MM2CABLE LUGS WITH 6 MM HOLE DIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 214,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "6 MM2CABLE LUGS WITH 6 MM HOLE \nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 215,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER CLAD, POINTED SECTIONAL \nGROUND ROD - 3/4 INCH X 10 FEET PRODUCT\nABB TYPE 7510S , ABB STAMPED ON ROD",
       "partNumber": "",
       "rowIndex": 216,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 217,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: 28209 , EYE BOLT FOR MAR LIGHT \nFIXTURES",
       "partNumber": "28209",
       "rowIndex": 218,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 109R0624S4021 , DC FAN, 60 * 25 MM, 24 \nVDC. RIBLESS ( SANYO DENKI CAT.)",
       "partNumber": "109R0624S4021",
       "rowIndex": 219,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 220,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER",
       "partNumber": "",
       "rowIndex": 221,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 SQ.MM, ,WELDING CABLE, COPPER ( EACH\n= METER",
       "partNumber": "",
       "rowIndex": 222,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LONG-BARREL SPLICE, 4 AWG WIRE GAUGE, \nGREEN COLOR CODE, 1.81 IN LENGTH ( \nMAKER : THOMAS & BETTS )( REF. P/N : \n3LN06 GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 223,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LONG-BARREL SPLICE, BLUE, 6 AWG WIRE \nGAUGE, ( REF. P/N : 22EZ31 GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 224,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9F77440 & A9F77440 ,MINIATUR \nCIRCUIT-BREAKER,ACTI9 IC60N, 4P,40A, C \nCURVE6000 A (IEC60898-1), 10 \nKA(IEC609472)(SCHNEIDER CAT.)",
       "partNumber": "A9F77440",
       "rowIndex": 225,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LRD340C , \nLRD THERMAL OVERLOAD RELAY ( \nSCHNEIDER CAT.",
       "partNumber": "LRD340C",
       "rowIndex": 226,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9D31620 , RESIDUAL CURRENT \nBREAKER WITH OVERCURRENT \nPROTECTION ACTI 9 IDPN N VIGI - RCBO - \n1P+N - 20A - C CURVE - 6000A - 30MA - TYPE \nAC ( SCHNEIDER CAT.)",
       "partNumber": "A9D31620",
       "rowIndex": 227,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED FLOOD LIGHT,100 WATT, FOR CAMP \nCARAVAN ( OUT DOOR AREA) WEATHER PROOF IP66 WITH GLAND",
       "partNumber": "",
       "rowIndex": 228,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D09M7 , 9A TP CONTACTOR 230V \nFOR MAIN FREEZER MODEL LH114/4DES-7Y \nMAKER SCHNEIDER",
       "partNumber": "LC1D09M7",
       "rowIndex": 229,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LRD32 , \nLRD THERMAL OVERLOAD RELAY ( SCHNEIDER CAT.)",
       "partNumber": "LRD32",
       "rowIndex": 230,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : TP1616SS , CIRCUIT BREAKER, 3P, 600V,\n1600AMP, MANUALLY OPERATED, FIXED \nMOUNT WITH 120VAC REMOTE CLOSE, \n24VDC UVR, 4 STAGE AUX SWITCH, RMS9 LI \nTRIP UNIT WITH 1600A RATING PLUG ( GE CAT.)",
       "partNumber": "TP1616SS",
       "rowIndex": 231,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : EGH3100FFG , CIRCUIT BREAKER 100 \nAMPS , STYLE: 67B3606G17 E125H, 3 POLE \n480/600 VAC ( CUTLER-HAMMER CAT.)",
       "partNumber": "EGH3100F\nFG",
       "rowIndex": 232,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : OVA44013 , EXIWAY LIGHT, UP TO \n250LM, IP65, STANDARD, SELECTABLE \nDURATION ( SCHNEIDER CAT.)",
       "partNumber": "OVA44013",
       "rowIndex": 233,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DIN 3 RAIL WITH CENTERLINE, 7.5MM DEEP, \n1M LONG ( REF. P/N : 8961K45 MCMASTER \nCAT.)",
       "partNumber": "",
       "rowIndex": 234,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EUROPEAN TO AMERICAN ADAPTER PLUG",
       "partNumber": "",
       "rowIndex": 235,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CONNECTOR, POWER, QD, PIN/FLNG, \nBULKHD, WHITE , 114869-PB-WHT QD Without Grease",
       "partNumber": "114869-\nPB-WHTQD",
       "rowIndex": 236,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER CLAD, POINTED SECTIONAL \nGROUND ROD - 3/4 INCH X 10 FEET PRODUCT\nABB TYPE 7510S , ABB STAMPED ON ROD",
       "partNumber": "",
       "rowIndex": 237,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM \nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 238,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",

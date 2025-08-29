@@ -8693,6 +8693,32 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // جلب الحالة الحالية
   app.get("/api/ai-unification/status", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
+      // جلب الحالة من النظام العامل
+      if (global.aiUnifier) {
+        const status = global.aiUnifier.getStatus();
+        
+        res.json({
+          isRunning: status.isRunning || false,
+          isPaused: status.isPaused || false,
+          progress: status.currentIndex || 0,
+          total: status.totalItems || 0,
+          processedItems: status.processedItems || 0,
+          unifiedItems: status.unifiedItems || 0,
+          currentItem: status.currentIndex < status.totalItems ? 
+            `البند ${status.currentIndex + 1}` : null,
+          startTime: status.startTime,
+          elapsedTime: status.startTime ? Date.now() - new Date(status.startTime).getTime() : null,
+          quotaExceeded: status.quotaExceeded || false,
+          errorCount: status.errorCount || 0,
+          message: status.isRunning ? 
+            `جاري المعالجة... ${status.processedItems}/${status.totalItems}` : 
+            'النظام جاهز للتوحيد الذكي'
+        });
+        
+        return;
+      }
+
+      // إذا لم يكن النظام متاحاً، جرب النظام القديم
       const unifier = await initializeAIUnifier();
       const status = unifier.getStatus();
       
