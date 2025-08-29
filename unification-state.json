@@ -2,115 +2,115 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 632,
+    "currentIndex": 670,
     "totalItems": 5604,
-    "processedItems": 631,
+    "processedItems": 669,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
     "lastSaveTime": "2025-08-29T17:12:07.948Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٥:١١:٥٧ م] 📊 التقدم: 598/5604 (11%)",
-      "[٥:١١:٥٧ م] 🔍 معالجة البند 600/5604: P/N : ZR68KC-TFD-230, COMPRESSOR 480V\n60HZ R22 FOR...",
-      "[٥:١١:٥٧ م] ✅ تم معالجة البند 600: P-0000135",
-      "[٥:١١:٥٧ م] 📊 التقدم: 599/5604 (11%)",
-      "[٥:١١:٥٧ م] 🔍 معالجة البند 601/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
-      "[٥:١١:٥٧ م] ✅ تم معالجة البند 601: P-0000135",
-      "[٥:١١:٥٧ م] 📊 التقدم: 600/5604 (11%)",
-      "[٥:١١:٥٧ م] 🔍 معالجة البند 602/5604: FREON 22 25 LB.( Egyptian , Indian , EU )...",
-      "[٥:١١:٥٧ م] ✅ تم معالجة البند 602: P-0000135",
-      "[٥:١١:٥٧ م] 📊 التقدم: 601/5604 (11%)",
-      "[٥:١١:٥٩ م] 🔍 معالجة البند 603/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
-      "[٥:١١:٥٩ م] ✅ تم معالجة البند 603: P-0000135",
-      "[٥:١١:٥٩ م] 📊 التقدم: 602/5604 (11%)",
-      "[٥:١١:٥٩ م] 🔍 معالجة البند 604/5604: P/N : R134A, FREON FOR REFRIGERATOR...",
-      "[٥:١١:٥٩ م] ✅ تم معالجة البند 604: P-0000135",
-      "[٥:١١:٥٩ م] 📊 التقدم: 603/5604 (11%)",
-      "[٥:١١:٥٩ م] 🔍 معالجة البند 605/5604: FREON 22 25 LB.( Egyptian , Indian , EU )...",
-      "[٥:١١:٥٩ م] ✅ تم معالجة البند 605: P-0000135",
-      "[٥:١١:٥٩ م] 📊 التقدم: 604/5604 (11%)",
-      "[٥:١١:٥٩ م] 🔍 معالجة البند 606/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
-      "[٥:١١:٥٩ م] ✅ تم معالجة البند 606: P-0000135",
-      "[٥:١١:٥٩ م] 📊 التقدم: 605/5604 (11%)",
-      "[٥:١١:٥٩ م] 🔍 معالجة البند 607/5604: FREON 22 25 LB.( Egyptian , Indian , EU )...",
-      "[٥:١١:٥٩ م] ✅ تم معالجة البند 607: P-0000135",
-      "[٥:١١:٥٩ م] 📊 التقدم: 606/5604 (11%)",
-      "[٥:١٢:٠١ م] 🔍 معالجة البند 608/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
-      "[٥:١٢:٠١ م] ✅ تم معالجة البند 608: P-0000135",
-      "[٥:١٢:٠١ م] 📊 التقدم: 607/5604 (11%)",
-      "[٥:١٢:٠١ م] 🔍 معالجة البند 609/5604: FREON 22 25 LB.( Egyptian , Indian , EU )...",
-      "[٥:١٢:٠١ م] ✅ تم معالجة البند 609: P-0000135",
-      "[٥:١٢:٠١ م] 📊 التقدم: 608/5604 (11%)",
-      "[٥:١٢:٠١ م] 🔍 معالجة البند 610/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
-      "[٥:١٢:٠١ م] ✅ تم معالجة البند 610: P-0000135",
-      "[٥:١٢:٠١ م] 📊 التقدم: 609/5604 (11%)",
-      "[٥:١٢:٠١ م] 🔍 معالجة البند 611/5604: P/N : R134A, FREON FOR REFRIGERATOR...",
-      "[٥:١٢:٠١ م] ✅ تم معالجة البند 611: P-0000135",
-      "[٥:١٢:٠١ م] 📊 التقدم: 610/5604 (11%)",
-      "[٥:١٢:٠١ م] 🔍 معالجة البند 612/5604: FREON 407 G/ USE, ( REF. GRAINGER CAT.)...",
-      "[٥:١٢:٠١ م] ✅ تم معالجة البند 612: P-0000135",
-      "[٥:١٢:٠١ م] 📊 التقدم: 611/5604 (11%)",
-      "[٥:١٢:٠٣ م] 🔍 معالجة البند 613/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
-      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 613: P-0000135",
-      "[٥:١٢:٠٣ م] 📊 التقدم: 612/5604 (11%)",
-      "[٥:١٢:٠٣ م] 🔍 معالجة البند 614/5604: P/N : PH330G2C - TKTS, COMPRESSOR , 2.25\nHP. , GMC...",
-      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 614: P-0000135",
-      "[٥:١٢:٠٣ م] 📊 التقدم: 613/5604 (11%)",
-      "[٥:١٢:٠٣ م] 🔍 معالجة البند 615/5604: P/N : ZR48K5E-TFD-830 , COMPRESSOR\nCOPELAND 040-P-...",
-      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 615: P-0000135",
-      "[٥:١٢:٠٣ م] 📊 التقدم: 614/5604 (11%)",
-      "[٥:١٢:٠٣ م] 🔍 معالجة البند 616/5604: ARTHERMO P/N : TSC-093 THERMOSTAT\n?30OC DEGREE ITA...",
-      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 616: P-0000135",
-      "[٥:١٢:٠٣ م] 📊 التقدم: 615/5604 (11%)",
-      "[٥:١٢:٠٣ م] 🔍 معالجة البند 617/5604: DANFOSS MANEUROP COMPRESSOR ,\nMODEL NO.MT80HP4AVE ...",
-      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 617: P-0000135",
-      "[٥:١٢:٠٣ م] 📊 التقدم: 616/5604 (11%)",
-      "[٥:١٢:٠٥ م] 🔍 معالجة البند 618/5604: FREON 404A-24LB, 10.9 KGM ( Egyptian , Indian\n, EU...",
-      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 618: P-0000135",
-      "[٥:١٢:٠٥ م] 📊 التقدم: 617/5604 (11%)",
-      "[٥:١٢:٠٥ م] 🔍 معالجة البند 619/5604: WALL MOUNT LAN SOCKET \"SNOW WHITE\"-\nCHINA...",
-      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 619: P-0000135",
-      "[٥:١٢:٠٥ م] 📊 التقدم: 618/5604 (11%)",
-      "[٥:١٢:٠٥ م] 🔍 معالجة البند 620/5604: P/N : 5C10, EXANE 125 OIL AND MUD\nRESISTANT CABLE ...",
-      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 620: P-0000135",
-      "[٥:١٢:٠٥ م] 📊 التقدم: 619/5604 (11%)",
-      "[٥:١٢:٠٥ م] 🔍 معالجة البند 621/5604: P/N : 4C10 , EXANE 125 OIL AND MUD\nRESISTANT CABLE...",
-      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 621: P-0000135",
-      "[٥:١٢:٠٥ م] 📊 التقدم: 620/5604 (11%)",
-      "[٥:١٢:٠٥ م] 🔍 معالجة البند 622/5604: P/N : 3C12, EXANE 125 OIL AND MUD\nRESISTANT CABLE ...",
-      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 622: P-0000135",
-      "[٥:١٢:٠٥ م] 📊 التقدم: 621/5604 (11%)",
-      "[٥:١٢:٠٧ م] 🔍 معالجة البند 623/5604: ELECTRICAL RUBBER CABLE , 5 C X 10 AWG\n[6 mm?] ( E...",
-      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 623: P-0000135",
-      "[٥:١٢:٠٧ م] 📊 التقدم: 622/5604 (11%)",
-      "[٥:١٢:٠٧ م] 🔍 معالجة البند 624/5604: POWER CABLE 4 AWG , 5 CONDUCTOR , 460\nVOLT ( EACH ...",
-      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 624: P-0000135",
-      "[٥:١٢:٠٧ م] 📊 التقدم: 623/5604 (11%)",
-      "[٥:١٢:٠٧ م] 🔍 معالجة البند 625/5604: P/N : 37-102-517, FOUR CONDUCTORS\nFLEXABLE POWER C...",
-      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 625: P-0000135",
-      "[٥:١٢:٠٧ م] 📊 التقدم: 624/5604 (11%)",
-      "[٥:١٢:٠٧ م] 🔍 معالجة البند 626/5604: P/N : 026225,125 OIL AND MUD RESISTANT\nCABLE 3 CON...",
-      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 626: P-0000135",
-      "[٥:١٢:٠٧ م] 📊 التقدم: 625/5604 (11%)",
-      "[٥:١٢:٠٧ م] 🔍 معالجة البند 627/5604: BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE ...",
-      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 627: P-0000135",
-      "[٥:١٢:٠٧ م] 📊 التقدم: 626/5604 (11%)",
-      "[٥:١٢:٠٩ م] 🔍 معالجة البند 628/5604: MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH IND...",
-      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 628: P-0000135",
-      "[٥:١٢:٠٩ م] 📊 التقدم: 627/5604 (11%)",
-      "[٥:١٢:٠٩ م] 🔍 معالجة البند 629/5604: 70 SQ.MM, ,WELDING CABLE, COPPER ( EACH\n= METER )...",
-      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 629: P-0000135",
-      "[٥:١٢:٠٩ م] 📊 التقدم: 628/5604 (11%)",
-      "[٥:١٢:٠٩ م] 🔍 معالجة البند 630/5604: ELSEWEDY CABLES=7Y R 70 MM BASEC\nAPPROVED TOBS6004...",
-      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 630: P-0000135",
-      "[٥:١٢:٠٩ م] 📊 التقدم: 629/5604 (11%)",
-      "[٥:١٢:٠٩ م] 🔍 معالجة البند 631/5604: 1 CONDUCTOR X 10 SQUERE MM\nYELLOW/GREEN SOFT STRAN...",
-      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 631: P-0000135",
-      "[٥:١٢:٠٩ م] 📊 التقدم: 630/5604 (11%)",
-      "[٥:١٢:٠٩ م] 🔍 معالجة البند 632/5604: 1 CONDUCTOR X 10 SQUERE MM\nYELLOW/GREEN SOFT STRAN...",
-      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 632: P-0000135",
-      "[٥:١٢:٠٩ م] 📊 التقدم: 631/5604 (11%)"
+      "[٥:١٤:٥٧ م] 📊 التقدم: 636/5604 (11%)",
+      "[٥:١٤:٥٧ م] 🔍 معالجة البند 638/5604: 50 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN ...",
+      "[٥:١٤:٥٧ م] ✅ تم معالجة البند 638: P-0000135",
+      "[٥:١٤:٥٧ م] 📊 التقدم: 637/5604 (11%)",
+      "[٥:١٤:٥٩ م] 🔍 معالجة البند 639/5604: 10 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN C...",
+      "[٥:١٤:٥٩ م] ✅ تم معالجة البند 639: P-0000135",
+      "[٥:١٤:٥٩ م] 📊 التقدم: 638/5604 (11%)",
+      "[٥:١٤:٥٩ م] 🔍 معالجة البند 640/5604: 6 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CH...",
+      "[٥:١٤:٥٩ م] ✅ تم معالجة البند 640: P-0000135",
+      "[٥:١٤:٥٩ م] 📊 التقدم: 639/5604 (11%)",
+      "[٥:١٥:٠١ م] 🔍 معالجة البند 641/5604: 70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER...",
+      "[٥:١٥:٠١ م] ✅ تم معالجة البند 641: P-0000135",
+      "[٥:١٥:٠١ م] 📊 التقدم: 640/5604 (11%)",
+      "[٥:١٥:٠١ م] 🔍 معالجة البند 642/5604: 25 MM2CABLE LUGS WITH 8 MM HOLE\nDIAMETER MADE IN C...",
+      "[٥:١٥:٠١ م] ✅ تم معالجة البند 642: P-0000135",
+      "[٥:١٥:٠١ م] 📊 التقدم: 641/5604 (11%)",
+      "[٥:١٥:٠٣ م] 🔍 معالجة البند 643/5604: 1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELS...",
+      "[٥:١٥:٠٣ م] ✅ تم معالجة البند 643: P-0000135",
+      "[٥:١٥:٠٣ م] 📊 التقدم: 642/5604 (11%)",
+      "[٥:١٥:٠٣ م] 🔍 معالجة البند 644/5604: TY RAP CABLE TIE TY-527M, CV-360, KSS ,\nBLACK , (6...",
+      "[٥:١٥:٠٣ م] ✅ تم معالجة البند 644: P-0000135",
+      "[٥:١٥:٠٣ م] 📊 التقدم: 643/5604 (11%)",
+      "[٥:١٥:٠٥ م] 🔍 معالجة البند 645/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
+      "[٥:١٥:٠٥ م] ✅ تم معالجة البند 645: P-0000135",
+      "[٥:١٥:٠٥ م] 📊 التقدم: 644/5604 (11%)",
+      "[٥:١٥:٠٥ م] 🔍 معالجة البند 646/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
+      "[٥:١٥:٠٥ م] ✅ تم معالجة البند 646: P-0000135",
+      "[٥:١٥:٠٥ م] 📊 التقدم: 645/5604 (12%)",
+      "[٥:١٥:٠٧ م] 🔍 معالجة البند 647/5604: COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 IN...",
+      "[٥:١٥:٠٧ م] ✅ تم معالجة البند 647: P-0000135",
+      "[٥:١٥:٠٧ م] 📊 التقدم: 646/5604 (12%)",
+      "[٥:١٥:٠٧ م] 🔍 معالجة البند 648/5604: 1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELS...",
+      "[٥:١٥:٠٧ م] ✅ تم معالجة البند 648: P-0000135",
+      "[٥:١٥:٠٧ م] 📊 التقدم: 647/5604 (12%)",
+      "[٥:١٥:٠٩ م] 🔍 معالجة البند 649/5604: P/N : A5G03015, 3 X 1.5 MM2 FLEXIBLE\nPOWER CABLE, ...",
+      "[٥:١٥:٠٩ م] ✅ تم معالجة البند 649: P-0000135",
+      "[٥:١٥:٠٩ م] 📊 التقدم: 648/5604 (12%)",
+      "[٥:١٥:٠٩ م] 🔍 معالجة البند 650/5604: INDUSTRIAL FREE PLASTIC PLUG 16 AMP + 3\nPOLE (1PH+...",
+      "[٥:١٥:٠٩ م] ✅ تم معالجة البند 650: P-0000135",
+      "[٥:١٥:٠٩ م] 📊 التقدم: 649/5604 (12%)",
+      "[٥:١٥:١١ م] 🔍 معالجة البند 651/5604: BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE ...",
+      "[٥:١٥:١١ م] ✅ تم معالجة البند 651: P-0000135",
+      "[٥:١٥:١١ م] 📊 التقدم: 650/5604 (12%)",
+      "[٥:١٥:١١ م] 🔍 معالجة البند 652/5604: 70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER...",
+      "[٥:١٥:١١ م] ✅ تم معالجة البند 652: P-0000135",
+      "[٥:١٥:١١ م] 📊 التقدم: 651/5604 (12%)",
+      "[٥:١٥:١٣ م] 🔍 معالجة البند 653/5604: RECEPTACLE 3P+N+E 125A & 346-415 V 50/60\nHZ FOR SC...",
+      "[٥:١٥:١٣ م] ✅ تم معالجة البند 653: P-0000135",
+      "[٥:١٥:١٣ م] 📊 التقدم: 652/5604 (12%)",
+      "[٥:١٥:١٣ م] 🔍 معالجة البند 654/5604: BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE ...",
+      "[٥:١٥:١٣ م] ✅ تم معالجة البند 654: P-0000135",
+      "[٥:١٥:١٣ م] 📊 التقدم: 653/5604 (12%)",
+      "[٥:١٥:١٥ م] 🔍 معالجة البند 655/5604: 1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELS...",
+      "[٥:١٥:١٥ م] ✅ تم معالجة البند 655: P-0000135",
+      "[٥:١٥:١٥ م] 📊 التقدم: 654/5604 (12%)",
+      "[٥:١٥:١٥ م] 🔍 معالجة البند 656/5604: TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4....",
+      "[٥:١٥:١٥ م] ✅ تم معالجة البند 656: P-0000135",
+      "[٥:١٥:١٥ م] 📊 التقدم: 655/5604 (12%)",
+      "[٥:١٥:١٧ م] 🔍 معالجة البند 657/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
+      "[٥:١٥:١٧ م] ✅ تم معالجة البند 657: P-0000135",
+      "[٥:١٥:١٧ م] 📊 التقدم: 656/5604 (12%)",
+      "[٥:١٥:١٧ م] 🔍 معالجة البند 658/5604: MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH IND...",
+      "[٥:١٥:١٧ م] ✅ تم معالجة البند 658: P-0000135",
+      "[٥:١٥:١٧ م] 📊 التقدم: 657/5604 (12%)",
+      "[٥:١٥:١٩ م] 🔍 معالجة البند 659/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
+      "[٥:١٥:١٩ م] ✅ تم معالجة البند 659: P-0000135",
+      "[٥:١٥:١٩ م] 📊 التقدم: 658/5604 (12%)",
+      "[٥:١٥:١٩ م] 🔍 معالجة البند 660/5604: TY RAP CABLE TIE TY-527M, CV-360, KSS ,\nBLACK , (6...",
+      "[٥:١٥:١٩ م] ✅ تم معالجة البند 660: P-0000135",
+      "[٥:١٥:١٩ م] 📊 التقدم: 659/5604 (12%)",
+      "[٥:١٥:٢١ م] 🔍 معالجة البند 661/5604: TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3...",
+      "[٥:١٥:٢١ م] ✅ تم معالجة البند 661: P-0000069",
+      "[٥:١٥:٢١ م] 📊 التقدم: 660/5604 (12%)",
+      "[٥:١٥:٢١ م] 🔍 معالجة البند 662/5604: COTTER PIN 3\" LENGNTH 1/8\" DIA\nSTAINLESS STEEL Mad...",
+      "[٥:١٥:٢١ م] ✅ تم معالجة البند 662: P-0000135",
+      "[٥:١٥:٢١ م] 📊 التقدم: 661/5604 (12%)",
+      "[٥:١٥:٢٣ م] 🔍 معالجة البند 663/5604: MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH IND...",
+      "[٥:١٥:٢٣ م] ✅ تم معالجة البند 663: P-0000135",
+      "[٥:١٥:٢٣ م] 📊 التقدم: 662/5604 (12%)",
+      "[٥:١٥:٢٣ م] 🔍 معالجة البند 664/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
+      "[٥:١٥:٢٣ م] ✅ تم معالجة البند 664: P-0000135",
+      "[٥:١٥:٢٣ م] 📊 التقدم: 663/5604 (12%)",
+      "[٥:١٥:٢٥ م] 🔍 معالجة البند 665/5604: TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3...",
+      "[٥:١٥:٢٥ م] ✅ تم معالجة البند 665: P-0000069",
+      "[٥:١٥:٢٥ م] 📊 التقدم: 664/5604 (12%)",
+      "[٥:١٥:٢٥ م] 🔍 معالجة البند 666/5604: CAT No.#TY5253MX, TY-RAP BLACK NYLON\n6/6 WEATHER R...",
+      "[٥:١٥:٢٥ م] ✅ تم معالجة البند 666: P-0000135",
+      "[٥:١٥:٢٥ م] 📊 التقدم: 665/5604 (12%)",
+      "[٥:١٥:٢٧ م] 🔍 معالجة البند 667/5604: CAT No.#TY5275MX, TY-RAP BLACK NYLON\n6/6 WEATHER R...",
+      "[٥:١٥:٢٧ م] ✅ تم معالجة البند 667: P-0000135",
+      "[٥:١٥:٢٧ م] 📊 التقدم: 666/5604 (12%)",
+      "[٥:١٥:٢٧ م] 🔍 معالجة البند 668/5604: PN: TY524MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESIST...",
+      "[٥:١٥:٢٧ م] ✅ تم معالجة البند 668: P-0000135",
+      "[٥:١٥:٢٧ م] 📊 التقدم: 667/5604 (12%)",
+      "[٥:١٥:٢٩ م] 🔍 معالجة البند 669/5604: PN: TY5253MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESIS...",
+      "[٥:١٥:٢٩ م] ✅ تم معالجة البند 669: P-0000135",
+      "[٥:١٥:٢٩ م] 📊 التقدم: 668/5604 (12%)",
+      "[٥:١٥:٢٩ م] 🔍 معالجة البند 670/5604: (PCE = PK)TY-RAP 38 CM, KSS, CV-370B, 370\nX 7.6 MM...",
+      "[٥:١٥:٢٩ م] ✅ تم معالجة البند 670: P-0000135",
+      "[٥:١٥:٢٩ م] 📊 التقدم: 669/5604 (12%)"
     ]
   },
   "items": [
@@ -4543,266 +4543,266 @@
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 634,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Ground Cable , 2/0 AWG , flexible Rubber 70mm\nMade in Italy, EACH = 1 METER",
       "partNumber": "",
       "rowIndex": 635,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 636,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "INDUSTRIAL FREE PLASTIC PLUG 16 AMP + 3\nPOLE (1PH+N+G) IP 67 MADE IN ITALY OR\nGERMANY",
       "partNumber": "16 AMP 1PH+N+G",
       "rowIndex": 637,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN CHINA ( REF CODE\n1001.001.USED.0047 )",
       "partNumber": "",
       "rowIndex": 638,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 639,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "10 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 640,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "6 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 641,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER",
       "partNumber": "",
       "rowIndex": 642,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "25 MM2CABLE LUGS WITH 8 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 643,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 644,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY RAP CABLE TIE TY-527M, CV-360, KSS ,\nBLACK , (6.9MM W X 343MM) (PCE=PACK OF\n100) MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 645,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7.7MM W X 762MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 646,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7.7MM W X 762MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 647,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 INCH X 10 FEET PRODUCT\nABB TYPE 7510S , ABB STAMPED ON ROD",
       "partNumber": "",
       "rowIndex": 648,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 649,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A5G03015, 3 X 1.5 MM2 FLEXIBLE\nPOWER CABLE, RUBBER INSULATED FOR\nELAND CABLES LIGHTING SYSTEM H07RN-F\nEA = 1 MTR",
       "partNumber": "A5G03015",
       "rowIndex": 650,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "INDUSTRIAL FREE PLASTIC PLUG 16 AMP + 3\nPOLE (1PH+N+G) IP 67 MADE IN ITALY OR\nGERMANY",
       "partNumber": "16 AMP 1PH+N+G",
       "rowIndex": 651,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 652,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER",
       "partNumber": "",
       "rowIndex": 653,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RECEPTACLE 3P+N+E 125A & 346-415 V 50/60\nHZ FOR SCAME ( REF. P/N : 415.12567 )",
       "partNumber": "415.12567",
       "rowIndex": 654,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 655,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 656,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4.7MM W X 186MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 657,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7.7MM W X 762MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 658,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH INDICATOR LIGHT AND FUSED",
       "partNumber": "",
       "rowIndex": 659,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7.7MM W X 762MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 660,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY RAP CABLE TIE TY-527M, CV-360, KSS ,\nBLACK , (6.9MM W X 343MM) (PCE=PACK OF\n100) MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 661,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000069",
       "description": "TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3MM W X 92MM) PK=100 PCE MADE\nIN TAIWAN",
       "partNumber": "",
       "rowIndex": 662,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 3\" LENGNTH 1/8\" DIA\nSTAINLESS STEEL Made in Egypt ( REF. P/N :\n98338A12 MCMASTER CAT.) (98355A176)",
       "partNumber": "",
       "rowIndex": 663,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH INDICATOR LIGHT AND FUSED",
       "partNumber": "",
       "rowIndex": 664,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7.7MM W X 762MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 665,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000069",
       "description": "TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3MM W X 92MM) PK=100 PCE MADE\nIN TAIWAN",
       "partNumber": "",
       "rowIndex": 666,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CAT No.#TY5253MX, TY-RAP BLACK NYLON\n6/6 WEATHER RESISTANT 0.185\" W X 11.6\" L,\nRef to THOMAS & BETT",
       "partNumber": "CATNo.#TY5253MX",
       "rowIndex": 667,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CAT No.#TY5275MX, TY-RAP BLACK NYLON\n6/6 WEATHER RESISTANT 0.270\" W X 18\" L,\nRef to THOMAS & BETT",
       "partNumber": "CATNo.#TY5275MX",
       "rowIndex": 668,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: TY524MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESISTANT 0.140\" W X 8.19\" L",
       "partNumber": "TY524MX",
       "rowIndex": 669,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: TY5253MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESISTANT 0.185\" W X 11.6\" L",
       "partNumber": "TY5253MX",
       "rowIndex": 670,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "(PCE = PK)TY-RAP 38 CM, KSS, CV-370B, 370\nX 7.6 MM, BLACK, MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 671,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
