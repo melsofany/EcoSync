@@ -2,104 +2,15 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 835,
+    "currentIndex": 864,
     "totalItems": 5604,
-    "processedItems": 834,
+    "processedItems": 863,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
     "lastSaveTime": "2025-08-29T17:16:55.000Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٥:١٧:٠٨ م] 📊 التقدم: 801/5604 (14%)",
-      "[٥:١٧:٠٩ م] 🔍 معالجة البند 803/5604: PIN,COTTER 1/8\" ( 3.5CM )...",
-      "[٥:١٧:٠٩ م] ✅ تم معالجة البند 803: P-0000135",
-      "[٥:١٧:٠٩ م] 📊 التقدم: 802/5604 (14%)",
-      "[٥:١٧:٠٩ م] 🔍 معالجة البند 804/5604: 3/32\" COTTER PIN ( 2.5CM )...",
-      "[٥:١٧:٠٩ م] ✅ تم معالجة البند 804: P-0000135",
-      "[٥:١٧:٠٩ م] 📊 التقدم: 803/5604 (14%)",
-      "[٥:١٧:١٠ م] 🔍 معالجة البند 805/5604: 3/16\"X2\"SPLIT COTTER PIN...",
-      "[٥:١٧:١٠ م] ✅ تم معالجة البند 805: P-0000135",
-      "[٥:١٧:١٠ م] 📊 التقدم: 804/5604 (14%)",
-      "[٥:١٧:١١ م] 🔍 معالجة البند 806/5604: 1/8 X 3 COTTER PINS...",
-      "[٥:١٧:١١ م] ✅ تم معالجة البند 806: P-0000135",
-      "[٥:١٧:١١ م] 📊 التقدم: 805/5604 (14%)",
-      "[٥:١٧:١١ م] 🔍 معالجة البند 807/5604: PIN,COTTER 1/8\" ( 15CM )...",
-      "[٥:١٧:١١ م] ✅ تم معالجة البند 807: P-0000135",
-      "[٥:١٧:١١ م] 📊 التقدم: 806/5604 (14%)",
-      "[٥:١٧:١٢ م] 🔍 معالجة البند 808/5604: COTTER PIN 1/4\" X 17 CM...",
-      "[٥:١٧:١٢ م] ✅ تم معالجة البند 808: P-0000135",
-      "[٥:١٧:١٢ م] 📊 التقدم: 807/5604 (14%)",
-      "[٥:١٧:١٣ م] 🔍 معالجة البند 809/5604: PIN,COTTER 1/8\" ( 3.5CM )...",
-      "[٥:١٧:١٣ م] ✅ تم معالجة البند 809: P-0000135",
-      "[٥:١٧:١٣ م] 📊 التقدم: 808/5604 (14%)",
-      "[٥:١٧:١٣ م] 🔍 معالجة البند 810/5604: PIN, COTTER 1/4\" ( 6CM )...",
-      "[٥:١٧:١٣ م] ✅ تم معالجة البند 810: P-0000135",
-      "[٥:١٧:١٣ م] 📊 التقدم: 809/5604 (14%)",
-      "[٥:١٧:١٤ م] 🔍 معالجة البند 811/5604: 3/8\" COTTER PINS ( 8CM )...",
-      "[٥:١٧:١٤ م] ✅ تم معالجة البند 811: P-0000135",
-      "[٥:١٧:١٤ م] 📊 التقدم: 810/5604 (14%)",
-      "[٥:١٧:١٥ م] 🔍 معالجة البند 812/5604: 3/32\" COTTER PIN ( 2.5CM )...",
-      "[٥:١٧:١٥ م] ✅ تم معالجة البند 812: P-0000135",
-      "[٥:١٧:١٥ م] 📊 التقدم: 811/5604 (14%)",
-      "[٥:١٧:١٥ م] 🔍 معالجة البند 813/5604: 3/16\"X2\"SPLIT COTTER PIN...",
-      "[٥:١٧:١٥ م] ✅ تم معالجة البند 813: P-0000135",
-      "[٥:١٧:١٥ م] 📊 التقدم: 812/5604 (14%)",
-      "[٥:١٧:١٦ م] 🔍 معالجة البند 814/5604: PIN,COTTER 1/8\" ( 15CM )...",
-      "[٥:١٧:١٦ م] ✅ تم معالجة البند 814: P-0000135",
-      "[٥:١٧:١٦ م] 📊 التقدم: 813/5604 (15%)",
-      "[٥:١٧:١٧ م] 🔍 معالجة البند 815/5604: COTTER PIN 1/4\" X 17 CM...",
-      "[٥:١٧:١٧ م] ✅ تم معالجة البند 815: P-0000135",
-      "[٥:١٧:١٧ م] 📊 التقدم: 814/5604 (15%)",
-      "[٥:١٧:١٧ م] 🔍 معالجة البند 816/5604: PIN,COTTER,1/2\" ( 10CM )...",
-      "[٥:١٧:١٧ م] ✅ تم معالجة البند 816: P-0000135",
-      "[٥:١٧:١٧ م] 📊 التقدم: 815/5604 (15%)",
-      "[٥:١٧:١٨ م] 🔍 معالجة البند 817/5604: PIN,COTTER 1/8\" ( 3.5CM )...",
-      "[٥:١٧:١٨ م] ✅ تم معالجة البند 817: P-0000135",
-      "[٥:١٧:١٨ م] 📊 التقدم: 816/5604 (15%)",
-      "[٥:١٧:١٩ م] 🔍 معالجة البند 818/5604: PIN, COTTER 1/4\" ( 6CM )...",
-      "[٥:١٧:١٩ م] ✅ تم معالجة البند 818: P-0000135",
-      "[٥:١٧:١٩ م] 📊 التقدم: 817/5604 (15%)",
-      "[٥:١٧:١٩ م] 🔍 معالجة البند 819/5604: 3/8\" COTTER PINS ( 8CM )...",
-      "[٥:١٧:١٩ م] ✅ تم معالجة البند 819: P-0000135",
-      "[٥:١٧:١٩ م] 📊 التقدم: 818/5604 (15%)",
-      "[٥:١٧:٢٠ م] 🔍 معالجة البند 820/5604: 3/32\" COTTER PIN ( 2.5CM )...",
-      "[٥:١٧:٢٠ م] ✅ تم معالجة البند 820: P-0000135",
-      "[٥:١٧:٢٠ م] 📊 التقدم: 819/5604 (15%)",
-      "[٥:١٧:٢١ م] 🔍 معالجة البند 821/5604: 3/16\"X2\"SPLIT COTTER PIN...",
-      "[٥:١٧:٢١ م] ✅ تم معالجة البند 821: P-0000135",
-      "[٥:١٧:٢١ م] 📊 التقدم: 820/5604 (15%)",
-      "[٥:١٧:٢١ م] 🔍 معالجة البند 822/5604: 1/8 X 3 COTTER PINS...",
-      "[٥:١٧:٢١ م] ✅ تم معالجة البند 822: P-0000135",
-      "[٥:١٧:٢١ م] 📊 التقدم: 821/5604 (15%)",
-      "[٥:١٧:٢٢ م] 🔍 معالجة البند 823/5604: PIN,COTTER 1/8\" ( 15CM )...",
-      "[٥:١٧:٢٢ م] ✅ تم معالجة البند 823: P-0000135",
-      "[٥:١٧:٢٢ م] 📊 التقدم: 822/5604 (15%)",
-      "[٥:١٧:٢٣ م] 🔍 معالجة البند 824/5604: COTTER PIN 1/4\" X 17 CM...",
-      "[٥:١٧:٢٣ م] ✅ تم معالجة البند 824: P-0000135",
-      "[٥:١٧:٢٣ م] 📊 التقدم: 823/5604 (15%)",
-      "[٥:١٧:٢٣ م] 🔍 معالجة البند 825/5604: PIN,COTTER,1/2\" ( 10CM )...",
-      "[٥:١٧:٢٣ م] ✅ تم معالجة البند 825: P-0000135",
-      "[٥:١٧:٢٣ م] 📊 التقدم: 824/5604 (15%)",
-      "[٥:١٧:٢٤ م] 🔍 معالجة البند 826/5604: P/N : UL1.2-12 , UL RANGE RECHARGEABLE\nBATTERY SEA...",
-      "[٥:١٧:٢٤ م] ✅ تم معالجة البند 826: P-0000135",
-      "[٥:١٧:٢٤ م] 📊 التقدم: 825/5604 (15%)",
-      "[٥:١٧:٢٥ م] 🔍 معالجة البند 827/5604: TRAVEL ADAPTER, WORLDWIDE ALL IN ONE\nUNIVERSAL TRA...",
-      "[٥:١٧:٢٥ م] ✅ تم معالجة البند 827: P-0000135",
-      "[٥:١٧:٢٥ م] 📊 التقدم: 826/5604 (15%)",
-      "[٥:١٧:٢٥ م] 🔍 معالجة البند 828/5604: P/N : 60021-301, BASIC CABLE TWO\nCONDUCTOR ONE TWE...",
-      "[٥:١٧:٢٥ م] ✅ تم معالجة البند 828: P-0000135",
-      "[٥:١٧:٢٥ م] 📊 التقدم: 827/5604 (15%)",
-      "[٥:١٧:٢٦ م] 🔍 معالجة البند 829/5604: ENERGIZER BATTERY 9V...",
-      "[٥:١٧:٢٦ م] ✅ تم معالجة البند 829: P-0000135",
-      "[٥:١٧:٢٦ م] 📊 التقدم: 828/5604 (15%)",
-      "[٥:١٧:٢٧ م] 🔍 معالجة البند 830/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
-      "[٥:١٧:٢٧ م] ✅ تم معالجة البند 830: P-0000135",
-      "[٥:١٧:٢٧ م] 📊 التقدم: 829/5604 (15%)",
-      "[٥:١٧:٢٧ م] 🔍 معالجة البند 831/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
-      "[٥:١٧:٢٧ م] ✅ تم معالجة البند 831: P-0000135",
-      "[٥:١٧:٢٧ م] 📊 التقدم: 830/5604 (15%)",
-      "[٥:١٧:٢٨ م] 🔍 معالجة البند 832/5604: DUCT TAPE...",
       "[٥:١٧:٢٨ م] ✅ تم معالجة البند 832: P-0000135",
       "[٥:١٧:٢٨ م] 📊 التقدم: 831/5604 (15%)",
       "[٥:١٧:٢٩ م] 🔍 معالجة البند 833/5604: DUCT TAPE...",
@@ -110,7 +21,96 @@
       "[٥:١٧:٢٩ م] 📊 التقدم: 833/5604 (15%)",
       "[٥:١٧:٣٠ م] 🔍 معالجة البند 835/5604: كشاف 60 سم ( 2 لمبة ) ضد المياه السويدي...",
       "[٥:١٧:٣٠ م] ✅ تم معالجة البند 835: P-0000135",
-      "[٥:١٧:٣٠ م] 📊 التقدم: 834/5604 (15%)"
+      "[٥:١٧:٣٠ م] 📊 التقدم: 834/5604 (15%)",
+      "[٥:١٨:٠٩ م] 🔄 تم استعادة الحالة المحفوظة - البند 836 من 5604",
+      "[٥:١٨:٠٩ م] 📊 بدء المعالجة من البند 836 من 5604",
+      "[٥:١٨:١١ م] 🔍 معالجة البند 836/5604: كشاف 120 سم ( 2 لمبة) ضد المياه ليد السويدي...",
+      "[٥:١٨:١١ م] ✅ تم معالجة البند 836: P-0000135",
+      "[٥:١٨:١١ م] 📊 التقدم: 835/5604 (15%)",
+      "[٥:١٨:١٣ م] 🔍 معالجة البند 837/5604: P/N : C63N32D630 , CIRCUIT BREAKERS\nMERLIN GERIN C...",
+      "[٥:١٨:١٣ م] ✅ تم معالجة البند 837: P-0000135",
+      "[٥:١٨:١٣ م] 📊 التقدم: 836/5604 (15%)",
+      "[٥:١٨:١٥ م] 🔍 معالجة البند 838/5604: P/N : 800H-AP1A , MOMENTARY CONTACT\nPUSH BUTTON ST...",
+      "[٥:١٨:١٥ م] ✅ تم معالجة البند 838: P-0000135",
+      "[٥:١٨:١٥ م] 📊 التقدم: 837/5604 (15%)",
+      "[٥:١٨:١٧ م] 🔍 معالجة البند 839/5604: P/N : 800H-AP6A , MOMENTARY CONTACT\nPUSH BUTTON ST...",
+      "[٥:١٨:١٧ م] ✅ تم معالجة البند 839: P-0000135",
+      "[٥:١٨:١٧ م] 📊 التقدم: 838/5604 (15%)",
+      "[٥:١٨:١٩ م] 🔍 معالجة البند 840/5604: CHANGEOVER SWITCH , - 0 - , REF. NO.\n41AC4040 ( SO...",
+      "[٥:١٨:١٩ م] ✅ تم معالجة البند 840: P-0000135",
+      "[٥:١٨:١٩ م] 📊 التقدم: 839/5604 (15%)",
+      "[٥:١٨:٢١ م] 🔍 معالجة البند 841/5604: TERMINAL BLOCK 4 MM , TWO WAY (10 AMP.)\n( 600 V)...",
+      "[٥:١٨:٢١ م] ✅ تم معالجة البند 841: P-0000135",
+      "[٥:١٨:٢١ م] 📊 التقدم: 840/5604 (15%)",
+      "[٥:١٨:٢٣ م] 🔍 معالجة البند 842/5604: TERMINAL BLOCK 6 MM , TWO WAY ( 16 AMP.)\n(600 V)...",
+      "[٥:١٨:٢٣ م] ✅ تم معالجة البند 842: P-0000135",
+      "[٥:١٨:٢٣ م] 📊 التقدم: 841/5604 (15%)",
+      "[٥:١٨:٢٥ م] 🔍 معالجة البند 843/5604: TERMINAL BLOCK 10 MM , TWO WAY (20\nAMP.) (600 V)...",
+      "[٥:١٨:٢٥ م] ✅ تم معالجة البند 843: P-0000135",
+      "[٥:١٨:٢٥ م] 📊 التقدم: 842/5604 (15%)",
+      "[٥:١٨:٢٧ م] 🔍 معالجة البند 844/5604: TERMINAL BLOCK 16 MM , TWO WAY (32\nAMP.) (600 V)...",
+      "[٥:١٨:٢٧ م] ✅ تم معالجة البند 844: P-0000135",
+      "[٥:١٨:٢٧ م] 📊 التقدم: 843/5604 (15%)",
+      "[٥:١٨:٢٩ م] 🔍 معالجة البند 845/5604: TERMINAL BLOCK END STOP 4-10 MM , TWO\nWAY EX CERTI...",
+      "[٥:١٨:٢٩ م] ✅ تم معالجة البند 845: P-0000135",
+      "[٥:١٨:٢٩ م] 📊 التقدم: 844/5604 (15%)",
+      "[٥:١٨:٣١ م] 🔍 معالجة البند 846/5604: TERMINAL BLOCK END STOP 16-35 MM , TWO\nWAY EX CERT...",
+      "[٥:١٨:٣١ م] ✅ تم معالجة البند 846: P-0000135",
+      "[٥:١٨:٣١ م] 📊 التقدم: 845/5604 (15%)",
+      "[٥:١٨:٣٣ م] 🔍 معالجة البند 847/5604: GROUND TERMINAL BLOCK 10 MM , TWO\nWAY EX CERTIFIED...",
+      "[٥:١٨:٣٣ م] ✅ تم معالجة البند 847: P-0000135",
+      "[٥:١٨:٣٣ م] 📊 التقدم: 846/5604 (15%)",
+      "[٥:١٨:٣٥ م] 🔍 معالجة البند 848/5604: TERMINAL BLOCK END STOP , TWO WAY EX\nCERTIFIED...",
+      "[٥:١٨:٣٥ م] ✅ تم معالجة البند 848: P-0000135",
+      "[٥:١٨:٣٥ م] 📊 التقدم: 847/5604 (15%)",
+      "[٥:١٨:٣٧ م] 🔍 معالجة البند 849/5604: DIN-RAIL TERMINAL BLOCK HOLDER , TWO\nWAY , 2 MTR E...",
+      "[٥:١٨:٣٧ م] ✅ تم معالجة البند 849: P-0000135",
+      "[٥:١٨:٣٧ م] 📊 التقدم: 848/5604 (15%)",
+      "[٥:١٨:٣٩ م] 🔍 معالجة البند 850/5604: RS P/N : 125-3710, FOOT SWITCH, CAST IRON\nMOMENTAR...",
+      "[٥:١٨:٣٩ م] ✅ تم معالجة البند 850: P-0000135",
+      "[٥:١٨:٣٩ م] 📊 التقدم: 849/5604 (15%)",
+      "[٥:١٨:٤١ م] 🔍 معالجة البند 851/5604: ENERGIZER BATTERY 9V...",
+      "[٥:١٨:٤١ م] ✅ تم معالجة البند 851: P-0000135",
+      "[٥:١٨:٤١ م] 📊 التقدم: 850/5604 (15%)",
+      "[٥:١٨:٤٣ م] 🔍 معالجة البند 852/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
+      "[٥:١٨:٤٣ م] ✅ تم معالجة البند 852: P-0000135",
+      "[٥:١٨:٤٣ م] 📊 التقدم: 851/5604 (15%)",
+      "[٥:١٨:٤٥ م] 🔍 معالجة البند 853/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
+      "[٥:١٨:٤٥ م] ✅ تم معالجة البند 853: P-0000135",
+      "[٥:١٨:٤٥ م] 📊 التقدم: 852/5604 (15%)",
+      "[٥:١٨:٤٧ م] 🔍 معالجة البند 854/5604: ENERGIZER BATTERY 1,5V SIZE C...",
+      "[٥:١٨:٤٧ م] ✅ تم معالجة البند 854: P-0000135",
+      "[٥:١٨:٤٧ م] 📊 التقدم: 853/5604 (15%)",
+      "[٥:١٨:٤٩ م] 🔍 معالجة البند 855/5604: TAPE,2\",PVC...",
+      "[٥:١٨:٤٩ م] ✅ تم معالجة البند 855: P-0000135",
+      "[٥:١٨:٤٩ م] 📊 التقدم: 854/5604 (15%)",
+      "[٥:١٨:٥١ م] 🔍 معالجة البند 856/5604: PLAYGROUND LED LIGHT VENUS FIXTURE,\n100W, 10000 LM...",
+      "[٥:١٨:٥١ م] ✅ تم معالجة البند 856: P-0000135",
+      "[٥:١٨:٥١ م] 📊 التقدم: 855/5604 (15%)",
+      "[٥:١٨:٥٣ م] 🔍 معالجة البند 857/5604: 200 WATT , 220 VOLT OUTDOOR LED FLOOD\nLIGHT ( COMA...",
+      "[٥:١٨:٥٣ م] ✅ تم معالجة البند 857: P-0000135",
+      "[٥:١٨:٥٣ م] 📊 التقدم: 856/5604 (15%)",
+      "[٥:١٨:٥٥ م] 🔍 معالجة البند 858/5604: P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, ...",
+      "[٥:١٨:٥٥ م] ✅ تم معالجة البند 858: P-0000135",
+      "[٥:١٨:٥٥ م] 📊 التقدم: 857/5604 (15%)",
+      "[٥:١٨:٥٧ م] 🔍 معالجة البند 859/5604: GROUND CABLE CONNECTOR, MALE/FEMALE\n2MPC , ( REF. ...",
+      "[٥:١٨:٥٧ م] ✅ تم معالجة البند 859: P-0000135",
+      "[٥:١٨:٥٧ م] 📊 التقدم: 858/5604 (15%)",
+      "[٥:١٨:٥٩ م] 🔍 معالجة البند 860/5604: P/N : BST-RMR16-WP-LED, EMERGENCY\nLIGHT - WET LOCA...",
+      "[٥:١٨:٥٩ م] ✅ تم معالجة البند 860: P-0000135",
+      "[٥:١٨:٥٩ م] 📊 التقدم: 859/5604 (15%)",
+      "[٥:١٩:٠١ م] 🔍 معالجة البند 861/5604: LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT D...",
+      "[٥:١٩:٠١ م] ✅ تم معالجة البند 861: P-0000135",
+      "[٥:١٩:٠١ م] 📊 التقدم: 860/5604 (15%)",
+      "[٥:١٩:٠٣ م] 🔍 معالجة البند 862/5604: P/N : A9R41440 , RESIDUAL CURRENT\nCIRCUIT BREAKER ...",
+      "[٥:١٩:٠٣ م] ✅ تم معالجة البند 862: P-0000135",
+      "[٥:١٩:٠٣ م] 📊 التقدم: 861/5604 (15%)",
+      "[٥:١٩:٠٥ م] 🔍 معالجة البند 863/5604: PN: QP0233 , UNIVERSAL 3PINS QP2-33\nREFRIGERATOR F...",
+      "[٥:١٩:٠٥ م] ✅ تم معالجة البند 863: P-0000135",
+      "[٥:١٩:٠٥ م] 📊 التقدم: 862/5604 (15%)",
+      "[٥:١٩:٠٧ م] 🔍 معالجة البند 864/5604: P/N : 11-11110-00 , LIMIT SWITCH 10 SERIES\nGO SWIT...",
+      "[٥:١٩:٠٧ م] ✅ تم معالجة البند 864: P-0000135",
+      "[٥:١٩:٠٧ م] 📊 التقدم: 863/5604 (15%)"
     ]
   },
   "items": [
@@ -5964,203 +5964,203 @@
       "description": "كشاف 120 سم ( 2 لمبة) ضد المياه ليد السويدي",
       "partNumber": "",
       "rowIndex": 837,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : C63N32D630 , CIRCUIT BREAKERS\nMERLIN GERIN COMPACT, TYPE NS630N, 3P,\n3PH, 630A ( OLD P/N : IV432893) (OLD P/N :\n32803 ) ( REF CODE 1001.001.USED.0037 )",
       "partNumber": "C63N32D630",
       "rowIndex": 838,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 800H-AP1A , MOMENTARY CONTACT\nPUSH BUTTON START , GREEN , ALLEN\nBRADLEY MODEL BULLETIN 800H",
       "partNumber": "800HAP1A",
       "rowIndex": 839,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 800H-AP6A , MOMENTARY CONTACT\nPUSH BUTTON STOP RED , ALLEN BRADLEY\nMODEL BULLETIN 800H",
       "partNumber": "800HAP6A",
       "rowIndex": 840,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CHANGEOVER SWITCH , - 0 - , REF. NO.\n41AC4040 ( SOCOMEC CAT.)",
       "partNumber": "",
       "rowIndex": 841,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TERMINAL BLOCK 4 MM , TWO WAY (10 AMP.)\n( 600 V)",
       "partNumber": "",
       "rowIndex": 842,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TERMINAL BLOCK 6 MM , TWO WAY ( 16 AMP.)\n(600 V)",
       "partNumber": "",
       "rowIndex": 843,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TERMINAL BLOCK 10 MM , TWO WAY (20\nAMP.) (600 V)",
       "partNumber": "",
       "rowIndex": 844,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TERMINAL BLOCK 16 MM , TWO WAY (32\nAMP.) (600 V)",
       "partNumber": "",
       "rowIndex": 845,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TERMINAL BLOCK END STOP 4-10 MM , TWO\nWAY EX CERTIFIED",
       "partNumber": "",
       "rowIndex": 846,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TERMINAL BLOCK END STOP 16-35 MM , TWO\nWAY EX CERTIFIED",
       "partNumber": "",
       "rowIndex": 847,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GROUND TERMINAL BLOCK 10 MM , TWO\nWAY EX CERTIFIED",
       "partNumber": "",
       "rowIndex": 848,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TERMINAL BLOCK END STOP , TWO WAY EX\nCERTIFIED",
       "partNumber": "",
       "rowIndex": 849,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DIN-RAIL TERMINAL BLOCK HOLDER , TWO\nWAY , 2 MTR EX CERTIFIED",
       "partNumber": "",
       "rowIndex": 850,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RS P/N : 125-3710, FOOT SWITCH, CAST IRON\nMOMENTARY DPDT 20 A 125 V, 250 V IP65\nFOR DEAD MAN SWITCH FOOT PEDAL RS\nCATALOGE HEAVY DUTY FOOT SWITCHES",
       "partNumber": "125-3710",
       "rowIndex": 851,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 852,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 853,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 854,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE C",
       "partNumber": "",
       "rowIndex": 855,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TAPE,2\",PVC",
       "partNumber": "",
       "rowIndex": 856,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PLAYGROUND LED LIGHT VENUS FIXTURE,\n100W, 10000 LM",
       "partNumber": "",
       "rowIndex": 857,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "200 WATT , 220 VOLT OUTDOOR LED FLOOD\nLIGHT ( COMANDA CAT.)",
       "partNumber": "",
       "rowIndex": 858,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, STANDARD, SELECTABLE\nDURATION ( SCHNEIDER CAT.)",
       "partNumber": "OVA44013",
       "rowIndex": 859,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GROUND CABLE CONNECTOR, MALE/FEMALE\n2MPC , ( REF. P/N :1UYF5 GRAINGER CAT.",
       "partNumber": "",
       "rowIndex": 860,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : BST-RMR16-WP-LED, EMERGENCY\nLIGHT - WET LOCATION LISTED - LED MR16\nLAMPS WATERPROOF",
       "partNumber": "",
       "rowIndex": 861,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT DOOR AREA) WEATHER\nPROOF IP66 WITH GLAND",
       "partNumber": "",
       "rowIndex": 862,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41440 , RESIDUAL CURRENT\nCIRCUIT BREAKER EARTH LEAKAGE40\nA,ACTI 9 IID-RCCB-4P-40A-30MA-TYPE AC400VAC (SCHNIDER CAT.)",
       "partNumber": "A9R81440",
       "rowIndex": 863,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: QP0233 , UNIVERSAL 3PINS QP2-33\nREFRIGERATOR FREEZER PTC 33?\nCOMPRESSOR MOTOR START RELAY",
       "partNumber": "QP0233",
       "rowIndex": 864,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 11-11110-00 , LIMIT SWITCH 10 SERIES\nGO SWITCH SIDE SENDING CSA/FM\nCERTIFIED TERMINAL BLOCK SIDE OUTLET,\nSPDT 10 AMP CONTACTS",
       "partNumber": "",
       "rowIndex": 865,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
