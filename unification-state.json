@@ -2,115 +2,115 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 1331,
+    "currentIndex": 1383,
     "totalItems": 5604,
-    "processedItems": 1330,
+    "processedItems": 1382,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
-    "lastSaveTime": "2025-08-29T17:25:09.589Z",
+    "lastSaveTime": "2025-08-29T19:24:10.724Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٥:٢٤:٥٣ م] 📊 التقدم: 1297/5604 (23%)",
-      "[٥:٢٤:٥٣ م] 🔍 معالجة البند 1299/5604: CHANGEOVER SWITCH , - 0 - , REF. NO.\n41AC4040 ( SO...",
-      "[٥:٢٤:٥٣ م] ✅ تم معالجة البند 1299: P-0000135",
-      "[٥:٢٤:٥٣ م] 📊 التقدم: 1298/5604 (23%)",
-      "[٥:٢٤:٥٥ م] 🔍 معالجة البند 1300/5604: P/N : LM-550A2BH/PC , ELECTRONIC\nLETTERING MACHINE...",
-      "[٥:٢٤:٥٥ م] ✅ تم معالجة البند 1300: P-0000135",
-      "[٥:٢٤:٥٥ م] 📊 التقدم: 1299/5604 (23%)",
-      "[٥:٢٤:٥٥ م] 🔍 معالجة البند 1301/5604: EXPLOSION PROOF LED FLOODLIGHT,\n90WATTS, TYPE: BAT...",
-      "[٥:٢٤:٥٥ م] ✅ تم معالجة البند 1301: P-0000135",
-      "[٥:٢٤:٥٥ م] 📊 التقدم: 1300/5604 (23%)",
-      "[٥:٢٤:٥٥ م] 🔍 معالجة البند 1302/5604: LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT D...",
-      "[٥:٢٤:٥٥ م] ✅ تم معالجة البند 1302: P-0000135",
-      "[٥:٢٤:٥٥ م] 📊 التقدم: 1301/5604 (23%)",
-      "[٥:٢٤:٥٥ م] 🔍 معالجة البند 1303/5604: LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT D...",
-      "[٥:٢٤:٥٥ م] ✅ تم معالجة البند 1303: P-0000135",
-      "[٥:٢٤:٥٥ م] 📊 التقدم: 1302/5604 (23%)",
-      "[٥:٢٤:٥٧ م] 🔍 معالجة البند 1304/5604: TAPE,SCOTCH 33+ ( 3/4\" x 52 FT. )...",
-      "[٥:٢٤:٥٧ م] ✅ تم معالجة البند 1304: P-0000135",
-      "[٥:٢٤:٥٧ م] 📊 التقدم: 1303/5604 (23%)",
-      "[٥:٢٤:٥٧ م] 🔍 معالجة البند 1305/5604: ENERGIZER BATTERY 9V...",
-      "[٥:٢٤:٥٧ م] ✅ تم معالجة البند 1305: P-0000135",
-      "[٥:٢٤:٥٧ م] 📊 التقدم: 1304/5604 (23%)",
-      "[٥:٢٤:٥٧ م] 🔍 معالجة البند 1306/5604: LED COMPLETE BED LIGHT WALL-TYPE, 220\nVAC, 50 HZ, ...",
-      "[٥:٢٤:٥٧ م] ✅ تم معالجة البند 1306: P-0000135",
-      "[٥:٢٤:٥٧ م] 📊 التقدم: 1305/5604 (23%)",
-      "[٥:٢٤:٥٧ م] 🔍 معالجة البند 1307/5604: BED LIGHT LAMPS 30.9 CM , LED TYPE (TUBE\nLINOLITE ...",
-      "[٥:٢٤:٥٧ م] ✅ تم معالجة البند 1307: P-0000135",
-      "[٥:٢٤:٥٧ م] 📊 التقدم: 1306/5604 (23%)",
-      "[٥:٢٤:٥٩ م] 🔍 معالجة البند 1308/5604: LED TUBE LAMP 60 CM, 9W, 855LM ( EL\nSEWEEDY )...",
-      "[٥:٢٤:٥٩ م] ✅ تم معالجة البند 1308: P-0000135",
-      "[٥:٢٤:٥٩ م] 📊 التقدم: 1307/5604 (23%)",
-      "[٥:٢٤:٥٩ م] 🔍 معالجة البند 1309/5604: IL32650- Brothersكشاف عين بقرة 3...",
-      "[٥:٢٤:٥٩ م] ✅ تم معالجة البند 1309: P-0000135",
-      "[٥:٢٤:٥٩ م] 📊 التقدم: 1308/5604 (23%)",
-      "[٥:٢٤:٥٩ م] 🔍 معالجة البند 1310/5604: P/N : BS1113TV , PANASONIC AIR CONDITION\nCURCIT BR...",
-      "[٥:٢٤:٥٩ م] ✅ تم معالجة البند 1310: P-0000135",
-      "[٥:٢٤:٥٩ م] 📊 التقدم: 1309/5604 (23%)",
-      "[٥:٢٤:٥٩ م] 🔍 معالجة البند 1311/5604: P/N : A9R41440 , RESIDUAL CURRENT\nCIRCUIT BREAKER ...",
-      "[٥:٢٤:٥٩ م] ✅ تم معالجة البند 1311: P-0000135",
-      "[٥:٢٤:٥٩ م] 📊 التقدم: 1310/5604 (23%)",
-      "[٥:٢٥:٠١ م] 🔍 معالجة البند 1312/5604: FLEXIBLE ELECTRICAL HOSE PVC SIZE 16\nMM -- ENGINEE...",
-      "[٥:٢٥:٠١ م] ✅ تم معالجة البند 1312: P-0000135",
-      "[٥:٢٥:٠١ م] 📊 التقدم: 1311/5604 (23%)",
-      "[٥:٢٥:٠١ م] 🔍 معالجة البند 1313/5604: P/N : A9F77440 & A9F77440 ,MINIATUR\nCIRCUIT-BREAKE...",
-      "[٥:٢٥:٠١ م] ✅ تم معالجة البند 1313: P-0000135",
-      "[٥:٢٥:٠١ م] 📊 التقدم: 1312/5604 (23%)",
-      "[٥:٢٥:٠١ م] 🔍 معالجة البند 1314/5604: P/N : A9F94220 , MINIATURE CIRCUIT-\nBREAKER, ACTI9...",
-      "[٥:٢٥:٠١ م] ✅ تم معالجة البند 1314: P-0000135",
-      "[٥:٢٥:٠١ م] 📊 التقدم: 1313/5604 (23%)",
-      "[٥:٢٥:٠١ م] 🔍 معالجة البند 1315/5604: P/N : A9K24225 , MINIATURE CIRCUIT-\nBREAKER, ACTI9...",
-      "[٥:٢٥:٠١ م] ✅ تم معالجة البند 1315: P-0000135",
-      "[٥:٢٥:٠١ م] 📊 التقدم: 1314/5604 (23%)",
-      "[٥:٢٥:٠٣ م] 🔍 معالجة البند 1316/5604: P/N : A9F93216 & A9F94216 , MINIATURE\nCIRCUIT-BREA...",
-      "[٥:٢٥:٠٣ م] ✅ تم معالجة البند 1316: P-0000135",
-      "[٥:٢٥:٠٣ م] 📊 التقدم: 1315/5604 (23%)",
-      "[٥:٢٥:٠٣ م] 🔍 معالجة البند 1317/5604: P/N : A9K24232 , MINIATURE CIRCUIT-\nBREAKER, ACTI9...",
-      "[٥:٢٥:٠٣ م] ✅ تم معالجة البند 1317: P-0000135",
-      "[٥:٢٥:٠٣ م] 📊 التقدم: 1316/5604 (23%)",
-      "[٥:٢٥:٠٣ م] 🔍 معالجة البند 1318/5604: P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, ...",
-      "[٥:٢٥:٠٣ م] ✅ تم معالجة البند 1318: P-0000135",
-      "[٥:٢٥:٠٣ م] 📊 التقدم: 1317/5604 (24%)",
-      "[٥:٢٥:٠٣ م] 🔍 معالجة البند 1319/5604: كيس ترامل 6 ملي ماسورة 100 قطعه...",
-      "[٥:٢٥:٠٣ م] ✅ تم معالجة البند 1319: P-0000135",
-      "[٥:٢٥:٠٣ م] 📊 التقدم: 1318/5604 (24%)",
-      "[٥:٢٥:٠٥ م] 🔍 معالجة البند 1320/5604: ENERGIZER BATTERY 9V...",
-      "[٥:٢٥:٠٥ م] ✅ تم معالجة البند 1320: P-0000135",
-      "[٥:٢٥:٠٥ م] 📊 التقدم: 1319/5604 (24%)",
-      "[٥:٢٥:٠٥ م] 🔍 معالجة البند 1321/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
-      "[٥:٢٥:٠٥ م] ✅ تم معالجة البند 1321: P-0000135",
-      "[٥:٢٥:٠٥ م] 📊 التقدم: 1320/5604 (24%)",
-      "[٥:٢٥:٠٥ م] 🔍 معالجة البند 1322/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
-      "[٥:٢٥:٠٥ م] ✅ تم معالجة البند 1322: P-0000135",
-      "[٥:٢٥:٠٥ م] 📊 التقدم: 1321/5604 (24%)",
-      "[٥:٢٥:٠٥ م] 🔍 معالجة البند 1323/5604: ENERGIZER BATTERY 1,5V SIZE C...",
-      "[٥:٢٥:٠٥ م] ✅ تم معالجة البند 1323: P-0000135",
-      "[٥:٢٥:٠٥ م] 📊 التقدم: 1322/5604 (24%)",
-      "[٥:٢٥:٠٧ م] 🔍 معالجة البند 1324/5604: LONG-BARREL SPLICE, BLUE, 6 AWG WIRE\nGAUGE, ( REF....",
-      "[٥:٢٥:٠٧ م] ✅ تم معالجة البند 1324: P-0000135",
-      "[٥:٢٥:٠٧ م] 📊 التقدم: 1323/5604 (24%)",
-      "[٥:٢٥:٠٧ م] 🔍 معالجة البند 1325/5604: LONG-BARREL SPLICE, 1/0AWG MAX.WIRE\nSIZE, TAN COLO...",
-      "[٥:٢٥:٠٧ م] ✅ تم معالجة البند 1325: P-0000135",
-      "[٥:٢٥:٠٧ م] 📊 التقدم: 1324/5604 (24%)",
-      "[٥:٢٥:٠٧ م] 🔍 معالجة البند 1326/5604: P/N : MLLG-LS-LED-FLD-200-5 ? 1759 , 200\nWATT LED ...",
-      "[٥:٢٥:٠٧ م] ✅ تم معالجة البند 1326: P-0000135",
-      "[٥:٢٥:٠٧ م] 📊 التقدم: 1325/5604 (24%)",
-      "[٥:٢٥:٠٧ م] 🔍 معالجة البند 1327/5604: P/N : A9D32740 , ACTI 9 DPN N VIGI - RCBO -\n3P+N -...",
-      "[٥:٢٥:٠٧ م] ✅ تم معالجة البند 1327: P-0000135",
-      "[٥:٢٥:٠٧ م] 📊 التقدم: 1326/5604 (24%)",
-      "[٥:٢٥:٠٩ م] 🔍 معالجة البند 1328/5604: P/N : LC1D32Q7 ,\nCONTACTOR TESYS D CONTACTOR -\n3P ...",
-      "[٥:٢٥:٠٩ م] ✅ تم معالجة البند 1328: P-0000135",
-      "[٥:٢٥:٠٩ م] 📊 التقدم: 1327/5604 (24%)",
-      "[٥:٢٥:٠٩ م] 🔍 معالجة البند 1329/5604: P/N : LC1D18Q7 , TESYS D CONTACTOR - 3P(3\nNO) - AC...",
-      "[٥:٢٥:٠٩ م] ✅ تم معالجة البند 1329: P-0000135",
-      "[٥:٢٥:٠٩ م] 📊 التقدم: 1328/5604 (24%)",
-      "[٥:٢٥:٠٩ م] 🔍 معالجة البند 1330/5604: كشاف 60 سم ( 2 لمبة ) ضد المياه السويدي...",
-      "[٥:٢٥:٠٩ م] ✅ تم معالجة البند 1330: P-0000135",
-      "[٥:٢٥:٠٩ م] 📊 التقدم: 1329/5604 (24%)",
-      "[٥:٢٥:٠٩ م] 🔍 معالجة البند 1331/5604: كشاف 120 سم ( 2 لمبة) ضد المياه ليد السويدي...",
-      "[٥:٢٥:٠٩ م] ✅ تم معالجة البند 1331: P-0000135",
-      "[٥:٢٥:٠٩ م] 📊 التقدم: 1330/5604 (24%)"
+      "[٧:٢٤:٠٢ م] 📊 التقدم: 1349/5604 (24%)",
+      "[٧:٢٤:٠٣ م] 🔍 معالجة البند 1351/5604: P/N : BAY51-Q LED14X2J , EX-LED LIGHT\n14WX2 (100V~...",
+      "[٧:٢٤:٠٣ م] ✅ تم معالجة البند 1351: P-0000135",
+      "[٧:٢٤:٠٣ م] 📊 التقدم: 1350/5604 (24%)",
+      "[٧:٢٤:٠٣ م] 🔍 معالجة البند 1352/5604: P/N : HRJ60/40 K, HRJ SERIES EXPLOSION-\nPROOF EMER...",
+      "[٧:٢٤:٠٣ م] ✅ تم معالجة البند 1352: P-0000135",
+      "[٧:٢٤:٠٣ م] 📊 التقدم: 1351/5604 (24%)",
+      "[٧:٢٤:٠٤ م] 🔍 معالجة البند 1353/5604: LED WATER PROOF LIGHT FIXTURE 220 V 150\nWATT IP 66...",
+      "[٧:٢٤:٠٤ م] ✅ تم معالجة البند 1353: P-0000135",
+      "[٧:٢٤:٠٤ م] 📊 التقدم: 1352/5604 (24%)",
+      "[٧:٢٤:٠٥ م] 🔍 معالجة البند 1354/5604: ENERGIZER BATTERY 9V...",
+      "[٧:٢٤:٠٥ م] ✅ تم معالجة البند 1354: P-0000135",
+      "[٧:٢٤:٠٥ م] 📊 التقدم: 1353/5604 (24%)",
+      "[٧:٢٤:٠٥ م] 🔍 معالجة البند 1355/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
+      "[٧:٢٤:٠٥ م] ✅ تم معالجة البند 1355: P-0000135",
+      "[٧:٢٤:٠٥ م] 📊 التقدم: 1354/5604 (24%)",
+      "[٧:٢٤:٠٦ م] 🔍 معالجة البند 1356/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
+      "[٧:٢٤:٠٦ م] ✅ تم معالجة البند 1356: P-0000135",
+      "[٧:٢٤:٠٦ م] 📊 التقدم: 1355/5604 (24%)",
+      "[٧:٢٤:٠٧ م] 🔍 معالجة البند 1357/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
+      "[٧:٢٤:٠٧ م] ✅ تم معالجة البند 1357: P-0000135",
+      "[٧:٢٤:٠٧ م] 📊 التقدم: 1356/5604 (24%)",
+      "[٧:٢٤:٠٧ م] 🔍 معالجة البند 1358/5604: ENERGIZER BATTERY 1,5V SIZE C...",
+      "[٧:٢٤:٠٧ م] ✅ تم معالجة البند 1358: P-0000135",
+      "[٧:٢٤:٠٧ م] 📊 التقدم: 1357/5604 (24%)",
+      "[٧:٢٤:٠٨ م] 🔍 معالجة البند 1359/5604: P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, ...",
+      "[٧:٢٤:٠٨ م] ✅ تم معالجة البند 1359: P-0000135",
+      "[٧:٢٤:٠٨ م] 📊 التقدم: 1358/5604 (24%)",
+      "[٧:٢٤:٠٩ م] 🔍 معالجة البند 1360/5604: P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, ...",
+      "[٧:٢٤:٠٩ م] ✅ تم معالجة البند 1360: P-0000135",
+      "[٧:٢٤:٠٩ م] 📊 التقدم: 1359/5604 (24%)",
+      "[٧:٢٤:٠٩ م] 🔍 معالجة البند 1361/5604: P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, ...",
+      "[٧:٢٤:٠٩ م] ✅ تم معالجة البند 1361: P-0000135",
+      "[٧:٢٤:٠٩ م] 📊 التقدم: 1360/5604 (24%)",
+      "[٧:٢٤:١٠ م] 🔍 معالجة البند 1362/5604: P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, ...",
+      "[٧:٢٤:١٠ م] ✅ تم معالجة البند 1362: P-0000135",
+      "[٧:٢٤:١٠ م] 📊 التقدم: 1361/5604 (24%)",
+      "[٧:٢٤:١١ م] 🔍 معالجة البند 1363/5604: P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, ...",
+      "[٧:٢٤:١١ م] ✅ تم معالجة البند 1363: P-0000135",
+      "[٧:٢٤:١١ م] 📊 التقدم: 1362/5604 (24%)",
+      "[٧:٢٤:١١ م] 🔍 معالجة البند 1364/5604: P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, ...",
+      "[٧:٢٤:١١ م] ✅ تم معالجة البند 1364: P-0000135",
+      "[٧:٢٤:١١ م] 📊 التقدم: 1363/5604 (24%)",
+      "[٧:٢٤:١٢ م] 🔍 معالجة البند 1365/5604: ENERGIZER BATTERY 9V...",
+      "[٧:٢٤:١٢ م] ✅ تم معالجة البند 1365: P-0000135",
+      "[٧:٢٤:١٢ م] 📊 التقدم: 1364/5604 (24%)",
+      "[٧:٢٤:١٣ م] 🔍 معالجة البند 1366/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
+      "[٧:٢٤:١٣ م] ✅ تم معالجة البند 1366: P-0000135",
+      "[٧:٢٤:١٣ م] 📊 التقدم: 1365/5604 (24%)",
+      "[٧:٢٤:١٣ م] 🔍 معالجة البند 1367/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
+      "[٧:٢٤:١٣ م] ✅ تم معالجة البند 1367: P-0000135",
+      "[٧:٢٤:١٣ م] 📊 التقدم: 1366/5604 (24%)",
+      "[٧:٢٤:١٤ م] 🔍 معالجة البند 1368/5604: ENERGIZER BATTERY 1.5 VSIZE D...",
+      "[٧:٢٤:١٤ م] ✅ تم معالجة البند 1368: P-0000135",
+      "[٧:٢٤:١٤ م] 📊 التقدم: 1367/5604 (24%)",
+      "[٧:٢٤:١٥ م] 🔍 معالجة البند 1369/5604: ENERGIZER BATTERY 9V...",
+      "[٧:٢٤:١٥ م] ✅ تم معالجة البند 1369: P-0000135",
+      "[٧:٢٤:١٥ م] 📊 التقدم: 1368/5604 (24%)",
+      "[٧:٢٤:١٥ م] 🔍 معالجة البند 1370/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
+      "[٧:٢٤:١٥ م] ✅ تم معالجة البند 1370: P-0000135",
+      "[٧:٢٤:١٥ م] 📊 التقدم: 1369/5604 (24%)",
+      "[٧:٢٤:١٦ م] 🔍 معالجة البند 1371/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
+      "[٧:٢٤:١٦ م] ✅ تم معالجة البند 1371: P-0000135",
+      "[٧:٢٤:١٦ م] 📊 التقدم: 1370/5604 (24%)",
+      "[٧:٢٤:١٧ م] 🔍 معالجة البند 1372/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
+      "[٧:٢٤:١٧ م] ✅ تم معالجة البند 1372: P-0000135",
+      "[٧:٢٤:١٧ م] 📊 التقدم: 1371/5604 (24%)",
+      "[٧:٢٤:١٧ م] 🔍 معالجة البند 1373/5604: ENERGIZER BATTERY 1,5V SIZE C...",
+      "[٧:٢٤:١٧ م] ✅ تم معالجة البند 1373: P-0000135",
+      "[٧:٢٤:١٧ م] 📊 التقدم: 1372/5604 (24%)",
+      "[٧:٢٤:١٨ م] 🔍 معالجة البند 1374/5604: LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )...",
+      "[٧:٢٤:١٨ م] ✅ تم معالجة البند 1374: P-0000135",
+      "[٧:٢٤:١٨ م] 📊 التقدم: 1373/5604 (25%)",
+      "[٧:٢٤:١٩ م] 🔍 معالجة البند 1375/5604: LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )...",
+      "[٧:٢٤:١٩ م] ✅ تم معالجة البند 1375: P-0000135",
+      "[٧:٢٤:١٩ م] 📊 التقدم: 1374/5604 (25%)",
+      "[٧:٢٤:١٩ م] 🔍 معالجة البند 1376/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
+      "[٧:٢٤:١٩ م] ✅ تم معالجة البند 1376: P-0000135",
+      "[٧:٢٤:١٩ م] 📊 التقدم: 1375/5604 (25%)",
+      "[٧:٢٤:٢٠ م] 🔍 معالجة البند 1377/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
+      "[٧:٢٤:٢٠ م] ✅ تم معالجة البند 1377: P-0000135",
+      "[٧:٢٤:٢٠ م] 📊 التقدم: 1376/5604 (25%)",
+      "[٧:٢٤:٢١ م] 🔍 معالجة البند 1378/5604: LOCAL P/N : 4PKE5 , BATTERY PACK , NIMH ,\nFOR MAG ...",
+      "[٧:٢٤:٢١ م] ✅ تم معالجة البند 1378: P-0000135",
+      "[٧:٢٤:٢١ م] 📊 التقدم: 1377/5604 (25%)",
+      "[٧:٢٤:٢١ م] 🔍 معالجة البند 1379/5604: BED LIGHT LAMPS 30.9 CM , LED TYPE (TUBE\nLINOLITE ...",
+      "[٧:٢٤:٢١ م] ✅ تم معالجة البند 1379: P-0000135",
+      "[٧:٢٤:٢١ م] 📊 التقدم: 1378/5604 (25%)",
+      "[٧:٢٤:٢٢ م] 🔍 معالجة البند 1380/5604: LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )...",
+      "[٧:٢٤:٢٢ م] ✅ تم معالجة البند 1380: P-0000135",
+      "[٧:٢٤:٢٢ م] 📊 التقدم: 1379/5604 (25%)",
+      "[٧:٢٤:٢٣ م] 🔍 معالجة البند 1381/5604: LED TUBE LAMP 60 CM, 9W, 855LM ( EL\nSEWEEDY )...",
+      "[٧:٢٤:٢٣ م] ✅ تم معالجة البند 1381: P-0000135",
+      "[٧:٢٤:٢٣ م] 📊 التقدم: 1380/5604 (25%)",
+      "[٧:٢٤:٢٣ م] 🔍 معالجة البند 1382/5604: P/N : NSN # 6230 01-653-2577, MAG CHARGER\nLED RECH...",
+      "[٧:٢٤:٢٣ م] ✅ تم معالجة البند 1382: P-0000135",
+      "[٧:٢٤:٢٣ م] 📊 التقدم: 1381/5604 (25%)",
+      "[٧:٢٤:٢٤ م] 🔍 معالجة البند 1383/5604: ENERGIZER BATTERY 9V...",
+      "[٧:٢٤:٢٤ م] ✅ تم معالجة البند 1383: P-0000135",
+      "[٧:٢٤:٢٤ م] 📊 التقدم: 1382/5604 (25%)"
     ]
   },
   "items": [
@@ -9436,364 +9436,364 @@
       "description": "FLUORESCENT LAMP 36W,TL-D 36W/54-765\nCOOLDAYLIGHT",
       "partNumber": "",
       "rowIndex": 1333,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : VBS1, RED INSULATING CONNECTORS\nBUTT TYPE PKG = 100PCS FOR SGE\nTERMINALS VR2-5M",
       "partNumber": "VBS1",
       "rowIndex": 1334,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 33VE49, 4/0 AWG TO 500 KCMIL SPLICE\nKITS, BLACK , MFR. MODEL # CRSM-CT-84/20-\n250 PKG OF 10",
       "partNumber": "33VE49",
       "rowIndex": 1335,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 33VE48, 2 TO 4/0 AWG SPLICE KITS,\nBLACK , MFR. MODEL # CRSM-CT-53/13-200 ,\nPKG OF 10",
       "partNumber": "33VE48",
       "rowIndex": 1336,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PANASONIC BATTERY CR 2032 3V",
       "partNumber": "",
       "rowIndex": 1337,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 800H-AP1A , MOMENTARY CONTACT\nPUSH BUTTON START , GREEN , ALLEN\nBRADLEY MODEL BULLETIN 800H",
       "partNumber": "800H-AP1A",
       "rowIndex": 1338,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 800H-AP6A , MOMENTARY CONTACT\nPUSH BUTTON STOP RED , ALLEN BRADLEY\nMODEL BULLETIN 800H",
       "partNumber": "800H-AP6A",
       "rowIndex": 1339,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED COMPLETE BED LIGHT WALL-TYPE, 220\nVAC, 50 HZ, 7W, WITH ON/OFF SWITCH AND\nSOCKET OUTLET , IP44 ,WITOUT LAMP",
       "partNumber": "",
       "rowIndex": 1340,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BED LIGHT LAMPS 30.9 CM , LED TYPE (TUBE\nLINOLITE LED LAMP 6W, 230V, S19, ARIC\n2943)",
       "partNumber": "",
       "rowIndex": 1341,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : NP4-12 , BATTERY FOR HAND OFF\nCIRCUIT OF GENERATOR CONTROL\nCUBICLE, 12V, 4AH (MAKER : YUASA)",
       "partNumber": "",
       "rowIndex": 1342,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LAMP,FLUORESCENT F40CW",
       "partNumber": "",
       "rowIndex": 1343,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : BS1113TV , PANASONIC AIR CONDITION\nCURCIT BREAKER 30A , 2P1E , 240V AC",
       "partNumber": "BS1113TV",
       "rowIndex": 1344,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LITHONIA LIGHTING EMERGENCY LIGHT 9W\nFOR ENGINE POWER HOUSE ( REF. P/N :\n483U36 GRAINGER CAT.) ( OLD P/N : 4LB89 )",
       "partNumber": "",
       "rowIndex": 1345,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 800H-AP1A , MOMENTARY CONTACT\nPUSH BUTTON START , GREEN , ALLEN\nBRADLEY MODEL BULLETIN 800H",
       "partNumber": "800H-AP1A",
       "rowIndex": 1346,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 800H-AP6A , MOMENTARY CONTACT\nPUSH BUTTON STOP RED , ALLEN BRADLEY\nMODEL BULLETIN 800H",
       "partNumber": "800H-AP6A",
       "rowIndex": 1347,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : HRJ60/40 K, HRJ SERIES EXPLOSION-\nPROOF EMERGENCY LED LIGHT FITTINGS\nFOR WAROM LED EMERGENCY LIGHT",
       "partNumber": "HRJ60/40K",
       "rowIndex": 1348,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, STANDARD, SELECTABLE\nDURATION ( SCHNEIDER CAT.)",
       "partNumber": "OVA44013",
       "rowIndex": 1349,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EMERGENCY EX.LED BAY51-Q\nLED28?2XJ100V~277VAC50/60HZ, MAKER :\nWAROM",
       "partNumber": "1400037983",
       "rowIndex": 1350,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : AF52-40-00-13, 4 POLE CONTACTOR -\n690 V IEC OR 600 UL , 100-250V50/60HZ-DC\nCONTACTOR, CONTROL VOLTAGE RANGE\n(100-250 V 50/60 HZ AND DC) (ABB CAT.)",
       "partNumber": "AF52-40-00-13",
       "rowIndex": 1351,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : BAY51-Q LED14X2J , EX-LED LIGHT\n14WX2 (100V~277V AC) LUMINOUS FLUX 2905\n( WORM CAT.) ( CELLING MOUNTING TYPE )",
       "partNumber": "BAY51-QLED14x2J",
       "rowIndex": 1352,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : HRJ60/40 K, HRJ SERIES EXPLOSION-\nPROOF EMERGENCY LED LIGHT FITTINGS\n\nFOR WAROM LED EMERGENCY LIGHT",
       "partNumber": "HRJ60/40K",
       "rowIndex": 1353,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED WATER PROOF LIGHT FIXTURE 220 V 150\nWATT IP 66 ( COMANDA CAT.)",
       "partNumber": "",
       "rowIndex": 1354,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 1355,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1356,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1357,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1358,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE C",
       "partNumber": "",
       "rowIndex": 1359,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC-\n3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 1360,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC-\n3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 1361,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC-\n3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 1362,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC-\n3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 1363,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC-\n3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 1364,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC-\n3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 1365,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 1366,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1367,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1368,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1.5 VSIZE D",
       "partNumber": "",
       "rowIndex": 1369,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 1370,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1371,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1372,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1373,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE C",
       "partNumber": "",
       "rowIndex": 1374,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 1375,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 1376,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1377,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1378,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LOCAL P/N : 4PKE5 , BATTERY PACK , NIMH ,\nFOR MAG LITE",
       "partNumber": "4PKE5",
       "rowIndex": 1379,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BED LIGHT LAMPS 30.9 CM , LED TYPE (TUBE\nLINOLITE LED LAMP 6W, 230V, S19, ARIC\n2943)",
       "partNumber": "",
       "rowIndex": 1380,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 1381,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 60 CM, 9W, 855LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 1382,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : NSN # 6230 01-653-2577, MAG CHARGER\nLED RECHARGABLE SYSTEM 230V , RL1019\nLED (MAGLIGHT CAT.)",
       "partNumber": "NSN #6230 01-653-2577",
       "rowIndex": 1383,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 1384,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",

@@ -114,12 +114,16 @@ async function aiUnifyItems(items: any[]): Promise<any[]> {
       }
     }
     
-    // إنشاء صنف موحد
+    // إنشاء صنف موحد - كل صنف يأخذ معرف منفصل
     const unifiedItem = createUnifiedItem(similarItems, unifiedItems.length + 1);
     unifiedItems.push(unifiedItem);
     
     if (similarItems.length > 1) {
-      console.log(`✅ تم دمج ${similarItems.length} بند مشابه: ${currentItem.partNumber || currentItem.lineItem}`);
+      console.log(`✅ تم دمج ${similarItems.length} بند متطابق: ${currentItem.description || currentItem.partNumber || currentItem.lineItem}`);
+      console.log(`   📝 المعرف الموحد: ${unifiedItem.itemNumber}`);
+    } else {
+      console.log(`🆕 منتج فريد: ${currentItem.description || currentItem.partNumber || currentItem.lineItem}`);
+      console.log(`   📝 المعرف الجديد: ${unifiedItem.itemNumber}`);
     }
   }
   
