@@ -2,29 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { storage } from "./storage";
 
-// تهيئة خدمة التوحيد البسيط
-import("./simple-unification").then(module => {
-  const service = module.simpleUnificationService;
-  console.log('✅ تم تهيئة خدمة التوحيد البسيط');
-}).catch(err => {
-  console.error('⚠️ خطأ في تهيئة خدمة التوحيد:', err);
-});
-
-// تهيئة نظام التوحيد الذكي الجديد
-import("./ai-background-unifier").then(async module => {
-  const { AIBackgroundUnifier } = module;
-  const { GoogleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
-  
-  const dataService = new GoogleSheetsRealtimeData();
-  const aiUnifier = new AIBackgroundUnifier(dataService);
-  
-  // تصدير النظام للاستخدام العالمي
-  global.aiUnifier = aiUnifier;
-  
-  console.log('✅ تم تهيئة نظام التوحيد الذكي الجديد');
-}).catch(err => {
-  console.error('❌ خطأ في تهيئة نظام التوحيد الذكي:', err);
-});
+// نظام التوحيد جاهز للاستخدام
+console.log('🔵 اضغط على زر "بدء التوحيد الآن" في صفحة توحيد البيانات');
 
 // تهيئة البوت التليجرام فقط في التطوير
 if (process.env.NODE_ENV !== 'production') {

@@ -7306,18 +7306,30 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // بدء عملية التوحيد الذكي باستخدام النظام الدلالي
+  // بدء عملية التوحيد الجديد
   app.post("/api/ai-unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      console.log('🤖 بدء توحيد المعرفات بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
+      console.log('🚀 بدء نظام التوحيد الجديد من المستخدم:', req.session?.user?.username);
       
-      // استخدام النظام الدلالي الجديد لتوحيد المنتجات
-      // استدعاء النظام الذكي العالمي
-      if (!global.aiUnifier) {
-        throw new Error('نظام التوحيد الذكي غير مُهيأ');
-      }
+      const { spawn } = await import('child_process');
       
-      await global.aiUnifier.startBackgroundUnification();
+      // تشغيل ملف التوحيد المصحح
+      const unificationProcess = spawn('node', ['unification-system-fixed.mjs'], {
+        cwd: process.cwd(),
+        env: process.env,
+        detached: true,
+        stdio: 'inherit'
+      });
+      
+      unificationProcess.on('error', (error) => {
+        console.error('❌ خطأ في تشغيل التوحيد:', error);
+      });
+      
+      unificationProcess.on('exit', (code) => {
+        console.log(`✅ انتهت عملية التوحيد مع الكود: ${code}`);
+      });
+      
+      unificationProcess.unref();
       
       const result = {
         success: true,
@@ -8629,32 +8641,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
     return aiBackgroundUnifier;
   };
-
-  // بدء التوحيد الذكي
-  app.post("/api/ai-unification/start", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
-    try {
-      console.log('🚀 طلب بدء التوحيد الذكي');
-      
-      const unifier = await initializeAIUnifier();
-      await unifier.startBackgroundUnification();
-      
-      res.json({ 
-        success: true, 
-        message: 'تم بدء التوحيد الذكي في الخلفية' 
-      });
-      
-      // إرسال تحديث الحالة للعملاء
-      const status = unifier.getStatus();
-      broadcastToClients({ type: 'status', payload: status });
-      
-    } catch (error: any) {
-      console.error('❌ خطأ في بدء التوحيد الذكي:', error);
-      res.status(500).json({ 
-        success: false,
-        message: error.message || 'خطأ في بدء التوحيد الذكي' 
-      });
-    }
-  });
 
   // إيقاف مؤقت
   app.post("/api/ai-unification/pause", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
