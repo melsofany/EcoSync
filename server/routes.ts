@@ -7269,7 +7269,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       // استخدام النظام الدلالي الجديد لتوحيد المنتجات
       const { SemanticProductUnifier } = await import('./semantic-product-unifier.js');
-      const unifier = new SemanticProductUnifier(dataService);
+      const unifier = new SemanticProductUnifier(googleSheetsRealTimeData);
       
       // بدء التحليل الدلالي
       const result = await unifier.unifyItems();
