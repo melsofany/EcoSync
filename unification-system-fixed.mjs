@@ -1,12 +1,10 @@
 #!/usr/bin/env node
-// استخدام: node unification-system.mjs
+// استخدام: node unification-system-fixed.mjs
 
 /**
- * نظام التوحيد الذكي - الإصدار النهائي
- * يوحد البنود المتطابقة في Google Sheets بناءً على:
- * 1. الوصف (Description) - الأولوية الأولى
- * 2. رقم القطعة (PART NUMBER) - الأولوية الثانية  
- * 3. رقم البند (LINE ITEM) - الأولوية الثالثة
+ * نظام التوحيد الذكي - الإصدار المصحح
+ * يوحد البنود المتطابقة في Google Sheets بناءً على التطابق الصارم
+ * كل منتج مختلف يحصل على معرف منفصل P-XXXXXXX
  */
 
 import { google } from 'googleapis';
@@ -34,10 +32,6 @@ function normalize(text) {
     .toLowerCase()
     .replace(/\s+/g, ' ')           // توحيد المسافات
     .replace(/[^\w\s\u0600-\u06FF]/g, '') // إزالة الرموز الخاصة
-    .replace(/^\d+\s*-?\s*/, '')    // إزالة الأرقام في البداية
-    .replace(/\s*-\s*/g, ' ')        // استبدال الشرطات بمسافات
-    .replace(/(\d+)([a-z])/gi, '$1 $2') // فصل الأرقام عن الحروف
-    .replace(/([a-z])(\d+)/gi, '$1 $2')
     .trim();
 }
 
@@ -59,7 +53,7 @@ function saveStatus(currentIndex, totalItems, isRunning = true) {
 
 // ==================== البرنامج الرئيسي ====================
 async function unifyItems() {
-  console.log('🚀 بدء التوحيد الذكي للبنود...\n');
+  console.log('🚀 بدء التوحيد الذكي المصحح للبنود...\n');
   
   try {
     // قراءة البيانات من Google Sheets
@@ -78,7 +72,7 @@ async function unifyItems() {
     }
     
     // ==================== المرحلة 1: تحليل البنود ====================
-    console.log('🔍 تحليل البنود وإنشاء المجموعات...');
+    console.log('🔍 تحليل البنود وإنشاء المجموعات الفريدة...');
     
     const groups = new Map(); // خريطة المجموعات
     const itemGroups = [];    // مصفوفة لتتبع كل صف ومجموعته
@@ -100,15 +94,16 @@ async function unifyItems() {
         continue;
       }
       
-      // البحث عن مجموعة موجودة
+      // البحث عن مجموعة موجودة - مطابقة صارمة جداً
       let groupId = null;
       let matchReason = '';
       
-      // مطابقة صارمة: فقط الوصف + رقم القطعة المتطابقان تماماً
-      if (description && partNumber) {
+      // يجب أن تتطابق جميع الحقول للتوحيد (وصف + رقم قطعة + رقم بند)
+      if (description && partNumber && lineItem) {
         for (const [key, group] of groups.entries()) {
-          // يجب أن يتطابق كل من الوصف ورقم القطعة للتوحيد
-          if (group.descriptions.has(description) && group.partNumbers.has(partNumber)) {
+          if (group.descriptions.has(description) && 
+              group.partNumbers.has(partNumber) && 
+              group.lineItems.has(lineItem)) {
             groupId = key;
             matchReason = `تطابق كامل: ${description.substring(0, 30)}...`;
             break;
@@ -116,18 +111,7 @@ async function unifyItems() {
         }
       }
       
-      // إنشاء مجموعة جديدة لكل منتج فريد (لا يوجد تطابق كامل)
-      if (!groupId) {
-        for (const [key, group] of groups.entries()) {
-          if (group.lineItems.has(lineItem)) {
-            groupId = key;
-            matchReason = `رقم البند: ${lineItem}`;
-            break;
-          }
-        }
-      }
-      
-      // إنشاء مجموعة جديدة إذا لم نجد مطابقة
+      // إنشاء مجموعة جديدة لكل منتج فريد
       if (!groupId) {
         groupId = `P-${groupCounter.toString().padStart(7, '0')}`;
         groups.set(groupId, {
@@ -137,6 +121,7 @@ async function unifyItems() {
           rows: []
         });
         groupCounter++;
+        matchReason = 'منتج فريد';
       }
       
       // إضافة البيانات للمجموعة
@@ -153,39 +138,48 @@ async function unifyItems() {
         matchReason
       });
       
+      // عرض التفاصيل
+      if (group.rows.length === 1) {
+        console.log(`🆕 منتج فريد: ${description || partNumber || lineItem}`);
+        console.log(`   📝 المعرف الجديد: ${groupId}`);
+      } else {
+        console.log(`✅ تم دمج بند متطابق: ${description || partNumber || lineItem}`);
+        console.log(`   📝 المعرف الموحد: ${groupId}`);
+      }
+      
       // عرض التقدم وحفظ الحالة
-      if ((i % 10) === 0) {
-        console.log(`⏳ معالجة: ${i}/${rows.length} (${Math.round(i * 100 / rows.length)}%)`);
-        saveStatus(i, rows.length - 1, true); // حفظ الحالة كل 10 بنود
+      if ((i % 50) === 0) {
+        console.log(`⏳ معالجة: ${i}/${rows.length-1} (${Math.round(i * 100 / (rows.length-1))}%)`);
+        saveStatus(i, rows.length - 1, true);
       }
     }
     
-    console.log(`\n✅ تم إنشاء ${groups.size} مجموعة فريدة\n`);
+    console.log(`\n✅ تم إنشاء ${groups.size} معرف فريد\n`);
     
     // ==================== المرحلة 2: إحصائيات ====================
     console.log('📊 حساب الإحصائيات...');
     
     let totalUnified = 0;
     let duplicateGroups = 0;
+    let uniqueProducts = 0;
     
     for (const [groupId, group] of groups.entries()) {
       if (group.rows.length > 1) {
         duplicateGroups++;
         totalUnified += group.rows.length;
-        
-        // عرض أمثلة على المجموعات الكبيرة
-        if (group.rows.length >= 10) {
-          console.log(`   🔗 ${groupId}: ${group.rows.length} بند`);
-        }
+        console.log(`   🔗 ${groupId}: ${group.rows.length} بند متطابق`);
+      } else {
+        uniqueProducts++;
       }
     }
     
     console.log(`\n📈 النتائج:`);
     console.log(`   • إجمالي البنود: ${rows.length - 1}`);
-    console.log(`   • المجموعات الفريدة: ${groups.size}`);
-    console.log(`   • المجموعات المكررة: ${duplicateGroups}`);
+    console.log(`   • المنتجات الفريدة: ${uniqueProducts}`);
+    console.log(`   • المنتجات المكررة: ${duplicateGroups}`);
     console.log(`   • البنود الموحدة: ${totalUnified}`);
-    console.log(`   • معدل التوحيد: ${Math.round(totalUnified * 100 / (rows.length - 1))}%\n`);
+    console.log(`   • إجمالي المعرفات: ${groups.size}`);
+    console.log(`   • معدل التوفير: ${Math.round((rows.length - 1 - groups.size) * 100 / (rows.length - 1))}%\n`);
     
     // ==================== المرحلة 3: تحديث Google Sheets ====================
     console.log('💾 تحديث Google Sheets...');
@@ -219,35 +213,10 @@ async function unifyItems() {
       console.log(`   ✅ تم تحديث ${updatedCount}/${updates.length} صف`);
     }
     
-    console.log('\n🎉 اكتمل التوحيد بنجاح!');
+    console.log('\n🎉 اكتمل التوحيد المصحح بنجاح!');
     
     // حفظ الحالة النهائية
     saveStatus(rows.length - 1, rows.length - 1, false);
-    
-    // ==================== المرحلة 4: عرض أمثلة ====================
-    console.log('\n🔍 أمثلة على التوحيد:');
-    
-    let exampleCount = 0;
-    for (const [groupId, group] of groups.entries()) {
-      if (group.rows.length >= 5 && exampleCount < 5) {
-        console.log(`\n   📦 المجموعة ${groupId}:`);
-        console.log(`      • عدد البنود: ${group.rows.length}`);
-        
-        // عرض عينة من الأوصاف
-        const descSample = Array.from(group.descriptions).slice(0, 2);
-        if (descSample.length > 0) {
-          console.log(`      • أمثلة أوصاف: ${descSample.join(' | ')}`);
-        }
-        
-        // عرض عينة من أرقام القطع
-        const partSample = Array.from(group.partNumbers).slice(0, 3);
-        if (partSample.length > 0) {
-          console.log(`      • أرقام القطع: ${partSample.join(', ')}`);
-        }
-        
-        exampleCount++;
-      }
-    }
     
   } catch (error) {
     console.error('❌ خطأ:', error.message);
@@ -259,7 +228,7 @@ async function unifyItems() {
 
 // تشغيل البرنامج
 console.log('=====================================');
-console.log('    نظام التوحيد الذكي للبنود');
+console.log('   نظام التوحيد الذكي المصحح');
 console.log('=====================================\n');
 
 unifyItems();

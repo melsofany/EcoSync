@@ -2563,8 +2563,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // استخدام child_process لتشغيل نظام التوحيد الجديد
       const { spawn } = await import('child_process');
       
-      // تشغيل ملف التوحيد الجديد
-      const unificationProcess = spawn('node', ['unification-system.mjs'], {
+      // تشغيل ملف التوحيد المصحح
+      const unificationProcess = spawn('node', ['unification-system-fixed.mjs'], {
         cwd: process.cwd(),
         env: process.env,
         detached: true,
