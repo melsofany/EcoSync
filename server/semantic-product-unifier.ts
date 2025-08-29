@@ -86,6 +86,12 @@ export class SemanticProductUnifier {
         extractedSpecs: {}
       }));
 
+      console.log(`🔍 عينة من البيانات للتحليل:`);
+      for (let i = 0; i < Math.min(5, productItems.length); i++) {
+        const item = productItems[i];
+        console.log(`  ${i + 1}. ${item.itemNumber}: ${item.description.substring(0, 60)}...`);
+      }
+
       // تجميع البنود المتشابهة
       const groups = this.findSemanticGroups(productItems);
       console.log(`✅ تم العثور على ${groups.length} مجموعة متطابقة`);
@@ -133,9 +139,13 @@ export class SemanticProductUnifier {
 
         const similarity = this.calculateSemanticSimilarity(item1, item2);
         
-        if (similarity.score >= 0.8) {
+        // تقليل عتبة التطابق لإيجاد مجموعات أكثر
+        if (similarity.score >= 0.6) {
+          console.log(`🔍 تطابق محتمل: ${item1.itemNumber} مع ${item2.itemNumber} - درجة: ${similarity.score.toFixed(2)} - السبب: ${similarity.reason}`);
           groupItems.push(item2);
           processedItems.add(item2.itemNumber);
+        } else if (similarity.score >= 0.4) {
+          console.log(`⚠️ تطابق ضعيف: ${item1.itemNumber} مع ${item2.itemNumber} - درجة: ${similarity.score.toFixed(2)} - السبب: ${similarity.reason}`);
         }
       }
 
@@ -204,24 +214,24 @@ export class SemanticProductUnifier {
     let score = 0;
     let matchReasons: string[] = [];
     
-    // مطابقة رقم القطعة (وزن 50%)
+    // مطابقة رقم القطعة (وزن 40%)
     if (sem1.partNumber && sem2.partNumber && this.normalizePartNumber(sem1.partNumber) === this.normalizePartNumber(sem2.partNumber)) {
-      score += 0.5;
+      score += 0.4;
       matchReasons.push('رقم قطعة متطابق');
     }
     
-    // مطابقة العلامة التجارية + الموديل (وزن 30%)
+    // مطابقة العلامة التجارية + الموديل (وزن 35%)
     if (sem1.brand && sem2.brand && this.normalizeBrand(sem1.brand) === this.normalizeBrand(sem2.brand)) {
       if (sem1.model && sem2.model && this.normalizeModel(sem1.model) === this.normalizeModel(sem2.model)) {
-        score += 0.3;
+        score += 0.35;
         matchReasons.push(`${sem1.brand} ${sem1.model}`);
       } else if (!sem1.model || !sem2.model) {
-        score += 0.15; // مطابقة علامة فقط
+        score += 0.2; // مطابقة علامة فقط
         matchReasons.push(`علامة ${sem1.brand}`);
       }
     }
     
-    // مطابقة الفئة + المواصفات (وزن 20%)
+    // مطابقة الفئة + المواصفات (وزن 25%)
     if (sem1.category && sem2.category && sem1.category === sem2.category) {
       let specMatches = 0;
       if (sem1.voltage && sem2.voltage && sem1.voltage === sem2.voltage) specMatches++;
@@ -230,16 +240,38 @@ export class SemanticProductUnifier {
       if (sem1.frequency && sem2.frequency && sem1.frequency === sem2.frequency) specMatches++;
       
       if (specMatches >= 2) {
-        score += 0.2;
+        score += 0.25;
         matchReasons.push(`${sem1.category} بمواصفات متطابقة`);
       } else if (specMatches >= 1) {
-        score += 0.1;
+        score += 0.15;
         matchReasons.push(`${sem1.category} بمواصفات جزئية`);
+      } else {
+        score += 0.05; // مطابقة فئة فقط
+        matchReasons.push(`نفس الفئة: ${sem1.category}`);
+      }
+    }
+    
+    // تحسين: مطابقة الكلمات المفتاحية المشتركة
+    if (sem1.keywords.length > 0 && sem2.keywords.length > 0) {
+      const commonKeywords = sem1.keywords.filter(k1 => 
+        sem2.keywords.some(k2 => this.normalizeKeyword(k1) === this.normalizeKeyword(k2))
+      );
+      
+      if (commonKeywords.length >= 3) {
+        score += 0.15;
+        matchReasons.push(`كلمات مشتركة: ${commonKeywords.slice(0, 2).join(', ')}`);
+      } else if (commonKeywords.length >= 2) {
+        score += 0.1;
+        matchReasons.push(`كلمات مشتركة: ${commonKeywords.join(', ')}`);
       }
     }
     
     const reason = matchReasons.length > 0 ? matchReasons.join(' + ') : 'لا توجد تطابقات دلالية';
     return { score, reason };
+  }
+  
+  private normalizeKeyword(keyword: string): string {
+    return keyword.replace(/[^\w]/g, '').toUpperCase();
   }
   
   // دوال استخراج المعلومات 
