@@ -7326,14 +7326,16 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إيقاف التوحيد نهائياً
   app.post("/api/ai-unification/stop", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      const { backgroundUnification } = await import('./background-unification.js');
-      backgroundUnification.stopAutoUnification();
+      console.log(`🛑 طلب إيقاف التوحيد من المستخدم: ${req.session?.user?.username}`);
+      
+      const { semanticProductUnifier } = await import('./semantic-product-unifier.js');
+      semanticProductUnifier.stopOperation();
       
       await logActivity(req, "stop_ai_unification", "ai_unification", "deepseek", "إيقاف التوحيد الذكي نهائياً");
       
       res.json({
         success: true,
-        message: "تم إيقاف التوحيد الذكي نهائياً"
+        message: "تم طلب إيقاف التوحيد الذكي"
       });
 
     } catch (error) {

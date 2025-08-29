@@ -84,8 +84,8 @@ export class GoogleSheetsRealtimeData {
           updatedCount++;
           console.log(`   ✅ تم تحديث الصف ${i + 1}: ${cellAddress} → ${newItemId}`);
           
-          // انتظار قصير لتجنب تحميل الخادم
-          await new Promise(resolve => setTimeout(resolve, 50));
+          // انتظار أطول لتجنب Google Sheets quota limits
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
 
@@ -98,7 +98,9 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
-  async updateCellValue(cellAddress: string, value: string): Promise<void> {
+  async updateCellValue(cellAddress: string, value: string, retryCount = 0): Promise<void> {
+    const maxRetries = 3;
+    
     try {
       if (!this.sheets) {
         throw new Error('Google Sheets not initialized');
@@ -114,7 +116,15 @@ export class GoogleSheetsRealtimeData {
       });
 
       console.log(`✅ تم تحديث الخلية ${cellAddress} بالقيمة: ${value}`);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 429 && retryCount < maxRetries) {
+        // خطأ Quota exceeded - انتظار وإعادة المحاولة
+        const waitTime = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s
+        console.log(`⏰ Quota exceeded - انتظار ${waitTime/1000}s ثم إعادة المحاولة (${retryCount + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return await this.updateCellValue(cellAddress, value, retryCount + 1);
+      }
+      
       console.error(`❌ خطأ في تحديث الخلية ${cellAddress}:`, error);
       throw error;
     }

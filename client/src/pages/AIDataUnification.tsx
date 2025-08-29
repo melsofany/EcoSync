@@ -16,7 +16,8 @@ import {
   Activity,
   TrendingUp,
   Database,
-  Layers
+  Layers,
+  StopCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -106,6 +107,49 @@ export default function AIDataUnification() {
     }
   });
 
+  // إيقاف عملية التوحيد الدلالي
+  const stopSemanticUnification = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/ai-unification/stop", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `خطأ في الخادم: ${response.status}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "🛑 تم طلب إيقاف العملية",
+          description: data.message || "سيتم إيقاف التحليل الدلالي خلال ثوانٍ قليلة",
+          className: "bg-red-500 text-white"
+        });
+      } else {
+        toast({
+          title: "تحذير", 
+          description: data.message || "حدث خطأ في إيقاف العملية",
+          variant: "destructive"
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "خطأ في إيقاف العملية",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   const progressPercentage = status?.progress || 0;
 
   return (
@@ -136,7 +180,7 @@ export default function AIDataUnification() {
             </div>
             
             <div className="flex items-center gap-2">
-              {!status?.isRunning && (
+              {!status?.isRunning ? (
                 <Button 
                   onClick={() => startSemanticUnification.mutate()}
                   disabled={startSemanticUnification.isPending}
@@ -144,6 +188,16 @@ export default function AIDataUnification() {
                 >
                   <Brain className="ml-2 h-4 w-4" />
                   بدء التوحيد الدلالي
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => stopSemanticUnification.mutate()}
+                  disabled={stopSemanticUnification.isPending}
+                  variant="destructive"
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  <StopCircle className="ml-2 h-4 w-4" />
+                  إيقاف العملية
                 </Button>
               )}
             </div>
