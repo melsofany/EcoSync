@@ -2,115 +2,115 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 670,
+    "currentIndex": 835,
     "totalItems": 5604,
-    "processedItems": 669,
+    "processedItems": 834,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
-    "lastSaveTime": "2025-08-29T17:12:07.948Z",
+    "lastSaveTime": "2025-08-29T17:16:55.000Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٥:١٤:٥٧ م] 📊 التقدم: 636/5604 (11%)",
-      "[٥:١٤:٥٧ م] 🔍 معالجة البند 638/5604: 50 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN ...",
-      "[٥:١٤:٥٧ م] ✅ تم معالجة البند 638: P-0000135",
-      "[٥:١٤:٥٧ م] 📊 التقدم: 637/5604 (11%)",
-      "[٥:١٤:٥٩ م] 🔍 معالجة البند 639/5604: 10 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN C...",
-      "[٥:١٤:٥٩ م] ✅ تم معالجة البند 639: P-0000135",
-      "[٥:١٤:٥٩ م] 📊 التقدم: 638/5604 (11%)",
-      "[٥:١٤:٥٩ م] 🔍 معالجة البند 640/5604: 6 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CH...",
-      "[٥:١٤:٥٩ م] ✅ تم معالجة البند 640: P-0000135",
-      "[٥:١٤:٥٩ م] 📊 التقدم: 639/5604 (11%)",
-      "[٥:١٥:٠١ م] 🔍 معالجة البند 641/5604: 70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER...",
-      "[٥:١٥:٠١ م] ✅ تم معالجة البند 641: P-0000135",
-      "[٥:١٥:٠١ م] 📊 التقدم: 640/5604 (11%)",
-      "[٥:١٥:٠١ م] 🔍 معالجة البند 642/5604: 25 MM2CABLE LUGS WITH 8 MM HOLE\nDIAMETER MADE IN C...",
-      "[٥:١٥:٠١ م] ✅ تم معالجة البند 642: P-0000135",
-      "[٥:١٥:٠١ م] 📊 التقدم: 641/5604 (11%)",
-      "[٥:١٥:٠٣ م] 🔍 معالجة البند 643/5604: 1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELS...",
-      "[٥:١٥:٠٣ م] ✅ تم معالجة البند 643: P-0000135",
-      "[٥:١٥:٠٣ م] 📊 التقدم: 642/5604 (11%)",
-      "[٥:١٥:٠٣ م] 🔍 معالجة البند 644/5604: TY RAP CABLE TIE TY-527M, CV-360, KSS ,\nBLACK , (6...",
-      "[٥:١٥:٠٣ م] ✅ تم معالجة البند 644: P-0000135",
-      "[٥:١٥:٠٣ م] 📊 التقدم: 643/5604 (11%)",
-      "[٥:١٥:٠٥ م] 🔍 معالجة البند 645/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
-      "[٥:١٥:٠٥ م] ✅ تم معالجة البند 645: P-0000135",
-      "[٥:١٥:٠٥ م] 📊 التقدم: 644/5604 (11%)",
-      "[٥:١٥:٠٥ م] 🔍 معالجة البند 646/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
-      "[٥:١٥:٠٥ م] ✅ تم معالجة البند 646: P-0000135",
-      "[٥:١٥:٠٥ م] 📊 التقدم: 645/5604 (12%)",
-      "[٥:١٥:٠٧ م] 🔍 معالجة البند 647/5604: COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 IN...",
-      "[٥:١٥:٠٧ م] ✅ تم معالجة البند 647: P-0000135",
-      "[٥:١٥:٠٧ م] 📊 التقدم: 646/5604 (12%)",
-      "[٥:١٥:٠٧ م] 🔍 معالجة البند 648/5604: 1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELS...",
-      "[٥:١٥:٠٧ م] ✅ تم معالجة البند 648: P-0000135",
-      "[٥:١٥:٠٧ م] 📊 التقدم: 647/5604 (12%)",
-      "[٥:١٥:٠٩ م] 🔍 معالجة البند 649/5604: P/N : A5G03015, 3 X 1.5 MM2 FLEXIBLE\nPOWER CABLE, ...",
-      "[٥:١٥:٠٩ م] ✅ تم معالجة البند 649: P-0000135",
-      "[٥:١٥:٠٩ م] 📊 التقدم: 648/5604 (12%)",
-      "[٥:١٥:٠٩ م] 🔍 معالجة البند 650/5604: INDUSTRIAL FREE PLASTIC PLUG 16 AMP + 3\nPOLE (1PH+...",
-      "[٥:١٥:٠٩ م] ✅ تم معالجة البند 650: P-0000135",
-      "[٥:١٥:٠٩ م] 📊 التقدم: 649/5604 (12%)",
-      "[٥:١٥:١١ م] 🔍 معالجة البند 651/5604: BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE ...",
-      "[٥:١٥:١١ م] ✅ تم معالجة البند 651: P-0000135",
-      "[٥:١٥:١١ م] 📊 التقدم: 650/5604 (12%)",
-      "[٥:١٥:١١ م] 🔍 معالجة البند 652/5604: 70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER...",
-      "[٥:١٥:١١ م] ✅ تم معالجة البند 652: P-0000135",
-      "[٥:١٥:١١ م] 📊 التقدم: 651/5604 (12%)",
-      "[٥:١٥:١٣ م] 🔍 معالجة البند 653/5604: RECEPTACLE 3P+N+E 125A & 346-415 V 50/60\nHZ FOR SC...",
-      "[٥:١٥:١٣ م] ✅ تم معالجة البند 653: P-0000135",
-      "[٥:١٥:١٣ م] 📊 التقدم: 652/5604 (12%)",
-      "[٥:١٥:١٣ م] 🔍 معالجة البند 654/5604: BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE ...",
-      "[٥:١٥:١٣ م] ✅ تم معالجة البند 654: P-0000135",
-      "[٥:١٥:١٣ م] 📊 التقدم: 653/5604 (12%)",
-      "[٥:١٥:١٥ م] 🔍 معالجة البند 655/5604: 1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELS...",
-      "[٥:١٥:١٥ م] ✅ تم معالجة البند 655: P-0000135",
-      "[٥:١٥:١٥ م] 📊 التقدم: 654/5604 (12%)",
-      "[٥:١٥:١٥ م] 🔍 معالجة البند 656/5604: TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4....",
-      "[٥:١٥:١٥ م] ✅ تم معالجة البند 656: P-0000135",
-      "[٥:١٥:١٥ م] 📊 التقدم: 655/5604 (12%)",
-      "[٥:١٥:١٧ م] 🔍 معالجة البند 657/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
-      "[٥:١٥:١٧ م] ✅ تم معالجة البند 657: P-0000135",
-      "[٥:١٥:١٧ م] 📊 التقدم: 656/5604 (12%)",
-      "[٥:١٥:١٧ م] 🔍 معالجة البند 658/5604: MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH IND...",
-      "[٥:١٥:١٧ م] ✅ تم معالجة البند 658: P-0000135",
-      "[٥:١٥:١٧ م] 📊 التقدم: 657/5604 (12%)",
-      "[٥:١٥:١٩ م] 🔍 معالجة البند 659/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
-      "[٥:١٥:١٩ م] ✅ تم معالجة البند 659: P-0000135",
-      "[٥:١٥:١٩ م] 📊 التقدم: 658/5604 (12%)",
-      "[٥:١٥:١٩ م] 🔍 معالجة البند 660/5604: TY RAP CABLE TIE TY-527M, CV-360, KSS ,\nBLACK , (6...",
-      "[٥:١٥:١٩ م] ✅ تم معالجة البند 660: P-0000135",
-      "[٥:١٥:١٩ م] 📊 التقدم: 659/5604 (12%)",
-      "[٥:١٥:٢١ م] 🔍 معالجة البند 661/5604: TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3...",
-      "[٥:١٥:٢١ م] ✅ تم معالجة البند 661: P-0000069",
-      "[٥:١٥:٢١ م] 📊 التقدم: 660/5604 (12%)",
-      "[٥:١٥:٢١ م] 🔍 معالجة البند 662/5604: COTTER PIN 3\" LENGNTH 1/8\" DIA\nSTAINLESS STEEL Mad...",
-      "[٥:١٥:٢١ م] ✅ تم معالجة البند 662: P-0000135",
-      "[٥:١٥:٢١ م] 📊 التقدم: 661/5604 (12%)",
-      "[٥:١٥:٢٣ م] 🔍 معالجة البند 663/5604: MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH IND...",
-      "[٥:١٥:٢٣ م] ✅ تم معالجة البند 663: P-0000135",
-      "[٥:١٥:٢٣ م] 📊 التقدم: 662/5604 (12%)",
-      "[٥:١٥:٢٣ م] 🔍 معالجة البند 664/5604: TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7...",
-      "[٥:١٥:٢٣ م] ✅ تم معالجة البند 664: P-0000135",
-      "[٥:١٥:٢٣ م] 📊 التقدم: 663/5604 (12%)",
-      "[٥:١٥:٢٥ م] 🔍 معالجة البند 665/5604: TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3...",
-      "[٥:١٥:٢٥ م] ✅ تم معالجة البند 665: P-0000069",
-      "[٥:١٥:٢٥ م] 📊 التقدم: 664/5604 (12%)",
-      "[٥:١٥:٢٥ م] 🔍 معالجة البند 666/5604: CAT No.#TY5253MX, TY-RAP BLACK NYLON\n6/6 WEATHER R...",
-      "[٥:١٥:٢٥ م] ✅ تم معالجة البند 666: P-0000135",
-      "[٥:١٥:٢٥ م] 📊 التقدم: 665/5604 (12%)",
-      "[٥:١٥:٢٧ م] 🔍 معالجة البند 667/5604: CAT No.#TY5275MX, TY-RAP BLACK NYLON\n6/6 WEATHER R...",
-      "[٥:١٥:٢٧ م] ✅ تم معالجة البند 667: P-0000135",
-      "[٥:١٥:٢٧ م] 📊 التقدم: 666/5604 (12%)",
-      "[٥:١٥:٢٧ م] 🔍 معالجة البند 668/5604: PN: TY524MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESIST...",
-      "[٥:١٥:٢٧ م] ✅ تم معالجة البند 668: P-0000135",
-      "[٥:١٥:٢٧ م] 📊 التقدم: 667/5604 (12%)",
-      "[٥:١٥:٢٩ م] 🔍 معالجة البند 669/5604: PN: TY5253MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESIS...",
-      "[٥:١٥:٢٩ م] ✅ تم معالجة البند 669: P-0000135",
-      "[٥:١٥:٢٩ م] 📊 التقدم: 668/5604 (12%)",
-      "[٥:١٥:٢٩ م] 🔍 معالجة البند 670/5604: (PCE = PK)TY-RAP 38 CM, KSS, CV-370B, 370\nX 7.6 MM...",
-      "[٥:١٥:٢٩ م] ✅ تم معالجة البند 670: P-0000135",
-      "[٥:١٥:٢٩ م] 📊 التقدم: 669/5604 (12%)"
+      "[٥:١٧:٠٨ م] 📊 التقدم: 801/5604 (14%)",
+      "[٥:١٧:٠٩ م] 🔍 معالجة البند 803/5604: PIN,COTTER 1/8\" ( 3.5CM )...",
+      "[٥:١٧:٠٩ م] ✅ تم معالجة البند 803: P-0000135",
+      "[٥:١٧:٠٩ م] 📊 التقدم: 802/5604 (14%)",
+      "[٥:١٧:٠٩ م] 🔍 معالجة البند 804/5604: 3/32\" COTTER PIN ( 2.5CM )...",
+      "[٥:١٧:٠٩ م] ✅ تم معالجة البند 804: P-0000135",
+      "[٥:١٧:٠٩ م] 📊 التقدم: 803/5604 (14%)",
+      "[٥:١٧:١٠ م] 🔍 معالجة البند 805/5604: 3/16\"X2\"SPLIT COTTER PIN...",
+      "[٥:١٧:١٠ م] ✅ تم معالجة البند 805: P-0000135",
+      "[٥:١٧:١٠ م] 📊 التقدم: 804/5604 (14%)",
+      "[٥:١٧:١١ م] 🔍 معالجة البند 806/5604: 1/8 X 3 COTTER PINS...",
+      "[٥:١٧:١١ م] ✅ تم معالجة البند 806: P-0000135",
+      "[٥:١٧:١١ م] 📊 التقدم: 805/5604 (14%)",
+      "[٥:١٧:١١ م] 🔍 معالجة البند 807/5604: PIN,COTTER 1/8\" ( 15CM )...",
+      "[٥:١٧:١١ م] ✅ تم معالجة البند 807: P-0000135",
+      "[٥:١٧:١١ م] 📊 التقدم: 806/5604 (14%)",
+      "[٥:١٧:١٢ م] 🔍 معالجة البند 808/5604: COTTER PIN 1/4\" X 17 CM...",
+      "[٥:١٧:١٢ م] ✅ تم معالجة البند 808: P-0000135",
+      "[٥:١٧:١٢ م] 📊 التقدم: 807/5604 (14%)",
+      "[٥:١٧:١٣ م] 🔍 معالجة البند 809/5604: PIN,COTTER 1/8\" ( 3.5CM )...",
+      "[٥:١٧:١٣ م] ✅ تم معالجة البند 809: P-0000135",
+      "[٥:١٧:١٣ م] 📊 التقدم: 808/5604 (14%)",
+      "[٥:١٧:١٣ م] 🔍 معالجة البند 810/5604: PIN, COTTER 1/4\" ( 6CM )...",
+      "[٥:١٧:١٣ م] ✅ تم معالجة البند 810: P-0000135",
+      "[٥:١٧:١٣ م] 📊 التقدم: 809/5604 (14%)",
+      "[٥:١٧:١٤ م] 🔍 معالجة البند 811/5604: 3/8\" COTTER PINS ( 8CM )...",
+      "[٥:١٧:١٤ م] ✅ تم معالجة البند 811: P-0000135",
+      "[٥:١٧:١٤ م] 📊 التقدم: 810/5604 (14%)",
+      "[٥:١٧:١٥ م] 🔍 معالجة البند 812/5604: 3/32\" COTTER PIN ( 2.5CM )...",
+      "[٥:١٧:١٥ م] ✅ تم معالجة البند 812: P-0000135",
+      "[٥:١٧:١٥ م] 📊 التقدم: 811/5604 (14%)",
+      "[٥:١٧:١٥ م] 🔍 معالجة البند 813/5604: 3/16\"X2\"SPLIT COTTER PIN...",
+      "[٥:١٧:١٥ م] ✅ تم معالجة البند 813: P-0000135",
+      "[٥:١٧:١٥ م] 📊 التقدم: 812/5604 (14%)",
+      "[٥:١٧:١٦ م] 🔍 معالجة البند 814/5604: PIN,COTTER 1/8\" ( 15CM )...",
+      "[٥:١٧:١٦ م] ✅ تم معالجة البند 814: P-0000135",
+      "[٥:١٧:١٦ م] 📊 التقدم: 813/5604 (15%)",
+      "[٥:١٧:١٧ م] 🔍 معالجة البند 815/5604: COTTER PIN 1/4\" X 17 CM...",
+      "[٥:١٧:١٧ م] ✅ تم معالجة البند 815: P-0000135",
+      "[٥:١٧:١٧ م] 📊 التقدم: 814/5604 (15%)",
+      "[٥:١٧:١٧ م] 🔍 معالجة البند 816/5604: PIN,COTTER,1/2\" ( 10CM )...",
+      "[٥:١٧:١٧ م] ✅ تم معالجة البند 816: P-0000135",
+      "[٥:١٧:١٧ م] 📊 التقدم: 815/5604 (15%)",
+      "[٥:١٧:١٨ م] 🔍 معالجة البند 817/5604: PIN,COTTER 1/8\" ( 3.5CM )...",
+      "[٥:١٧:١٨ م] ✅ تم معالجة البند 817: P-0000135",
+      "[٥:١٧:١٨ م] 📊 التقدم: 816/5604 (15%)",
+      "[٥:١٧:١٩ م] 🔍 معالجة البند 818/5604: PIN, COTTER 1/4\" ( 6CM )...",
+      "[٥:١٧:١٩ م] ✅ تم معالجة البند 818: P-0000135",
+      "[٥:١٧:١٩ م] 📊 التقدم: 817/5604 (15%)",
+      "[٥:١٧:١٩ م] 🔍 معالجة البند 819/5604: 3/8\" COTTER PINS ( 8CM )...",
+      "[٥:١٧:١٩ م] ✅ تم معالجة البند 819: P-0000135",
+      "[٥:١٧:١٩ م] 📊 التقدم: 818/5604 (15%)",
+      "[٥:١٧:٢٠ م] 🔍 معالجة البند 820/5604: 3/32\" COTTER PIN ( 2.5CM )...",
+      "[٥:١٧:٢٠ م] ✅ تم معالجة البند 820: P-0000135",
+      "[٥:١٧:٢٠ م] 📊 التقدم: 819/5604 (15%)",
+      "[٥:١٧:٢١ م] 🔍 معالجة البند 821/5604: 3/16\"X2\"SPLIT COTTER PIN...",
+      "[٥:١٧:٢١ م] ✅ تم معالجة البند 821: P-0000135",
+      "[٥:١٧:٢١ م] 📊 التقدم: 820/5604 (15%)",
+      "[٥:١٧:٢١ م] 🔍 معالجة البند 822/5604: 1/8 X 3 COTTER PINS...",
+      "[٥:١٧:٢١ م] ✅ تم معالجة البند 822: P-0000135",
+      "[٥:١٧:٢١ م] 📊 التقدم: 821/5604 (15%)",
+      "[٥:١٧:٢٢ م] 🔍 معالجة البند 823/5604: PIN,COTTER 1/8\" ( 15CM )...",
+      "[٥:١٧:٢٢ م] ✅ تم معالجة البند 823: P-0000135",
+      "[٥:١٧:٢٢ م] 📊 التقدم: 822/5604 (15%)",
+      "[٥:١٧:٢٣ م] 🔍 معالجة البند 824/5604: COTTER PIN 1/4\" X 17 CM...",
+      "[٥:١٧:٢٣ م] ✅ تم معالجة البند 824: P-0000135",
+      "[٥:١٧:٢٣ م] 📊 التقدم: 823/5604 (15%)",
+      "[٥:١٧:٢٣ م] 🔍 معالجة البند 825/5604: PIN,COTTER,1/2\" ( 10CM )...",
+      "[٥:١٧:٢٣ م] ✅ تم معالجة البند 825: P-0000135",
+      "[٥:١٧:٢٣ م] 📊 التقدم: 824/5604 (15%)",
+      "[٥:١٧:٢٤ م] 🔍 معالجة البند 826/5604: P/N : UL1.2-12 , UL RANGE RECHARGEABLE\nBATTERY SEA...",
+      "[٥:١٧:٢٤ م] ✅ تم معالجة البند 826: P-0000135",
+      "[٥:١٧:٢٤ م] 📊 التقدم: 825/5604 (15%)",
+      "[٥:١٧:٢٥ م] 🔍 معالجة البند 827/5604: TRAVEL ADAPTER, WORLDWIDE ALL IN ONE\nUNIVERSAL TRA...",
+      "[٥:١٧:٢٥ م] ✅ تم معالجة البند 827: P-0000135",
+      "[٥:١٧:٢٥ م] 📊 التقدم: 826/5604 (15%)",
+      "[٥:١٧:٢٥ م] 🔍 معالجة البند 828/5604: P/N : 60021-301, BASIC CABLE TWO\nCONDUCTOR ONE TWE...",
+      "[٥:١٧:٢٥ م] ✅ تم معالجة البند 828: P-0000135",
+      "[٥:١٧:٢٥ م] 📊 التقدم: 827/5604 (15%)",
+      "[٥:١٧:٢٦ م] 🔍 معالجة البند 829/5604: ENERGIZER BATTERY 9V...",
+      "[٥:١٧:٢٦ م] ✅ تم معالجة البند 829: P-0000135",
+      "[٥:١٧:٢٦ م] 📊 التقدم: 828/5604 (15%)",
+      "[٥:١٧:٢٧ م] 🔍 معالجة البند 830/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
+      "[٥:١٧:٢٧ م] ✅ تم معالجة البند 830: P-0000135",
+      "[٥:١٧:٢٧ م] 📊 التقدم: 829/5604 (15%)",
+      "[٥:١٧:٢٧ م] 🔍 معالجة البند 831/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
+      "[٥:١٧:٢٧ م] ✅ تم معالجة البند 831: P-0000135",
+      "[٥:١٧:٢٧ م] 📊 التقدم: 830/5604 (15%)",
+      "[٥:١٧:٢٨ م] 🔍 معالجة البند 832/5604: DUCT TAPE...",
+      "[٥:١٧:٢٨ م] ✅ تم معالجة البند 832: P-0000135",
+      "[٥:١٧:٢٨ م] 📊 التقدم: 831/5604 (15%)",
+      "[٥:١٧:٢٩ م] 🔍 معالجة البند 833/5604: DUCT TAPE...",
+      "[٥:١٧:٢٩ م] ✅ تم معالجة البند 833: P-0000135",
+      "[٥:١٧:٢٩ م] 📊 التقدم: 832/5604 (15%)",
+      "[٥:١٧:٢٩ م] 🔍 معالجة البند 834/5604: LAMP,FLUORESCENT,ULTRAVIOLET,220V,20WATT,INSECT KI...",
+      "[٥:١٧:٢٩ م] ✅ تم معالجة البند 834: P-0000135",
+      "[٥:١٧:٢٩ م] 📊 التقدم: 833/5604 (15%)",
+      "[٥:١٧:٣٠ م] 🔍 معالجة البند 835/5604: كشاف 60 سم ( 2 لمبة ) ضد المياه السويدي...",
+      "[٥:١٧:٣٠ م] ✅ تم معالجة البند 835: P-0000135",
+      "[٥:١٧:٣٠ م] 📊 التقدم: 834/5604 (15%)"
     ]
   },
   "items": [
@@ -4809,1155 +4809,1155 @@
       "description": "(PCE = PK)TY-RAP 18 CM, KSS, CV-200AB, 180\nX 3.6 MM, BLACK, MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 672,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 673,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 300A517 , CONTROL TRANSFORMER\n600V/120VAC , 50VA/250VA (T130) FOR DW\nSHUNT FIED CONTRO , SCR JOB #6085 FOR\nGRAHAM SCR (DW CONTROL)",
       "partNumber": "300A517",
       "rowIndex": 674,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Power cable 4 Cond. , 10 AWG [6 mm?]. 460 Volt\n( EA = 1 FT )",
       "partNumber": "",
       "rowIndex": 675,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Power cable 4 Cond. , 12 AWG . 460 Volt",
       "partNumber": "",
       "rowIndex": 676,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : MAR207L24U , MAR2 SERIES LED FLOOD\nLIGHT FOR THE MAST RIGA LITE (RIG ALIGHT)",
       "partNumber": "MAR207L2\n4U",
       "rowIndex": 677,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 3C14 , EXANE 125 (TMC # P-3C14 ) OIL\nAND MUD RESISTANT CABLE 3\nCONDUCTORS X 14 AWG (1 EACH = 1 FEET)",
       "partNumber": "3C14",
       "rowIndex": 678,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 679,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 3C12, EXANE 125 OIL AND MUD\nRESISTANT CABLE 3 CONDUCTORS X 12\nAWG ( EACH EQUAL METER )",
       "partNumber": "3C12",
       "rowIndex": 680,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Ground Cable , 2/0 AWG , flexible Rubber 70mm\nMade in Italy, EACH = 1 METER",
       "partNumber": "",
       "rowIndex": 681,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Power cable 5 Conductor 10 AWG [6 mm?] , 5\nConductor , 460 Volt ( EA = 1 FT )",
       "partNumber": "",
       "rowIndex": 682,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CABLE, 4 CONDUCTOR POWER CABLE, 25\nmm2, RUBBER, MADE EL-SEWEDY OR ITALY",
       "partNumber": "",
       "rowIndex": 683,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CABLE WITH FLEXIBLE COPPER\nCONDUCTORS, SIZE 3C X 4MM2, 300/500V\nPVC INSULATED. (EL SEWEDY) (1 EACH = 1\nMETER",
       "partNumber": "",
       "rowIndex": 684,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7.7MM W X 762MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 685,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000069",
       "description": "TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3MM W X 92MM) PK=100 PCE MADE\nIN TAIWAN",
       "partNumber": "",
       "rowIndex": 686,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: TY524MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESISTANT 0.140\" W X 8.19\" L",
       "partNumber": "TY524MX",
       "rowIndex": 687,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: TY5253MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESISTANT 0.185\" W X 11.6\" L",
       "partNumber": "TY5253MX",
       "rowIndex": 688,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: TY525MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESISTANT 0.185\" W X 7.31\" L",
       "partNumber": "TY525MX",
       "rowIndex": 689,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH INDICATOR LIGHT AND FUSED",
       "partNumber": "",
       "rowIndex": 690,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 691,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 692,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "25 MM2CABLE LUGS WITH 8 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 693,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "10 MM2CABLE LUGS WITH 6 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 694,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 695,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 12 MM HOLE\nDIAMETER",
       "partNumber": "",
       "rowIndex": 696,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 10 SQUERE MM\nYELLOW/GREEN SOFT STRANDED CABLE ( 1\nEA = 1 METER )",
       "partNumber": "",
       "rowIndex": 697,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 16 SQUERE MM\nYELLOW/GREEN SOFT STRANDED CABLE EA\n= METER )",
       "partNumber": "",
       "rowIndex": 698,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 699,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE ,TY-525M, CV-190, KSS,\nWHITE (4.7MM W X 186MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 700,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY RAP CABLE TIE TY-527M, CV-360, KSS ,\nBLACK , (6.9MM W X 343MM) (PCE=PACK OF\n100) MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 701,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS,\nBLACK (7.7MM W X 762MM) PK=100 PCE\nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 702,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000069",
       "description": "TY-RAP CABLE TIE, TY-523M, CV-094, KSS,\nWHITE (2.3MM W X 92MM) PK=100 PCE MADE\nIN TAIWAN",
       "partNumber": "",
       "rowIndex": 703,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: TY524MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESISTANT 0.140\" W X 8.19\" L",
       "partNumber": "TY524MX",
       "rowIndex": 704,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: TY5253MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESISTANT 0.185\" W X 11.6\" L",
       "partNumber": "TY5253MX",
       "rowIndex": 705,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: TY525MX ,TY-RAP BLACK NYLON 6/6\nWEATHER RESISTANT 0.185\" W X 7.31\" L",
       "partNumber": "TY525MX",
       "rowIndex": 706,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH INDICATOR LIGHT AND FUSED",
       "partNumber": "",
       "rowIndex": 707,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RING TERMINAL SIZE 6MM (NOT INSULATED)\n(ACCESSORY)",
       "partNumber": "",
       "rowIndex": 708,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CONNECTION CERAMIC THERMAL SIZE 6 MM\n4 EYS , REF. PN/ 1104181 (ACCESSORY)",
       "partNumber": "1104181",
       "rowIndex": 709,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RING TERMINAL SIZE 8MM(NOT INSULATED)\n(ACCESSORY)",
       "partNumber": "",
       "rowIndex": 710,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RING TERMINAL SIZE 4MM(NOT INSULATED)\n(ACCESSORY)",
       "partNumber": "",
       "rowIndex": 711,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MODULE-AC,(JOB CAL'D) (0521-2500-00)",
       "partNumber": "",
       "rowIndex": 712,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 0522-2400-21 , MODULE-DC SERIES FOR\nNATIONAL OILLWELL SCR SYSTEM",
       "partNumber": "0522-2400-21",
       "rowIndex": 713,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LUGS FOR GROUND CABLE 70MM",
       "partNumber": "",
       "rowIndex": 714,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LUGS FOR GROUND CABLE 70MM",
       "partNumber": "",
       "rowIndex": 715,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ELECTRICAL CABLE 50MM, 1 CORE FOR\nWELDING MACHINE (1 EACH = 1 METER)",
       "partNumber": "",
       "rowIndex": 716,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LUGS FOR CABLE SIZE 70 MM , BOLT SIZE\n1/2\"",
       "partNumber": "",
       "rowIndex": 717,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED PANEL 60*120 FOR ELSEWEDY VFD\nROOM CEILING MODEL ( 90 LM/W ) 90 W",
       "partNumber": "",
       "rowIndex": 718,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 3LE86 , AUTOMATIC PORTABLE POWER\nSOURCE, FOR BATTERY VOLTAGE 12, 24,\nHANDHELD PORTABLE, BOOSTING",
       "partNumber": "3LE86",
       "rowIndex": 719,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 720,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 60 CM, 9W, 855LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 721,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED VENUS LAMP SPRENT  WATT",
       "partNumber": "",
       "rowIndex": 722,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PLUG, 2PIN,10-16A,220V (VENUS)",
       "partNumber": "50342",
       "rowIndex": 723,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1.5VSIZE D",
       "partNumber": "",
       "rowIndex": 724,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BATTERY CHARGER { 12/24 VDC), 230V\nTELWIN MODEL: DYNAMIC START 620",
       "partNumber": "620",
       "rowIndex": 725,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : MLLG-LS-LED-FLD-200-5 ? 1759 , 200\nWATT LED FLOOD LIGHT ? 26000 LUMENS ?\nREPLACES 400 WATT METAL HALIDE",
       "partNumber": "MLLG-LSLED-FLD200-5 ?1759",
       "rowIndex": 726,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED FLOOD LIGHT FOR TOWER LIGHT 300\nWATT , 220 VOLT , 50 HERTZ, LED SMD\nFLOOD LIGHT - WHITE ( REF. P/N :\n2724446726888 ADNEXT CAT.)",
       "partNumber": "",
       "rowIndex": 727,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1.5 VSIZE D",
       "partNumber": "",
       "rowIndex": 728,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 729,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 730,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE C",
       "partNumber": "",
       "rowIndex": 731,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BREAKER, CURCUIT,SIMNES, ED63A100\n,MCP, SIZE 3, 100A , 600 VAC",
       "partNumber": "",
       "rowIndex": 732,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DUCT TAPE",
       "partNumber": "",
       "rowIndex": 733,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TAPE,2\",PVC",
       "partNumber": "",
       "rowIndex": 734,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LR44/AG13 , BATTERY FOR MEASURING\nTOOL EGA-MASTER/MULTUTOYO VERNIER\nCALIPER SIZE 6,8,12 INCH",
       "partNumber": "LR44/AG13",
       "rowIndex": 735,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LR44/AG13 , BATTERY FOR MEASURING\nTOOL EGA-MASTER/MULTUTOYO VERNIER\nCALIPER SIZE 6,8,12 INCH",
       "partNumber": "LR44/AG13",
       "rowIndex": 736,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LR44/AG13 , BATTERY FOR MEASURING\nTOOL EGA-MASTER/MULTUTOYO VERNIER\nCALIPER SIZE 6,8,12 INCH",
       "partNumber": "LR44/AG13",
       "rowIndex": 737,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 738,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 739,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 740,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE C",
       "partNumber": "",
       "rowIndex": 741,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL5-12 , SEALED LEAD ACID BATTERY\n12VDC, 4.5 AH, LENGTH 3.54\", WIDTH 2.76\",\nHEIGHT 3.98\" FOR MAIN ENGINES HOC\nCIRCUIT ( POWER SONIC CAT.) ( OLD P/N :\nPS-1242 )",
       "partNumber": "UXL5-12",
       "rowIndex": 742,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL18-12 , RECHARGEABLE BATTERY,\nLEAD ACID, 12V, 18AH, ACREW TERMINAL, M5\n( ULTRACELL CAT.)( OLD P/N : UL18-12 )",
       "partNumber": "UXL18-12",
       "rowIndex": 743,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CR306C002 , GENERAL ELECTRIC\nCONTACTOR NEMA SIZE 1 CONTACTOR\nSTARTER (3P; 27A,115-120 VOLT COIL,SIZE 1\n, NON-REVERSING; MOTOR CONTROL) ( OLD\nP/N : CR206C0 )",
       "partNumber": "CR306C002",
       "rowIndex": 744,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "STARTER , GE # CR306D002 , SIZE 2 -120V",
       "partNumber": "",
       "rowIndex": 745,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "STARTER , GE # CR306E002 , SIZE 3 -120V (\nREF CODE 1001.001.USED.0072 )",
       "partNumber": "",
       "rowIndex": 746,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CR306F002 , GE MOTOR STARTER 3\nPOLE SIZE 4 110/120V COIL ( OLD P/N :\nCR206F0 )",
       "partNumber": "CR306F002",
       "rowIndex": 747,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL40-12 , BATTERY 12 V DC 40AH\nULTRACELL FOR SCR SYSTEM WITH BOLTS\nTERMINALS ULTRACELL (UK) CAT. ( OLD P/N\n: UL40-12 )",
       "partNumber": "UXL40-12",
       "rowIndex": 748,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : THED1316150 , MOLDED CASE CIRCUIT\nBREAKER , G.E. , 3 POLE, 150 AMP,600VAC,\nTHERMAL MAGNETIC , BOLT-IN, FRAME THED\n( GENERAL ELECTRIC CAT.)",
       "partNumber": "THED1316150",
       "rowIndex": 749,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EXPLOSION PROOF LED FLOODLIGHT,\n90WATTS, TYPE: BAT86-90-90Y (WAROM\nCAT.)",
       "partNumber": "",
       "rowIndex": 750,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 47100215 , BATTERY SWITCH FOR\nCARRIER (MR8000 ELECTRICAL DIGRAM AND\nPARTS LIST )",
       "partNumber": "47100215",
       "rowIndex": 751,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "INSECT KILLER LAMP: P/N: F15W/T8/BL350,\nFOR INSECT KILLER MODEL ( WE-150-2) WITH\nLENGTH 18 INCH WITH BI PIN",
       "partNumber": "F15W/T8/BL350",
       "rowIndex": 752,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, STANDARD, SELECTABLE\nDURATION ( SCHNEIDER CAT.)",
       "partNumber": "OVA44013",
       "rowIndex": 753,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : I-266 , COLD ROOM DOOR VERTICAL\nLOCK , FOR MAIN DOOR OF FREEZER UNIT\n(IMAMOGLU CAT.)",
       "partNumber": "i-266",
       "rowIndex": 754,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : ZR81KCE-TFD-522 , ZR SCROLL COMPRSSOR ,460V ,3-PHASE-60 HZ, 7 HP ,SUK: 8807874 , FREON R407C. FOR AIR DRYER DENAIR/ DAD-30HTF ( COPELAND CAT.)",
       "partNumber": "ZR81KCE-TFD-522",
       "rowIndex": 755,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 756,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 757,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102043 , THERMOSTAT ( EGO )\nGERMANY 100/180OC , 1042 SINGLE PH FOR\nDEEP FAT FRYER EGO P/N : ( 55.13032.140 )",
       "partNumber": "2102043",
       "rowIndex": 758,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 43.24232.000 ) SELECTOR\nSWITCH ( EGO ) SELECTOR SWITCH_( EGO )\n32 AMP 4 POSITIONS 32/250 - 25/400 T150 ,\nREF. PN/ 210210 FOR ELECTRIC COOKER,",
       "partNumber": "43.24232.000",
       "rowIndex": 759,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819 ) THERMOSTAT (\nEGO ) GERMANY 30/110 OC 112OC 1041.4 ,\nREF. PN/ 2102042 FOR WATER BOILER & BAIN\nMARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 760,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819 ) THERMOSTAT (\nEGO ) GERMANY 30/110 OC 112OC 1041.4 ,\nREF. PN/ 2102042 FOR WATER BOILER & BAIN\nMARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 761,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819 ) THERMOSTAT (\nEGO ) GERMANY 30/110 OC 112OC 1041.4 ,\nREF. PN/ 2102042 FOR WATER BOILER & BAIN\nMARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 762,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 22262600 , COOKING THERMOSTATE 300\nC FOR OVEN (MISR CAMP CAT.)",
       "partNumber": "22262600",
       "rowIndex": 763,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 1-34-02 & i-34-01 , CLOUD ROOM HINGS , SET OF TWO HINGS UP & DOWN (IMAMOGLU CAT.)",
       "partNumber": "1-34-02 & i-34-01",
       "rowIndex": 764,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : AR-KFR90G/N1Y-AB , CARRIER INDOOR UNIT CONTROL PCB AR-KFR90G/N1Y -AB FOR 42QHET30-708F , 4 HP SPLIT FOR CARRIER 42QHET30-708 F",
       "partNumber": "AR-KFR90G/N1Y-AB",
       "rowIndex": 765,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DUCT TAPE",
       "partNumber": "",
       "rowIndex": 766,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TAPE,2\",PVC",
       "partNumber": "",
       "rowIndex": 767,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 3.5CM )",
       "partNumber": "",
       "rowIndex": 768,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN, COTTER 1/4\" ( 6CM )",
       "partNumber": "",
       "rowIndex": 769,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/32\" COTTER PIN ( 2.5CM )",
       "partNumber": "",
       "rowIndex": 770,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/16\"X2\"SPLIT COTTER PIN",
       "partNumber": "",
       "rowIndex": 771,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/8 X 3 COTTER PINS",
       "partNumber": "",
       "rowIndex": 772,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LOW CARBON STEEL EXTENDED PRONG\nRETAINING COTTER PIN, 45MM L, 5MM PIN\nDIA. FOR FABORY RIGGING , LIFTING TIE\nEQUIP M39350.050.0045 ( PKG=50 PCE ) ( REF.\nP/N : 41KG55 GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 773,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LOW CARBON STEEL EXTENDED PRONG\nRETAINING COTTER PIN, 50MM L, 3.5MM PIN\nDIA. FOR FABORY RIGGING , LIFTING TIE\nEQUIP M39350.035.0050 ( REF. P/N : 41KG43\nGRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 774,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 3.5CM )",
       "partNumber": "",
       "rowIndex": 775,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN, COTTER 1/4\" ( 6CM )",
       "partNumber": "",
       "rowIndex": 776,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/8\" COTTER PINS ( 8CM )",
       "partNumber": "",
       "rowIndex": 777,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/32\" COTTER PIN ( 2.5CM )",
       "partNumber": "",
       "rowIndex": 778,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/16\"X2\"SPLIT COTTER PIN",
       "partNumber": "",
       "rowIndex": 779,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/8 X 3 COTTER PINS",
       "partNumber": "",
       "rowIndex": 780,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 15CM )",
       "partNumber": "",
       "rowIndex": 781,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 1/4\" X 17 CM",
       "partNumber": "",
       "rowIndex": 782,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 3.5CM )",
       "partNumber": "",
       "rowIndex": 783,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/32\" COTTER PIN ( 2.5CM )",
       "partNumber": "",
       "rowIndex": 784,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/8 X 3 COTTER PINS",
       "partNumber": "",
       "rowIndex": 785,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 3.5CM )",
       "partNumber": "",
       "rowIndex": 786,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN, COTTER 1/4\" ( 6CM )",
       "partNumber": "",
       "rowIndex": 787,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/8\" COTTER PINS ( 8CM )",
       "partNumber": "",
       "rowIndex": 788,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/32\" COTTER PIN ( 2.5CM )",
       "partNumber": "",
       "rowIndex": 789,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/16\"X2\"SPLIT COTTER PIN",
       "partNumber": "",
       "rowIndex": 790,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/8 X 3 COTTER PINS",
       "partNumber": "",
       "rowIndex": 791,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 15CM )",
       "partNumber": "",
       "rowIndex": 792,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 1/4\" X 17 CM",
       "partNumber": "",
       "rowIndex": 793,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 3.5CM )",
       "partNumber": "",
       "rowIndex": 794,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN, COTTER 1/4\" ( 6CM )",
       "partNumber": "",
       "rowIndex": 795,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/8\" COTTER PINS ( 8CM )",
       "partNumber": "",
       "rowIndex": 796,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/32\" COTTER PIN ( 2.5CM )",
       "partNumber": "",
       "rowIndex": 797,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/16\"X2\"SPLIT COTTER PIN",
       "partNumber": "",
       "rowIndex": 798,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/8 X 3 COTTER PINS",
       "partNumber": "",
       "rowIndex": 799,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 15CM )",
       "partNumber": "",
       "rowIndex": 800,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 1/4\" X 17 CM",
       "partNumber": "",
       "rowIndex": 801,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER,1/2\" ( 10CM )",
       "partNumber": "",
       "rowIndex": 802,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 3/8\" X 17 CM",
       "partNumber": "",
       "rowIndex": 803,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 3.5CM )",
       "partNumber": "",
       "rowIndex": 804,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/32\" COTTER PIN ( 2.5CM )",
       "partNumber": "",
       "rowIndex": 805,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/16\"X2\"SPLIT COTTER PIN",
       "partNumber": "",
       "rowIndex": 806,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/8 X 3 COTTER PINS",
       "partNumber": "",
       "rowIndex": 807,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 15CM )",
       "partNumber": "",
       "rowIndex": 808,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 1/4\" X 17 CM",
       "partNumber": "",
       "rowIndex": 809,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 3.5CM )",
       "partNumber": "",
       "rowIndex": 810,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN, COTTER 1/4\" ( 6CM )",
       "partNumber": "",
       "rowIndex": 811,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/8\" COTTER PINS ( 8CM )",
       "partNumber": "",
       "rowIndex": 812,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/32\" COTTER PIN ( 2.5CM )",
       "partNumber": "",
       "rowIndex": 813,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/16\"X2\"SPLIT COTTER PIN",
       "partNumber": "",
       "rowIndex": 814,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 15CM )",
       "partNumber": "",
       "rowIndex": 815,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 1/4\" X 17 CM",
       "partNumber": "",
       "rowIndex": 816,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER,1/2\" ( 10CM )",
       "partNumber": "",
       "rowIndex": 817,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 3.5CM )",
       "partNumber": "",
       "rowIndex": 818,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN, COTTER 1/4\" ( 6CM )",
       "partNumber": "",
       "rowIndex": 819,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/8\" COTTER PINS ( 8CM )",
       "partNumber": "",
       "rowIndex": 820,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/32\" COTTER PIN ( 2.5CM )",
       "partNumber": "",
       "rowIndex": 821,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3/16\"X2\"SPLIT COTTER PIN",
       "partNumber": "",
       "rowIndex": 822,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/8 X 3 COTTER PINS",
       "partNumber": "",
       "rowIndex": 823,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER 1/8\" ( 15CM )",
       "partNumber": "",
       "rowIndex": 824,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 1/4\" X 17 CM",
       "partNumber": "",
       "rowIndex": 825,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PIN,COTTER,1/2\" ( 10CM )",
       "partNumber": "",
       "rowIndex": 826,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UL1.2-12 , UL RANGE RECHARGEABLE\nBATTERY SEALED LEAD ACID BATTERY\n(12V,1.2A) ( MAKER ULTRACELL )",
       "partNumber": "UL1.2-12",
       "rowIndex": 827,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TRAVEL ADAPTER, WORLDWIDE ALL IN ONE\nUNIVERSAL TRAVEL ADAPTOR WALL AC\nPOWER PLUG ADAPTER WALL CHARGER\nWITH DUAL USB CHARGING PORTS FOR USA\nEU UK AUS CELL PHONE LAPTOP (AMAZON\nCAT.)",
       "partNumber": "",
       "rowIndex": 828,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 60021-301, BASIC CABLE TWO\nCONDUCTOR ONE TWESTED PAIR 18 AWG,\nOLD PN : 600201-301( MULTIPLE OF 250 FT )",
       "partNumber": "60021-301",
       "rowIndex": 829,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 830,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 831,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 832,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DUCT TAPE",
       "partNumber": "",
       "rowIndex": 833,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DUCT TAPE",
       "partNumber": "",
       "rowIndex": 834,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LAMP,FLUORESCENT,ULTRAVIOLET,220V,20WATT,INSECT KILLER",
       "partNumber": "",
       "rowIndex": 835,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "كشاف 60 سم ( 2 لمبة ) ضد المياه السويدي",
       "partNumber": "",
       "rowIndex": 836,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
