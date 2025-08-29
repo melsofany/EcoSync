@@ -60,66 +60,45 @@ export default function AIDataUnification() {
   const [recentLogs, setRecentLogs] = useState<LogEntry[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
-  // الاتصال بالخادم للحصول على التحديثات المباشرة
+  // التحديث التلقائي للحالة (polling بدلاً من SSE)
   useEffect(() => {
-    const eventSource = new EventSource('/api/ai-unification/stream');
-    
-    eventSource.onopen = () => {
-      setIsConnected(true);
-      console.log('✅ تم الاتصال بسيرفر التحديثات المباشرة');
-    };
-
-    eventSource.onmessage = (event) => {
+    const pollStatus = async () => {
       try {
-        const data = JSON.parse(event.data);
+        const response = await fetch('/api/ai-unification/status', {
+          credentials: 'include'
+        });
         
-        if (data.type === 'status') {
-          setStatus(data.payload);
-        } else if (data.type === 'log') {
-          const logEntry: LogEntry = {
-            message: data.payload.message,
-            type: data.payload.type || 'info',
-            timestamp: new Date().toLocaleTimeString('ar-EG')
-          };
+        if (response.ok) {
+          const statusData = await response.json();
           
-          setRecentLogs(prev => [...prev.slice(-49), logEntry]); // آخر 50 رسالة
+          // تحديث حالة الواجهة
+          setStatus({
+            isRunning: statusData.isRunning || false,
+            isPaused: statusData.isPaused || false,
+            currentIndex: statusData.progress || 0,
+            totalItems: statusData.total || 0,
+            processedItems: statusData.processedItems || 0,
+            unifiedItems: statusData.unifiedItems || 0,
+            quotaExceeded: statusData.quotaExceeded || false,
+            progress: statusData.processedItems && statusData.total ? 
+              Math.round((statusData.processedItems / statusData.total) * 100) : 0,
+            logs: []
+          });
+          
+          setIsConnected(true);
         }
       } catch (error) {
-        console.error('خطأ في معالجة التحديث:', error);
+        console.warn('خطأ في جلب الحالة:', error);
+        setIsConnected(false);
       }
     };
 
-    eventSource.onerror = () => {
-      setIsConnected(false);
-      console.warn('⚠️ انقطع الاتصال بسيرفر التحديثات');
-    };
+    // استطلاع الحالة كل ثانيتين
+    const interval = setInterval(pollStatus, 2000);
+    pollStatus(); // أول استدعاء فوري
 
-    // تنظيف الاتصال عند إغلاق الصفحة
-    return () => {
-      eventSource.close();
-    };
+    return () => clearInterval(interval);
   }, []);
-
-  // جلب الحالة الحالية عند تحميل الصفحة
-  useEffect(() => {
-    fetchCurrentStatus();
-  }, []);
-
-  // جلب الحالة الحالية
-  const fetchCurrentStatus = async () => {
-    try {
-      const response = await fetch('/api/ai-unification/status', {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setStatus(data);
-      }
-    } catch (error) {
-      console.error('خطأ في جلب الحالة:', error);
-    }
-  };
 
   // بدء عملية التوحيد
   const startUnification = useMutation({
