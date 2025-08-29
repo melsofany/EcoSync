@@ -66,6 +66,7 @@ export class SemanticProductUnifier {
       console.log(`📊 تم تحميل ${items.length} بند للتحليل`);
 
       if (items.length === 0) {
+        console.log('❌ لا توجد بيانات للتوحيد - تم إنهاء العملية');
         return {
           success: false,
           totalItems: 0,
@@ -73,6 +74,15 @@ export class SemanticProductUnifier {
           groups: [],
           message: 'لا توجد بيانات للتوحيد'
         };
+      }
+
+      console.log(`🔍 معاينة البيانات المحملة:`);
+      for (let i = 0; i < Math.min(3, items.length); i++) {
+        const item = items[i];
+        console.log(`  ${i + 1}. ID: ${item.itemNumber || item.id}`);
+        console.log(`     التوصيف: ${(item.description || '').substring(0, 80)}...`);
+        console.log(`     رقم القطعة: ${item.partNumber || 'غير محدد'}`);
+        console.log(`     ---`);
       }
 
       // تحويل البيانات إلى التنسيق المطلوب
@@ -116,10 +126,15 @@ export class SemanticProductUnifier {
   }
 
   private findSemanticGroups(items: ProductItem[]): UnificationGroup[] {
+    console.log(`🔍 بدء البحث عن المجموعات المتطابقة في ${items.length} منتج...`);
+    
     const groups: UnificationGroup[] = [];
     const processedItems = new Set<string>();
+    
+    let comparisonCount = 0;
+    let validComparisonCount = 0;
 
-    for (let i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length && i < 100; i++) { // تحديد للأول 100 بند للاختبار
       const item1 = items[i];
       
       if (processedItems.has(item1.itemNumber)) {
@@ -130,14 +145,27 @@ export class SemanticProductUnifier {
       processedItems.add(item1.itemNumber);
 
       // البحث عن العناصر المتطابقة
-      for (let j = i + 1; j < items.length; j++) {
+      for (let j = i + 1; j < items.length && j < 100; j++) {
         const item2 = items[j];
         
         if (processedItems.has(item2.itemNumber)) {
           continue;
         }
 
+        comparisonCount++;
         const similarity = this.calculateSemanticSimilarity(item1, item2);
+        
+        if (similarity.score > 0) {
+          validComparisonCount++;
+        }
+        
+        // عرض عينة من المقارنات للتشخيص
+        if (comparisonCount <= 5) {
+          console.log(`🧪 مقارنة ${comparisonCount}: ${item1.itemNumber} مع ${item2.itemNumber}`);
+          console.log(`    البند الأول: ${item1.description.substring(0, 50)}...`);
+          console.log(`    البند الثاني: ${item2.description.substring(0, 50)}...`);
+          console.log(`    النتيجة: ${similarity.score.toFixed(3)} - ${similarity.reason}`);
+        }
         
         // تقليل عتبة التطابق لإيجاد مجموعات أكثر
         if (similarity.score >= 0.6) {
@@ -160,6 +188,11 @@ export class SemanticProductUnifier {
         });
       }
     }
+
+    console.log(`📊 إحصائيات البحث:`);
+    console.log(`   - إجمالي المقارنات: ${comparisonCount}`);
+    console.log(`   - المقارنات الصحيحة: ${validComparisonCount}`);
+    console.log(`   - المجموعات الموحدة: ${groups.length}`);
 
     return groups;
   }
