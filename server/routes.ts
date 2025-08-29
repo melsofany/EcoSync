@@ -8721,7 +8721,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     });
 
     // إضافة العميل للقائمة
-    sseClients.add(res);
+    global.sseClients.push(res);
     
     // إرسال heartbeat كل 30 ثانية
     const heartbeatInterval = setInterval(() => {
@@ -8729,7 +8729,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         res.write(`: heartbeat\n\n`);
       } catch (error) {
         clearInterval(heartbeatInterval);
-        sseClients.delete(res);
+        const index = global.sseClients.indexOf(res);
+        if (index > -1) global.sseClients.splice(index, 1);
       }
     }, 30000);
 
@@ -8746,7 +8747,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     req.on('close', () => {
       console.log('📡 تم قطع اتصال عميل التحديثات المباشرة');
       clearInterval(heartbeatInterval);
-      sseClients.delete(res);
+      const index = global.sseClients.indexOf(res);
+      if (index > -1) global.sseClients.splice(index, 1);
     });
   });
 

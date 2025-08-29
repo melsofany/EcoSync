@@ -2,104 +2,15 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 119,
+    "currentIndex": 148,
     "totalItems": 5604,
-    "processedItems": 118,
+    "processedItems": 147,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
     "lastSaveTime": "2025-08-29T16:58:12.816Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٤:٥٨:٠٥ م] 📊 التقدم: 85/5604 (2%)",
-      "[٤:٥٨:٠٦ م] 🔍 معالجة البند 87/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٠٦ م] ✅ تم معالجة البند 87: P-0000135",
-      "[٤:٥٨:٠٦ م] 📊 التقدم: 86/5604 (2%)",
-      "[٤:٥٨:٠٧ م] 🔍 معالجة البند 88/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٠٧ م] ✅ تم معالجة البند 88: P-0000135",
-      "[٤:٥٨:٠٧ م] 📊 التقدم: 87/5604 (2%)",
-      "[٤:٥٨:٠٨ م] 🔍 معالجة البند 89/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٠٨ م] ✅ تم معالجة البند 89: P-0000135",
-      "[٤:٥٨:٠٨ م] 📊 التقدم: 88/5604 (2%)",
-      "[٤:٥٨:٠٩ م] 🔍 معالجة البند 90/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
-      "[٤:٥٨:٠٩ م] ✅ تم معالجة البند 90: P-0000135",
-      "[٤:٥٨:٠٩ م] 📊 التقدم: 89/5604 (2%)",
-      "[٤:٥٨:١٠ م] 🔍 معالجة البند 91/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
-      "[٤:٥٨:١٠ م] ✅ تم معالجة البند 91: P-0000135",
-      "[٤:٥٨:١٠ م] 📊 التقدم: 90/5604 (2%)",
-      "[٤:٥٨:١١ م] 🔍 معالجة البند 92/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
-      "[٤:٥٨:١١ م] ✅ تم معالجة البند 92: P-0000135",
-      "[٤:٥٨:١١ م] 📊 التقدم: 91/5604 (2%)",
-      "[٤:٥٨:١٢ م] 🔍 معالجة البند 93/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:١٢ م] ✅ تم معالجة البند 93: P-0000135",
-      "[٤:٥٨:١٢ م] 📊 التقدم: 92/5604 (2%)",
-      "[٤:٥٨:١٣ م] 🔍 معالجة البند 94/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:١٣ م] ✅ تم معالجة البند 94: P-0000135",
-      "[٤:٥٨:١٣ م] 📊 التقدم: 93/5604 (2%)",
-      "[٤:٥٨:١٤ م] 🔍 معالجة البند 95/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:١٤ م] ✅ تم معالجة البند 95: P-0000135",
-      "[٤:٥٨:١٤ م] 📊 التقدم: 94/5604 (2%)",
-      "[٤:٥٨:١٥ م] 🔍 معالجة البند 96/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:١٥ م] ✅ تم معالجة البند 96: P-0000135",
-      "[٤:٥٨:١٥ م] 📊 التقدم: 95/5604 (2%)",
-      "[٤:٥٨:١٦ م] 🔍 معالجة البند 97/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:١٦ م] ✅ تم معالجة البند 97: P-0000135",
-      "[٤:٥٨:١٦ م] 📊 التقدم: 96/5604 (2%)",
-      "[٤:٥٨:١٧ م] 🔍 معالجة البند 98/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:١٧ م] ✅ تم معالجة البند 98: P-0000135",
-      "[٤:٥٨:١٧ م] 📊 التقدم: 97/5604 (2%)",
-      "[٤:٥٨:١٨ م] 🔍 معالجة البند 99/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
-      "[٤:٥٨:١٨ م] ✅ تم معالجة البند 99: P-0000135",
-      "[٤:٥٨:١٨ م] 📊 التقدم: 98/5604 (2%)",
-      "[٤:٥٨:١٩ م] 🔍 معالجة البند 100/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
-      "[٤:٥٨:١٩ م] ✅ تم معالجة البند 100: P-0000135",
-      "[٤:٥٨:١٩ م] 📊 التقدم: 99/5604 (2%)",
-      "[٤:٥٨:٢٠ م] 🔍 معالجة البند 101/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
-      "[٤:٥٨:٢٠ م] ✅ تم معالجة البند 101: P-0000135",
-      "[٤:٥٨:٢٠ م] 📊 التقدم: 100/5604 (2%)",
-      "[٤:٥٨:٢١ م] 🔍 معالجة البند 102/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
-      "[٤:٥٨:٢١ م] ✅ تم معالجة البند 102: P-0000135",
-      "[٤:٥٨:٢١ م] 📊 التقدم: 101/5604 (2%)",
-      "[٤:٥٨:٢٢ م] 🔍 معالجة البند 103/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
-      "[٤:٥٨:٢٢ م] ✅ تم معالجة البند 103: P-0000135",
-      "[٤:٥٨:٢٢ م] 📊 التقدم: 102/5604 (2%)",
-      "[٤:٥٨:٢٣ م] 🔍 معالجة البند 104/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
-      "[٤:٥٨:٢٣ م] ✅ تم معالجة البند 104: P-0000135",
-      "[٤:٥٨:٢٣ م] 📊 التقدم: 103/5604 (2%)",
-      "[٤:٥٨:٢٤ م] 🔍 معالجة البند 105/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٢٤ م] ✅ تم معالجة البند 105: P-0000135",
-      "[٤:٥٨:٢٤ م] 📊 التقدم: 104/5604 (2%)",
-      "[٤:٥٨:٢٥ م] 🔍 معالجة البند 106/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٢٥ م] ✅ تم معالجة البند 106: P-0000135",
-      "[٤:٥٨:٢٥ م] 📊 التقدم: 105/5604 (2%)",
-      "[٤:٥٨:٢٦ م] 🔍 معالجة البند 107/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٢٦ م] ✅ تم معالجة البند 107: P-0000135",
-      "[٤:٥٨:٢٦ م] 📊 التقدم: 106/5604 (2%)",
-      "[٤:٥٨:٢٧ م] 🔍 معالجة البند 108/5604: FREON 407 G/ USE,  ( REF . GRAINGER CAT.)...",
-      "[٤:٥٨:٢٧ م] ✅ تم معالجة البند 108: P-0000135",
-      "[٤:٥٨:٢٧ م] 📊 التقدم: 107/5604 (2%)",
-      "[٤:٥٨:٢٨ م] 🔍 معالجة البند 109/5604: FREON 407 G/ USE,  ( REF . GRAINGER CAT.)...",
-      "[٤:٥٨:٢٨ م] ✅ تم معالجة البند 109: P-0000135",
-      "[٤:٥٨:٢٨ م] 📊 التقدم: 108/5604 (2%)",
-      "[٤:٥٨:٢٩ م] 🔍 معالجة البند 110/5604: FREON 407 G/ USE,  ( REF . GRAINGER CAT.)...",
-      "[٤:٥٨:٢٩ م] ✅ تم معالجة البند 110: P-0000135",
-      "[٤:٥٨:٢٩ م] 📊 التقدم: 109/5604 (2%)",
-      "[٤:٥٨:٣٠ م] 🔍 معالجة البند 111/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٣٠ م] ✅ تم معالجة البند 111: P-0000135",
-      "[٤:٥٨:٣٠ م] 📊 التقدم: 110/5604 (2%)",
-      "[٤:٥٨:٣١ م] 🔍 معالجة البند 112/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٣١ م] ✅ تم معالجة البند 112: P-0000135",
-      "[٤:٥٨:٣١ م] 📊 التقدم: 111/5604 (2%)",
-      "[٤:٥٨:٣٢ م] 🔍 معالجة البند 113/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
-      "[٤:٥٨:٣٢ م] ✅ تم معالجة البند 113: P-0000135",
-      "[٤:٥٨:٣٢ م] 📊 التقدم: 112/5604 (2%)",
-      "[٤:٥٨:٣٣ م] 🔍 معالجة البند 114/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
-      "[٤:٥٨:٣٣ م] ✅ تم معالجة البند 114: P-0000135",
-      "[٤:٥٨:٣٣ م] 📊 التقدم: 113/5604 (2%)",
-      "[٤:٥٨:٣٤ م] 🔍 معالجة البند 115/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
-      "[٤:٥٨:٣٤ م] ✅ تم معالجة البند 115: P-0000135",
-      "[٤:٥٨:٣٤ م] 📊 التقدم: 114/5604 (2%)",
-      "[٤:٥٨:٣٥ م] 🔍 معالجة البند 116/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
       "[٤:٥٨:٣٥ م] ✅ تم معالجة البند 116: P-0000135",
       "[٤:٥٨:٣٥ م] 📊 التقدم: 115/5604 (2%)",
       "[٤:٥٨:٣٦ م] 🔍 معالجة البند 117/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
@@ -110,7 +21,96 @@
       "[٤:٥٨:٣٧ م] 📊 التقدم: 117/5604 (2%)",
       "[٤:٥٨:٣٨ م] 🔍 معالجة البند 119/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
       "[٤:٥٨:٣٨ م] ✅ تم معالجة البند 119: P-0000135",
-      "[٤:٥٨:٣٨ م] 📊 التقدم: 118/5604 (2%)"
+      "[٤:٥٨:٣٨ م] 📊 التقدم: 118/5604 (2%)",
+      "[٤:٥٩:٤٧ م] 🔄 تم استعادة الحالة المحفوظة - البند 120 من 5604",
+      "[٤:٥٩:٤٧ م] 📊 بدء المعالجة من البند 120 من 5604",
+      "[٤:٥٩:٤٩ م] 🔍 معالجة البند 120/5604: P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, ...",
+      "[٤:٥٩:٤٩ م] ✅ تم معالجة البند 120: P-0000135",
+      "[٤:٥٩:٤٩ م] 📊 التقدم: 119/5604 (2%)",
+      "[٤:٥٩:٥١ م] 🔍 معالجة البند 121/5604: P/N : 23047 , EARTH-LEAKAGE CIRCUIT BREAKER , 4 PO...",
+      "[٤:٥٩:٥١ م] ✅ تم معالجة البند 121: P-0000135",
+      "[٤:٥٩:٥١ م] 📊 التقدم: 120/5604 (2%)",
+      "[٤:٥٩:٥٣ م] 🔍 معالجة البند 122/5604: P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER ...",
+      "[٤:٥٩:٥٣ م] ✅ تم معالجة البند 122: P-0000135",
+      "[٤:٥٩:٥٣ م] 📊 التقدم: 121/5604 (2%)",
+      "[٤:٥٩:٥٥ م] 🔍 معالجة البند 123/5604: P/N : LC1-D18 , MOULD LC1-D18 AC CONTACTOR WITH CO...",
+      "[٤:٥٩:٥٥ م] ✅ تم معالجة البند 123: P-0000135",
+      "[٤:٥٩:٥٥ م] 📊 التقدم: 122/5604 (2%)",
+      "[٤:٥٩:٥٧ م] 🔍 معالجة البند 124/5604: 1/2\" NON-RETURN VALVE 3.5 +/- 0.5 BAR / 8 BAR (REF...",
+      "[٤:٥٩:٥٧ م] ✅ تم معالجة البند 124: P-0000135",
+      "[٤:٥٩:٥٧ م] 📊 التقدم: 123/5604 (2%)",
+      "[٤:٥٩:٥٩ م] 🔍 معالجة البند 125/5604: P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER ...",
+      "[٤:٥٩:٥٩ م] ✅ تم معالجة البند 125: P-0000135",
+      "[٤:٥٩:٥٩ م] 📊 التقدم: 124/5604 (2%)",
+      "[٥:٠٠:٠١ م] 🔍 معالجة البند 126/5604: P/N : LRD12 , THERMAL OVERLOAD RELAY , TESYS LRD, ...",
+      "[٥:٠٠:٠١ م] ✅ تم معالجة البند 126: P-0000135",
+      "[٥:٠٠:٠١ م] 📊 التقدم: 125/5604 (2%)",
+      "[٥:٠٠:٠٣ م] 🔍 معالجة البند 127/5604: P/N : LC1D18M7 , TESYS D CONTACTOR - 3P(3NO) - AC-...",
+      "[٥:٠٠:٠٣ م] ✅ تم معالجة البند 127: P-0000135",
+      "[٥:٠٠:٠٣ م] 📊 التقدم: 126/5604 (2%)",
+      "[٥:٠٠:٠٥ م] 🔍 معالجة البند 128/5604: P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER ...",
+      "[٥:٠٠:٠٥ م] ✅ تم معالجة البند 128: P-0000135",
+      "[٥:٠٠:٠٥ م] 📊 التقدم: 127/5604 (2%)",
+      "[٥:٠٠:٠٧ م] 🔍 معالجة البند 129/5604: P/N : 23047 , EARTH-LEAKAGE CIRCUIT BREAKER , 4 PO...",
+      "[٥:٠٠:٠٧ م] ✅ تم معالجة البند 129: P-0000135",
+      "[٥:٠٠:٠٧ م] 📊 التقدم: 128/5604 (2%)",
+      "[٥:٠٠:٠٩ م] 🔍 معالجة البند 130/5604: P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER ...",
+      "[٥:٠٠:٠٩ م] ✅ تم معالجة البند 130: P-0000135",
+      "[٥:٠٠:٠٩ م] 📊 التقدم: 129/5604 (2%)",
+      "[٥:٠٠:١١ م] 🔍 معالجة البند 131/5604: GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR ...",
+      "[٥:٠٠:١١ م] ✅ تم معالجة البند 131: P-0000135",
+      "[٥:٠٠:١١ م] 📊 التقدم: 130/5604 (2%)",
+      "[٥:٠٠:١٣ م] 🔍 معالجة البند 132/5604: P/N : HRES03-450 , SUCTION FAN FOR GALLEY ( ROSENB...",
+      "[٥:٠٠:١٣ م] ✅ تم معالجة البند 132: P-0000135",
+      "[٥:٠٠:١٣ م] 📊 التقدم: 131/5604 (2%)",
+      "[٥:٠٠:١٥ م] 🔍 معالجة البند 133/5604: P/N : UNO-67-500-4D , FRESH AIR FAN\nFOR GALLEY ( R...",
+      "[٥:٠٠:١٥ م] ✅ تم معالجة البند 133: P-0000135",
+      "[٥:٠٠:١٥ م] 📊 التقدم: 132/5604 (2%)",
+      "[٥:٠٠:١٧ م] 🔍 معالجة البند 134/5604: GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR ...",
+      "[٥:٠٠:١٧ م] ✅ تم معالجة البند 134: P-0000135",
+      "[٥:٠٠:١٧ م] 📊 التقدم: 133/5604 (2%)",
+      "[٥:٠٠:١٩ م] 🔍 معالجة البند 135/5604: GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR ...",
+      "[٥:٠٠:١٩ م] ✅ تم معالجة البند 135: P-0000135",
+      "[٥:٠٠:١٩ م] 📊 التقدم: 134/5604 (2%)",
+      "[٥:٠٠:٢١ م] 🔍 معالجة البند 136/5604: OPTICAL SMOKE & HEAT DETECTOR IP22\nWITH ISOLATOR B...",
+      "[٥:٠٠:٢١ م] ✅ تم معالجة البند 136: P-0000135",
+      "[٥:٠٠:٢١ م] 📊 التقدم: 135/5604 (2%)",
+      "[٥:٠٠:٢٣ م] 🔍 معالجة البند 137/5604: P/N : 430559 , SMOKE DETECTOR FOR\nENGINE ROOM MODE...",
+      "[٥:٠٠:٢٣ م] ✅ تم معالجة البند 137: P-0000135",
+      "[٥:٠٠:٢٣ م] 📊 التقدم: 136/5604 (2%)",
+      "[٥:٠٠:٢٥ م] 🔍 معالجة البند 138/5604: P/N : SPXCDALMTXF , XCD IR & FLAMMABLE\nLEL TRANSMI...",
+      "[٥:٠٠:٢٥ م] ✅ تم معالجة البند 138: P-0000135",
+      "[٥:٠٠:٢٥ م] 📊 التقدم: 137/5604 (2%)",
+      "[٥:٠٠:٢٧ م] 🔍 معالجة البند 139/5604: P/N : SPXCDALMTXT , XCD TOXIC\nTRANSMITTER H2S (WIT...",
+      "[٥:٠٠:٢٧ م] ✅ تم معالجة البند 139: P-0000135",
+      "[٥:٠٠:٢٧ م] 📊 التقدم: 138/5604 (2%)",
+      "[٥:٠٠:٢٩ م] 🔍 معالجة البند 140/5604: P/N : 430559 , SMOKE DETECTOR FOR\nENGINE ROOM MODE...",
+      "[٥:٠٠:٢٩ م] ✅ تم معالجة البند 140: P-0000135",
+      "[٥:٠٠:٢٩ م] 📊 التقدم: 139/5604 (2%)",
+      "[٥:٠٠:٣١ م] 🔍 معالجة البند 141/5604: P/N : SPXCDALMFX , XCD GAS DETECTOR, 4\nTO 20 MA OU...",
+      "[٥:٠٠:٣١ م] ✅ تم معالجة البند 141: P-0000135",
+      "[٥:٠٠:٣١ م] 📊 التقدم: 140/5604 (2%)",
+      "[٥:٠٠:٣٣ م] 🔍 معالجة البند 142/5604: COTTER PIN 3\" LENGNTH 1/8\" DIA\nSTAINLESS STEEL Mad...",
+      "[٥:٠٠:٣٣ م] ✅ تم معالجة البند 142: P-0000135",
+      "[٥:٠٠:٣٣ م] 📊 التقدم: 141/5604 (3%)",
+      "[٥:٠٠:٣٥ م] 🔍 معالجة البند 143/5604: COTTER PIN 4\" LENGNTH 1/4\" DIA\nSTAINLESS STEEL Mad...",
+      "[٥:٠٠:٣٥ م] ✅ تم معالجة البند 143: P-0000135",
+      "[٥:٠٠:٣٥ م] 📊 التقدم: 142/5604 (3%)",
+      "[٥:٠٠:٣٧ م] 🔍 معالجة البند 144/5604: COTTER PIN 5\" LENGNTH 5/16\" DIA STAINLESS STEEL Ma...",
+      "[٥:٠٠:٣٧ م] ✅ تم معالجة البند 144: P-0000135",
+      "[٥:٠٠:٣٧ م] 📊 التقدم: 143/5604 (3%)",
+      "[٥:٠٠:٣٩ م] 🔍 معالجة البند 145/5604: COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 IN...",
+      "[٥:٠٠:٣٩ م] ✅ تم معالجة البند 145: P-0000135",
+      "[٥:٠٠:٣٩ م] 📊 التقدم: 144/5604 (3%)",
+      "[٥:٠٠:٤١ م] 🔍 معالجة البند 146/5604: BRENNENSTUHL CORD REEL WITH 50 MTR  ELECTRIC CABLE...",
+      "[٥:٠٠:٤١ م] ✅ تم معالجة البند 146: P-0000135",
+      "[٥:٠٠:٤١ م] 📊 التقدم: 145/5604 (3%)",
+      "[٥:٠٠:٤٣ م] 🔍 معالجة البند 147/5604: COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 IN...",
+      "[٥:٠٠:٤٣ م] ✅ تم معالجة البند 147: P-0000135",
+      "[٥:٠٠:٤٣ م] 📊 التقدم: 146/5604 (3%)",
+      "[٥:٠٠:٤٥ م] 🔍 معالجة البند 148/5604: 70 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN ...",
+      "[٥:٠٠:٤٥ م] ✅ تم معالجة البند 148: P-0000135",
+      "[٥:٠٠:٤٥ م] 📊 التقدم: 147/5604 (3%)"
     ]
   },
   "items": [
@@ -952,203 +952,203 @@
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\n\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC-\n3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 121,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 23047 , EARTH-LEAKAGE CIRCUIT BREAKER , 4 POLE, 3 PHASE + NEUTRAL, 63 AMPS, DELTA CURRENT=30 MA ( MAKER : SCHNEIDER ) ( REF CODE 1001.001.USED.0032 )",
       "partNumber": "23047",
       "rowIndex": 122,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER EARTH LEAKAGE40 A,ACTI 9 IID-RCCB-4P-40A-30MA-TYPE AC- 400VAC (SCHNIDER CAT.)",
       "partNumber": "A9R81440",
       "rowIndex": 123,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1-D18 , MOULD LC1-D18 AC CONTACTOR WITH COIL 220VAC FOR MAIN FREEZER UNIT , MOG CAT.",
       "partNumber": "LC1-D18",
       "rowIndex": 124,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/2\" NON-RETURN VALVE 3.5 +/- 0.5 BAR / 8 BAR (REF . P/N : DIN 3320 P1 ONLY )",
       "partNumber": "",
       "rowIndex": 125,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER EARTH LEAKAGE40 A,ACTI 9 IID-RCCB-4P-40A-30MA-TYPE AC- 400VAC (SCHNIDER  CAT.)",
       "partNumber": "A9R81440",
       "rowIndex": 126,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LRD12 , THERMAL OVERLOAD RELAY , TESYS LRD, 5.5…8 A, CLASS 10A(SCHNIDER ELECTRIC CAT.)",
       "partNumber": "",
       "rowIndex": 127,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D18M7 , TESYS D CONTACTOR - 3P(3NO) - AC-3 - <=440 V 18 A - 220 V AC COIL STOCK CODE : 4177269 ( SCHNIDER CAT.)",
       "partNumber": "LC1D18M7",
       "rowIndex": 128,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER EARTH LEAKAGE40 A,ACTI 9 IID-RCCB-4P-40A-30MA-TYPE AC- 400VAC (SCHNIDER CAT.)",
       "partNumber": "A9R81440",
       "rowIndex": 129,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 23047 , EARTH-LEAKAGE CIRCUIT BREAKER , 4 POLE, 3 PHASE + NEUTRAL, 63 AMPS, DELTA CURRENT=30 MA ( MAKER : SCHNEIDER ) ( REF CODE 1001.001.USED.0032 )",
       "partNumber": "23047",
       "rowIndex": 130,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41440 , RESIDUAL CURRENT CIRCUIT BREAKER EARTH LEAKAGE40 A,ACTI 9 IID-RCCB-4P-40A-30MA-TYPE AC- 400VAC (SCHNIDER CAT.)",
       "partNumber": "A9R81440",
       "rowIndex": 131,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR MAIN\nFREEZER UNIT, MOG CAT.",
       "partNumber": "",
       "rowIndex": 132,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : HRES03-450 , SUCTION FAN FOR GALLEY ( ROSENBERG CAT.)",
       "partNumber": "HRES03-450",
       "rowIndex": 133,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UNO-67-500-4D , FRESH AIR FAN\nFOR GALLEY ( ROSENBERG CAT.)",
       "partNumber": "UNO-67-500-4D",
       "rowIndex": 134,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR MAIN\nFREEZER UNIT, MOG CAT.",
       "partNumber": "",
       "rowIndex": 135,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GASKET RUBBER FOR DOOR IN\nFREEZER (SEAL DOOR) FOR MAIN\nFREEZER UNIT, MOG CAT.",
       "partNumber": "",
       "rowIndex": 136,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OPTICAL SMOKE & HEAT DETECTOR IP22\nWITH ISOLATOR BASE. P/N: 801PHEX . 516.800.530",
       "partNumber": "",
       "rowIndex": 137,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 430559 , SMOKE DETECTOR FOR\nENGINE ROOM MODEL : PHOTOLECTRIC\nSMOKE ( SIMPLEX CAT.)",
       "partNumber": "430559",
       "rowIndex": 138,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SPXCDALMTXF , XCD IR & FLAMMABLE\nLEL TRANSMITTER (WITHOUT SENSOR), 4 TO\n20 MA OUTPUT, ATEX/IECEX/ASIAN\nAPPROVALS, 2 X M20\nENTRIES,PAINTEDLM25,INCLUDESNYLONWE\nATHERPROTECTION HONYWELL",
       "partNumber": "SPXCDAL\nMTXF",
       "rowIndex": 139,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SPXCDALMTXT , XCD TOXIC\nTRANSMITTER H2S (WITHOUT SENSOR), 4 TO\n20 MA OUTPUT, ATEX/IECEX/ASIAN\nAPPROVALS, 2 X M20 ENTRIES,\nPAINTEDLM25,INCLUDESNYLONWEATHERPR\nOTECTION HONYWELL",
       "partNumber": "SPXCDAL\nMTXT",
       "rowIndex": 140,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 430559 , SMOKE DETECTOR FOR\nENGINE ROOM MODEL : PHOTOLECTRIC\nSMOKE ( SIMPLEX CAT.)",
       "partNumber": "430559",
       "rowIndex": 141,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SPXCDALMFX , XCD GAS DETECTOR, 4\nTO 20 MA OUTPUT,ATEX/IECEX/ASIAN\nAPPROVALS, 2 X M20 ENTRIES, PAINTED\nLM25, (LEL COMPLETE DETECTOR)\nHONYWELL",
       "partNumber": "SPXCDAL\nMFX",
       "rowIndex": 142,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 3\" LENGNTH 1/8\" DIA\nSTAINLESS STEEL Made in Egypt ( REF. P/N : 98338A12 MCMASTER CAT.) (98355A176)",
       "partNumber": "P/N :98338A12",
       "rowIndex": 143,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 4\" LENGNTH 1/4\" DIA\nSTAINLESS STEEL Made in Egypt ( REF. P/N :\n98355A340 MCMASTER CAT.)",
       "partNumber": "P/N :98355A340",
       "rowIndex": 144,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COTTER PIN 5\" LENGNTH 5/16\" DIA STAINLESS STEEL Made in Egypt ( REF. P/N : 98355A405 MCMASTER CAT.)",
       "partNumber": "P/N : 98355A405",
       "rowIndex": 145,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 INCH X 10 FEET PRODUCT\nABB TYPE 7510S , ABB STAMPED ON ROD",
       "partNumber": "",
       "rowIndex": 146,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR  ELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 147,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER CLAD, POINTED SECTIONAL\nGROUND ROD - 3/4 INCH X 10 FEET PRODUCT\nABB TYPE 7510S , ABB STAMPED ON ROD",
       "partNumber": "",
       "rowIndex": 148,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN CHINA ( REF CODE\n1001.001.USED.0047 )",
       "partNumber": "",
       "rowIndex": 149,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
