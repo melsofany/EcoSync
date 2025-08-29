@@ -436,22 +436,18 @@ export class SemanticProductUnifier {
       return { score: 0, reason: 'نفس البند - مرفوض' };
     }
     
-    // ✅ **التركيز الكامل على الوصف فقط**
-    const desc1 = this.cleanDescription(item1.description);
-    const desc2 = this.cleanDescription(item2.description);
+    // ✅ **التحليل الدلالي الذكي للمنتجات**
+    const semantics1 = this.extractProductSemantics(item1.description, item1.partNumber);
+    const semantics2 = this.extractProductSemantics(item2.description, item2.partNumber);
     
-    if (desc1.length < 10 || desc2.length < 10) {
-      return { score: 0, reason: 'وصف قصير جداً' };
+    if (!semantics1.isValid || !semantics2.isValid) {
+      return { score: 0, reason: 'بيانات غير كافية للمقارنة' };
     }
     
-    // مقارنة بسيطة - إذا كان الوصف متطابق بنسبة 90% أو أكثر
-    const similarity = this.calculateTextSimilarity(desc1, desc2);
+    // حساب التطابق الدلالي
+    const similarity = this.calculateSemanticMatch(semantics1, semantics2);
     
-    if (similarity >= 0.9) {
-      return { score: similarity, reason: 'توصيف متطابق تقريباً' };
-    }
-    
-    return { score: similarity, reason: 'توصيف مختلف' };
+    return similarity;
   }
 
   private cleanDescription(text: string): string {
@@ -462,24 +458,225 @@ export class SemanticProductUnifier {
       .toUpperCase();
   }
 
-  private calculateTextSimilarity(text1: string, text2: string): number {
-    if (text1 === text2) return 1.0;
+  // واجهة المعنى الدلالي للمنتج
+  interface ProductSemantics {
+    isValid: boolean;
     
-    const words1 = text1.split(' ').filter(w => w.length > 2);
-    const words2 = text2.split(' ').filter(w => w.length > 2);
+    // المعلومات الأساسية
+    brand: string;           // العلامة التجارية
+    model: string;           // الموديل
+    partNumber: string;      // رقم القطعة
+    category: string;        // نوع المنتج
     
-    if (words1.length === 0 || words2.length === 0) return 0;
+    // المواصفات التقنية
+    voltage: string;         // الجهد
+    current: string;         // التيار
+    power: string;           // القدرة
+    frequency: string;       // التردد
+    capacity: string;        // السعة
     
-    let matches = 0;
-    for (const word1 of words1) {
-      if (words2.includes(word1)) {
-        matches++;
+    // الاستخدام
+    application: string[];   // الاستخدام
+    
+    // الكلمات المفتاحية
+    keywords: string[];      // الكلمات المهمة
+  }
+  
+  private extractProductSemantics(description: string, partNumber: string = ''): ProductSemantics {
+    const text = (description + ' ' + partNumber).toUpperCase();
+    
+    const semantics: ProductSemantics = {
+      isValid: false,
+      brand: this.extractBrand(text),
+      model: this.extractModel(text),
+      partNumber: this.extractPartNumber(text, partNumber),
+      category: this.extractCategory(text),
+      voltage: this.extractVoltage(text),
+      current: this.extractCurrent(text),
+      power: this.extractPower(text),
+      frequency: this.extractFrequency(text),
+      capacity: this.extractCapacity(text),
+      application: this.extractApplication(text),
+      keywords: this.extractKeywords(text)
+    };
+    
+    // تحديد صحة البيانات
+    semantics.isValid = !!(semantics.brand && semantics.category) || 
+                       !!(semantics.partNumber && semantics.category) ||
+                       !!(semantics.model && semantics.category);
+    
+    return semantics;
+  }
+
+  private calculateSemanticMatch(sem1: ProductSemantics, sem2: ProductSemantics): {score: number, reason: string} {
+    let score = 0;
+    let matchReasons: string[] = [];
+    
+    // مطابقة رقم القطعة (وزن 50%)
+    if (sem1.partNumber && sem2.partNumber && this.normalizePartNumber(sem1.partNumber) === this.normalizePartNumber(sem2.partNumber)) {
+      score += 0.5;
+      matchReasons.push('رقم قطعة متطابق');
+    }
+    
+    // مطابقة العلامة التجارية + الموديل (وزن 30%)
+    if (sem1.brand && sem2.brand && this.normalizeBrand(sem1.brand) === this.normalizeBrand(sem2.brand)) {
+      if (sem1.model && sem2.model && this.normalizeModel(sem1.model) === this.normalizeModel(sem2.model)) {
+        score += 0.3;
+        matchReasons.push(`${sem1.brand} ${sem1.model}`);
+      } else if (!sem1.model || !sem2.model) {
+        score += 0.15; // مطابقة علامة فقط
+        matchReasons.push(`علامة ${sem1.brand}`);
       }
     }
     
-    return (matches * 2) / (words1.length + words2.length);
+    // مطابقة الفئة + المواصفات (وزن 20%)
+    if (sem1.category && sem2.category && sem1.category === sem2.category) {
+      let specMatches = 0;
+      if (sem1.voltage && sem2.voltage && sem1.voltage === sem2.voltage) specMatches++;
+      if (sem1.current && sem2.current && sem1.current === sem2.current) specMatches++;
+      if (sem1.power && sem2.power && sem1.power === sem2.power) specMatches++;
+      if (sem1.frequency && sem2.frequency && sem1.frequency === sem2.frequency) specMatches++;
+      
+      if (specMatches >= 2) {
+        score += 0.2;
+        matchReasons.push(`${sem1.category} بمواصفات متطابقة`);
+      } else if (specMatches >= 1) {
+        score += 0.1;
+        matchReasons.push(`${sem1.category} بمواصفات جزئية`);
+      }
+    }
+    
+    const reason = matchReasons.length > 0 ? matchReasons.join(' + ') : 'لا توجد تطابقات دلالية';
+    return { score, reason };
   }
-
+  
+  // دوال استخراج المعلومات 
+  private extractBrand(text: string): string {
+    const brands = [
+      'SCHNEIDER', 'SCHNIEDER', 'TELEMECANIQUE',
+      'ABB', 'SIEMENS', 'OMRON', 'ALLEN BRADLEY',
+      'LEGRAND', 'HAGER', 'LOVATO', 'CHINT',
+      'شنايدر', 'سيمنس', 'أبي'
+    ];
+    
+    for (const brand of brands) {
+      if (text.includes(brand)) {
+        return brand;
+      }
+    }
+    return '';
+  }
+  
+  private extractModel(text: string): string {
+    // استخراج الموديل من النص
+    const modelPatterns = [
+      /LC1D\s*\d+\s*[A-Z]\d*/g,    // LC1D 32 M7
+      /[A-Z]+\d+[A-Z]*\d*/g        // نماذج عامة
+    ];
+    
+    for (const pattern of modelPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        return matches[0].replace(/\s+/g, '');
+      }
+    }
+    return '';
+  }
+  
+  private extractPartNumber(text: string, providedPartNumber: string): string {
+    if (providedPartNumber && providedPartNumber.trim() !== '') {
+      return providedPartNumber.trim();
+    }
+    
+    // استخراج رقم القطعة من النص
+    const partNumberPatterns = [
+      /P\/N\s*:?\s*([A-Z0-9\-\s]+)/i,
+      /PART\s*NO\.?\s*:?\s*([A-Z0-9\-\s]+)/i,
+      /REF\.?\s*PN\/\s*([A-Z0-9\-\s]+)/i
+    ];
+    
+    for (const pattern of partNumberPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        return match[1].trim().split(' ')[0]; // أول جزء
+      }
+    }
+    return '';
+  }
+  
+  private extractCategory(text: string): string {
+    const categories = [
+      'CONTACTOR', 'RELAY', 'BREAKER', 'SWITCH', 'FUSE',
+      'MOTOR', 'TRANSFORMER', 'CAPACITOR', 'RESISTOR',
+      'كونتاكتور', 'ريلاي', 'قاطع'
+    ];
+    
+    for (const category of categories) {
+      if (text.includes(category)) {
+        return category;
+      }
+    }
+    return '';
+  }
+  
+  private extractVoltage(text: string): string {
+    const voltageMatch = text.match(/(\d+)\s*V(?!A)/g);
+    return voltageMatch ? voltageMatch[0] : '';
+  }
+  
+  private extractCurrent(text: string): string {
+    const currentMatch = text.match(/(\d+)\s*A(?:MP)?/g);
+    return currentMatch ? currentMatch[0] : '';
+  }
+  
+  private extractPower(text: string): string {
+    const powerMatch = text.match(/(\d+)\s*KW/g);
+    return powerMatch ? powerMatch[0] : '';
+  }
+  
+  private extractFrequency(text: string): string {
+    const frequencyMatch = text.match(/(\d+)\s*HZ/g);
+    return frequencyMatch ? frequencyMatch[0] : '';
+  }
+  
+  private extractCapacity(text: string): string {
+    const capacityMatch = text.match(/(\d+)\s*AMP/g);
+    return capacityMatch ? capacityMatch[0] : '';
+  }
+  
+  private extractApplication(text: string): string[] {
+    const applications = [];
+    if (text.includes('GRILL')) applications.push('GRILL');
+    if (text.includes('FRYER')) applications.push('FRYER');
+    if (text.includes('MOTOR')) applications.push('MOTOR');
+    if (text.includes('ELECTRIC')) applications.push('ELECTRIC');
+    return applications;
+  }
+  
+  private extractKeywords(text: string): string[] {
+    return text.split(/\s+/)
+      .filter(word => word.length > 2)
+      .filter(word => !['THE', 'AND', 'FOR', 'WITH'].includes(word))
+      .slice(0, 10);
+  }
+  
+  // دوال التطبيع
+  private normalizePartNumber(partNumber: string): string {
+    return partNumber.replace(/[\s\-\_]/g, '').toUpperCase();
+  }
+  
+  private normalizeBrand(brand: string): string {
+    const brandMap: {[key: string]: string} = {
+      'SCHNIEDER': 'SCHNEIDER',
+      'TELEMECANIQUE': 'SCHNEIDER'
+    };
+    return brandMap[brand] || brand;
+  }
+  
+  private normalizeModel(model: string): string {
+    return model.replace(/[\s\-]/g, '').toUpperCase();
+  }
+  
   // باقي الكود القديم (مؤقتاً)
   private oldCalculateSemanticSimilarity(item1: ProductItem, item2: ProductItem): {score: number, reason: string} {
     const specs1 = item1.extractedSpecs;
