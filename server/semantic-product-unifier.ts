@@ -84,20 +84,14 @@ export class SemanticProductUnifier {
       this.progress = 50;
       console.log(`🔍 تم العثور على ${semanticGroups.length} مجموعة دلالية`);
 
-      // 3. توحيد المعرفات
+      // 3. توحيد المعرفات باستخدام النظام الجديد المحسن
       this.progress = 60;
-      console.log('⚡ جاري توحيد المعرفات...');
+      console.log('⚡ جاري توحيد المعرفات بالنظام الجديد...');
       
-      let totalUnified = 0;
+      // 🚀 **استخدام النظام الجديد للتحديث الجماعي**
+      const totalUnified = await this.unifyAllSemanticGroups(semanticGroups);
       
-      for (let i = 0; i < semanticGroups.length; i++) {
-        const group = semanticGroups[i];
-        await this.unifySemanticGroup(group);
-        totalUnified += group.duplicates.length;
-        
-        // تحديث التقدم أثناء التوحيد
-        this.progress = 60 + ((i + 1) / semanticGroups.length) * 35;
-        
+      for (const group of semanticGroups) {
         console.log(`✅ توحيد ${group.duplicates.length} منتج تحت ${group.masterItem.itemNumber} (${group.confidence}% ثقة)`);
       }
 
@@ -609,6 +603,74 @@ export class SemanticProductUnifier {
     
     // إذا كان كلاهما يحتوي على أي من هذه الأنماط، فهما نفس المنتج
     return hasPattern1 && hasPattern2;
+  }
+
+  // 🚀 **توحيد جميع المجموعات دفعة واحدة**
+  private async unifyAllSemanticGroups(groups: SemanticGroup[]): Promise<number> {
+    if (groups.length === 0) return 0;
+    
+    // تجميع جميع التحديثات
+    const allUpdates: {oldId: string, newId: string}[] = [];
+    
+    for (const group of groups) {
+      for (const duplicate of group.duplicates) {
+        allUpdates.push({
+          oldId: duplicate.itemNumber,
+          newId: group.masterItem.itemNumber
+        });
+      }
+    }
+
+    console.log(`📦 تحضير ${allUpdates.length} تحديث للتطبيق الجماعي...`);
+    
+    if (allUpdates.length === 0) return 0;
+    
+    try {
+      // 🚀 **تطبيق جميع التحديثات دفعة واحدة**
+      const batchSize = 50; // Google Sheets يدعم حتى 100 تحديث في الدفعة الواحدة
+      let totalUpdated = 0;
+      
+      for (let i = 0; i < allUpdates.length; i += batchSize) {
+        if (this.shouldStop) break;
+        
+        const batch = allUpdates.slice(i, i + batchSize);
+        console.log(`🔄 تطبيق دفعة ${Math.floor(i/batchSize) + 1}: ${batch.length} تحديث`);
+        
+        try {
+          const updated = await this.googleSheetsData.updateMultipleItemIds(batch);
+          totalUpdated += updated;
+          
+          this.progress = 60 + ((totalUpdated / allUpdates.length) * 35); // من 60% إلى 95%
+          console.log(`✅ تم تطبيق ${batch.length} تحديث بنجاح`);
+          
+          // انتظار أطول بين الدفعات لتجنب حدود API
+          if (i + batchSize < allUpdates.length) { // لا ننتظر بعد آخر دفعة
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+          
+        } catch (batchError) {
+          console.error(`❌ فشل في تطبيق الدفعة، محاولة تطبيق واحد واحد:`, batchError);
+          
+          // محاولة تطبيق التحديثات واحدة واحدة في حالة فشل الدفعة
+          for (const update of batch) {
+            try {
+              await this.googleSheetsData.updateItemId(update.oldId, update.newId);
+              totalUpdated++;
+              console.log(`✅ توحيد ${update.oldId} → ${update.newId}`);
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (singleError) {
+              console.error(`❌ فشل في توحيد ${update.oldId}:`, singleError);
+            }
+          }
+        }
+      }
+      
+      return totalUpdated;
+      
+    } catch (error) {
+      console.error(`❌ خطأ في عملية التوحيد الجماعي:`, error);
+      throw error;
+    }
   }
 
   private async unifySemanticGroup(group: SemanticGroup): Promise<void> {

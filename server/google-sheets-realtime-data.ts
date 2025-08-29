@@ -58,6 +58,58 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
+  // 🚀 **دالة جديدة لتحديث عدة معرفات دفعة واحدة**
+  async updateMultipleItemIds(updates: {oldId: string, newId: string}[]): Promise<number> {
+    try {
+      if (!this.sheets || updates.length === 0) {
+        return 0;
+      }
+
+      console.log(`🚀 بدء تحديث ${updates.length} معرف دفعة واحدة...`);
+      
+      // قراءة جميع البيانات من العمود A مرة واحدة
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A:A',
+      });
+
+      const rows = response.data.values || [];
+      const batchUpdates: any[] = [];
+      let totalUpdated = 0;
+
+      // تحضير جميع التحديثات
+      for (const update of updates) {
+        for (let i = 1; i < rows.length; i++) {
+          if (rows[i][0] === update.oldId) {
+            batchUpdates.push({
+              range: `DATA!A${i + 1}`,
+              values: [[update.newId]]
+            });
+            totalUpdated++;
+          }
+        }
+      }
+
+      // تطبيق التحديثات دفعة واحدة باستخدام batchUpdate
+      if (batchUpdates.length > 0) {
+        await this.sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId: this.spreadsheetId,
+          resource: {
+            valueInputOption: 'RAW',
+            data: batchUpdates
+          }
+        });
+        console.log(`✅ تم تحديث ${totalUpdated} خلية بنجاح في دفعة واحدة`);
+      }
+
+      return totalUpdated;
+
+    } catch (error) {
+      console.error(`❌ خطأ في التحديث الجماعي:`, error);
+      throw error;
+    }
+  }
+
   // تحديث معرف بند في جميع الصفوف (للتوحيد)
   async updateItemId(oldItemId: string, newItemId: string): Promise<number> {
     try {
