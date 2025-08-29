@@ -7236,6 +7236,73 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // نظام توحيد بسيط وفعال - بديل للنظام المعقد
+  app.post("/api/simple-unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
+    try {
+      console.log('🚀 بدء التوحيد البسيط من المستخدم:', req.session?.user?.username);
+      
+      const { SimpleUnificationEngine } = await import('./simple-unification-engine.js');
+      const engine = new SimpleUnificationEngine();
+
+      // قراءة البيانات من Google Sheets
+      const googleSheets = new GoogleSheetsRealtimeData();
+      const rawData = await googleSheets.readDataSheet();
+      
+      if (rawData.length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'لا توجد بيانات في Google Sheets' 
+        });
+      }
+
+      // تحويل البيانات إلى تنسيق بسيط
+      const items = rawData.slice(1).map(row => ({
+        id: row[0] || '',
+        description: row[3] || '', // العمود D
+        partNumber: row[2] || '', // العمود C
+        lineItem: row[2] || ''    // العمود C أيضاً
+      })).filter(item => item.id && item.description);
+
+      console.log(`🚀 بدء التوحيد البسيط لـ ${items.length} منتج...`);
+
+      // تشغيل التوحيد
+      const result = await engine.unifyItems(items);
+
+      // تطبيق النتائج على Google Sheets إذا وُجدت مجموعات
+      if (result.groupsFound > 0) {
+        console.log(`📊 تطبيق ${result.groupsFound} مجموعة على Google Sheets...`);
+        
+        let totalUpdated = 0;
+        for (const group of result.groups) {
+          // تحديث جميع المنتجات في المجموعة لتحمل نفس المعرف
+          for (let i = 1; i < group.items.length; i++) {
+            const item = group.items[i];
+            const updated = await googleSheets.updateItemId(item.id, group.masterId);
+            if (updated > 0) totalUpdated += updated;
+          }
+        }
+
+        console.log(`✅ تم تحديث ${totalUpdated} منتج في Google Sheets`);
+      }
+
+      await logActivity(req, "start_simple_unification", "simple_unification", "identifier", "بدء التوحيد البسيط");
+
+      res.json({
+        success: true,
+        message: 'تم التوحيد البسيط بنجاح',
+        result
+      });
+
+    } catch (error: any) {
+      console.error('خطأ في التوحيد البسيط:', error);
+      res.status(500).json({
+        success: false,
+        message: 'خطأ في التوحيد البسيط',
+        error: error.message
+      });
+    }
+  });
+
   // بدء عملية التوحيد الذكي باستخدام DeepSeek AI
   app.post("/api/ai-unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {

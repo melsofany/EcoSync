@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Database,
   Layers,
-  StopCircle
+  StopCircle,
+  Zap
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -62,6 +63,49 @@ export default function AIDataUnification() {
   const { data: stats } = useQuery<SemanticUnificationStats>({
     queryKey: ["/api/ai-unification/stats"],
     refetchInterval: 30000
+  });
+
+  // بدء عملية التوحيد البسيط
+  const startSimpleUnification = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/simple-unification/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `خطأ في الخادم: ${response.status}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "🚀 التوحيد البسيط",
+          description: `تم العثور على ${data.result?.groupsFound || 0} مجموعة، وتوحيد ${data.result?.itemsUnified || 0} منتج`,
+          className: "bg-gradient-to-r from-green-500 to-blue-600 text-white"
+        });
+      } else {
+        toast({
+          title: "تحذير",
+          description: data.message || "حدث خطأ في التوحيد البسيط",
+          variant: "destructive"
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/ai-unification/status"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "خطأ في التوحيد البسيط",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   });
 
   // بدء عملية التوحيد الدلالي
@@ -181,14 +225,24 @@ export default function AIDataUnification() {
             
             <div className="flex items-center gap-2">
               {!status?.isRunning ? (
-                <Button 
-                  onClick={() => startSemanticUnification.mutate()}
-                  disabled={startSemanticUnification.isPending}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                >
-                  <Brain className="ml-2 h-4 w-4" />
-                  بدء التوحيد الدلالي
-                </Button>
+                <>
+                  <Button 
+                    onClick={() => startSimpleUnification.mutate()}
+                    disabled={startSimpleUnification.isPending}
+                    className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
+                  >
+                    <Zap className="ml-2 h-4 w-4" />
+                    توحيد بسيط وسريع
+                  </Button>
+                  <Button 
+                    onClick={() => startSemanticUnification.mutate()}
+                    disabled={startSemanticUnification.isPending}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  >
+                    <Brain className="ml-2 h-4 w-4" />
+                    توحيد ذكي متقدم
+                  </Button>
+                </>
               ) : (
                 <Button 
                   onClick={() => stopSemanticUnification.mutate()}
