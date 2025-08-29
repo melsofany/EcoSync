@@ -1045,19 +1045,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         items: rawData.map((row: any[], index: number) => ({
           id: row[0] || `P-${String(index + 1).padStart(7, '0')}`, // العمود A - معرف البند
           lineItem: row[2] || '', // العمود C - LINE ITEM
-          partNumber: row[2] || '', // العمود C - PART NO  
-          description: row[3] || '', // العمود D - الوصف
-          uom: row[4] || '', // العمود E - وحدة القياس
-          rfqNumber: row[5] || '', // العمود F - رقم طلب التسعير
-          rfqDate: row[6] || '', // العمود G - تاريخ طلب التسعير
-          rfqQuantity: row[7] || '', // العمود H - كمية طلب التسعير
-          rfqPrice: row[8] || '', // العمود I - سعر طلب التسعير
-          responseDate: row[9] || '', // العمود J - تاريخ الاستجابة
-          poNumber: row[10] || '', // العمود K - رقم أمر الشراء
-          poDate: row[11] || '', // العمود L - تاريخ أمر الشراء
-          poQuantity: row[12] || '', // العمود M - كمية أمر الشراء
-          poPrice: row[13] || '', // العمود N - سعر أمر الشراء
-          totalPOValue: row[14] || '' // العمود O - إجمالي قيمة أمر الشراء
+          partNumber: row[3] || '', // العمود D - PART NO  
+          description: row[4] || '', // العمود E - الوصف
+          uom: row[5] || '', // العمود F - وحدة القياس
+          rfqNumber: row[6] || '', // العمود G - رقم طلب التسعير
+          rfqDate: row[7] || '', // العمود H - تاريخ طلب التسعير
+          rfqQuantity: row[8] || '', // العمود I - كمية طلب التسعير
+          rfqPrice: row[9] || '', // العمود J - سعر طلب التسعير
+          responseDate: row[10] || '', // العمود K - تاريخ الاستجابة
+          poNumber: row[11] || '', // العمود L - رقم أمر الشراء
+          poDate: row[12] || '', // العمود M - تاريخ أمر الشراء
+          poQuantity: row[13] || '', // العمود N - كمية أمر الشراء
+          poPrice: row[14] || '', // العمود O - سعر أمر الشراء
+          totalPOValue: row[15] || '' // العمود P - إجمالي قيمة أمر الشراء
         }))
       };
       
