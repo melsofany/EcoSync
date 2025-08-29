@@ -96,7 +96,7 @@ function extractPartNumbers(description) {
   return Array.from(finalNumbers);
 }
 
-// ==================== دالة المقارنة المحسنة ====================
+// ==================== دالة المقارنة المحسنة - تعتمد على دلالة التوصيف ====================
 function areProductsEquivalent(description1, description2) {
   if (!description1 || !description2) return false;
   
@@ -108,75 +108,184 @@ function areProductsEquivalent(description1, description2) {
     return true;
   }
   
-  // 2. التحقق من أرقام الأجزاء المتشابهة - محسن للكونتاكتور
-  const partNumbers1 = extractPartNumbers(description1);
-  const partNumbers2 = extractPartNumbers(description2);
-  
-  // فحص خاص للكونتاكتور LC1D32M7
-  const isContactor1 = normalized1.includes('lc1d') && normalized1.includes('32') && normalized1.includes('m7');
-  const isContactor2 = normalized2.includes('lc1d') && normalized2.includes('32') && normalized2.includes('m7');
-  const hasContractorNumber1 = normalized1.includes('2102034') || normalized1.includes('2102049');
-  const hasContractorNumber2 = normalized2.includes('2102034') || normalized2.includes('2102049');
-  
-  // إذا كان أحدهما LC1D32M7 والآخر 2102034/2102049 فهما نفس المنتج
-  if ((isContractor1 && hasContractorNumber2) || (isContractor2 && hasContractorNumber1)) {
-    return true;
-  }
-  
-  if (partNumbers1.length > 0 && partNumbers2.length > 0) {
-    const commonNumbers = partNumbers1.filter(num => partNumbers2.includes(num));
-    if (commonNumbers.length > 0) {
-      return true;
-    }
-  }
-  
-  // 3. التحقق من العلامات التجارية
-  const brands = ['schneider', 'telemecanique', 'toshiba', 'samsung', 'lg'];
-  const brand1 = brands.find(brand => normalized1.includes(brand));
-  const brand2 = brands.find(brand => normalized2.includes(brand));
-  
-  if (brand1 && brand2 && brand1 !== brand2) {
-    return false;
-  }
-  
-  // 4. التحقق من المواصفات الأساسية
-  const keySpecs = ['220v', '50/60hz', '50a', '15kw', '400v'];
-  const hasSameSpecs = keySpecs.every(spec => 
-    normalized1.includes(spec) === normalized2.includes(spec)
-  );
-  
-  if (!hasSameSpecs) {
-    return false;
-  }
-  
-  // 5. فحص إضافي للكونتاكتور - التأكد من نفس المواصفات
-  const isSchneiderContactor1 = normalized1.includes('schneider') && normalized1.includes('contactor') && 
-                                (normalized1.includes('220v') || normalized1.includes('50a') || normalized1.includes('15kw'));
-  const isSchneiderContactor2 = normalized2.includes('schneider') && normalized2.includes('contactor') && 
-                                (normalized2.includes('220v') || normalized2.includes('50a') || normalized2.includes('15kw'));
-  
-  if (isSchneiderContractor1 && isSchneiderContactor2) {
-    // إذا كان كلاهما كونتاكتور شنايدر بنفس المواصفات، فهما نفس المنتج
-    const hasLC1D1 = normalized1.includes('lc1d') && normalized1.includes('32');
-    const hasLC1D2 = normalized2.includes('lc1d') && normalized2.includes('32');
-    const has2102_1 = normalized1.includes('2102034') || normalized1.includes('2102049');
-    const has2102_2 = normalized2.includes('2102034') || normalized2.includes('2102049');
+  // 2. استخراج الخصائص الأساسية للمنتج (بدون أرقام القطع)
+  const getProductCharacteristics = (desc) => {
+    const normalized = normalize(desc);
     
-    if ((hasLC1D1 || has2102_1) && (hasLC1D2 || has2102_2)) {
-      return true;
-    }
+    // استخراج نوع المنتج
+    const productType = getProductType(normalized);
+    
+    // استخراج العلامة التجارية
+    const brand = getBrand(normalized);
+    
+    // استخراج المواصفات التقنية
+    const specs = getTechnicalSpecs(normalized);
+    
+    // استخراج الوظيفة/الاستخدام
+    const usage = getUsage(normalized);
+    
+    return { productType, brand, specs, usage };
+  };
+  
+  const chars1 = getProductCharacteristics(description1);
+  const chars2 = getProductCharacteristics(description2);
+  
+  // 3. مقارنة الخصائص الأساسية
+  
+  // نوع المنتج يجب أن يكون متطابق
+  if (chars1.productType && chars2.productType && chars1.productType !== chars2.productType) {
+    return false;
   }
   
-  // 6. حساب التشابه النصي
-  const words1 = new Set(normalized1.split(/\s+/).filter(w => w.length > 2));
-  const words2 = new Set(normalized2.split(/\s+/).filter(w => w.length > 2));
+  // العلامة التجارية يجب أن تكون متطابقة
+  if (chars1.brand && chars2.brand && chars1.brand !== chars2.brand) {
+    return false;
+  }
+  
+  // المواصفات التقنية يجب أن تكون متقاربة
+  const specsMatch = compareSpecs(chars1.specs, chars2.specs);
+  if (!specsMatch) {
+    return false;
+  }
+  
+  // 4. حساب التشابه الدلالي للوصف (بدون أرقام القطع)
+  const cleanDesc1 = removePartNumbers(normalized1);
+  const cleanDesc2 = removePartNumbers(normalized2);
+  
+  const words1 = new Set(cleanDesc1.split(/\s+/).filter(w => w.length > 2));
+  const words2 = new Set(cleanDesc2.split(/\s+/).filter(w => w.length > 2));
   
   const commonWords = new Set([...words1].filter(word => words2.has(word)));
   const allWords = new Set([...words1, ...words2]);
   
   const similarity = allWords.size > 0 ? commonWords.size / allWords.size : 0;
   
-  return similarity >= 0.7;
+  // عتبة أعلى للتشابه الدلالي
+  return similarity >= 0.8;
+}
+
+// دالة استخراج نوع المنتج
+function getProductType(description) {
+  const types = [
+    { pattern: /contactor/gi, type: 'contactor' },
+    { pattern: /tv|television|تلفزيون/gi, type: 'tv' },
+    { pattern: /led.*tv/gi, type: 'led_tv' },
+    { pattern: /smart.*tv/gi, type: 'smart_tv' },
+    { pattern: /grill/gi, type: 'grill' },
+    { pattern: /fryer/gi, type: 'fryer' },
+    { pattern: /switch/gi, type: 'switch' },
+    { pattern: /relay/gi, type: 'relay' }
+  ];
+  
+  for (const { pattern, type } of types) {
+    if (pattern.test(description)) {
+      return type;
+    }
+  }
+  return 'unknown';
+}
+
+// دالة استخراج العلامة التجارية
+function getBrand(description) {
+  const brands = [
+    { pattern: /schneider|schnieder/gi, brand: 'schneider' },
+    { pattern: /telemecanique/gi, brand: 'schneider' }, // Telemecanique هي جزء من Schneider
+    { pattern: /samsung/gi, brand: 'samsung' },
+    { pattern: /lg/gi, brand: 'lg' },
+    { pattern: /toshiba/gi, brand: 'toshiba' },
+    { pattern: /sony/gi, brand: 'sony' },
+    { pattern: /tornado/gi, brand: 'tornado' }
+  ];
+  
+  for (const { pattern, brand } of brands) {
+    if (pattern.test(description)) {
+      return brand;
+    }
+  }
+  return 'unknown';
+}
+
+// دالة استخراج المواصفات التقنية
+function getTechnicalSpecs(description) {
+  const specs = {};
+  
+  // الجهد
+  const voltageMatch = description.match(/(\d+)v/gi);
+  if (voltageMatch) specs.voltage = voltageMatch.map(v => v.toLowerCase());
+  
+  // التيار
+  const currentMatch = description.match(/(\d+)a/gi);
+  if (currentMatch) specs.current = currentMatch.map(c => c.toLowerCase());
+  
+  // القدرة
+  const powerMatch = description.match(/(\d+)\s*kw/gi);
+  if (powerMatch) specs.power = powerMatch.map(p => p.toLowerCase().replace(/\s/g, ''));
+  
+  // التردد
+  const freqMatch = description.match(/(\d+\/\d+)\s*hz/gi);
+  if (freqMatch) specs.frequency = freqMatch.map(f => f.toLowerCase().replace(/\s/g, ''));
+  
+  // الحجم (للتلفزيونات)
+  const sizeMatch = description.match(/(\d+)\s*(?:''|"|inch|بوصة)/gi);
+  if (sizeMatch) specs.size = sizeMatch.map(s => s.replace(/[^0-9]/g, ''));
+  
+  return specs;
+}
+
+// دالة استخراج الاستخدام
+function getUsage(description) {
+  const usages = [];
+  
+  if (/grill/gi.test(description)) usages.push('grill');
+  if (/fryer/gi.test(description)) usages.push('fryer');
+  if (/electric/gi.test(description)) usages.push('electric');
+  if (/kitchen/gi.test(description)) usages.push('kitchen');
+  if (/smart/gi.test(description)) usages.push('smart');
+  
+  return usages;
+}
+
+// دالة مقارنة المواصفات
+function compareSpecs(specs1, specs2) {
+  // إذا كان أحدهما فارغ، نعتبرهما متطابقين
+  if (!specs1 || !specs2) return true;
+  
+  // مقارنة الجهد
+  if (specs1.voltage && specs2.voltage) {
+    const voltageMatch = specs1.voltage.some(v => specs2.voltage.includes(v));
+    if (!voltageMatch) return false;
+  }
+  
+  // مقارنة التيار
+  if (specs1.current && specs2.current) {
+    const currentMatch = specs1.current.some(c => specs2.current.includes(c));
+    if (!currentMatch) return false;
+  }
+  
+  // مقارنة القدرة
+  if (specs1.power && specs2.power) {
+    const powerMatch = specs1.power.some(p => specs2.power.includes(p));
+    if (!powerMatch) return false;
+  }
+  
+  // مقارنة الحجم (مهم جداً للتلفزيونات)
+  if (specs1.size && specs2.size) {
+    const sizeMatch = specs1.size.some(s => specs2.size.includes(s));
+    if (!sizeMatch) return false;
+  }
+  
+  return true;
+}
+
+// دالة إزالة أرقام القطع من النص
+function removePartNumbers(description) {
+  return description
+    .replace(/p\/n\s*:?\s*[a-z0-9\s]+/gi, '')
+    .replace(/ref\s*:?\s*[a-z0-9\s]+/gi, '')
+    .replace(/\b[a-z]{2,}\d+[a-z0-9]*\b/gi, '')
+    .replace(/\b\d{7}\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 // ==================== نظام إدارة المجموعات ====================
