@@ -395,12 +395,15 @@ async function unifyItems() {
         originalId: currentId
       });
       
-      // عرض التقدم
-      if ((i % 50) === 0) {
+      // عرض التقدم وحفظ الحالة كل 10 صفوف
+      if ((i % 10) === 0) {
         console.log(`\n⏳ التقدم: ${i}/${rows.length-1} (${Math.round(i * 100 / (rows.length-1))}%)`);
         console.log(`📊 عدد المجموعات: ${manager.groups.size}`);
         if (DEEPSEEK_API_KEY) console.log(`🤖 استدعاءات API: ${apiCallCount}`);
         saveStatus(i, rows.length - 1, true);
+        
+        // تأخير لتجنب تجاوز معدل API
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
     
