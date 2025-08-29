@@ -189,6 +189,7 @@ export class SemanticProductUnifier {
     const current = this.extractCurrent(text);
     const power = this.extractPower(text);
     const frequency = this.extractFrequency(text);
+    const screenSize = this.extractScreenSize(text);
     
     // استخراج المواصفات والاستخدام
     const specifications = this.extractSpecifications(text);
@@ -205,6 +206,7 @@ export class SemanticProductUnifier {
       current,
       power,
       frequency,
+      screenSize,
       specifications,
       application,
       keywords
@@ -215,7 +217,8 @@ export class SemanticProductUnifier {
     const manufacturers = [
       'SCHNEIDER', 'SCHNIEDER', 'TELEMECANIQUE',
       'ABB', 'SIEMENS', 'ALLEN BRADLEY', 'OMRON',
-      'MITSUBISHI', 'FUJI', 'EATON', 'LOVATO'
+      'MITSUBISHI', 'FUJI', 'EATON', 'LOVATO',
+      'TORNADO', 'TOSHIBA', 'SAMSUNG', 'LG', 'SONY', 'TCL'
     ];
     
     for (const mfg of manufacturers) {
