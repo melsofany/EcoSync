@@ -77,16 +77,38 @@ export class SemanticProductUnifier {
       }
 
       console.log(`🔍 معاينة البيانات المحملة:`);
-      for (let i = 0; i < Math.min(3, items.length); i++) {
-        const item = items[i];
+      
+      // تحليل توزيع المعرفات
+      const idCounts = new Map<string, number>();
+      for (const item of items) {
+        const id = item.itemNumber || item.id || 'unknown';
+        idCounts.set(id, (idCounts.get(id) || 0) + 1);
+      }
+      
+      console.log(`📊 إحصائيات المعرفات:`);
+      const sortedIds = Array.from(idCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      for (const [id, count] of sortedIds) {
+        console.log(`   - ${id}: ${count} بند`);
+      }
+      
+      // فلترة البيانات لتجنب البنود الموحدة مسبقاً
+      const unifiedItems = items.filter(item => 
+        (item.itemNumber || item.id) !== 'P-0000135' && 
+        (item.description || '').trim().length > 10
+      );
+      
+      console.log(`📝 تم فلترة البيانات: ${unifiedItems.length} بند غير موحد من ${items.length} بند إجمالي`);
+      
+      for (let i = 0; i < Math.min(3, unifiedItems.length); i++) {
+        const item = unifiedItems[i];
         console.log(`  ${i + 1}. ID: ${item.itemNumber || item.id}`);
         console.log(`     التوصيف: ${(item.description || '').substring(0, 80)}...`);
         console.log(`     رقم القطعة: ${item.partNumber || 'غير محدد'}`);
         console.log(`     ---`);
       }
 
-      // تحويل البيانات إلى التنسيق المطلوب
-      const productItems: ProductItem[] = items.map(item => ({
+      // تحويل البيانات المفلترة إلى التنسيق المطلوب
+      const productItems: ProductItem[] = unifiedItems.map(item => ({
         itemNumber: item.itemNumber || item.id,
         description: item.description || '',
         partNumber: item.partNumber || '',
@@ -96,7 +118,7 @@ export class SemanticProductUnifier {
         extractedSpecs: {}
       }));
 
-      console.log(`🔍 عينة من البيانات للتحليل:`);
+      console.log(`🔍 عينة من البيانات المفلترة للتحليل:`);
       for (let i = 0; i < Math.min(5, productItems.length); i++) {
         const item = productItems[i];
         console.log(`  ${i + 1}. ${item.itemNumber}: ${item.description.substring(0, 60)}...`);
@@ -134,7 +156,11 @@ export class SemanticProductUnifier {
     let comparisonCount = 0;
     let validComparisonCount = 0;
 
-    for (let i = 0; i < items.length && i < 100; i++) { // تحديد للأول 100 بند للاختبار
+    // تحديد عدد البنود للمعالجة (للاختبار السريع)
+    const maxItems = Math.min(items.length, 100);
+    console.log(`🔄 معالجة أول ${maxItems} بند من ${items.length} بند إجمالي`);
+
+    for (let i = 0; i < maxItems; i++) {
       const item1 = items[i];
       
       if (processedItems.has(item1.itemNumber)) {
@@ -145,7 +171,7 @@ export class SemanticProductUnifier {
       processedItems.add(item1.itemNumber);
 
       // البحث عن العناصر المتطابقة
-      for (let j = i + 1; j < items.length && j < 100; j++) {
+      for (let j = i + 1; j < maxItems; j++) {
         const item2 = items[j];
         
         if (processedItems.has(item2.itemNumber)) {
