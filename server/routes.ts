@@ -2561,7 +2561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🚀 بدء نظام التوحيد الجديد...');
       
       // تشغيل ملف التوحيد المصحح
-      const unificationProcess = spawn('node', ['unification-system-fixed.mjs'], {
+      const unificationProcess = spawn('node', ['unification-system-improved.mjs'], {
         cwd: process.cwd(),
         env: process.env,
         detached: true,
@@ -2595,7 +2595,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // إيقاف عمليات التوحيد
       const { exec } = await import('child_process');
-      exec('pkill -f unification-system-fixed.mjs', (error) => {
+      exec('pkill -f unification-system-improved.mjs', (error) => {
         if (error) console.log('لا توجد عمليات توحيد للإيقاف');
       });
       
@@ -7314,7 +7314,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const { spawn } = await import('child_process');
       
       // تشغيل ملف التوحيد المصحح
-      const unificationProcess = spawn('node', ['unification-system-fixed.mjs'], {
+      const unificationProcess = spawn('node', ['unification-system-improved.mjs'], {
         cwd: process.cwd(),
         env: process.env,
         detached: true,
