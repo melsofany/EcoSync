@@ -212,7 +212,7 @@ export class SemanticProductUnifier {
     const application = this.extractApplication(text);
     
     // الكلمات المفتاحية
-    const keywords = this.extractKeywords(text);
+    const keywords = this.extractSimpleKeywords(text);
     
     return {
       manufacturer,
@@ -335,7 +335,7 @@ export class SemanticProductUnifier {
     return '';
   }
 
-  private extractKeywords(text: string): string[] {
+  private extractSimpleKeywords(text: string): string[] {
     return text.split(/\s+/)
       .filter(word => word.length > 2)
       .filter(word => !['THE', 'AND', 'FOR', 'WITH', 'من', 'في', 'إلى'].includes(word))
@@ -450,13 +450,18 @@ export class SemanticProductUnifier {
     let reason = '';
     let differences = [];
 
-    // ✅ **1. القاعدة الأساسية: رقم القطعة المطابق تماماً**
+    // ✅ **1. القاعدة الأساسية: رقم القطعة المطابق تماماً (مع استبعاد الأرقام العامة)**
     if (item1.partNumber && item2.partNumber && 
         item1.partNumber.trim() !== '' && item2.partNumber.trim() !== '') {
       const normalizedPart1 = this.normalizePartNumber(item1.partNumber);
       const normalizedPart2 = this.normalizePartNumber(item2.partNumber);
       
-      if (normalizedPart1 === normalizedPart2 && normalizedPart1.length > 3) {
+      // ❌ **استبعاد أرقام القطع العامة وغير المفيدة**
+      const genericPartNumbers = ['PIECE', 'ITEM', 'PRODUCT', 'PART', 'QTY', 'PC', 'PCS', 'UNIT', 'NO'];
+      const isGeneric1 = genericPartNumbers.some(generic => normalizedPart1.includes(generic));
+      const isGeneric2 = genericPartNumbers.some(generic => normalizedPart2.includes(generic));
+      
+      if (normalizedPart1 === normalizedPart2 && normalizedPart1.length > 3 && !isGeneric1 && !isGeneric2) {
         // ✅ **لكن تأكد من عدم وجود فروق جوهرية أخرى**
         const criticalDiffs = this.findCriticalDifferences(specs1, specs2, item1, item2);
         if (criticalDiffs.length === 0) {
@@ -493,7 +498,7 @@ export class SemanticProductUnifier {
       return { score: 0, reason: `فروق حرجة: ${differences.join(', ')}` };
     }
 
-    // 🔥 **قاعدة جديدة: تطابق وصفي عالي للمنتجات المتشابهة**
+    // 🔥 **3. قاعدة التطابق الوصفي العالي (للمنتجات المتشابهة)**
     if (score < 0.7) {
       const descSimilarity = this.calculateDescriptionSimilarity(item1.description, item2.description);
       if (descSimilarity >= 0.85) {
@@ -502,6 +507,18 @@ export class SemanticProductUnifier {
         if (criticalDiffs.length === 0) {
           score = descSimilarity;
           reason = `تطابق وصفي عالي: ${Math.round(descSimilarity * 100)}%`;
+        }
+      }
+    }
+    
+    // 🔥 **4. قاعدة التطابق بالكلمات المفتاحية المميزة**
+    if (score < 0.7) {
+      const keywordSimilarity = this.calculateKeywordSimilarity(item1.description, item2.description);
+      if (keywordSimilarity >= 0.8) {
+        const criticalDiffs = this.findCriticalDifferences(specs1, specs2, item1, item2);
+        if (criticalDiffs.length === 0) {
+          score = keywordSimilarity;
+          reason = `تطابق بالكلمات المفتاحية: ${Math.round(keywordSimilarity * 100)}%`;
         }
       }
     }
@@ -633,6 +650,61 @@ export class SemanticProductUnifier {
     const similarity = (commonWords.length * 2) / (words1.length + words2.length);
     
     return Math.min(similarity, 0.9); // حد أقصى 90% للتشابه الوصفي
+  }
+
+  // 🔥 **دالة حساب التشابه بالكلمات المفتاحية المميزة**
+  private calculateKeywordSimilarity(desc1: string, desc2: string): number {
+    if (!desc1 || !desc2) return 0;
+    
+    // استخراج الكلمات المفتاحية المميزة (أرقام، أحجام، موديلات، ماركات)
+    const keywords1 = this.extractKeywords(desc1);
+    const keywords2 = this.extractKeywords(desc2);
+    
+    if (keywords1.length === 0 || keywords2.length === 0) return 0;
+    
+    let matchCount = 0;
+    let totalWeight = 0;
+    
+    for (const keyword1 of keywords1) {
+      totalWeight += keyword1.weight;
+      for (const keyword2 of keywords2) {
+        if (keyword1.value === keyword2.value && keyword1.type === keyword2.type) {
+          matchCount += keyword1.weight;
+          break;
+        }
+      }
+    }
+    
+    return totalWeight > 0 ? Math.min(matchCount / totalWeight, 0.95) : 0;
+  }
+
+  // 🔥 **استخراج الكلمات المفتاحية المميزة**
+  private extractKeywords(description: string): Array<{value: string, type: string, weight: number}> {
+    const keywords: Array<{value: string, type: string, weight: number}> = [];
+    
+    // أرقام الموديلات (وزن عالي)
+    const modelNumbers = description.match(/\b[A-Z0-9]{3,15}\b/g) || [];
+    modelNumbers.forEach(model => {
+      if (!/^(PIECE|ITEM|PC|PCS)$/i.test(model)) {
+        keywords.push({value: model.toUpperCase(), type: 'model', weight: 3});
+      }
+    });
+    
+    // الأحجام والأرقام المهمة (وزن متوسط)
+    const sizes = description.match(/\b\d+["\s]*(?:inch|inches|بوصة|سم|ملم|كم|متر|لتر|كيلو|جرام|وات|فولت)?\b/g) || [];
+    sizes.forEach(size => {
+      keywords.push({value: size.toLowerCase(), type: 'size', weight: 2});
+    });
+    
+    // أسماء الشركات المعروفة (وزن متوسط)
+    const brands = ['samsung', 'lg', 'sony', 'panasonic', 'toshiba', 'sharp', 'philips', 'bosch', 'siemens'];
+    brands.forEach(brand => {
+      if (description.toLowerCase().includes(brand)) {
+        keywords.push({value: brand, type: 'brand', weight: 2});
+      }
+    });
+    
+    return keywords;
   }
 
   private normalizePartNumber(partNum: string): string {
