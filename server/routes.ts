@@ -7313,7 +7313,21 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       const { spawn } = await import('child_process');
       
-      // تشغيل ملف التوحيد المصحح
+      // إعادة تعيين ملف الحالة قبل البدء
+      const statusPath = './unification-status.json';
+      const initialStatus = {
+        isRunning: true,
+        isPaused: false,
+        currentIndex: 0,
+        totalItems: 5604,
+        processedItems: 0,
+        unifiedItems: 0,
+        startTime: new Date().toISOString(),
+        errorCount: 0
+      };
+      fs.writeFileSync(statusPath, JSON.stringify(initialStatus, null, 2));
+      
+      // تشغيل ملف التوحيد المحسن
       const unificationProcess = spawn('node', ['unification-system-improved.mjs'], {
         cwd: process.cwd(),
         env: process.env,
