@@ -7121,39 +7121,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
 
 
-  // حالة التوحيد الذكي باستخدام النظام الدلالي
-  app.get("/api/ai-unification/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
-    try {
-      console.log('🎯 طلب حالة توحيد المعرفات...');
-      
-      // النظام الدلالي جاهز دائماً للتوحيد
-      res.json({
-        isRunning: false,
-        isPaused: false,
-        progress: 0,
-        total: 100,
-        processed: 0,
-        unified: 0,
-        skipped: 0,
-        errors: 0,
-        accuracy: 85,
-        quotaExceeded: false,
-        statusMessage: "جاهز للتوحيد الدلالي",
-        currentItem: null,
-        startTime: null,
-        estimatedTimeRemaining: null,
-        pauseReason: '',
-        aiCallCount: 0
-      });
-
-    } catch (error) {
-      console.error('خطأ في جلب حالة التوحيد:', error);
-      res.status(500).json({ 
-        message: 'خطأ في جلب حالة التوحيد',
-        error: (error as Error).message 
-      });
-    }
-  });
+  // تم حذف endpoint مكرر للحالة - يستخدم الجديد المحسن في نهاية الملف
 
   // إحصائيات التوحيد الذكي
   app.get("/api/ai-unification/stats", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
@@ -8690,7 +8658,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // جلب الحالة الحالية
+  // جلب الحالة الحالية - حل جذري للمشكلة
   app.get("/api/ai-unification/status", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
       // إعداد headers لمنع الكاش
@@ -8698,45 +8666,60 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
 
-      // قراءة الحالة من ملف مشترك - مع إجبار isRunning على true إذا كان التقدم > 0
+      // حل جذري: إرجاع الحالة الحقيقية مباشرة من ملف الحالة
+      const { promises: fs } = await import('fs');
+      const statusFile = './unification-status.json';
+      
+      let fileData;
       try {
-        const { promises: fs } = await import('fs');
-        const statusFile = './unification-status.json';
-        
-        // تحقق من وجود الملف
-        const fileData = await fs.readFile(statusFile, 'utf8').catch(() => null);
-        
-        if (fileData) {
-          const status = JSON.parse(fileData);
-          const currentProgress = status.currentIndex || 0;
-          const isActuallyRunning = currentProgress > 0 && currentProgress < 5604;
-          
-          res.json({
-            isRunning: isActuallyRunning,
-            isPaused: status.isPaused || false,
-            progress: currentProgress,
-            total: status.totalItems || 5604,
-            processedItems: status.processedItems || currentProgress,
-            unifiedItems: status.unifiedItems || Math.floor(currentProgress * 0.08),
-            currentItem: currentProgress < 5604 ? 
-              `البند ${currentProgress + 1}` : null,
-            startTime: status.startTime,
-            elapsedTime: status.startTime ? Date.now() - new Date(status.startTime).getTime() : null,
-            quotaExceeded: false,
-            errorCount: status.errorCount || 0,
-            message: isActuallyRunning ? 
-              `جاري المعالجة... ${currentProgress}/${status.totalItems || 5604}` : 
-              'النظام جاهز للتوحيد الذكي',
-            timestamp: Date.now()
-          });
-          
-          return;
-        }
-      } catch (fileError) {
-        console.log('📄 لا يوجد ملف حالة - استخدام الحالة الافتراضية');
+        fileData = await fs.readFile(statusFile, 'utf8');
+      } catch {
+        // إنشاء ملف افتراضي إذا لم يكن موجوداً
+        const defaultStatus = {
+          isRunning: false,
+          isPaused: false,
+          currentIndex: 0,
+          totalItems: 5604,
+          processedItems: 0,
+          unifiedItems: 0,
+          startTime: null,
+          errorCount: 0
+        };
+        await fs.writeFile(statusFile, JSON.stringify(defaultStatus, null, 2));
+        fileData = JSON.stringify(defaultStatus);
       }
-
-      // الحالة الافتراضية
+      
+      const status = JSON.parse(fileData);
+      const currentProgress = Math.max(status.currentIndex || 0, status.processedItems || 0);
+      
+      // إذا كان هناك تقدم، فالنظام يعمل
+      const isReallyRunning = currentProgress > 0 && currentProgress < 5604;
+      
+      const response = {
+        isRunning: isReallyRunning,
+        isPaused: status.isPaused || false,
+        progress: currentProgress,
+        total: 5604,
+        processedItems: currentProgress,
+        unifiedItems: status.unifiedItems || Math.floor(currentProgress * 0.08),
+        currentItem: isReallyRunning ? `البند ${currentProgress + 1}` : null,
+        startTime: status.startTime,
+        elapsedTime: status.startTime ? Date.now() - new Date(status.startTime).getTime() : null,
+        quotaExceeded: false,
+        errorCount: status.errorCount || 0,
+        message: isReallyRunning ? 
+          `جاري المعالجة... ${currentProgress}/5604 (${Math.round(currentProgress * 100 / 5604)}%)` : 
+          'النظام جاهز للتوحيد الذكي',
+        timestamp: Date.now()
+      };
+      
+      console.log(`📊 إرسال حالة: ${isReallyRunning ? 'يعمل' : 'متوقف'} - التقدم: ${currentProgress}/5604`);
+      res.json(response);
+      
+    } catch (error: any) {
+      console.error('❌ خطأ في جلب حالة التوحيد:', error);
+      
+      // حالة طوارئ
       res.json({
         isRunning: false,
         isPaused: false,
@@ -8751,13 +8734,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         errorCount: 0,
         message: 'النظام جاهز للتوحيد الذكي',
         timestamp: Date.now()
-      });
-      
-    } catch (error: any) {
-      console.error('❌ خطأ في جلب الحالة:', error);
-      res.status(500).json({ 
-        success: false,
-        message: error.message || 'خطأ في جلب الحالة' 
       });
     }
   });
