@@ -64,7 +64,7 @@ class ProgressUpdater {
     console.log('🚀 بدء نظام التحديث التلقائي للتقدم...');
     this.intervalId = setInterval(() => {
       this.updateProgress();
-    }, 3000);
+    }, 1000); // كل ثانية واحدة بدلاً من 3 ثوانٍ
   }
   
   stop() {
@@ -77,8 +77,8 @@ class ProgressUpdater {
   
   private updateProgress() {
     try {
-      // زيادة التقدم تدريجياً
-      this.currentProgress += Math.floor(Math.random() * 5) + 2; // زيادة 2-6 بنود
+      // زيادة التقدم بشكل أسرع بكثير
+      this.currentProgress += Math.floor(Math.random() * 50) + 20; // زيادة 20-70 بند
       
       if (this.currentProgress >= 5604) {
         this.currentProgress = 5604;
