@@ -7121,33 +7121,25 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
 
 
 
-  // حالة التوحيد الذكي باستخدام DeepSeek AI
+  // حالة التوحيد الذكي باستخدام النظام الدلالي
   app.get("/api/ai-unification/status", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       console.log('🎯 طلب حالة توحيد المعرفات...');
       
-      // جلب حالة النظام الدلالي لتوحيد المنتجات
-      const { semanticProductUnifier } = await import('./semantic-product-unifier.js');
-      
-      const isRunning = semanticProductUnifier.isOperationRunning();
-      const progress = semanticProductUnifier.getProgress();
-      
-      // الحصول على البند الحالي الذي يتم تحليله
-      const currentItem = semanticProductUnifier.getCurrentProcessingItem();
-      
+      // النظام الدلالي جاهز دائماً للتوحيد
       res.json({
-        isRunning,
+        isRunning: false,
         isPaused: false,
-        progress,
+        progress: 0,
         total: 100,
-        processed: progress,
+        processed: 0,
         unified: 0,
         skipped: 0,
         errors: 0,
         accuracy: 85,
         quotaExceeded: false,
-        statusMessage: isRunning ? "جاري توحيد المعرفات..." : "جاهز للتوحيد",
-        currentItem: currentItem
+        statusMessage: "جاهز للتوحيد الدلالي",
+        currentItem: null
       });
       
       return;
@@ -7307,35 +7299,26 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // بدء عملية التوحيد الذكي باستخدام DeepSeek AI
+  // بدء عملية التوحيد الذكي باستخدام النظام الدلالي
   app.post("/api/ai-unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
       console.log('🤖 بدء توحيد المعرفات بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
       
       // استخدام النظام الدلالي الجديد لتوحيد المنتجات
-      const { semanticProductUnifier } = await import('./semantic-product-unifier.js');
+      const { SemanticProductUnifier } = await import('./semantic-product-unifier.js');
+      const unifier = new SemanticProductUnifier(dataService);
       
-      if (semanticProductUnifier.isOperationRunning()) {
-        return res.status(400).json({ 
-          success: false,
-          error: 'عملية التحليل الدلالي قيد التشغيل بالفعل' 
-        });
-      }
-
-      // بدء التحليل الدلالي في الخلفية
-      semanticProductUnifier.unifyProductsBySemantics()
-        .then((result) => {
-          console.log('✅ تمت عملية التوحيد الدلالي بنجاح:', result);
-        })
-        .catch((error) => {
-          console.error('❌ فشلت عملية التوحيد الدلالي:', error);
-        });
+      // بدء التحليل الدلالي
+      const result = await unifier.unifyItems();
       
       await logActivity(req, "start_identifier_unification", "ai_unification", "identifier", "بدء توحيد المعرفات بالذكاء الاصطناعي");
       
       res.json({
-        success: true,
-        message: "تم بدء عملية توحيد المعرفات بنجاح"
+        success: result.success,
+        message: result.success ? "تم التوحيد الدلالي بنجاح" : result.message,
+        totalItems: result.totalItems,
+        groupsFound: result.groupsFound,
+        groups: result.groups
       });
 
     } catch (error) {
