@@ -3,7 +3,11 @@
 
 import { google } from 'googleapis';
 import fs from 'fs';
+import { config } from 'dotenv';
 import fetch from 'node-fetch';
+
+// تحميل المتغيرات البيئية
+config();
 
 // ==================== التكوين ====================
 const keyFile = JSON.parse(fs.readFileSync('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json', 'utf8'));
