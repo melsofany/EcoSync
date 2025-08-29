@@ -75,8 +75,19 @@ export class SemanticProductUnifier {
         };
       }
 
+      // تحويل البيانات إلى التنسيق المطلوب
+      const productItems: ProductItem[] = items.map(item => ({
+        itemNumber: item.itemNumber || item.id,
+        description: item.description || '',
+        partNumber: item.partNumber || '',
+        lineItem: item.lineItem || '',
+        uom: item.uom || '',
+        rfq: item.rfqNumber || '',
+        extractedSpecs: {}
+      }));
+
       // تجميع البنود المتشابهة
-      const groups = this.findSemanticGroups(items);
+      const groups = this.findSemanticGroups(productItems);
       console.log(`✅ تم العثور على ${groups.length} مجموعة متطابقة`);
 
       return {
@@ -93,7 +104,7 @@ export class SemanticProductUnifier {
         totalItems: 0,
         groupsFound: 0,
         groups: [],
-        message: `خطأ في التوحيد: ${error.message}`
+        message: `خطأ في التوحيد: ${(error as Error).message}`
       };
     }
   }
