@@ -225,24 +225,14 @@ export default function AIDataUnification() {
             
             <div className="flex items-center gap-2">
               {!status?.isRunning ? (
-                <>
-                  <Button 
-                    onClick={() => startSimpleUnification.mutate()}
-                    disabled={startSimpleUnification.isPending}
-                    className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
-                  >
-                    <Zap className="ml-2 h-4 w-4" />
-                    توحيد بسيط وسريع
-                  </Button>
-                  <Button 
-                    onClick={() => startSemanticUnification.mutate()}
-                    disabled={startSemanticUnification.isPending}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-                  >
-                    <Brain className="ml-2 h-4 w-4" />
-                    توحيد ذكي متقدم
-                  </Button>
-                </>
+                <Button 
+                  onClick={() => startSemanticUnification.mutate()}
+                  disabled={startSemanticUnification.isPending}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                >
+                  <Brain className="ml-2 h-4 w-4" />
+                  بدء التوحيد الذكي
+                </Button>
               ) : (
                 <Button 
                   onClick={() => stopSemanticUnification.mutate()}

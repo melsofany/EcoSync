@@ -160,10 +160,10 @@ export class SemanticProductUnifier {
           const item: ProductItem = {
             itemNumber: row[0] || `P-${String(i + 2).padStart(7, '0')}`,
             description,
-            partNumber: (row[1] || '').toString().trim(),
-            lineItem: (row[2] || '').toString().trim(),
+            partNumber: (row[3] || '').toString().trim(), // العمود D - PART NO
+            lineItem: (row[2] || '').toString().trim(),   // العمود C - LINE ITEM
             rowIndex: i + 2,
-            extractedSpecs: this.extractProductSpecs(description, row[1] || '')
+            extractedSpecs: this.extractProductSpecs(description, row[3] || '') // استخدام PART NO من العمود D
           };
           
           items.push(item);
@@ -436,13 +436,52 @@ export class SemanticProductUnifier {
       return { score: 0, reason: 'نفس البند - مرفوض' };
     }
     
-    // ❌ **تجنب مقارنة البنود المتطابقة تماماً**
-    if (item1.description === item2.description && 
-        item1.partNumber === item2.partNumber && 
-        item1.lineItem === item2.lineItem) {
-      return { score: 0, reason: 'محتوى متطابق تماماً - مشبوه' };
+    // ✅ **التركيز الكامل على الوصف فقط**
+    const desc1 = this.cleanDescription(item1.description);
+    const desc2 = this.cleanDescription(item2.description);
+    
+    if (desc1.length < 10 || desc2.length < 10) {
+      return { score: 0, reason: 'وصف قصير جداً' };
     }
     
+    // مقارنة بسيطة - إذا كان الوصف متطابق بنسبة 90% أو أكثر
+    const similarity = this.calculateTextSimilarity(desc1, desc2);
+    
+    if (similarity >= 0.9) {
+      return { score: similarity, reason: 'توصيف متطابق تقريباً' };
+    }
+    
+    return { score: similarity, reason: 'توصيف مختلف' };
+  }
+
+  private cleanDescription(text: string): string {
+    return text
+      .replace(/[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase();
+  }
+
+  private calculateTextSimilarity(text1: string, text2: string): number {
+    if (text1 === text2) return 1.0;
+    
+    const words1 = text1.split(' ').filter(w => w.length > 2);
+    const words2 = text2.split(' ').filter(w => w.length > 2);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    let matches = 0;
+    for (const word1 of words1) {
+      if (words2.includes(word1)) {
+        matches++;
+      }
+    }
+    
+    return (matches * 2) / (words1.length + words2.length);
+  }
+
+  // باقي الكود القديم (مؤقتاً)
+  private oldCalculateSemanticSimilarity(item1: ProductItem, item2: ProductItem): {score: number, reason: string} {
     const specs1 = item1.extractedSpecs;
     const specs2 = item2.extractedSpecs;
     
