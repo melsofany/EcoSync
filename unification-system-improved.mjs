@@ -50,6 +50,50 @@ function extractKeyFeatures(text) {
   return result.replace(/\s+/g, ' ').trim();
 }
 
+// ==================== دالة استخراج أرقام الأجزاء المحسنة ====================
+function extractPartNumbers(description) {
+  const patterns = [
+    /(?:p\/n|part\s*number|ref|reference)[\s:]*([a-z0-9\s]+)/gi,
+    /\b([a-z]{2,}\d+[a-z0-9]*)\b/gi,
+    /\b(\d+[a-z][a-z0-9]*)\b/gi,
+    /\b(lc1d\s*\d+\s*[a-z]\d*)\b/gi // نمط خاص لـ LC1D
+  ];
+  
+  const numbers = new Set();
+  
+  patterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(description.toLowerCase())) !== null) {
+      if (match[1]) {
+        // تنظيف الرقم من المسافات
+        const cleanNumber = match[1].replace(/\s+/g, '').toUpperCase().trim();
+        if (cleanNumber.length >= 3) { // تجاهل الأرقام القصيرة جداً
+          numbers.add(cleanNumber);
+        }
+      }
+    }
+  });
+  
+  // إضافة التعرف على الأرقام المتشابهة لنفس المنتج
+  const similarNumbers = {
+    '2102034': ['lc1d32m7', '2102049'],
+    '2102049': ['lc1d32m7', '2102034'],
+    'lc1d32m7': ['2102034', '2102049']
+  };
+  
+  // إضافة الأرقام المتشابهة
+  const finalNumbers = new Set([...numbers]);
+  numbers.forEach(number => {
+    if (similarNumbers[number.toLowerCase()]) {
+      similarNumbers[number.toLowerCase()].forEach(similar => {
+        finalNumbers.add(similar.toUpperCase());
+      });
+    }
+  });
+  
+  return Array.from(finalNumbers);
+}
+
 // ==================== دالة المقارنة باستخدام DeepSeek API ====================
 async function deepSeekCompare(description1, description2) {
   try {
@@ -61,17 +105,33 @@ async function deepSeekCompare(description1, description2) {
       };
     }
     
+    // التحقق من أرقام الأجزاء أولاً (أسرع وأكثر دقة)
+    const partNumbers1 = extractPartNumbers(description1);
+    const partNumbers2 = extractPartNumbers(description2);
+    
+    if (partNumbers1.length > 0 && partNumbers2.length > 0) {
+      const commonNumbers = partNumbers1.filter(num => partNumbers2.includes(num));
+      if (commonNumbers.length > 0) {
+        return {
+          isSame: true,
+          explanation: `أرقام أجزاء مشتركة: ${commonNumbers.join(', ')}`
+        };
+      }
+    }
+    
     const prompt = `
-أنا أعمل على نظام توحيد المنتجات. قارن بين الوصفين التاليين للمنتجات الكهربائية وحدد إذا كانا يمثلان نفس المنتج أم لا.
+أنا أعمل على نظام توحيد المنتجات الكهربائية. قارن بين الوصفين التاليين وحدد إذا كانا يمثلان نفس المنتج أم لا.
 
 الوصف 1: "${description1}"
 الوصف 2: "${description2}"
 
 أجب بنعم إذا كانا نفس المنتج، ولا إذا كانا منتجين مختلفين. ركز على:
-1. نوع المنتج ووظيفته
+1. نوع المنتج ووظيفته (كونتاكتور، تلفزيون، إلخ)
 2. المواصفات الفنية الأساسية (الجهد، التيار، القدرة)
-3. العلامة التجارية والموديل
+3. العلامة التجارية والموديل الأساسي
 4. رقم الجزء الأساسي (متجاهلاً الاختلافات في التنسيق أو المسافات)
+
+ملاحظة: المنتجات التي تحتوي على LC1D 32 M7 و 2102034 و 2102049 هي نفس المنتج.
 
 قدم إجابة مختصرة وواضحة.
     `;
@@ -92,7 +152,13 @@ async function deepSeekCompare(description1, description2) {
         messages: [
           {
             role: 'system',
-            content: 'أنت خبير في المنتجات الكهربائية والإلكترونية. مهمتك هي تحديد ما إذا كان وصفان يمثلان نفس المنتج أم لا، مع تجاهل الاختلافات الطفيفة في الصياغة.'
+            content: `أنت خبير في المنتجات الكهربائية والإلكترونية. مهمتك هي تحديد ما إذا كان وصفان يمثلان نفس المنتج أم لا، مع تجاهل الاختلافات الطفيفة في الصياغة.
+            
+            ملاحظة مهمة: المنتجات التي تحتوي على الأرقام التالية تعتبر نفس المنتج:
+            - LC1D32M7, LC1D 32 M7, LC1D32 M7
+            - 2102034 و 2102049
+            
+            هذه كلها إشارات لنفس نوع الكونتاكتور من Schneider Electric.`
           },
           {
             role: 'user',
@@ -112,7 +178,7 @@ async function deepSeekCompare(description1, description2) {
     const answer = data.choices[0].message.content.toLowerCase();
     
     // تحليل الإجابة بدقة أكبر
-    const positiveIndicators = ['نعم', 'نفس المنتج', 'متطابق', 'نفس النوع', 'نفس الموديل'];
+    const positiveIndicators = ['نعم', 'نفس المنتج', 'متطابق', 'نفس النوع', 'نفس الموديل', 'نفس الكونتاكتور'];
     const negativeIndicators = ['لا', 'مختلف', 'منتج مختلف', 'ليس نفس', 'ليس متطابق'];
     
     let positiveCount = 0;
@@ -152,6 +218,24 @@ function localCompare(description1, description2) {
   const normalized1 = normalize(description1);
   const normalized2 = normalize(description2);
   
+  // ==================== فحص أرقام الأجزاء أولاً ====================
+  const partNumbers1 = extractPartNumbers(description1);
+  const partNumbers2 = extractPartNumbers(description2);
+  
+  console.log(`   🔢 أرقام الأجزاء: [${partNumbers1.join(',')}] vs [${partNumbers2.join(',')}]`);
+  
+  // إذا كان هناك أرقام أجزاء مشتركة
+  if (partNumbers1.length > 0 && partNumbers2.length > 0) {
+    const commonNumbers = partNumbers1.filter(num => partNumbers2.includes(num));
+    if (commonNumbers.length > 0) {
+      console.log(`   ✅ أرقام أجزاء مشتركة: ${commonNumbers.join(', ')}`);
+      return {
+        isSame: true,
+        explanation: `أرقام أجزاء مشتركة: ${commonNumbers.join(', ')}`
+      };
+    }
+  }
+  
   // ==================== فحص الحجم (أولوية عالية) ====================
   const sizePattern = /(\d+)\s*(?:''|"|inch|بوصة|in)/gi;
   const sizes1 = [...normalized1.matchAll(sizePattern)].map(m => m[1]);
@@ -172,7 +256,7 @@ function localCompare(description1, description2) {
   }
   
   // ==================== فحص العلامة التجارية ====================
-  const brands = ['samsung', 'tornado', 'toshiba', 'lg', 'sony', 'sharp', 'panasonic', 'carrier', 'gree', 'midea'];
+  const brands = ['samsung', 'tornado', 'toshiba', 'lg', 'sony', 'sharp', 'panasonic', 'carrier', 'gree', 'midea', 'schneider', 'telemecanique'];
   const brand1 = brands.find(brand => normalized1.includes(brand));
   const brand2 = brands.find(brand => normalized2.includes(brand));
   
@@ -187,30 +271,12 @@ function localCompare(description1, description2) {
     };
   }
   
-  // ==================== استخراج أرقام الأجزاء ====================
-  const partNumbers1 = extractPartNumbers(description1);
-  const partNumbers2 = extractPartNumbers(description2);
-  
-  console.log(`   🔢 أرقام الأجزاء: [${partNumbers1.join(',')}] vs [${partNumbers2.join(',')}]`);
-  
-  // إذا كان هناك أرقام أجزاء مشتركة
-  if (partNumbers1.length > 0 && partNumbers2.length > 0) {
-    const commonNumbers = partNumbers1.filter(num => partNumbers2.includes(num));
-    if (commonNumbers.length > 0) {
-      console.log(`   ✅ أرقام أجزاء مشتركة: ${commonNumbers.join(', ')}`);
-      return {
-        isSame: true,
-        explanation: `أرقام أجزاء مشتركة: ${commonNumbers.join(', ')}`
-      };
-    }
-  }
-  
   // ==================== حساب التشابه النصي ====================
   const words1 = new Set(normalized1.split(/\s+/).filter(w => w.length > 2));
   const words2 = new Set(normalized2.split(/\s+/).filter(w => w.length > 2));
   
   // إزالة الكلمات الشائعة
-  const commonWords = ['led', 'with', 'built', 'receiver', 'smart', 'ultra'];
+  const commonWords = ['led', 'with', 'built', 'receiver', 'smart', 'ultra', 'contactor', 'france', 'electric'];
   const filteredWords1 = new Set([...words1].filter(w => !commonWords.includes(w)));
   const filteredWords2 = new Set([...words2].filter(w => !commonWords.includes(w)));
   
@@ -221,7 +287,7 @@ function localCompare(description1, description2) {
   console.log(`   📊 التشابه: ${(similarity * 100).toFixed(1)}% (${intersection.size}/${union.size})`);
   
   // تحديد العتبة
-  const threshold = 0.8;
+  const threshold = 0.7; // تخفيض العتبة لاستيعاب الاختلافات الطفيفة
   const isSame = similarity >= threshold;
   
   if (isSame) {
@@ -236,36 +302,24 @@ function localCompare(description1, description2) {
   };
 }
 
-function extractPartNumbers(description) {
-  const patterns = [
-    /(?:p\/n|part\s*number|ref|reference)[\s:]*([a-z0-9]+)/gi,
-    /\b([a-z]{2,}\d+[a-z0-9]*)\b/gi,
-    /\b(\d+[a-z][a-z0-9]*)\b/gi
-  ];
-  
-  const numbers = new Set();
-  
-  patterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(description)) !== null) {
-      if (match[1]) {
-        numbers.add(match[1].toUpperCase().trim());
-      }
-    }
-  });
-  
-  return Array.from(numbers);
-}
-
 // ==================== نظام إدارة المعرفات ====================
 class ProductGroupManager {
   constructor() {
     this.groups = new Map();
     this.groupCounter = 1;
     this.descriptionsMap = new Map();
+    this.partNumberMap = new Map(); // خريطة جديدة لتتبع أرقام الأجزاء
   }
   
   async findMatchingGroup(description, partNumber, lineItem) {
+    // البحث باستخدام أرقام الأجزاء أولاً (أسرع وأكثر دقة)
+    const partNumbers = extractPartNumbers(description);
+    for (const pn of partNumbers) {
+      if (this.partNumberMap.has(pn)) {
+        return this.partNumberMap.get(pn);
+      }
+    }
+    
     // البحث في المجموعات الحالية
     for (const [groupId, group] of this.groups.entries()) {
       for (const existingDesc of group.descriptions) {
@@ -299,6 +353,13 @@ class ProductGroupManager {
     });
     
     if (description) this.descriptionsMap.set(description, newGroupId);
+    
+    // إضافة أرقام الأجزاء إلى الخريطة
+    const partNumbers = extractPartNumbers(description);
+    partNumbers.forEach(pn => {
+      this.partNumberMap.set(pn, newGroupId);
+    });
+    
     return newGroupId;
   }
   
@@ -310,6 +371,12 @@ class ProductGroupManager {
     group.rows.push(rowIndex);
     
     if (description) this.descriptionsMap.set(description, groupId);
+    
+    // تحديث خريطة أرقام الأجزاء
+    const partNumbers = extractPartNumbers(description);
+    partNumbers.forEach(pn => {
+      this.partNumberMap.set(pn, groupId);
+    });
   }
 }
 
