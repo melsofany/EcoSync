@@ -41,6 +41,22 @@ function normalize(text) {
     .trim();
 }
 
+// ==================== حفظ الحالة ====================
+function saveStatus(currentIndex, totalItems, isRunning = true) {
+  const status = {
+    isRunning,
+    isPaused: false,
+    currentIndex,
+    totalItems,
+    processedItems: currentIndex,
+    unifiedItems: 0,
+    startTime: new Date().toISOString(),
+    errorCount: 0
+  };
+  
+  fs.writeFileSync('./unification-status.json', JSON.stringify(status, null, 2));
+}
+
 // ==================== البرنامج الرئيسي ====================
 async function unifyItems() {
   console.log('🚀 بدء التوحيد الذكي للبنود...\n');
@@ -147,9 +163,10 @@ async function unifyItems() {
         matchReason
       });
       
-      // عرض التقدم
-      if ((i % 500) === 0) {
+      // عرض التقدم وحفظ الحالة
+      if ((i % 10) === 0) {
         console.log(`⏳ معالجة: ${i}/${rows.length} (${Math.round(i * 100 / rows.length)}%)`);
+        saveStatus(i, rows.length - 1, true); // حفظ الحالة كل 10 بنود
       }
     }
     
@@ -213,6 +230,9 @@ async function unifyItems() {
     }
     
     console.log('\n🎉 اكتمل التوحيد بنجاح!');
+    
+    // حفظ الحالة النهائية
+    saveStatus(rows.length - 1, rows.length - 1, false);
     
     // ==================== المرحلة 4: عرض أمثلة ====================
     console.log('\n🔍 أمثلة على التوحيد:');

@@ -8693,42 +8693,63 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // جلب الحالة الحالية
   app.get("/api/ai-unification/status", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
     try {
-      // جلب الحالة من النظام العامل
-      if (global.aiUnifier) {
-        const status = global.aiUnifier.getStatus();
+      // إعداد headers لمنع الكاش
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+
+      // قراءة الحالة من ملف مشترك
+      try {
+        const { promises: fs } = await import('fs');
+        const statusFile = './unification-status.json';
         
-        // إعداد headers لمنع الكاش
-        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.setHeader('Pragma', 'no-cache');
-        res.setHeader('Expires', '0');
+        // تحقق من وجود الملف
+        const fileData = await fs.readFile(statusFile, 'utf8').catch(() => null);
         
-        res.json({
-          isRunning: status.isRunning || false,
-          isPaused: status.isPaused || false,
-          progress: status.currentIndex || 0,
-          total: status.totalItems || 0,
-          processedItems: status.processedItems || 0,
-          unifiedItems: status.unifiedItems || 0,
-          currentItem: status.currentIndex < status.totalItems ? 
-            `البند ${status.currentIndex + 1}` : null,
-          startTime: status.startTime,
-          elapsedTime: status.startTime ? Date.now() - new Date(status.startTime).getTime() : null,
-          quotaExceeded: status.quotaExceeded || false,
-          errorCount: status.errorCount || 0,
-          message: status.isRunning ? 
-            `جاري المعالجة... ${status.processedItems}/${status.totalItems}` : 
-            'النظام جاهز للتوحيد الذكي',
-          timestamp: Date.now() // طابع زمني للتأكد من التحديث
-        });
-        
-        return;
+        if (fileData) {
+          const status = JSON.parse(fileData);
+          
+          res.json({
+            isRunning: status.isRunning || false,
+            isPaused: status.isPaused || false,
+            progress: status.currentIndex || 0,
+            total: status.totalItems || 5604,
+            processedItems: status.processedItems || status.currentIndex || 0,
+            unifiedItems: status.unifiedItems || 0,
+            currentItem: status.currentIndex < status.totalItems ? 
+              `البند ${status.currentIndex + 1}` : null,
+            startTime: status.startTime,
+            elapsedTime: status.startTime ? Date.now() - new Date(status.startTime).getTime() : null,
+            quotaExceeded: false,
+            errorCount: status.errorCount || 0,
+            message: status.isRunning ? 
+              `جاري المعالجة... ${status.processedItems || status.currentIndex}/${status.totalItems}` : 
+              'النظام جاهز للتوحيد الذكي',
+            timestamp: Date.now()
+          });
+          
+          return;
+        }
+      } catch (fileError) {
+        console.log('📄 لا يوجد ملف حالة - استخدام الحالة الافتراضية');
       }
 
-      // إذا لم يكن النظام متاحاً، جرب النظام القديم
-      const unifier = await initializeAIUnifier();
-      const status = unifier.getStatus();
-      
-      res.json(status);
+      // الحالة الافتراضية
+      res.json({
+        isRunning: false,
+        isPaused: false,
+        progress: 0,
+        total: 5604,
+        processedItems: 0,
+        unifiedItems: 0,
+        currentItem: null,
+        startTime: null,
+        elapsedTime: null,
+        quotaExceeded: false,
+        errorCount: 0,
+        message: 'النظام جاهز للتوحيد الذكي',
+        timestamp: Date.now()
+      });
       
     } catch (error: any) {
       console.error('❌ خطأ في جلب الحالة:', error);

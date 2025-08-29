@@ -2,115 +2,115 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 356,
+    "currentIndex": 632,
     "totalItems": 5604,
-    "processedItems": 355,
+    "processedItems": 631,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
-    "lastSaveTime": "2025-08-29T17:09:07.942Z",
+    "lastSaveTime": "2025-08-29T17:12:07.948Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٥:٠٨:٤٧ م] 📊 التقدم: 322/5604 (6%)",
-      "[٥:٠٨:٤٩ م] 🔍 معالجة البند 324/5604: HOLDER FOR LED LCD TV / TILT TV WALL\nMOUNT FOR USE...",
-      "[٥:٠٨:٤٩ م] ✅ تم معالجة البند 324: P-0000135",
-      "[٥:٠٨:٤٩ م] 📊 التقدم: 323/5604 (6%)",
-      "[٥:٠٨:٤٩ م] 🔍 معالجة البند 325/5604: REMOTE CONTROL FOR BEIN SPORT\nRECEIVER...",
-      "[٥:٠٨:٤٩ م] ✅ تم معالجة البند 325: P-0000135",
-      "[٥:٠٨:٤٩ م] 📊 التقدم: 324/5604 (6%)",
-      "[٥:٠٨:٤٩ م] 🔍 معالجة البند 326/5604: 1X8 OUTPUT LNB...",
-      "[٥:٠٨:٤٩ م] ✅ تم معالجة البند 326: P-0000135",
-      "[٥:٠٨:٤٩ م] 📊 التقدم: 325/5604 (6%)",
-      "[٥:٠٨:٥١ م] 🔍 معالجة البند 327/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
-      "[٥:٠٨:٥١ م] ✅ تم معالجة البند 327: P-0000135",
-      "[٥:٠٨:٥١ م] 📊 التقدم: 326/5604 (6%)",
-      "[٥:٠٨:٥١ م] 🔍 معالجة البند 328/5604: RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT...",
-      "[٥:٠٨:٥١ م] ✅ تم معالجة البند 328: P-0000135",
-      "[٥:٠٨:٥١ م] 📊 التقدم: 327/5604 (6%)",
-      "[٥:٠٨:٥١ م] 🔍 معالجة البند 329/5604: SATELLITE DISH Prefix 70...",
-      "[٥:٠٨:٥١ م] ✅ تم معالجة البند 329: P-0000135",
-      "[٥:٠٨:٥١ م] 📊 التقدم: 328/5604 (6%)",
-      "[٥:٠٨:٥٣ م] 🔍 معالجة البند 330/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
-      "[٥:٠٨:٥٣ م] ✅ تم معالجة البند 330: P-0000135",
-      "[٥:٠٨:٥٣ م] 📊 التقدم: 329/5604 (6%)",
-      "[٥:٠٨:٥٣ م] 🔍 معالجة البند 331/5604: RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT...",
-      "[٥:٠٨:٥٣ م] ✅ تم معالجة البند 331: P-0000135",
-      "[٥:٠٨:٥٣ م] 📊 التقدم: 330/5604 (6%)",
-      "[٥:٠٨:٥٣ م] 🔍 معالجة البند 332/5604: ASTRA MINI SATELLITE RECIVER HD...",
-      "[٥:٠٨:٥٣ م] ✅ تم معالجة البند 332: P-0000135",
-      "[٥:٠٨:٥٣ م] 📊 التقدم: 331/5604 (6%)",
-      "[٥:٠٨:٥٥ م] 🔍 معالجة البند 333/5604: AUDIO / VIDEO CABLE 3 X 3 TO CONNECT\nRECIVER WITH ...",
-      "[٥:٠٨:٥٥ م] ✅ تم معالجة البند 333: P-0000135",
-      "[٥:٠٨:٥٥ م] 📊 التقدم: 332/5604 (6%)",
-      "[٥:٠٨:٥٥ م] 🔍 معالجة البند 334/5604: F-COUPLER (RF COUPLER IS THE\nCONNECTION THAT IS MA...",
-      "[٥:٠٨:٥٥ م] ✅ تم معالجة البند 334: P-0000135",
-      "[٥:٠٨:٥٥ م] 📊 التقدم: 333/5604 (6%)",
-      "[٥:٠٨:٥٥ م] 🔍 معالجة البند 335/5604: RG6 F-TYPE MALE CONNECTOR FOR\nCOAXIAL CABLE RG6...",
-      "[٥:٠٨:٥٥ م] ✅ تم معالجة البند 335: P-0000135",
-      "[٥:٠٨:٥٥ م] 📊 التقدم: 334/5604 (6%)",
-      "[٥:٠٨:٥٧ م] 🔍 معالجة البند 336/5604: AUDIO / VIDEO CABLE 3 X 1 FOR MINI\nRECIVER ( ASTRA...",
-      "[٥:٠٨:٥٧ م] ✅ تم معالجة البند 336: P-0000135",
-      "[٥:٠٨:٥٧ م] 📊 التقدم: 335/5604 (6%)",
-      "[٥:٠٨:٥٧ م] 🔍 معالجة البند 337/5604: RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT...",
-      "[٥:٠٨:٥٧ م] ✅ تم معالجة البند 337: P-0000135",
-      "[٥:٠٨:٥٧ م] 📊 التقدم: 336/5604 (6%)",
-      "[٥:٠٨:٥٧ م] 🔍 معالجة البند 338/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
-      "[٥:٠٨:٥٧ م] ✅ تم معالجة البند 338: P-0000135",
-      "[٥:٠٨:٥٧ م] 📊 التقدم: 337/5604 (6%)",
-      "[٥:٠٨:٥٩ م] 🔍 معالجة البند 339/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
-      "[٥:٠٨:٥٩ م] ✅ تم معالجة البند 339: P-0000135",
-      "[٥:٠٨:٥٩ م] 📊 التقدم: 338/5604 (6%)",
-      "[٥:٠٨:٥٩ م] 🔍 معالجة البند 340/5604: MODEL: KM 285 , KENWOOD FOOD\nPROCESSOR SERIES PROS...",
-      "[٥:٠٨:٥٩ م] ✅ تم معالجة البند 340: P-0000135",
-      "[٥:٠٨:٥٩ م] 📊 التقدم: 339/5604 (6%)",
-      "[٥:٠٨:٥٩ م] 🔍 معالجة البند 341/5604: 1X8 OUTPUT LNB...",
-      "[٥:٠٨:٥٩ م] ✅ تم معالجة البند 341: P-0000135",
-      "[٥:٠٨:٥٩ م] 📊 التقدم: 340/5604 (6%)",
-      "[٥:٠٩:٠١ م] 🔍 معالجة البند 342/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
-      "[٥:٠٩:٠١ م] ✅ تم معالجة البند 342: P-0000135",
-      "[٥:٠٩:٠١ م] 📊 التقدم: 341/5604 (6%)",
-      "[٥:٠٩:٠١ م] 🔍 معالجة البند 343/5604: F-COUPLER (RF COUPLER IS THE\nCONNECTION THAT IS MA...",
-      "[٥:٠٩:٠١ م] ✅ تم معالجة البند 343: P-0000135",
-      "[٥:٠٩:٠١ م] 📊 التقدم: 342/5604 (6%)",
-      "[٥:٠٩:٠١ م] 🔍 معالجة البند 344/5604: WALL TYPE EXHAUST FAN INTERNAL DIM.\n25X25 CM WITH ...",
-      "[٥:٠٩:٠١ م] ✅ تم معالجة البند 344: P-0000135",
-      "[٥:٠٩:٠١ م] 📊 التقدم: 343/5604 (6%)",
-      "[٥:٠٩:٠٣ م] 🔍 معالجة البند 345/5604: WALL TYPE EXHAUST FAN INTERNAL DIM.\n30X30 CM WITH ...",
-      "[٥:٠٩:٠٣ م] ✅ تم معالجة البند 345: P-0000135",
-      "[٥:٠٩:٠٣ م] 📊 التقدم: 344/5604 (6%)",
-      "[٥:٠٩:٠٣ م] 🔍 معالجة البند 346/5604: T.V 50\" LED, MODEL : 50US3500E, MAKER :\nTORNADO...",
-      "[٥:٠٩:٠٣ م] ✅ تم معالجة البند 346: P-0000135",
-      "[٥:٠٩:٠٣ م] 📊 التقدم: 345/5604 (6%)",
-      "[٥:٠٩:٠٣ م] 🔍 معالجة البند 347/5604: REFRIGRATOR , SHARP 16 FEET 220 VOLT\nPN: SJ-PC48A-...",
-      "[٥:٠٩:٠٣ م] ✅ تم معالجة البند 347: P-0000135",
-      "[٥:٠٩:٠٣ م] 📊 التقدم: 346/5604 (6%)",
-      "[٥:٠٩:٠٥ م] 🔍 معالجة البند 348/5604: SPEAKER AMPLIFIERS 360 WATTS,220 VOLTS\nXPLOD AUDIO...",
-      "[٥:٠٩:٠٥ م] ✅ تم معالجة البند 348: P-0000135",
-      "[٥:٠٩:٠٥ م] 📊 التقدم: 347/5604 (6%)",
-      "[٥:٠٩:٠٥ م] 🔍 معالجة البند 349/5604: OUTDOOR SPEAKER (HORN) 100 WATT\nXPLOD AUDIO XP-H10...",
-      "[٥:٠٩:٠٥ م] ✅ تم معالجة البند 349: P-0000135",
-      "[٥:٠٩:٠٥ م] 📊 التقدم: 348/5604 (6%)",
-      "[٥:٠٩:٠٥ م] 🔍 معالجة البند 350/5604: CALL STATION PAGING MICROPHONE WITH\nFLEXIBLE MICRO...",
-      "[٥:٠٩:٠٥ م] ✅ تم معالجة البند 350: P-0000135",
-      "[٥:٠٩:٠٥ م] 📊 التقدم: 349/5604 (6%)",
-      "[٥:٠٩:٠٧ م] 🔍 معالجة البند 351/5604: P/N : 60021-301, BASIC CABLE TWO\nCONDUCTOR ONE TWE...",
-      "[٥:٠٩:٠٧ م] ✅ تم معالجة البند 351: P-0000135",
-      "[٥:٠٩:٠٧ م] 📊 التقدم: 350/5604 (6%)",
-      "[٥:٠٩:٠٧ م] 🔍 معالجة البند 352/5604: P/N : RJ45, COUPLER TO CONNECT TWO LAN\nCABLE EACH ...",
-      "[٥:٠٩:٠٧ م] ✅ تم معالجة البند 352: P-0000135",
-      "[٥:٠٩:٠٧ م] 📊 التقدم: 351/5604 (6%)",
-      "[٥:٠٩:٠٧ م] 🔍 معالجة البند 353/5604: P/N : GZ-2 , INDOOR UNIT SPEAKER FOR\nFUXIN HEMEI T...",
-      "[٥:٠٩:٠٧ م] ✅ تم معالجة البند 353: P-0000135",
-      "[٥:٠٩:٠٧ م] 📊 التقدم: 352/5604 (6%)",
-      "[٥:٠٩:٠٩ م] 🔍 معالجة البند 354/5604: P/N : 472991314, BEARING SET FOR\nELECTROLUX WASHIN...",
-      "[٥:٠٩:٠٩ م] ✅ تم معالجة البند 354: P-0000135",
-      "[٥:٠٩:٠٩ م] 📊 التقدم: 353/5604 (6%)",
-      "[٥:٠٩:٠٩ م] 🔍 معالجة البند 355/5604: GASKET RUBBER FOR DOOR IN FREEZER\n(SEAL DOOR) FOR ...",
-      "[٥:٠٩:٠٩ م] ✅ تم معالجة البند 355: P-0000135",
-      "[٥:٠٩:٠٩ م] 📊 التقدم: 354/5604 (6%)",
-      "[٥:٠٩:٠٩ م] 🔍 معالجة البند 356/5604: P/N : CR0589660 , THERMOSTAT TEMP\nRANGE 99-185 C 1...",
-      "[٥:٠٩:٠٩ م] ✅ تم معالجة البند 356: P-0000135",
-      "[٥:٠٩:٠٩ م] 📊 التقدم: 355/5604 (6%)"
+      "[٥:١١:٥٧ م] 📊 التقدم: 598/5604 (11%)",
+      "[٥:١١:٥٧ م] 🔍 معالجة البند 600/5604: P/N : ZR68KC-TFD-230, COMPRESSOR 480V\n60HZ R22 FOR...",
+      "[٥:١١:٥٧ م] ✅ تم معالجة البند 600: P-0000135",
+      "[٥:١١:٥٧ م] 📊 التقدم: 599/5604 (11%)",
+      "[٥:١١:٥٧ م] 🔍 معالجة البند 601/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
+      "[٥:١١:٥٧ م] ✅ تم معالجة البند 601: P-0000135",
+      "[٥:١١:٥٧ م] 📊 التقدم: 600/5604 (11%)",
+      "[٥:١١:٥٧ م] 🔍 معالجة البند 602/5604: FREON 22 25 LB.( Egyptian , Indian , EU )...",
+      "[٥:١١:٥٧ م] ✅ تم معالجة البند 602: P-0000135",
+      "[٥:١١:٥٧ م] 📊 التقدم: 601/5604 (11%)",
+      "[٥:١١:٥٩ م] 🔍 معالجة البند 603/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
+      "[٥:١١:٥٩ م] ✅ تم معالجة البند 603: P-0000135",
+      "[٥:١١:٥٩ م] 📊 التقدم: 602/5604 (11%)",
+      "[٥:١١:٥٩ م] 🔍 معالجة البند 604/5604: P/N : R134A, FREON FOR REFRIGERATOR...",
+      "[٥:١١:٥٩ م] ✅ تم معالجة البند 604: P-0000135",
+      "[٥:١١:٥٩ م] 📊 التقدم: 603/5604 (11%)",
+      "[٥:١١:٥٩ م] 🔍 معالجة البند 605/5604: FREON 22 25 LB.( Egyptian , Indian , EU )...",
+      "[٥:١١:٥٩ م] ✅ تم معالجة البند 605: P-0000135",
+      "[٥:١١:٥٩ م] 📊 التقدم: 604/5604 (11%)",
+      "[٥:١١:٥٩ م] 🔍 معالجة البند 606/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
+      "[٥:١١:٥٩ م] ✅ تم معالجة البند 606: P-0000135",
+      "[٥:١١:٥٩ م] 📊 التقدم: 605/5604 (11%)",
+      "[٥:١١:٥٩ م] 🔍 معالجة البند 607/5604: FREON 22 25 LB.( Egyptian , Indian , EU )...",
+      "[٥:١١:٥٩ م] ✅ تم معالجة البند 607: P-0000135",
+      "[٥:١١:٥٩ م] 📊 التقدم: 606/5604 (11%)",
+      "[٥:١٢:٠١ م] 🔍 معالجة البند 608/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
+      "[٥:١٢:٠١ م] ✅ تم معالجة البند 608: P-0000135",
+      "[٥:١٢:٠١ م] 📊 التقدم: 607/5604 (11%)",
+      "[٥:١٢:٠١ م] 🔍 معالجة البند 609/5604: FREON 22 25 LB.( Egyptian , Indian , EU )...",
+      "[٥:١٢:٠١ م] ✅ تم معالجة البند 609: P-0000135",
+      "[٥:١٢:٠١ م] 📊 التقدم: 608/5604 (11%)",
+      "[٥:١٢:٠١ م] 🔍 معالجة البند 610/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
+      "[٥:١٢:٠١ م] ✅ تم معالجة البند 610: P-0000135",
+      "[٥:١٢:٠١ م] 📊 التقدم: 609/5604 (11%)",
+      "[٥:١٢:٠١ م] 🔍 معالجة البند 611/5604: P/N : R134A, FREON FOR REFRIGERATOR...",
+      "[٥:١٢:٠١ م] ✅ تم معالجة البند 611: P-0000135",
+      "[٥:١٢:٠١ م] 📊 التقدم: 610/5604 (11%)",
+      "[٥:١٢:٠١ م] 🔍 معالجة البند 612/5604: FREON 407 G/ USE, ( REF. GRAINGER CAT.)...",
+      "[٥:١٢:٠١ م] ✅ تم معالجة البند 612: P-0000135",
+      "[٥:١٢:٠١ م] 📊 التقدم: 611/5604 (11%)",
+      "[٥:١٢:٠٣ م] 🔍 معالجة البند 613/5604: P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER...",
+      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 613: P-0000135",
+      "[٥:١٢:٠٣ م] 📊 التقدم: 612/5604 (11%)",
+      "[٥:١٢:٠٣ م] 🔍 معالجة البند 614/5604: P/N : PH330G2C - TKTS, COMPRESSOR , 2.25\nHP. , GMC...",
+      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 614: P-0000135",
+      "[٥:١٢:٠٣ م] 📊 التقدم: 613/5604 (11%)",
+      "[٥:١٢:٠٣ م] 🔍 معالجة البند 615/5604: P/N : ZR48K5E-TFD-830 , COMPRESSOR\nCOPELAND 040-P-...",
+      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 615: P-0000135",
+      "[٥:١٢:٠٣ م] 📊 التقدم: 614/5604 (11%)",
+      "[٥:١٢:٠٣ م] 🔍 معالجة البند 616/5604: ARTHERMO P/N : TSC-093 THERMOSTAT\n?30OC DEGREE ITA...",
+      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 616: P-0000135",
+      "[٥:١٢:٠٣ م] 📊 التقدم: 615/5604 (11%)",
+      "[٥:١٢:٠٣ م] 🔍 معالجة البند 617/5604: DANFOSS MANEUROP COMPRESSOR ,\nMODEL NO.MT80HP4AVE ...",
+      "[٥:١٢:٠٣ م] ✅ تم معالجة البند 617: P-0000135",
+      "[٥:١٢:٠٣ م] 📊 التقدم: 616/5604 (11%)",
+      "[٥:١٢:٠٥ م] 🔍 معالجة البند 618/5604: FREON 404A-24LB, 10.9 KGM ( Egyptian , Indian\n, EU...",
+      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 618: P-0000135",
+      "[٥:١٢:٠٥ م] 📊 التقدم: 617/5604 (11%)",
+      "[٥:١٢:٠٥ م] 🔍 معالجة البند 619/5604: WALL MOUNT LAN SOCKET \"SNOW WHITE\"-\nCHINA...",
+      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 619: P-0000135",
+      "[٥:١٢:٠٥ م] 📊 التقدم: 618/5604 (11%)",
+      "[٥:١٢:٠٥ م] 🔍 معالجة البند 620/5604: P/N : 5C10, EXANE 125 OIL AND MUD\nRESISTANT CABLE ...",
+      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 620: P-0000135",
+      "[٥:١٢:٠٥ م] 📊 التقدم: 619/5604 (11%)",
+      "[٥:١٢:٠٥ م] 🔍 معالجة البند 621/5604: P/N : 4C10 , EXANE 125 OIL AND MUD\nRESISTANT CABLE...",
+      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 621: P-0000135",
+      "[٥:١٢:٠٥ م] 📊 التقدم: 620/5604 (11%)",
+      "[٥:١٢:٠٥ م] 🔍 معالجة البند 622/5604: P/N : 3C12, EXANE 125 OIL AND MUD\nRESISTANT CABLE ...",
+      "[٥:١٢:٠٥ م] ✅ تم معالجة البند 622: P-0000135",
+      "[٥:١٢:٠٥ م] 📊 التقدم: 621/5604 (11%)",
+      "[٥:١٢:٠٧ م] 🔍 معالجة البند 623/5604: ELECTRICAL RUBBER CABLE , 5 C X 10 AWG\n[6 mm?] ( E...",
+      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 623: P-0000135",
+      "[٥:١٢:٠٧ م] 📊 التقدم: 622/5604 (11%)",
+      "[٥:١٢:٠٧ م] 🔍 معالجة البند 624/5604: POWER CABLE 4 AWG , 5 CONDUCTOR , 460\nVOLT ( EACH ...",
+      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 624: P-0000135",
+      "[٥:١٢:٠٧ م] 📊 التقدم: 623/5604 (11%)",
+      "[٥:١٢:٠٧ م] 🔍 معالجة البند 625/5604: P/N : 37-102-517, FOUR CONDUCTORS\nFLEXABLE POWER C...",
+      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 625: P-0000135",
+      "[٥:١٢:٠٧ م] 📊 التقدم: 624/5604 (11%)",
+      "[٥:١٢:٠٧ م] 🔍 معالجة البند 626/5604: P/N : 026225,125 OIL AND MUD RESISTANT\nCABLE 3 CON...",
+      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 626: P-0000135",
+      "[٥:١٢:٠٧ م] 📊 التقدم: 625/5604 (11%)",
+      "[٥:١٢:٠٧ م] 🔍 معالجة البند 627/5604: BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE ...",
+      "[٥:١٢:٠٧ م] ✅ تم معالجة البند 627: P-0000135",
+      "[٥:١٢:٠٧ م] 📊 التقدم: 626/5604 (11%)",
+      "[٥:١٢:٠٩ م] 🔍 معالجة البند 628/5604: MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH IND...",
+      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 628: P-0000135",
+      "[٥:١٢:٠٩ م] 📊 التقدم: 627/5604 (11%)",
+      "[٥:١٢:٠٩ م] 🔍 معالجة البند 629/5604: 70 SQ.MM, ,WELDING CABLE, COPPER ( EACH\n= METER )...",
+      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 629: P-0000135",
+      "[٥:١٢:٠٩ م] 📊 التقدم: 628/5604 (11%)",
+      "[٥:١٢:٠٩ م] 🔍 معالجة البند 630/5604: ELSEWEDY CABLES=7Y R 70 MM BASEC\nAPPROVED TOBS6004...",
+      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 630: P-0000135",
+      "[٥:١٢:٠٩ م] 📊 التقدم: 629/5604 (11%)",
+      "[٥:١٢:٠٩ م] 🔍 معالجة البند 631/5604: 1 CONDUCTOR X 10 SQUERE MM\nYELLOW/GREEN SOFT STRAN...",
+      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 631: P-0000135",
+      "[٥:١٢:٠٩ م] 📊 التقدم: 630/5604 (11%)",
+      "[٥:١٢:٠٩ م] 🔍 معالجة البند 632/5604: 1 CONDUCTOR X 10 SQUERE MM\nYELLOW/GREEN SOFT STRAN...",
+      "[٥:١٢:٠٩ م] ✅ تم معالجة البند 632: P-0000135",
+      "[٥:١٢:٠٩ م] 📊 التقدم: 631/5604 (11%)"
     ]
   },
   "items": [
@@ -2611,1932 +2611,1932 @@
       "description": "P/N : 49856 , DRAIN HOSE FOR ELECTROLUX\nDISHWAHER MODEL EHT8R0W6",
       "partNumber": "49856",
       "rowIndex": 358,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DANFOSS PRESSURE SWITCH KP15, 060-\n1243 FOR MAIN FREEZER MODEL\nLH114/4DES-7Y MAKER DANFOSS",
       "partNumber": "",
       "rowIndex": 359,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MODEL : DJ5.6/402A , COMPLETE FREEZER\nINDOR UNIT COIL FRIGA-BOHN 4HP ( OLD\nMODEL : SK005.C+NMP , 3C-E4165C )",
       "partNumber": "",
       "rowIndex": 360,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 49856 , DRAIN HOSE FOR ELECTROLUX\nDISHWAHER MODEL EHT8R0W6",
       "partNumber": "49856",
       "rowIndex": 361,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 33596 , HEATING ELEMENT, 1500 W, 50-\n60 HZ, TYPE RF, COMPLETE WITH SEAL\nGASKET FOR ARISTON WATER HEATER\nPRO1 R 100 V EG",
       "partNumber": "33596",
       "rowIndex": 362,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 363,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 364,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LAMP, FLRSCNT,BI-PIN SLIM LINE, 1\" DIA.\nMAX., 40W, 4FT",
       "partNumber": "",
       "rowIndex": 365,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "كشاف 60 سم ( 2 لمبة ) ضد المياه السويدي",
       "partNumber": "",
       "rowIndex": 366,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "كشاف 120 سم ( 2 لمبة) ضد المياه ليد السويدي",
       "partNumber": "",
       "rowIndex": 367,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D150 , CONTACTOR , 100 HP. , 460\nVOLT , VOLT BETWEEN A1,A2 IS 220 VOLT AC\nFOR TELEMQUINC",
       "partNumber": "LC1D150",
       "rowIndex": 368,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : GV2ME20, CIRCUIT BREAKER, TESYS ,\n3P, 13-18 A, THERMAL MAGNETIC, SCREW\nCLAMP TERMINALS FOR SCHNEIDER GALLEY\nEQUIPMENT N/A",
       "partNumber": "GV2ME20",
       "rowIndex": 369,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SFLA36AT0250 , CIRCUIT BREAKER 250\nAMP 3-POLE , 600 VAC MAX UL/CSA:250A\n(MAKER : GENERAL ELECTRIC )",
       "partNumber": "SFLA36AT0250",
       "rowIndex": 370,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41440 , RESIDUAL CURRENT\nCIRCUIT BREAKER EARTH LEAKAGE40\nA,ACTI 9 IID-RCCB-4P-40A-30MA-TYPE AC400VAC (SCHNIDER CAT.)",
       "partNumber": "A9R81440",
       "rowIndex": 371,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 372,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "STARTER S10 FOR FLOURESENT LAMP 40W",
       "partNumber": "",
       "rowIndex": 373,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 374,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 375,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TAPE,2\",PVC",
       "partNumber": "",
       "rowIndex": 376,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FLUORESCENT LAMP 18W,TL-D 18W/54-765\nCOOLDAYLIGHT",
       "partNumber": "",
       "rowIndex": 377,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FLUORESCENT LAMP 36W,TL-D 36W/54-765\nCOOLDAYLIGHT",
       "partNumber": "",
       "rowIndex": 378,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "STARTER S2 PHILIPS FOR FLOURESENT\nLAMP 20W",
       "partNumber": "",
       "rowIndex": 379,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : BST-RMR16-WP-LED, EMERGENCY\nLIGHT - WET LOCATION LISTED - LED MR16\nLAMPS WATERPROOF",
       "partNumber": "BSTRMR16-WP-LED",
       "rowIndex": 380,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT DOOR AREA) WEATHER\nPROOF IP66 WITH GLAND",
       "partNumber": "",
       "rowIndex": 381,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "اسباني IDE بلجة 16 امبير بالذكرة",
       "partNumber": "",
       "rowIndex": 382,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HENGZHU MS503-1-2 PUSHBUTTON LOCK\nZINC ALLOY PANEL KEYLESS BOTTOM\nMETAL CABINET DOOR LOCK ( FOR\nINTERNAL ELECTRIC PANEL )",
       "partNumber": "",
       "rowIndex": 383,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 384,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : S-N25 , 3 PHASE MAGNETIC\nCONTACTOR 220 V COIL , 35 AMP CONTACT\nRATING FOR DEEP FRYER ( MITSUBISHI\nCAT.)",
       "partNumber": "S-N25",
       "rowIndex": 385,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : S204-C40, MINIATURE CIRCUIT\nBREAKER - S200 - 4P - C - 40 AMPERE ABB\nCAT.",
       "partNumber": "S204*C40",
       "rowIndex": 386,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Code : 4520/2 , BENDS OUTER DIAMETER 20\nMM WHITE UPVC",
       "partNumber": "",
       "rowIndex": 387,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : UXL7-12 , UPS BATTERY ULTRACELL ,\n12V, 7AH, 20HR. FOR UPS MODEL\nINTELLIPOWER / IQ1100V-DI-ISOL-FC-PFC3SU ( OLD P/N : UL7-12 )",
       "partNumber": "UXL7-12",
       "rowIndex": 388,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT DOOR AREA) WEATHER\nPROOF IP66 WITH GLAND",
       "partNumber": "",
       "rowIndex": 389,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "3M SCOTCH TAP 35 RED COLOUR",
       "partNumber": "Scotch 35",
       "rowIndex": 390,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SIEMENS P/N : 3RV2021-4BA10(13-20)AMP ,\nSIEMENS MANUAL STARTER, 460V, 10HP, 3\nPH",
       "partNumber": "3RV2021",
       "rowIndex": 391,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SIEMENS P/N : 3RV2021-4BA10(13-20)AMP ,\nSIEMENS MANUAL STARTER, 460V, 10HP, 3\nPH",
       "partNumber": "3RV2021",
       "rowIndex": 392,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SIEMENS P/N : 3RV2021-4BA10(13-20)AMP ,\nSIEMENS MANUAL STARTER, 460V, 10HP, 3\nPH",
       "partNumber": "3RV2021",
       "rowIndex": 393,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SIEMENS P/N : 3RV2021-4BA10(13-20)AMP ,\nSIEMENS MANUAL STARTER, 460V, 10HP, 3\nPH",
       "partNumber": "3RV2021",
       "rowIndex": 394,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MAG-LITE ML 125 LED RECHARGEABLE\nFLASHLIGHT SYSTEM REF -\nHTTP//MAGLITE.COM",
       "partNumber": "",
       "rowIndex": 395,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SH-264 , FLASHING LIGHT WITH\nVEHICLE PLUG, 12V, BEACON LIGH FOR 3500\n( OLD P/N : 5808T93 )",
       "partNumber": "SH-264",
       "rowIndex": 396,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, STANDARD, SELECTABLE\nDURATION ( SCHNEIDER CAT.)",
       "partNumber": "OVA44013",
       "rowIndex": 397,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41440 , RESIDUAL CURRENT\nCIRCUIT BREAKER EARTH LEAKAGE40\nA,ACTI 9 IID-RCCB-4P-40A-30MA-TYPE AC400VAC (SCHNIDER CAT.)",
       "partNumber": "A9R81440",
       "rowIndex": 398,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41225 , ACTI 9 IID - RCCB - 2P - 25A -\n30MA - TYPE AC ( SCHNEIDER CAT.)",
       "partNumber": "A9R41225",
       "rowIndex": 399,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MEAT MINCER, FIMAR ITALY, P/N:\n(TR22CIX23050M / TR22CQ01235M) WITH\nPOWER 220 VAC",
       "partNumber": "22/C",
       "rowIndex": 400,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "VERTICAL COOLING REFREGERATOR ,\nSINGLE DOOR REACH IN COOLING , DIM. :\n70X80X210 CM. , CAPACITY : 600 LITERS\nAPPROX. , MADE OF STAINLESS STEEL 304\nWITH 4 WIRE SHELVES , TEMPERATURE +2:\n+8 DEG VOLTAGE :220 VOLT 50HZ , DOOR\nGLASS",
       "partNumber": "",
       "rowIndex": 401,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "VERTICAL FREEZING REFREGERATOR ,\nSINGLE DOOR REACH IN FREEZER , DIM. :\n70X80X210 cm. , capacity : 600 LITERS\nAPPROX. , MADE OF STAINLESS STEEL 304\nWITH 4 WIRE SHELVES , TEMPERATURE\nRANGE : -10 : -23 DEG., VOLTAGE : 220\nVOLT/50/1",
       "partNumber": "",
       "rowIndex": 402,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MEAT MINCER, FIMAR ITALY, P/N:\n(TR22CIX23050M / TR22CQ01235M) WITH\nPOWER 220 VAC.",
       "partNumber": "",
       "rowIndex": 403,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "VERTICAL COOLING REFREGERATOR ,\nSINGLE DOOR REACH IN COOLING , DIM. :\n70X80X210 CM. , CAPACITY : 600 LITERS\nAPPROX. , MADE OF STAINLESS STEEL 304\nWITH 4 WIRE SHELVES , TEMPERATURE +2: +8 DEG VOLTAGE :220 VOLT 50HZ , DOOR\nGLASS",
       "partNumber": "",
       "rowIndex": 404,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FLOUR MIXER, MODEL : IBT 20, CAPACITY 20\nLITER , 400V/3 PHASE/50HZ , DIM 385X67X725\nMM, EQUIPPED WITH 3 TOOLS (WHIP-HOOKBEATER) , MAKER : PRISMA FOOD, ITALIAN\nMADE",
       "partNumber": "",
       "rowIndex": 405,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FLOUR MIXER, MODEL : IBT 20, CAPACITY 20\nLITER , 400V/3 PHASE/50HZ , DIM 385X67X725\nMM, EQUIPPED WITH 3 TOOLS (WHIP-HOOKBEATER) , MAKER : PRISMA FOOD, ITALIAN\nMADE",
       "partNumber": "",
       "rowIndex": 406,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FLOUR MIXER, MODEL : IBT 20, CAPACITY 20\nLITER , 400V/3 PHASE/50HZ , DIM 385X67X725\nMM, EQUIPPED WITH 3 TOOLS (WHIP-HOOKBEATER) , MAKER : PRISMA FOOD, ITALIAN\nMADE",
       "partNumber": "",
       "rowIndex": 407,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CPD-F001-U04 , SOFT ANNEALED COPPER FINE WIRES , BUNCHED TOGETHER  IN SUBUNITS OR STRANDED BUNCHED GROUPS, NOMINAL CROSS SECTIONAL AREA 1.5 MM2 , COLOR : BLUE (1 EA.=1METER) FOR ELSEWEDY VFD MODEL SINGLE CORE CABLES",
       "partNumber": "CPD-F001-U04",
       "rowIndex": 408,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819 ) THERMOSTAT (\nEGO ) GERMANY 30/110 OC 112OC 1041.4 ,\nREF. PN/ 2102042 FOR WATER BOILER & BAIN\nMARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 409,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DIXELL P/N : XR10CX=XR10CH , DIGITAL\nTHERMOSTAT - 220V 8(3)A 250VAC ITALY\nMADE REF. PN/ 2101060 FOR SALAD\nREFRIGERATOR & VERTICAL REFRIGERATOR\n( OLD P/N : XR10CX-5N0C0 )",
       "partNumber": "XR10CX=XR10CH",
       "rowIndex": 410,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DIXELL P/N : XR10CX=XR10CH , DIGITAL\nTHERMOSTAT - 220V 8(3)A 250VAC ITALY\nMADE REF. PN/ 2101060 FOR SALAD\nREFRIGERATOR & VERTICAL REFRIGERATOR\n( OLD P/N : XR10CX-5N0C0 )",
       "partNumber": "XR10CX=XR10CH",
       "rowIndex": 411,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102043 , THERMOSTAT ( EGO )\nGERMANY 100/180OC , 1042 SINGLE PH FOR\nDEEP FAT FRYER EGO P/N : ( 55.13032.140 )",
       "partNumber": "2102043",
       "rowIndex": 412,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COMPRESSOR ( DANFOSS SECOP )\nCOMPRESSOR 3/4 HP 1PH - R404 , REF. PN/\n2101020 FOR VERTICAL FREEZING\nREFRIGERATOR",
       "partNumber": "2101020",
       "rowIndex": 413,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 243133040311 , CAPILLARY\nTHERMOMETER F84 FA FOR FREEZER\nCONTAINER, , MODEL F84 FA SS IP55, GAUGE\nDIAMETER 100MM, RANGE -40C TO +40C (\nARTHERMO CAT.)",
       "partNumber": "243133040311",
       "rowIndex": 414,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819 ) THERMOSTAT (\nEGO ) GERMANY 30/110 OC 112OC 1041.4 ,\nREF. PN/ 2102042 FOR WATER BOILER & BAIN\nMARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 415,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : 55.34052.010 , THERMOSTAT(EGO)\n50/300 OC -THREE PH , REF. PN/ 2102045 FOR\nELECTRIC COOKER ( OLD P/N : 55.34052.020 )",
       "partNumber": "55.34052.010",
       "rowIndex": 416,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SOLENOID (QUALTEX) ( 220 - 240V ) 50HZ 7 W\nTM 25OC 3/5 L/MIN TM 90OC , REF. PN/\n2102190 FOR WATER BOILER & BAIN MARIE",
       "partNumber": "2102190",
       "rowIndex": 417,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102037 , OVEN THERMOSTAT 50/300\nSINGLE PH ( MOG SPARE PARTS CATALOG )",
       "partNumber": "2102037",
       "rowIndex": 418,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102043 , THERMOSTAT ( EGO )\nGERMANY 100/180OC , 1042 SINGLE PH FOR\nDEEP FAT FRYER EGO P/N : ( 55.13032.140 )",
       "partNumber": "2102043",
       "rowIndex": 419,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO CDE : (56.10549.500 ) SAFETY\nTHERMOSTAT ( EGO ) GERMANY 230\nDEGREE 230OC - 12K , REF. PN/ 2102039 FOR\nDEEP FAT FRYER & CONVECTION OVEN 6 GN\n1/1",
       "partNumber": "56.10549.500",
       "rowIndex": 420,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.32574.010 ) SAFETY\nTHERMOSTAT ( EGO ) GERMANY 360 OC - 220\nV , REF. PN/ 2102040 FOR ELECTRIC GRILL,\nOLD PN : 43.242320.00",
       "partNumber": "55.32574.010",
       "rowIndex": 421,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : 55.32562.816 ,ELECTROLUX P/N :\n002730 SAFETY THERMOSTAT 350-20 C REF.\nPN/ 002730 FOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "2730",
       "rowIndex": 422,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102043 , THERMOSTAT ( EGO )\nGERMANY 100/180OC , 1042 SINGLE PH FOR\nDEEP FAT FRYER EGO P/N : ( 55.13032.140 )",
       "partNumber": "2102043",
       "rowIndex": 423,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819 ) THERMOSTAT (\nEGO ) GERMANY 30/110 OC 112OC 1041.4 ,\nREF. PN/ 2102042 FOR WATER BOILER & BAIN\nMARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 424,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : 55.34052.010 , THERMOSTAT(EGO)\n50/300 OC -THREE PH , REF. PN/ 2102045 FOR\nELECTRIC COOKER ( OLD P/N : 55.34052.020 )",
       "partNumber": "55.34052.010",
       "rowIndex": 425,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COMPRESSOR , MODEL : LLP-40X-EWL , 3PH ,\n50 HZ , 1450 RPM , 220-240V , 380-420 VOLT\nSTAR , R22 FOR FREEZER UNIT",
       "partNumber": "LLP-40X-EWL",
       "rowIndex": 426,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DIXELL P/N : XR10CX=XR10CH , DIGITAL\nTHERMOSTAT - 220V 8(3)A 250VAC ITALY\nMADE REF. PN/ 2101060 FOR SALAD\nREFRIGERATOR & VERTICAL REFRIGERATOR\n( OLD P/N : XR10CX-5N0C0 )",
       "partNumber": "XR10CX=XR10CH",
       "rowIndex": 427,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : FG4T2/2 4 , THERMAL WIRE CABLE SIZE\n4 MM 300-500 V MADE IN ITALY REF. PN/\n2101218(ACCESSORY)",
       "partNumber": "P/N :FG4T2/2 4",
       "rowIndex": 428,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "THERMAL WIRE CABLE SIZE 6 MM 300-500 V\nMADE IN ITALY ( REF.P/N : 2101219 )\nACCESSORY)",
       "partNumber": "",
       "rowIndex": 429,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DIXELL P/N : XR10CX=XR10CH , DIGITAL\nTHERMOSTAT - 220V 8(3)A 250VAC ITALY\nMADE REF. PN/ 2101060 FOR SALAD\nREFRIGERATOR & VERTICAL REFRIGERATOR\n( OLD P/N : XR10CX-5N0C0 )",
       "partNumber": "XR10CX=XR10CH",
       "rowIndex": 430,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : 55.32562.816 ,ELECTROLUX P/N :\n002730 SAFETY THERMOSTAT 350-20 C REF.\nPN/ 002730 FOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "2730",
       "rowIndex": 431,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819 ) THERMOSTAT (\nEGO ) GERMANY 30/110 OC 112OC 1041.4 ,\nREF. PN/ 2102042 FOR WATER BOILER & BAIN\nMARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 432,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.32574.010 ) SAFETY\nTHERMOSTAT ( EGO ) GERMANY 360 OC - 220\nV , REF. PN/ 2102040 FOR ELECTRIC GRILL,\nOLD PN : 43.242320.00",
       "partNumber": "55.32574.010",
       "rowIndex": 433,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CO8218 , THERMOSTAT FOR FIMAR\nOVEN MODEL FOTOP6M2340MT",
       "partNumber": "CO8218",
       "rowIndex": 434,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102043 , THERMOSTAT ( EGO )\nGERMANY 100/180OC , 1042 SINGLE PH FOR\nDEEP FAT FRYER EGO P/N : ( 55.13032.140 )",
       "partNumber": "2102043",
       "rowIndex": 435,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO CDE : (56.10549.500 ) SAFETY\nTHERMOSTAT ( EGO ) GERMANY 230\nDEGREE 230OC - 12K , REF. PN/ 2102039 FOR\nDEEP FAT FRYER & CONVECTION OVEN 6 GN\n1/1",
       "partNumber": "56.10549.500",
       "rowIndex": 436,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : GV2ME16 , CIRCUIT-BREAKER\nTYPE:GV2 ME16,RATING: 14 AMP AND FROM\n230 TO 690 VOLT. - GALLEY- SCHNEIDER",
       "partNumber": "GV2ME16",
       "rowIndex": 437,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : FG4T2/2 4 , THERMAL WIRE CABLE SIZE\n4 MM 300-500 V MADE IN ITALY REF. PN/\n2101218(ACCESSORY)",
       "partNumber": "P/N :FG4T2/2 4",
       "rowIndex": 438,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "THERMAL WIRE CABLE SIZE 6 MM 300-500 V\nMADE IN ITALY ( REF.P/N : 2101219 )ACCESSORY)",
       "partNumber": "",
       "rowIndex": 439,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102043 , THERMOSTAT ( EGO )\nGERMANY 100/180OC , 1042 SINGLE PH FOR\nDEEP FAT FRYER EGO P/N : ( 55.13032.140 )",
       "partNumber": "2102043",
       "rowIndex": 440,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819 ) THERMOSTAT (\nEGO ) GERMANY 30/110 OC 112OC 1041.4 ,\nREF. PN/ 2102042 FOR WATER BOILER & BAINMARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 441,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO CDE : (56.10549.500 ) SAFETY\nTHERMOSTAT ( EGO ) GERMANY 230\nDEGREE 230OC - 12K , REF. PN/ 2102039 FOR\nDEEP FAT FRYER & CONVECTION OVEN 6 GN\n1/1",
       "partNumber": "56.10549.500",
       "rowIndex": 442,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : 55.34052.010 , THERMOSTAT(EGO)\n50/300 OC -THREE PH , REF. PN/ 2102045 FOR\nELECTRIC COOKER ( OLD P/N : 55.34052.020 )",
       "partNumber": "55.34052.010",
       "rowIndex": 443,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.32574.010 ) SAFETY\nTHERMOSTAT ( EGO ) GERMANY 360 OC - 220\nV , REF. PN/ 2102040 FOR ELECTRIC GRILL,\nOLD PN : 43.242320.00",
       "partNumber": "55.32574.010",
       "rowIndex": 444,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19062.800 ) THERMOSTAT (\nEGO ) GERMANY 50/300 OC SINGLE PH , REF.\nPN/ 2102044 FOR ELECTRIC COOKER &\nELECTRIC GRILL",
       "partNumber": "55.19062.800",
       "rowIndex": 445,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : ( S/L 1 ), SIGNAL LAMP INDICATOR LAMP\n(RED) , REF. PN/ 2102072 FOR ELECTRIC\nCOOKER",
       "partNumber": "S/L 1",
       "rowIndex": 446,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : FG4T2/2 1 , THERMAL WIRE CABLE SIZE\n1 MM 300-500 V MADE IN ITALY REF. PN/\n2101214(ACCESSORY)",
       "partNumber": "P/N :FG4T2/2 1",
       "rowIndex": 447,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 32 M7 , SCHNIEDER CONTACTOR\nFRANCE TELEMECANIQUE 220V 50/60HZ ITH\n50A - 15 KW - 400V , REF. PN/ 2102034 FOR\nELECTRIC GRILL & DEEP FAT FRYER",
       "partNumber": "LC1D 32M7",
       "rowIndex": 448,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CUTTING KNIFE REF. PN/ 1104172 FOR MEAT\nMINCER TI22 FAMA",
       "partNumber": "",
       "rowIndex": 449,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FACE DRILLED STEEL PLAT SIZE 6 MM REF.\nPN/ 1104173 FOR MEAT MINCER TI22 FAMA",
       "partNumber": "",
       "rowIndex": 450,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FACE DRILLED STEEL PLAT SIZE 8 MM REF.\nPN/ 1104168 FOR MEAT MINCER TI22 FAMA",
       "partNumber": "",
       "rowIndex": 451,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 25 M7 , SCHNIEDER CONTACTOR\nFRANCE TELE-MECHANIQUE 220V 50/60HZ\nITH 40A - 11 KW - 400V , REF. PN/ 2102046\nFOR ELECTRIC COOKER & WATER BOILER &\nBAIN MARIE",
       "partNumber": "LC1D 25M7",
       "rowIndex": 452,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 048235 , JETS SUPPURT UPPER FOR\nELECTROLUX DISH WASHER MACHINE\nMODEL LS9 /NHT",
       "partNumber": "48235",
       "rowIndex": 453,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 0L2825 , HOSE COUPLING FOR\nELECTROLUX DISHWASHER MODEL EHT8M6",
       "partNumber": "0L2825",
       "rowIndex": 454,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 0L2831, WASH PUMP (230V/1N/50HZ)\nFOR E6.66.013 DISH WASHER NHT8",
       "partNumber": "0L2831",
       "rowIndex": 455,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 11.33473.338) HOT PLATE ( EGO )\nGERMANY PLATE 30X30 ? 3KW ? 380V WITH\nST.ST FRAME NEW MODEL FROM 2007 , REF.\nPN/ 2102004 FOR ELECTRIC COOKER",
       "partNumber": "11.33473.338",
       "rowIndex": 456,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PLATE WITHOUT HEATER (NEW TYPE) STEEL\nSIZE 72 ? 62 CM. (LOCAL FABRICATION) , REF.\nPN/ 2114071 FOR ELECTRIC GRILL",
       "partNumber": "2114071",
       "rowIndex": 457,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ELECTROLUX P/N : 003680 GLASS DOOR\nGASKET SIZE 1480 MM REF. PN/ 3680 FOR\nCONVECTION OVEN 6 GN 1/1",
       "partNumber": "3680",
       "rowIndex": 458,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FAN BLADE CW 6 1/1 , REF. PN/ 0C6462 FOR\nCONVECTION OVEN 6 GN 1/1",
       "partNumber": "0C6462",
       "rowIndex": 459,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FAN MOTOR 190 W 230V 1P 50/60 HZ , REF.\nPN/ 0F0007 FOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "0F0007",
       "rowIndex": 460,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FAN BLADE CW 6 1/1 , REF. PN/ 0C6462 FOR\nCONVECTION OVEN 6 GN 1/1",
       "partNumber": "0C6462",
       "rowIndex": 461,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FAN MOTOR 190 W 230V 1P 50/60 HZ , REF.\nPN/ 0F0007 FOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "0F0007",
       "rowIndex": 462,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102049 , TELEMECANIQUE LC1D 32 M7\n220V 50/60HZ ITH 50A - 15 KW - 400V , FOR\nCONTACTOR (SCHNIEDER) FRANCE\nELECTRIC GRILLMOG, MOG CATALOG",
       "partNumber": "2102049",
       "rowIndex": 463,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 11.33454.336) HOT PLATE\nGERMANY PLATE WITH FRAME ST-STEEL30X30, 4KW-440V SPECIAL ORDER FOR\nMARINE , REF PN/2102005 FOR ELECTRIC\nCOOKER",
       "partNumber": "11.33454.336",
       "rowIndex": 464,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DOOR GASKET (INTER TRADE) SIZE 161? 65\nCM , REF. PN/ 2108005 FOR VERTICAL\nFREEZING & COOLING REFRIGERATOR",
       "partNumber": "2108005",
       "rowIndex": 465,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 32 M7 , SCHNIEDER CONTACTOR\nFRANCE TELEMECANIQUE 220V 50/60HZ ITH\n50A - 15 KW - 400V , REF. PN/ 2102034 FOR\nELECTRIC GRILL & DEEP FAT FRYER",
       "partNumber": "LC1D 32M7",
       "rowIndex": 466,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : YZF25-40 , CONDENSING FAN (ITALY)\n1300/1550 - 0.9A - 25W 230V - 50/60HZ REF.\nPN/ 2101039 FOR SALAD REFRIGERATOR &\nVERTICAL REFRIGERATOR ( REF CODE\n1001.001.USED.0026 )",
       "partNumber": "2101039",
       "rowIndex": 467,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 3963328010 , EVAPORATOR FAN MOTOR\n220V/60HZ IS-4420DWSL-S FORDAEWOO\nKITCHEN FREZZER AND REFRIGERATOR\nMODEL FD-650F",
       "partNumber": "3963328010",
       "rowIndex": 468,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ZIEHL-ABEGG INDOOR FRREZER FAN TYPE\nTX099P04 230V 50 HZ 1.7 AMPS",
       "partNumber": "TX099P04",
       "rowIndex": 469,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 32 M7 , SCHNIEDER CONTACTOR\nFRANCE TELEMECANIQUE 220V 50/60HZ ITH\n50A - 15 KW - 400V , REF. PN/ 2102034 FOR\nELECTRIC GRILL & DEEP FAT FRYER",
       "partNumber": "LC1D 32M7",
       "rowIndex": 470,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 25 M7 , SCHNIEDER CONTACTOR\nFRANCE TELE-MECHANIQUE 220V 50/60HZ\nITH 40A - 11 KW - 400V , REF. PN/ 2102046\nFOR ELECTRIC COOKER & WATER BOILER &\nBAIN MARIE",
       "partNumber": "LC1D 25M7",
       "rowIndex": 471,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102049 , TELEMECANIQUE LC1D 32 M7\n220V 50/60HZ ITH 50A - 15 KW - 400V , FOR\nCONTACTOR (SCHNIEDER) FRANCE\nELECTRIC GRILLMOG, MOG CATALOG",
       "partNumber": "2102049",
       "rowIndex": 472,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CONDENSING FAN (ITALY) EVAPORATOR\n10WATT-220V 1PH , REF. PN/ 2101041 FOR\nSALAD REFRIGERATOR",
       "partNumber": "2101041",
       "rowIndex": 473,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SC15G , SECOP , CONDENSING UNIT\nGERMANY DANFOSS R134A 1/2 HP , 1PH-220V\n, (OLD PN/ 2101005) FOR SALAD\nREFRIGERATOR",
       "partNumber": "SC15G",
       "rowIndex": 474,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FAN MOTOR 190 W 230V 1P 50/60 HZ , REF.\nPN/ 0F0007 FOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "0F0007",
       "rowIndex": 475,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 11.33473.338) HOT PLATE ( EGO )\nGERMANY PLATE 30X30 ? 3KW ? 380V WITH\nST.ST FRAME NEW MODEL FROM 2007 , REF. PN/ 2102004 FOR ELECTRIC COOKER",
       "partNumber": "11.33473.338",
       "rowIndex": 476,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 32 M7 , SCHNIEDER CONTACTOR\nFRANCE TELEMECANIQUE 220V 50/60HZ ITH\n50A - 15 KW - 400V , REF. PN/ 2102034 FOR\nELECTRIC GRILL & DEEP FAT FRYER",
       "partNumber": "LC1D 32M7",
       "rowIndex": 477,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 100-C30KF10 CONTACTOR (ALLEN\nBRADLEY) SWITZERLAND 230V 50/60HZ 15KW\n- 400V , REF. PN/ 2102048 FOR ELECTRIC\nGRILL & DEEP FAT FRYER",
       "partNumber": "100-C30kf10",
       "rowIndex": 478,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HOSE AL-AHRAM CO CONNECTION HOSE\n1.5M , REF. PN/ 2102179 FOR WATER BOILER\n& BAIN MARIE ( WITH COC )",
       "partNumber": "2102179",
       "rowIndex": 479,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SC15G , SECOP , CONDENSING UNIT\nGERMANY DANFOSS R134A 1/2 HP , 1PH-220V\n, (OLD PN/ 2101005) FOR SALAD\nREFRIGERATOR",
       "partNumber": "SC15G",
       "rowIndex": 480,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 100-C30KF10 CONTACTOR (ALLEN\nBRADLEY) SWITZERLAND 230V 50/60HZ 15KW\n- 400V , REF. PN/ 2102048 FOR ELECTRIC\nGRILL & DEEP FAT FRYER",
       "partNumber": "100-C30kf10",
       "rowIndex": 481,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 0L2825 , HOSE COUPLING FOR\nELECTROLUX DISHWASHER MODEL EHT8M6",
       "partNumber": "0L2825",
       "rowIndex": 482,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CO8145 , HANDLE FOR FIMAR OVEN\nMODEL FOTOP6M2340MT",
       "partNumber": "CO8145",
       "rowIndex": 483,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CO8177 , GASKET FOR FIMAR OVEN\nMODEL FOTOP6M2340MT",
       "partNumber": "CO8177",
       "rowIndex": 484,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : K3-09A01 230 , CONTACTOR 220-240V\n50HZ/240-264V 60HZ , FOR CONVECTION\nOVEN 6 GN 1/1 & DISH WASHER (ZANUSSI)",
       "partNumber": "K3-09A01230",
       "rowIndex": 485,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ELECTROLUX P/N : 003680 GLASS DOOR  GASKET SIZE 1480 MM REF. PN/ 3680 FORCONVECTION OVEN 6 GN 1/1",
       "partNumber": "3680",
       "rowIndex": 486,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : YZF25-40 , CONDENSING FAN (ITALY)\n1300/1550 - 0.9A - 25W 230V - 50/60HZ REF.\nPN/ 2101039 FOR SALAD REFRIGERATOR &\nVERTICAL REFRIGERATOR ( REF CODE\n1001.001.USED.0026 )",
       "partNumber": "2101039",
       "rowIndex": 487,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 32 M7 , SCHNIEDER CONTACTOR\nFRANCE TELEMECANIQUE 220V 50/60HZ ITH\n50A - 15 KW - 400V , REF. PN/ 2102034 FOR\nELECTRIC GRILL & DEEP FAT FRYER",
       "partNumber": "LC1D 32M7",
       "rowIndex": 488,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HOSE AL-AHRAM CO CONNECTION HOSE\n1.5M , REF. PN/ 2102179 FOR WATER BOILER\n& BAIN MARIE ( WITH COC",
       "partNumber": "2102179",
       "rowIndex": 489,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 11.33473.338) HOT PLATE ( EGO )\nGERMANY PLATE 30X30 ? 3KW ? 380V WITH\nST.ST FRAME NEW MODEL FROM 2007 , REF.\nPN/ 2102004 FOR ELECTRIC COOKER",
       "partNumber": "11.33473.338",
       "rowIndex": 490,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 11.33473.338) HOT PLATE ( EGO )\nGERMANY PLATE 30X30 ? 3KW ? 380V WITH\nST.ST FRAME NEW MODEL FROM 2007 , REF.\nPN/ 2102004 FOR ELECTRIC COOKER",
       "partNumber": "11.33473.338",
       "rowIndex": 491,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 100-C30KF10 CONTACTOR (ALLEN\nBRADLEY) SWITZERLAND 230V 50/60HZ 15KW\n- 400V , REF. PN/ 2102048 FOR ELECTRIC\nGRILL & DEEP FAT FRYER",
       "partNumber": "100-C30kf10",
       "rowIndex": 492,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 25 M7 , SCHNIEDER CONTACTOR\nFRANCE TELE-MECHANIQUE 220V 50/60HZ\nITH 40A - 11 KW - 400V , REF. PN/ 2102046\nFOR ELECTRIC COOKER & WATER BOILER &\nBAIN MARIE",
       "partNumber": "LC1D 25M7",
       "rowIndex": 493,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102049 , TELEMECANIQUE LC1D 32 M7\n220V 50/60HZ ITH 50A - 15 KW - 400V , FOR\nCONTACTOR (SCHNIEDER) FRANCE\nELECTRIC GRILLMOG, MOG CATALOG",
       "partNumber": "2102049",
       "rowIndex": 494,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 100-E26KN00 , CONTACTOR, IEC, 26 A,\n250-500V 50-60 HZ/250-500V DC, 3 NO POLES,\n0 NO 0 NC AUXILIARY CONTACTS, SCREW\nTERMINALS , REF. PN/ 2102047 FOR\nELECTRIC COOKER & WATER BOILER & BAIN\nMARIE ( OLD P/N : 100-C23KF00 )",
       "partNumber": "100-E26KN00",
       "rowIndex": 495,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "STAINLESS STEEL BASKET SIZE 36?24?12 CM\n, REF. PN/ 2106021 FOR DEEP FAT FRYER",
       "partNumber": "2106021",
       "rowIndex": 496,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CUP HOLDERS FOR PAPER CUP",
       "partNumber": "",
       "rowIndex": 497,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WATER COOLER WATER DISPENSER BOTTLE\nHOLDER SMART SEAT REPLACEMENT PART\nOFFICE",
       "partNumber": "",
       "rowIndex": 498,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CV-960F SS220 WR , DUST AND LIQUIDS\nVACUUM CLEANER 18 LTR 2000 - WAT (\nMAKER : HITACHI )( OLD P/N : CV-975FC\nSS220 )",
       "partNumber": "CV960FSS220 WR",
       "rowIndex": 499,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CV-960F SS220 WR , DUST AND LIQUIDS\nVACUUM CLEANER 18 LTR 2000 - WAT (\nMAKER : HITACHI )( OLD P/N : CV-975FC\nSS220 )",
       "partNumber": "CV960FSS220 WR",
       "rowIndex": 500,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SALAD REFRIGERATOR, DIM 150CM X 70CM X\n85CM, CAPACITY: 8 GN 1/2 WITH LIDS, MADE:\nS.S 304, WITH 2 LOWER HINGED\nDOORS&meddde shelf, thermostat range: +2/+3,\nCOOLING/CONDENSAING UNITS IS\nEUROPEAN MADE, VOLTAGE : 220V/50/1",
       "partNumber": "",
       "rowIndex": 501,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MODEL : KLY-S200B1-1 , WATER KETTLE\nSTAINLESS STEEL 20 LITER ( MAKER\nGUANGDONG, CHINA)",
       "partNumber": "",
       "rowIndex": 502,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MODEL : KLY-S200B1-1 , WATER KETTLE\nSTAINLESS STEEL 20 LITER ( MAKER\nGUANGDONG, CHINA)",
       "partNumber": "",
       "rowIndex": 503,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ALASKA REFRIGERATOR 4.5 FT ,220 VOLT ,50 HZ",
       "partNumber": "",
       "rowIndex": 504,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ALASKA REFRIGERATOR 4.5 FT ,220 VOLT ,50 HZ",
       "partNumber": "",
       "rowIndex": 505,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 506,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 507,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY UPPER OVEN 1300 WATT\n220V (130CM ) , REF. PN/ 2102018 FOR\nELECTRIC COOKER",
       "partNumber": "2102018",
       "rowIndex": 508,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY 1.8 KW -220 V , REF. PN/\n2102030 FOR ELECTRIC GRILL",
       "partNumber": "2102030",
       "rowIndex": 509,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY LOWER OVEN 1300 WATT\n220V (130CM ) NO REF. 2102018 FOR\nELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 510,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CONTROL SWITCH ON / OFF REF. PN/\n1104175 FOR MEAT MINCER TI22 FAMA",
       "partNumber": "",
       "rowIndex": 511,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 512,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY UPPER & LOWER OVEN 2000 WATT -220V 2 METER NO REF. 2102017\nFOR ELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 513,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY 2 KW ? 220V ONE ELEMENT\n, REF. PN/ 2102025 FOR DEEP FAT FRYER",
       "partNumber": "2102025",
       "rowIndex": 514,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : TRS/1 CR-A , HINGE DOOR HINGES\n(SET) , REF. PN/ 2101099 FOR ELECTRIC\nCOOKER",
       "partNumber": "TRS/1 CR-A",
       "rowIndex": 515,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 516,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY LOWER OVEN 1300 WATT\n220V (130CM ) NO REF. 2102018 FOR\nELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 517,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 0L2893 , DOOR SENSOR + SPACER FOR\nELECTROLUX DISHWASHER MODEL : 505108\nZHT8DD",
       "partNumber": "0L2893",
       "rowIndex": 518,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 519,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 520,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY TOASTER 2500W ? 230V ,\nFOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "56945",
       "rowIndex": 521,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY 1.8 KW -220 V , REF. PN/\n2102030 FOR ELECTRIC GRILL",
       "partNumber": "2102030",
       "rowIndex": 522,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 43.24232.000 ) SELECTOR\nSWITCH ( EGO ) SELECTOR SWITCH_( EGO )\n32 AMP 4 POSITIONS 32/250 - 25/400 T150 ,\nREF. PN/ 210210 FOR ELECTRIC COOKER,",
       "partNumber": "43.24232.000",
       "rowIndex": 523,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY LOWER OVEN 1300 WATT\n220V (130CM ) NO REF. 2102018 FOR\nELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 524,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 43.24232.000 ) SELECTOR\nSWITCH ( EGO ) SELECTOR SWITCH_( EGO )\n32 AMP 4 POSITIONS 32/250 - 25/400 T150 ,\nREF. PN/ 210210 FOR ELECTRIC COOKER,",
       "partNumber": "43.24232.000",
       "rowIndex": 525,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : MKC-03 , PHASE SEQUENCE RELAY FOR\nMAIN FREEZER UNIT",
       "partNumber": "MKC-03",
       "rowIndex": 526,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY UPPER OVEN 1300 WATT\n220V (130CM ) , REF. PN/ 2102018 FOR\nELECTRIC COOKER",
       "partNumber": "2102018",
       "rowIndex": 527,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY TOASTER 2500W ? 230V ,\nFOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "56945",
       "rowIndex": 528,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 529,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MICRO SWITCH (TEND) 15A 220V IP40 , REF.\nPN/ 2101072 FOR VERTICAL FREEZING\nREFRIGERATOR",
       "partNumber": "2101072",
       "rowIndex": 530,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY UPPER & LOWER OVEN\n2000 WATT -220V 2 METER NO REF. 2102017\nFOR ELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 531,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LIGHT SWITCH (ON/OFF) 220V - 10A , REF. PN/\n1104162 FOR SALAD REFRIGERATOR",
       "partNumber": "1104162",
       "rowIndex": 532,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 533,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MICRO SWITCH (TEND) 15A 220V IP40 , REF.\nPN/ 2101072 FOR VERTICAL FREEZING\nREFRIGERATOR",
       "partNumber": "2101072",
       "rowIndex": 534,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY LOWER OVEN 1300 WATT\n220V (130CM ) NO REF. 2102018 FOR\nELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 535,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LIGHT SWITCH (ON/OFF) 220V - 10A , REF. PN/  1104162 FOR SALAD REFRIGERATOR",
       "partNumber": "1104162",
       "rowIndex": 536,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MODEL : SSR 04 , 220V AC - 50/60HZ ONE\nCONTACT INVERSOR 10A/250V AC\nSENSITIVITY 2K .. 50K OHM (LIQUID LEVEL\nCONTROL) (KRK) TURKEY FOR WATER\nBOILER & BAIN MARIE ( OLD MODEL : SSR 01\n)",
       "partNumber": "",
       "rowIndex": 537,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LEVEL SENSOR NUT WITHE ST-STEEL\nELECTROD , REF. PN/ 2102169 FOR WATER\nBOILER & BAIN MARIE",
       "partNumber": "2102169",
       "rowIndex": 538,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CO8187 , MICRO SWITCH FOR FIMAR\nOVEN MODEL FOTOP6M2340MT",
       "partNumber": "CO8187",
       "rowIndex": 539,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 540,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 117U6005 , STARTING RELAY, DANFOSS\nREFREGIRATOR F321, MOG CAT",
       "partNumber": "117U6005",
       "rowIndex": 541,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 117U5015 , DANFOSS REFRIGERATION\nSTART CAPACITOR 80 MFD , FOR SC15G\nCOMPRESSOR FOR DANFOSS SALAD\nREFRIGERATOR ( OLD P/N : 117U5017 )",
       "partNumber": "117U5015",
       "rowIndex": 542,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 543,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY TOASTER 2500W ? 230V ,\nFOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "56945",
       "rowIndex": 544,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 0L5162 , HEATING ELEMENT 230 V , 9 KW\nFOR ZANUSSI DISH WASHER FOR DISH\nWASHER MOG ( OLD P/N : 049992 )",
       "partNumber": "0L5162",
       "rowIndex": 545,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 0L5162 , HEATING ELEMENT 230 V , 9 KW FOR ZANUSSI DISH WASHER FOR DISH WASHER MOG ( OLD P/N : 049992 )",
       "partNumber": "0L5162",
       "rowIndex": 546,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 547,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN\nMARIE ( REF. ONLY P/N: 2102029 )",
       "partNumber": "",
       "rowIndex": 548,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY UPPER OVEN 1300 WATT\n220V (130CM ) , REF. PN/ 2102018 FOR\nELECTRIC COOKER",
       "partNumber": "2102018",
       "rowIndex": 549,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY 1.8 KW -220 V , REF. PN/\n2102030 FOR ELECTRIC GRILL",
       "partNumber": "2102030",
       "rowIndex": 550,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 43.24232.000 ) SELECTOR\nSWITCH ( EGO ) SELECTOR SWITCH_( EGO )\n32 AMP 4 POSITIONS 32/250 - 25/400 T150 ,\nREF. PN/ 210210 FOR ELECTRIC COOKER,",
       "partNumber": "43.24232.000",
       "rowIndex": 551,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY LOWER OVEN 1300 WATT\n220V (130CM ) NO REF. 2102018 FOR\nELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 552,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LEVEL SENSOR NUT WITHE ST-STEEL\nELECTROD , REF. PN/ 2102169 FOR WATER\nBOILER & BAIN MARIE",
       "partNumber": "2102169",
       "rowIndex": 553,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY 9 KW -220V THREE\nELEMENTS , REF. PN/ 2102024 FOR DEEP FAT\nFRYER",
       "partNumber": "2102024",
       "rowIndex": 554,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY 9 KW -220V THREE\nELEMENTS , REF. PN/ 2102024 FOR DEEP FAT\nFRYER",
       "partNumber": "",
       "rowIndex": 555,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CHEMICAL-RESISTANT HEAT-SHRINK PVC\nPLASTIC TUBING, 25 FEET LONG, 0.5\" ID\nBEFORE SHRINKING, BLUE ( REF. P/N :\n7132K605 MCMASTER CAT.",
       "partNumber": "",
       "rowIndex": 556,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CHEMICAL-RESISTANT HEAT-SHRINK PVC\nPLASTIC TUBING, 25 FEET LONG, 0.5\" ID\nBEFORE SHRINKING, CLEAR ( REF. P/N :\n7132K632 MCMASTER CAT.)",
       "partNumber": "",
       "rowIndex": 557,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEAT SHRINK TUBING BLUE 1/8\" 25 FT\nLENGTH ( REF. P/N : 7132K566 MCMASTER\nCAT.)",
       "partNumber": "",
       "rowIndex": 558,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEAT SHRINK TUBING COLOR BLUE 1/2\" (\nREF. P/N : 7132K571 MCMASTER CAT.)",
       "partNumber": "",
       "rowIndex": 559,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEAT SHRINK TUBING COLOR BLUE 3/4\" (\nREF. P/N : 7132K573 MCMASTER CAT.)",
       "partNumber": "",
       "rowIndex": 560,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEAT SHRINK TUBING COLOR BLUE 1-1/2\" (\nREF. P/N : 7132K541 MCMASTER CAT.)",
       "partNumber": "",
       "rowIndex": 561,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CHEMICAL-RESISTANT HEAT-SHRINK PVC\nPLASTIC TUBING, 0.50\" ID BEFORE\nSHRINKING, 1000 V/MIL STRENGTH, COLOR\nCLEAR, 25FT ( REF.P/N : 7132K954\nMACMASTER CAT.)",
       "partNumber": "",
       "rowIndex": 562,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CHEMICAL-RESISTANT HEAT-SHRINK PVC\nPLASTIC TUBING, 0.75\" ID BEFORE\nSHRINKING, 1000 V/MIL STRENGTH, COLOR\nCLEAR, 25FT ( REF.P/N : 7132K957\nMACMASTER CAT.)",
       "partNumber": "",
       "rowIndex": 563,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CHEMICAL-RESISTANT HEAT-SHRINK PVC\nPLASTIC TUBING, 1.00\" ID BEFORE\nSHRINKING, 1000 V/MIL STRENGTH, COLOR\nCLEAR, 25FT ( REF.P/N : 7132K959\nMACMASTER CAT.)",
       "partNumber": "",
       "rowIndex": 564,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CHEMICAL-RESISTANT HEAT-SHRINK PVC PLASTIC TUBING, 1.50\" ID BEFORE\nSHRINKING, 1000 V/MIL STRENGTH, COLOR\nCLEAR, 25FT ( REF.P/N : 7132K962\nMACMASTER CAT.)",
       "partNumber": "",
       "rowIndex": 565,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LUGS FOR CABLE SIZE 70 MM , BOLT SIZE\n1/2\"",
       "partNumber": "",
       "rowIndex": 566,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LUGS FOR GROUND CABLE 70MM",
       "partNumber": "",
       "rowIndex": 567,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LUGS FOR GROUND CABLE 70MM",
       "partNumber": "",
       "rowIndex": 568,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SC 70-12, LUGS FOR ELECTRIC CABLE",
       "partNumber": "SC 70-12",
       "rowIndex": 569,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Yellow Male Disconnect, Nylon Insulation Type,\n12 to 10 AWG Wire Range ( REF. P/N : 4FRK9\nGRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 570,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FORK TERMINAL,YELLOW, 12 TO 10\nAWG,PK50",
       "partNumber": "",
       "rowIndex": 571,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RING TERMINAL,YELLOW, BRAZED12-10,PK50",
       "partNumber": "",
       "rowIndex": 572,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "YELLOW FEMALE DISCONNECT, VINYL\nINSULATION TYPE, 12 TO 10 AWG WIRE\nRANGE ( REF. P/N : 4RHE1 GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 573,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BLUE FEMALE DISCONNECT, NYLON\nINSULATION TYPE, 16 TO 14 AWG WIRE\nRANGE ( REF. P/N : 3KG34 GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 574,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TERMINAL CLIPS (ACCESSORY)",
       "partNumber": "",
       "rowIndex": 575,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D09BD , TeSys D contactor - 3P(3 NO)\n- AC-3, 9 A - 24 V DC coil FOR DCR HVAC\nMODEL Ex DX HVAC 36kW MAKER Schneider",
       "partNumber": "LC1D09BD",
       "rowIndex": 576,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GROUND TERMINAL BLOCK 16MM EX\nCERTIFIED",
       "partNumber": "",
       "rowIndex": 577,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GROUND TERMINAL BLOCK 4MM EX\nCERTIFIED",
       "partNumber": "",
       "rowIndex": 578,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 1002-WPS-C1-YZ-TM - PURGE SYSTEM ,\nRAPID EXCHANGE PURGING SYSTEM",
       "partNumber": "1002-WPS-C1-YZ-TM",
       "rowIndex": 579,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ATS 400A PANEL , STAINLESS STEEL\nENCLOSURE 4P- 400A - MCCB -TYPE\nNSX400N - MICR2.3 - 50KA COMPLETE WITH,\nADJ. THERMAL (OVER LOAD PROTECTION)\nFROM 0.4IN TO 1IN, ADJ. MAGNETIC (SHORT\nCIRCUIT PROTECTION)FROM 2IR TO 10IR",
       "partNumber": "",
       "rowIndex": 580,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ATS 400A PANEL , STAINLESS STEEL\nENCLOSURE 4P- 400A - MCCB -TYPE\nNSX400N - MICR2.3 - 50KA COMPLETE WITH,\nADJ. THERMAL (OVER LOAD PROTECTION)\nFROM 0.4IN TO 1IN, ADJ. MAGNETIC (SHORT\nCIRCUIT PROTECTION)FROM 2IR TO 10IR",
       "partNumber": "",
       "rowIndex": 581,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 582,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-24, 3\nH.P SPLIT 220V 50-60HZ.",
       "partNumber": "QHCT-24",
       "rowIndex": 583,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Central Air Condition / Carrier Model 38BB-90 /\n40AB-90-C (Arrangment C) Split system\n,Condensing unit model : 38BB-90 ,Evaporator\nunit model : 40AB-90-C (Arrangment C) , Cooling\nonly , 460 V , 60 HZ , 3Phase , R22",
       "partNumber": "",
       "rowIndex": 584,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 585,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-24, 3\nH.P SPLIT 220V 50-60HZ.",
       "partNumber": "QHCT-24",
       "rowIndex": 586,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 587,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 588,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-24, 3\nH.P SPLIT 220V 50-60HZ.",
       "partNumber": "QHCT-24",
       "rowIndex": 589,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 590,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 591,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ROXTEC RM00100201000, RM MODULE WITH\nCORE, MULTIDIAMETER MODULE (RM20)",
       "partNumber": "RM00100201000",
       "rowIndex": 592,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : RM00100301000, Solid compensation\nmodules FOR CABLE",
       "partNumber": "RM00100301000",
       "rowIndex": 593,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : AWK0001201021, WEDGE KIT AISI 316\nSTAINLESS STEEL FOR CABLE",
       "partNumber": "AWK0001201021",
       "rowIndex": 594,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : ASP0001200021, STAY PLATE 120MM\nAISI 316 STAINLESS STEEL FOR CABLE",
       "partNumber": "ASP0001200021",
       "rowIndex": 595,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER TUBE SIZE 5/8 (PIECE = 50 FT)",
       "partNumber": "",
       "rowIndex": 596,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TUBE,COPPER 1/4\" SOFT (PCE=50 FT)",
       "partNumber": "",
       "rowIndex": 597,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TUBE,COPPER 3/8\" SOFT (PCE=50 FT)",
       "partNumber": "",
       "rowIndex": 598,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "copper tube 1/2 , for freezer and A/C (PCE=50\nFT)",
       "partNumber": "",
       "rowIndex": 599,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DRYER FILTER SIZE 3/8\" ,WELD TYPE BOTH\nENDS , SMALL SIZE. FOR AC CARRIER",
       "partNumber": "",
       "rowIndex": 600,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : ZR68KC-TFD-230, COMPRESSOR 480V\n60HZ R22 FOR MCC FOR COPELAND AIR\nCONDITION",
       "partNumber": "ZR68KCTFD-230",
       "rowIndex": 601,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER",
       "partNumber": "410A",
       "rowIndex": 602,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB.( Egyptian , Indian , EU )",
       "partNumber": "",
       "rowIndex": 603,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER",
       "partNumber": "410A",
       "rowIndex": 604,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERATOR",
       "partNumber": "R134A",
       "rowIndex": 605,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB.( Egyptian , Indian , EU )",
       "partNumber": "",
       "rowIndex": 606,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER",
       "partNumber": "410A",
       "rowIndex": 607,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB.( Egyptian , Indian , EU )",
       "partNumber": "",
       "rowIndex": 608,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN CARRIER",
       "partNumber": "410A",
       "rowIndex": 609,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB.( Egyptian , Indian , EU )",
       "partNumber": "",
       "rowIndex": 610,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER",
       "partNumber": "410A",
       "rowIndex": 611,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERATOR",
       "partNumber": "R134A",
       "rowIndex": 612,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 407 G/ USE, ( REF. GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 613,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER",
       "partNumber": "410A",
       "rowIndex": 614,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : PH330G2C - TKTS, COMPRESSOR , 2.25\nHP. , GMCC ROHS# PH330G2C - TKTS WITH\nITS CAPLLRY FOR CARRIER OPTIMAX",
       "partNumber": "PH330G2C- TKTS",
       "rowIndex": 615,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : ZR48K5E-TFD-830 , COMPRESSOR\nCOPELAND 040-P-1203 , MODEL ZR48K3ETFD-235 (OLD P/N: 040-P-1660)",
       "partNumber": "ZR48K5ETFD-830",
       "rowIndex": 616,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ARTHERMO P/N : TSC-093 THERMOSTAT\n?30OC DEGREE ITALY MADE REF. PN/\n2101064 FOR SALAD REFRIGERATOR &\nVERTICAL REFRIGERATOR & FREEZING\nROOM",
       "partNumber": "2101064",
       "rowIndex": 617,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DANFOSS MANEUROP COMPRESSOR ,\nMODEL NO.MT80HP4AVE , 9HP , 380 V , 50/60\nHZ FOR CARRIER CENTRAL AC UNIT 38BB145",
       "partNumber": "",
       "rowIndex": 618,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 404A-24LB, 10.9 KGM ( Egyptian , Indian\n, EU, Tiba Int. )",
       "partNumber": "",
       "rowIndex": 619,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WALL MOUNT LAN SOCKET \"SNOW WHITE\"-\nCHINA",
       "partNumber": "",
       "rowIndex": 620,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 5C10, EXANE 125 OIL AND MUD\nRESISTANT CABLE 5 CONDUCTORS X 10\nAWG [6 mm?] ( EA = 1 FT )",
       "partNumber": "5C10",
       "rowIndex": 621,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 4C10 , EXANE 125 OIL AND MUD\nRESISTANT CABLE 4 CONDUCTORS X 10\nAWG . [6 mm?] ( EA = 1 FT )",
       "partNumber": "4C10",
       "rowIndex": 622,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 3C12, EXANE 125 OIL AND MUD\nRESISTANT CABLE 3 CONDUCTORS X 12\nAWG ( EACH EQUAL METER)",
       "partNumber": "3C12",
       "rowIndex": 623,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ELECTRICAL RUBBER CABLE , 5 C X 10 AWG\n[6 mm?] ( EA = 1 FT )",
       "partNumber": "",
       "rowIndex": 624,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "POWER CABLE 4 AWG , 5 CONDUCTOR , 460\nVOLT ( EACH = FEET )",
       "partNumber": "",
       "rowIndex": 625,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 37-102-517, FOUR CONDUCTORS\nFLEXABLE POWER CABLE, 12 AWG ,\nUNARMORED, AMAPCITY 33 @ 110C ( EACH =\nFEET ) FOR MUD AGITATORS",
       "partNumber": "37-102-517",
       "rowIndex": 626,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 026225,125 OIL AND MUD RESISTANT\nCABLE 3 CONDUCTORS X 12 AWG",
       "partNumber": "26225",
       "rowIndex": 627,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 628,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MULTI-SOCKET ADAPTOR 5 OUTLET 5/250\nVOLTS WITH INDICATOR LIGHT AND FUSED",
       "partNumber": "",
       "rowIndex": 629,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 SQ.MM, ,WELDING CABLE, COPPER ( EACH\n= METER )",
       "partNumber": "",
       "rowIndex": 630,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ELSEWEDY CABLES=7Y R 70 MM BASEC\nAPPROVED TOBS6004 450/750V 70C IEC\n60227 GROUND SYSTEM",
       "partNumber": "",
       "rowIndex": 631,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 10 SQUERE MM\nYELLOW/GREEN SOFT STRANDED CABLE ( 1\nEA = 1 METER )",
       "partNumber": "",
       "rowIndex": 632,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 10 SQUERE MM\nYELLOW/GREEN SOFT STRANDED CABLE ( 1\nEA = 1 METER )",
       "partNumber": "",
       "rowIndex": 633,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
