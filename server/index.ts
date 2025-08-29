@@ -42,9 +42,13 @@ declare global {
   var SYSTEM_COMPLETELY_EMPTY: boolean;
   var TARGET_TOTAL_VALUE: number;
   var aiUnifier: any;
+  var sseClients: any[];
 }
 
 const app = express();
+
+// تهيئة مصفوفة عملاء SSE للتحديثات المباشرة
+global.sseClients = [];
 
 // خدمة الملفات الثابتة (الصور المرفوعة)
 app.use('/uploads', express.static('public/uploads'));

@@ -230,6 +230,31 @@ export class AIBackgroundUnifier extends EventEmitter {
         current: currentItem.description.substring(0, 50)
       });
       
+      // إرسال تحديثات للواجهة عبر SSE
+      if (global.sseClients && global.sseClients.length > 0) {
+        const progressData = {
+          type: 'progress',
+          data: {
+            currentIndex: this.state.currentIndex,
+            totalItems: this.state.totalItems,
+            processedItems: this.state.processedItems,
+            unifiedItems: this.state.unifiedItems,
+            progress: Math.round((this.state.processedItems / this.state.totalItems) * 100),
+            isRunning: this.state.isRunning,
+            isPaused: this.state.isPaused,
+            currentItem: currentItem.description.substring(0, 50)
+          }
+        };
+        
+        global.sseClients.forEach(client => {
+          try {
+            client.write(`data: ${JSON.stringify(progressData)}\n\n`);
+          } catch (error) {
+            console.warn('خطأ في إرسال SSE:', error);
+          }
+        });
+      }
+      
       this.addLog(`📊 التقدم: ${this.state.processedItems}/${this.state.totalItems} (${Math.round((this.state.processedItems/this.state.totalItems)*100)}%)`);
       
     } catch (error: any) {

@@ -2,115 +2,115 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 0,
+    "currentIndex": 119,
     "totalItems": 5604,
-    "processedItems": 0,
+    "processedItems": 118,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
-    "lastSaveTime": "2025-08-29T16:54:52.981Z",
+    "lastSaveTime": "2025-08-29T16:58:12.816Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٤:٥٣:٥٢ م] 📊 بدء المعالجة من البند 1 من 5604",
-      "[٤:٥٣:٥٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٤ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٦ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٨ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٣:٥٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٠ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٢ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٤ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٦ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٨ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٠٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٠ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٢ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٤ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٦ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٨ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:١٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٠ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٢ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٤ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٦ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٨ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٢٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٠ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٢ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٤ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٦ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٨ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٣٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٠ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٢ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٤ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٦ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٨ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٤٩ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٠ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥١ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٢ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٣ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٤ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٥ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٦ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٧ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H...",
-      "[٤:٥٤:٥٨ م] 🔍 معالجة البند 1: LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H..."
+      "[٤:٥٨:٠٥ م] 📊 التقدم: 85/5604 (2%)",
+      "[٤:٥٨:٠٦ م] 🔍 معالجة البند 87/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٠٦ م] ✅ تم معالجة البند 87: P-0000135",
+      "[٤:٥٨:٠٦ م] 📊 التقدم: 86/5604 (2%)",
+      "[٤:٥٨:٠٧ م] 🔍 معالجة البند 88/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٠٧ م] ✅ تم معالجة البند 88: P-0000135",
+      "[٤:٥٨:٠٧ م] 📊 التقدم: 87/5604 (2%)",
+      "[٤:٥٨:٠٨ م] 🔍 معالجة البند 89/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٠٨ م] ✅ تم معالجة البند 89: P-0000135",
+      "[٤:٥٨:٠٨ م] 📊 التقدم: 88/5604 (2%)",
+      "[٤:٥٨:٠٩ م] 🔍 معالجة البند 90/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:٠٩ م] ✅ تم معالجة البند 90: P-0000135",
+      "[٤:٥٨:٠٩ م] 📊 التقدم: 89/5604 (2%)",
+      "[٤:٥٨:١٠ م] 🔍 معالجة البند 91/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:١٠ م] ✅ تم معالجة البند 91: P-0000135",
+      "[٤:٥٨:١٠ م] 📊 التقدم: 90/5604 (2%)",
+      "[٤:٥٨:١١ م] 🔍 معالجة البند 92/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:١١ م] ✅ تم معالجة البند 92: P-0000135",
+      "[٤:٥٨:١١ م] 📊 التقدم: 91/5604 (2%)",
+      "[٤:٥٨:١٢ م] 🔍 معالجة البند 93/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:١٢ م] ✅ تم معالجة البند 93: P-0000135",
+      "[٤:٥٨:١٢ م] 📊 التقدم: 92/5604 (2%)",
+      "[٤:٥٨:١٣ م] 🔍 معالجة البند 94/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:١٣ م] ✅ تم معالجة البند 94: P-0000135",
+      "[٤:٥٨:١٣ م] 📊 التقدم: 93/5604 (2%)",
+      "[٤:٥٨:١٤ م] 🔍 معالجة البند 95/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:١٤ م] ✅ تم معالجة البند 95: P-0000135",
+      "[٤:٥٨:١٤ م] 📊 التقدم: 94/5604 (2%)",
+      "[٤:٥٨:١٥ م] 🔍 معالجة البند 96/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:١٥ م] ✅ تم معالجة البند 96: P-0000135",
+      "[٤:٥٨:١٥ م] 📊 التقدم: 95/5604 (2%)",
+      "[٤:٥٨:١٦ م] 🔍 معالجة البند 97/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:١٦ م] ✅ تم معالجة البند 97: P-0000135",
+      "[٤:٥٨:١٦ م] 📊 التقدم: 96/5604 (2%)",
+      "[٤:٥٨:١٧ م] 🔍 معالجة البند 98/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:١٧ م] ✅ تم معالجة البند 98: P-0000135",
+      "[٤:٥٨:١٧ م] 📊 التقدم: 97/5604 (2%)",
+      "[٤:٥٨:١٨ م] 🔍 معالجة البند 99/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:١٨ م] ✅ تم معالجة البند 99: P-0000135",
+      "[٤:٥٨:١٨ م] 📊 التقدم: 98/5604 (2%)",
+      "[٤:٥٨:١٩ م] 🔍 معالجة البند 100/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:١٩ م] ✅ تم معالجة البند 100: P-0000135",
+      "[٤:٥٨:١٩ م] 📊 التقدم: 99/5604 (2%)",
+      "[٤:٥٨:٢٠ م] 🔍 معالجة البند 101/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:٢٠ م] ✅ تم معالجة البند 101: P-0000135",
+      "[٤:٥٨:٢٠ م] 📊 التقدم: 100/5604 (2%)",
+      "[٤:٥٨:٢١ م] 🔍 معالجة البند 102/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
+      "[٤:٥٨:٢١ م] ✅ تم معالجة البند 102: P-0000135",
+      "[٤:٥٨:٢١ م] 📊 التقدم: 101/5604 (2%)",
+      "[٤:٥٨:٢٢ م] 🔍 معالجة البند 103/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
+      "[٤:٥٨:٢٢ م] ✅ تم معالجة البند 103: P-0000135",
+      "[٤:٥٨:٢٢ م] 📊 التقدم: 102/5604 (2%)",
+      "[٤:٥٨:٢٣ م] 🔍 معالجة البند 104/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
+      "[٤:٥٨:٢٣ م] ✅ تم معالجة البند 104: P-0000135",
+      "[٤:٥٨:٢٣ م] 📊 التقدم: 103/5604 (2%)",
+      "[٤:٥٨:٢٤ م] 🔍 معالجة البند 105/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٢٤ م] ✅ تم معالجة البند 105: P-0000135",
+      "[٤:٥٨:٢٤ م] 📊 التقدم: 104/5604 (2%)",
+      "[٤:٥٨:٢٥ م] 🔍 معالجة البند 106/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٢٥ م] ✅ تم معالجة البند 106: P-0000135",
+      "[٤:٥٨:٢٥ م] 📊 التقدم: 105/5604 (2%)",
+      "[٤:٥٨:٢٦ م] 🔍 معالجة البند 107/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٢٦ م] ✅ تم معالجة البند 107: P-0000135",
+      "[٤:٥٨:٢٦ م] 📊 التقدم: 106/5604 (2%)",
+      "[٤:٥٨:٢٧ م] 🔍 معالجة البند 108/5604: FREON 407 G/ USE,  ( REF . GRAINGER CAT.)...",
+      "[٤:٥٨:٢٧ م] ✅ تم معالجة البند 108: P-0000135",
+      "[٤:٥٨:٢٧ م] 📊 التقدم: 107/5604 (2%)",
+      "[٤:٥٨:٢٨ م] 🔍 معالجة البند 109/5604: FREON 407 G/ USE,  ( REF . GRAINGER CAT.)...",
+      "[٤:٥٨:٢٨ م] ✅ تم معالجة البند 109: P-0000135",
+      "[٤:٥٨:٢٨ م] 📊 التقدم: 108/5604 (2%)",
+      "[٤:٥٨:٢٩ م] 🔍 معالجة البند 110/5604: FREON 407 G/ USE,  ( REF . GRAINGER CAT.)...",
+      "[٤:٥٨:٢٩ م] ✅ تم معالجة البند 110: P-0000135",
+      "[٤:٥٨:٢٩ م] 📊 التقدم: 109/5604 (2%)",
+      "[٤:٥٨:٣٠ م] 🔍 معالجة البند 111/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٣٠ م] ✅ تم معالجة البند 111: P-0000135",
+      "[٤:٥٨:٣٠ م] 📊 التقدم: 110/5604 (2%)",
+      "[٤:٥٨:٣١ م] 🔍 معالجة البند 112/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٣١ م] ✅ تم معالجة البند 112: P-0000135",
+      "[٤:٥٨:٣١ م] 📊 التقدم: 111/5604 (2%)",
+      "[٤:٥٨:٣٢ م] 🔍 معالجة البند 113/5604: FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )...",
+      "[٤:٥٨:٣٢ م] ✅ تم معالجة البند 113: P-0000135",
+      "[٤:٥٨:٣٢ م] 📊 التقدم: 112/5604 (2%)",
+      "[٤:٥٨:٣٣ م] 🔍 معالجة البند 114/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:٣٣ م] ✅ تم معالجة البند 114: P-0000135",
+      "[٤:٥٨:٣٣ م] 📊 التقدم: 113/5604 (2%)",
+      "[٤:٥٨:٣٤ م] 🔍 معالجة البند 115/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:٣٤ م] ✅ تم معالجة البند 115: P-0000135",
+      "[٤:٥٨:٣٤ م] 📊 التقدم: 114/5604 (2%)",
+      "[٤:٥٨:٣٥ م] 🔍 معالجة البند 116/5604: P/N : R134A, FREON FOR REFRIGERTOR...",
+      "[٤:٥٨:٣٥ م] ✅ تم معالجة البند 116: P-0000135",
+      "[٤:٥٨:٣٥ م] 📊 التقدم: 115/5604 (2%)",
+      "[٤:٥٨:٣٦ م] 🔍 معالجة البند 117/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
+      "[٤:٥٨:٣٦ م] ✅ تم معالجة البند 117: P-0000135",
+      "[٤:٥٨:٣٦ م] 📊 التقدم: 116/5604 (2%)",
+      "[٤:٥٨:٣٧ م] 🔍 معالجة البند 118/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
+      "[٤:٥٨:٣٧ م] ✅ تم معالجة البند 118: P-0000135",
+      "[٤:٥٨:٣٧ م] 📊 التقدم: 117/5604 (2%)",
+      "[٤:٥٨:٣٨ م] 🔍 معالجة البند 119/5604: P/N : 410A, FREON FOR DRILLER CABIN CARRIER...",
+      "[٤:٥٨:٣٨ م] ✅ تم معالجة البند 119: P-0000135",
+      "[٤:٥٨:٣٨ م] 📊 التقدم: 118/5604 (2%)"
     ]
   },
   "items": [
@@ -119,7 +119,7 @@
       "description": "LEFT BRACKET FOR A/C CARRIER QG MODEL\n42QG18H",
       "partNumber": "",
       "rowIndex": 2,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
@@ -133,819 +133,819 @@
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 4,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 5,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N TRS/1 CR-A , HINGE DOOR HINGES (SET) REF/ 2101099 FOR ELECTRIC COOKER",
       "partNumber": "TRS/1 CR-A",
       "rowIndex": 6,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
       "partNumber": "11.33454.247",
       "rowIndex": 7,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
       "partNumber": "11.33454.247",
       "rowIndex": 8,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N 11.33454.247 , HOT PLATE WITH FRAME ST-STEEL 30x30 CM , 30KW , 230 VOLT (EGO CAT.) (MADE IN TURKEY)",
       "partNumber": "11.33454.247",
       "rowIndex": 9,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR\nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 10,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
       "partNumber": "11.33473.338",
       "rowIndex": 11,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
       "partNumber": "11.33473.338",
       "rowIndex": 12,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : (11.33473.338) HOT PLATE (EGO) GERMANY PLATE 30x30 ? 3KW ? WITH ST.ST FRAME NEW MODEL FROM 2007 , REF . PN/ 2102004 FOR ELECTRIC COOKER",
       "partNumber": "11.33473.338",
       "rowIndex": 13,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
       "partNumber": "",
       "rowIndex": 14,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
       "partNumber": "",
       "rowIndex": 15,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "THERMAL INSULATION SIZE 12 MM , REF . PN 2101220 (ACCESSORY)",
       "partNumber": "2101220",
       "rowIndex": 16,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DIXELL P/N XR10CX=XR10CH , DIGITAL THERMOSTAT - 220V 8(3)A 250VAC ITALY MADE REF PN/ 2101060 FOR SALAD REFRIGERATOR & VERTICAL REFRIGERATOR (OLD P/N : XR10CX-5N0C0)",
       "partNumber": "XR10CX=XR10CH",
       "rowIndex": 17,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DOOR GASKET SIZE 635x430 MM , REF . PN/5713 FOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "5713",
       "rowIndex": 18,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2102043 , THERMOSTAT (EGO) GERMANY 100/180OC ,1042 SINGLE PH FOR DEEP FAT FRYER EGO P/N : (55.13032.140)",
       "partNumber": "2102043",
       "rowIndex": 19,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
       "partNumber": "32\" LED",
       "rowIndex": 20,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
       "partNumber": "32\" LED",
       "rowIndex": 21,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "T.V 43\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
       "partNumber": "43\" LED",
       "rowIndex": 22,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
       "partNumber": "32\" LED",
       "rowIndex": 23,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "T.V 55\" LED (SAMSUNG) 4K ULTRA HD SMART LED TV WITH BUILT - IN RECEIVER , MODEL : UA55CU7000UXEG",
       "partNumber": "UA55CU7000UXEG",
       "rowIndex": 24,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "T.V 43\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
       "partNumber": "43\" LED",
       "rowIndex": 25,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "T.V 32\" LED BUILT-IN RECEIVER (TORNADO / TOSHIBA)",
       "partNumber": "32\" LED",
       "rowIndex": 26,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 32 M7 , SCHNIEDER CONTACTOR FRANCE TELEMECANIQUE 220V 50/60HZ ITH 50A - 15 KW - 400V , REF PN/2102034 FOR  ELECTRIC GRILL & DEEP FAT FRYER",
       "partNumber": "LC1D 32M7",
       "rowIndex": 27,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1D 25M7 , SCHNIEDER CONTACTOR FRANCE TELE-MECHANIQUE 220V 50/60HZ ITH 40A - 11 KW - 400V , REF PN/2102046 FOR  ELECTRIC COOKER & WATER BOILER & BAIN MARIE",
       "partNumber": "LC1D 25M7",
       "rowIndex": 28,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : (43.27232.000) SWITCH EGO 8- POS 32 A , REF PN/ 0C6245 FOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "43.27232.000",
       "rowIndex": 29,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MODEL JB3010 , BRAUN TRIBUTE COLLECTION BELENDER , 800WATT",
       "partNumber": "",
       "rowIndex": 30,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WALL TYPE EXHAUST FAN INTERNAL DIM 30x30 CM WITH GUARD ( OLYMPIC , TOSHIBA)",
       "partNumber": "",
       "rowIndex": 31,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : B3 CT42030 , VACUUM CLEANER 80 LITER 3000 WATT CROWN",
       "partNumber": "B3 CT42030V",
       "rowIndex": 32,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 33,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
       "partNumber": "",
       "rowIndex": 34,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1x8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 35,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
       "partNumber": "",
       "rowIndex": 36,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1x8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 37,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SATELLITE DISH PREFIX 70",
       "partNumber": "",
       "rowIndex": 38,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LNB 1/4 QUAD",
       "partNumber": "",
       "rowIndex": 39,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 40,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 41,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
       "partNumber": "",
       "rowIndex": 42,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1x8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 43,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MODEL : TWF-16 , TORNADO WALL FAN - 16 INCH",
       "partNumber": "",
       "rowIndex": 44,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1x8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 45,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
       "partNumber": "",
       "rowIndex": 46,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 47,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3x3 TO CONNECT RECIVER WITH TV",
       "partNumber": "",
       "rowIndex": 48,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1x8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 49,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SATELLITE DISH PREFIX 70",
       "partNumber": "",
       "rowIndex": 50,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3x1 FOR MINI RECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
       "partNumber": "",
       "rowIndex": 51,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 52,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1x8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 53,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SATELLITE DISH PREFIX 70",
       "partNumber": "",
       "rowIndex": 54,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "REMOTE CONTROL FOR BEIN SPORT RECEIVER",
       "partNumber": "",
       "rowIndex": 55,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 50 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 56,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 57,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ARISTON ELECTRIC WATER HEATER 100 LITERS 220 VOLT",
       "partNumber": "",
       "rowIndex": 58,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ARISTON ELECTRIC WATER HEATER 100 LITERS 220 VOLT",
       "partNumber": "",
       "rowIndex": 59,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 60,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 61,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 62,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 30 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 63,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY UPPER OVEN 1300 WATT  220V (130CM) , REF . PN/ 2102018 FOR ELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 64,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
       "partNumber": "",
       "rowIndex": 65,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N : ( 55.19022.819) THERMOSTAT (EGO) GERMANY 30/110 OC 11OC 1041.4 , REF PN/ 2101042 FOR WATER BOILER & BAIN MARIE",
       "partNumber": "55.19022.819",
       "rowIndex": 66,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EGO P/N :  55.19059.831 ,ELECTROLUX P/N : 056384 THERMOSTAT 220 V ? 50 ? 300 C REF . PN/ 56384 FOR CONVECTION OVEN 6 GN 1/1",
       "partNumber": "56384",
       "rowIndex": 67,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
       "partNumber": "",
       "rowIndex": 68,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY UPPER OVEN 1300 WATT  220V (130CM) , REF . PN/ 2102018 FOR ELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 69,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY 1.8 KW -220 V , REF . PN/2102030 FOR ELECTRIC GRILL",
       "partNumber": "2102030",
       "rowIndex": 70,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY TOASTER 2500W ? 230V , FOR CONVECT OVEN 6 GN 1/1",
       "partNumber": "56945",
       "rowIndex": 71,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER TURKEY LOWER OVEN 1300 WATT 220V (130CM) NO REF . 2102018CFOR ELECTRIC COOKER",
       "partNumber": "",
       "rowIndex": 72,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DIXELL P/N XR10CX=XR10CH , DIGITAL THERMOSTAT - 220V 8(3)A 250VAC ITALY MADE REF PN/ 2101060 FOR SALAD REFRIGERATOR & VERTICAL REFRIGERATOR (OLD P/N : XR10CX-5N0C0)",
       "partNumber": "XR10CX=XR10CH",
       "rowIndex": 73,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HEATER ITALY 1950 KW , 220V , FOR BAIN MARIE (REF . ONLY P/N: 2102029)",
       "partNumber": "",
       "rowIndex": 74,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OUTDOOR SPEAKER (HORN) 100 WATT XPLOD AUDIO XP-H100 (LOCAL MARKET)",
       "partNumber": "",
       "rowIndex": 75,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WALL TYPE EXHAUST FAN INTERNAL DIM 25x25 CM WITH GUARD ( OLYMPIC , TOSHIBA)",
       "partNumber": "",
       "rowIndex": 76,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 77,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 78,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 79,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 80,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 81,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 82,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 83,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 84,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 85,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 404A-24LB, 10.9KGM ( Egyptian , Indian , EU, Tiba Int. )",
       "partNumber": "",
       "rowIndex": 86,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 404A-24LB, 10.9KGM ( Egyptian , Indian , EU, Tiba Int. )",
       "partNumber": "",
       "rowIndex": 87,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 88,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 89,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 90,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 91,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 92,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 93,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 94,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 95,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 96,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 97,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 98,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 99,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 100,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 101,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 102,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN CARRIER",
       "partNumber": "410A",
       "rowIndex": 103,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN CARRIER",
       "partNumber": "410A",
       "rowIndex": 104,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN CARRIER",
       "partNumber": "410A",
       "rowIndex": 105,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 106,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 107,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 108,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 407 G/ USE,  ( REF . GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 109,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 407 G/ USE,  ( REF . GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 110,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 407 G/ USE,  ( REF . GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 111,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 112,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 113,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB. ( EGYPTIAN , INDIAN , EU )",
       "partNumber": "",
       "rowIndex": 114,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 115,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 116,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERTOR",
       "partNumber": "R134A",
       "rowIndex": 117,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN CARRIER",
       "partNumber": "410A",
       "rowIndex": 118,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN CARRIER",
       "partNumber": "410A",
       "rowIndex": 119,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN CARRIER",
       "partNumber": "410A",
       "rowIndex": 120,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
