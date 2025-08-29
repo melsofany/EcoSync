@@ -458,8 +458,8 @@ export class SemanticProductUnifier {
       .toUpperCase();
   }
 
-  // واجهة المعنى الدلالي للمنتج
-  interface ProductSemantics {
+// واجهة المعنى الدلالي للمنتج
+interface ProductSemantics {
     isValid: boolean;
     
     // المعلومات الأساسية
@@ -677,10 +677,14 @@ export class SemanticProductUnifier {
     return model.replace(/[\s\-]/g, '').toUpperCase();
   }
   
-  // باقي الكود القديم (مؤقتاً)
-  private oldCalculateSemanticSimilarity(item1: ProductItem, item2: ProductItem): {score: number, reason: string} {
-    const specs1 = item1.extractedSpecs;
-    const specs2 = item2.extractedSpecs;
+  // تنظيف الكود القديم
+  private cleanDescription(text: string): string {
+    return text
+      .replace(/[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase();
+  }
     
     let score = 0;
     let reason = '';
