@@ -117,16 +117,13 @@ export class AIBackgroundUnifier extends EventEmitter {
           
           this.items = convertedItems.filter(item => {
             const hasDesc = item.description.length > 5;
-            const notUnified = !item.itemNumber.startsWith('P-');
             
             if (!hasDesc) {
               this.addLog(`⚠️ تجاهل بند بوصف قصير: ${item.id} - "${item.description}"`);
-            }
-            if (!notUnified) {
-              this.addLog(`⚠️ تجاهل بند موحد مسبقاً: ${item.id}`);
+              return false;
             }
             
-            return hasDesc && notUnified;
+            return true; // قبول جميع البنود ذات الوصف المناسب
           });
           
           this.state.totalItems = this.items.length;
@@ -146,16 +143,14 @@ export class AIBackgroundUnifier extends EventEmitter {
       }))
       .filter(item => {
         const hasDesc = item.description.length > 5; // تقليل الحد الأدنى
-        const notUnified = !item.id.startsWith('P-'); // تجاهل البنود الموحدة مسبقاً
+        // إزالة تجاهل البنود الموحدة - للسماح بإعادة التوحيد المتقدم
         
         if (!hasDesc) {
           this.addLog(`⚠️ تجاهل بند بوصف قصير: ${item.id} - "${item.description}"`);
-        }
-        if (!notUnified) {
-          this.addLog(`⚠️ تجاهل بند موحد مسبقاً: ${item.id}`);
+          return false;
         }
         
-        return hasDesc && notUnified;
+        return true; // قبول جميع البنود ذات الوصف المناسب
       });
 
     this.state.totalItems = this.items.length;
