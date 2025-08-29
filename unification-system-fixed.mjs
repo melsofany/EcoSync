@@ -35,6 +35,55 @@ function normalize(text) {
     .trim();
 }
 
+// دالة فحص التشابه بين المنتجات
+function areProductsSimilar(desc1, desc2) {
+  if (!desc1 || !desc2) return false;
+  
+  // تطبيع النصوص
+  const clean1 = normalize(desc1).replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const clean2 = normalize(desc2).replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  
+  // استخراج الكلمات المهمة
+  const getKeywords = (text) => {
+    return text.split(' ')
+      .filter(word => word.length > 2) // فقط الكلمات الطويلة
+      .filter(word => !['led', 'tv', 't.v', 'built', 'in', 'receiver', 'with'].includes(word)); // تجاهل الكلمات الشائعة
+  };
+  
+  const keywords1 = getKeywords(clean1);
+  const keywords2 = getKeywords(clean2);
+  
+  // البحث عن الحجم (32", 43", 55", إلخ)
+  const sizeMatch1 = clean1.match(/(\d+)\s*(?:"|inch|بوصة)/i);
+  const sizeMatch2 = clean2.match(/(\d+)\s*(?:"|inch|بوصة)/i);
+  
+  // يجب أن يتطابق الحجم
+  if (sizeMatch1 && sizeMatch2) {
+    if (sizeMatch1[1] !== sizeMatch2[1]) return false;
+  }
+  
+  // البحث عن العلامة التجارية
+  const brands1 = keywords1.filter(word => ['samsung', 'tornado', 'toshiba', 'lg', 'sony'].includes(word));
+  const brands2 = keywords2.filter(word => ['samsung', 'tornado', 'toshiba', 'lg', 'sony'].includes(word));
+  
+  // يجب أن تتطابق العلامة التجارية
+  if (brands1.length > 0 && brands2.length > 0) {
+    const commonBrands = brands1.filter(brand => brands2.includes(brand));
+    if (commonBrands.length === 0) return false;
+  }
+  
+  // حساب نسبة التشابه
+  const commonKeywords = keywords1.filter(word => keywords2.includes(word));
+  const totalKeywords = [...new Set([...keywords1, ...keywords2])].length;
+  
+  if (totalKeywords === 0) return false;
+  
+  const similarity = commonKeywords.length / totalKeywords;
+  
+  // تطابق عالي = منتج متشابه
+  return similarity >= 0.6;
+}
+
 // ==================== حفظ الحالة ====================
 function saveStatus(currentIndex, totalItems, isRunning = true) {
   const status = {
@@ -98,15 +147,18 @@ async function unifyItems() {
       let groupId = null;
       let matchReason = '';
       
-      // مطابقة صارمة: فقط إذا تطابق الوصف بالضبط
+      // مطابقة ذكية: البحث عن التشابه في المعنى الأساسي
       if (description) {
         for (const [key, group] of groups.entries()) {
-          // فقط الأوصاف المتطابقة تماماً يمكن دمجها
-          if (group.descriptions.has(description)) {
-            groupId = key;
-            matchReason = `وصف متطابق: ${description.substring(0, 30)}...`;
-            break;
+          // فحص كل وصف في المجموعة
+          for (const existingDesc of group.descriptions) {
+            if (areProductsSimilar(description, existingDesc)) {
+              groupId = key;
+              matchReason = `منتج متشابه: ${description.substring(0, 30)}...`;
+              break;
+            }
           }
+          if (groupId) break;
         }
       }
       
