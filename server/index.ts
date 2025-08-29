@@ -55,7 +55,7 @@ global.sseClients = [];
 import fs from 'fs';
 
 class ProgressUpdater {
-  private currentProgress = 1529;
+  private currentProgress = 0;
   private intervalId: NodeJS.Timeout | null = null;
   
   start() {

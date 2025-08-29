@@ -108,7 +108,7 @@ async function aiUnifyItems(items: any[]): Promise<any[]> {
       // استخدام AI للمقارنة
       const similarity = await checkAISimilarity(currentItem, compareItem);
       
-      if (similarity >= 0.8) { // نسبة تشابه 80% أو أكثر
+      if (similarity >= 0.95) { // نسبة تشابه 95% أو أكثر للتطابق الدلالي
         similarItems.push(compareItem);
         processedItems.add(compareItem.id);
       }
@@ -191,13 +191,28 @@ async function runQuickMatchingForNewItems(newItems: any[]): Promise<void> {
 // فحص التشابه باستخدام DeepSeek AI
 async function checkAISimilarity(item1: any, item2: any): Promise<number> {
   try {
-    // التحقق من التطابق المباشر في LINE ITEM أولاً (أعلى أولوية)
-    if (item1.lineItem && item2.lineItem) {
-      const normalized1 = item1.lineItem.replace(/[\s\-_\.]/g, '').toUpperCase();
-      const normalized2 = item2.lineItem.replace(/[\s\-_\.]/g, '').toUpperCase();
+    // التحقق من التطابق المباشر في LINE ITEM + التوصيف معاً (أعلى أولوية)
+    if (item1.lineItem && item2.lineItem && item1.description && item2.description) {
+      const normalizedLineItem1 = item1.lineItem.replace(/[\s\-_\.]/g, '').toUpperCase();
+      const normalizedLineItem2 = item2.lineItem.replace(/[\s\-_\.]/g, '').toUpperCase();
       
-      if (normalized1 === normalized2) {
-        return 1.0; // تطابق كامل في LINE ITEM
+      // التحقق من التطابق في LINE ITEM
+      if (normalizedLineItem1 === normalizedLineItem2) {
+        // إذا كان LINE ITEM متطابق، تحقق من التوصيف أيضاً للتأكد
+        const desc1 = item1.description.toLowerCase();
+        const desc2 = item2.description.toLowerCase();
+        
+        // استخراج الأرقام (الأحجام) من التوصيف
+        const size1 = desc1.match(/\d+[""'']/g)?.[0] || desc1.match(/\d+\s*inch/i)?.[0] || '';
+        const size2 = desc2.match(/\d+[""'']/g)?.[0] || desc2.match(/\d+\s*inch/i)?.[0] || '';
+        
+        // إذا الأحجام مختلفة، فهي منتجات مختلفة حتى لو LINE ITEM متطابق
+        if (size1 && size2 && size1 !== size2) {
+          return 0.3; // منتجات من نفس العائلة لكن أحجام مختلفة
+        }
+        
+        // إذا لم توجد أحجام أو كانت متطابقة، فهي نفس المنتج
+        return 1.0; // تطابق كامل في LINE ITEM + المواصفات
       }
     }
     
@@ -211,29 +226,36 @@ async function checkAISimilarity(item1: any, item2: any): Promise<number> {
       }
     }
     
-    // استخدام AI للمقارنة الذكية - التركيز على الوظيفة والمواصفات
-    const prompt = `أنت خبير في تحليل قطع الغيار الصناعية. قارن بين هذين الصنفين وحدد مدى التشابه الوظيفي (0-1):
+    // استخدام AI للمقارنة الدلالية - التركيز على المعنى وليس النص
+    const prompt = `أنت خبير في التحليل الدلالي للمنتجات. قارن المعنى الدلالي لهذين التوصيفين وحدد إذا كانا يصفان نفس المنتج (0-1):
 
-الصنف الأول:
-- رقم القطعة: ${item1.partNumber || 'غير محدد'}
-- التوصيف: ${item1.description || 'غير محدد'}
-- LINE ITEM: ${item1.lineItem || 'غير محدد'}
+التوصيف الأول (العمود E):
+"${item1.description || 'غير محدد'}"
 
-الصنف الثاني:
-- رقم القطعة: ${item2.partNumber || 'غير محدد'}
-- التوصيف: ${item2.description || 'غير محدد'}
-- LINE ITEM: ${item2.lineItem || 'غير محدد'}
+التوصيف الثاني (العمود E):
+"${item2.description || 'غير محدد'}"
 
-معايير المقارنة (بالأولوية):
-1. نفس LINE ITEM = 1.0 (مطابقة كاملة)
-2. نفس الوظيفة والمواصفات الفنية = 0.85-0.95 (حتى لو أرقام القطع مختلفة)
-3. نفس الشركة المصنعة + نفس النوع = 0.75-0.85
-4. وظائف مشابهة لكن مواصفات مختلفة = 0.6-0.75
-5. منتجات مختلفة تماماً = 0.0-0.4
+معايير المقارنة الدلالية:
 
-مثال: LC1D 32M7 و 2102049 كلاهما Schneider contactors بنفس المواصفات = 0.9
+🔍 **نفس المنتج تماماً** = 0.95-1.0:
+- نفس النوع + نفس الحجم + نفس الشركة (حتى لو الصياغة مختلفة)
+- مثال: "TV 32 LED TORNADO" و "32 LED T.V TORNADO" = نفس المنتج
 
-أرجع رقماً فقط بين 0 و 1 يمثل نسبة التشابه الوظيفي:`;
+⚡ **منتجات مشابهة لكن مختلفة** = 0.3-0.6:
+- نفس النوع لكن أحجام مختلفة: "32 LED" vs "43 LED" = منتجات منفصلة
+- نفس النوع لكن شركات مختلفة: "TORNADO" vs "SAMSUNG" = منتجات منفصلة
+
+❌ **منتجات مختلفة تماماً** = 0.0-0.2:
+- أنواع مختلفة: "TV" vs "Motor" = مختلف تماماً
+
+🎯 **تجاهل هذه الاختلافات النصية**:
+- ترتيب الكلمات، المسافات، علامات الترقيم
+- صيغ مختلفة لنفس الكلمة (T.V = TV = Television)
+- أقواس وعلامات اقتباس
+
+ركز فقط على: **النوع + الحجم/المواصفات + الشركة**
+
+أرجع رقماً فقط بين 0 و 1:`;
 
     const response = await fetch('https://api.deepseek.com/chat/completions', {
       method: 'POST',
