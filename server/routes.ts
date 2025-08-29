@@ -108,7 +108,7 @@ async function aiUnifyItems(items: any[]): Promise<any[]> {
       // استخدام AI للمقارنة
       const similarity = await checkAISimilarity(currentItem, compareItem);
       
-      if (similarity >= 0.98) { // نسبة تشابه 98% أو أكثر للتطابق التام فقط
+      if (similarity >= 0.99) { // نسبة تشابه 99% أو أكثر للتطابق التام فقط (أكثر صرامة)
         similarItems.push(compareItem);
         processedItems.add(compareItem.id);
       }
@@ -202,16 +202,20 @@ async function checkAISimilarity(item1: any, item2: any): Promise<number> {
         const desc1 = item1.description.toLowerCase();
         const desc2 = item2.description.toLowerCase();
         
-        // استخراج الأرقام (الأحجام) من التوصيف
-        const size1 = desc1.match(/\d+[""'']/g)?.[0] || desc1.match(/\d+\s*inch/i)?.[0] || '';
-        const size2 = desc2.match(/\d+[""'']/g)?.[0] || desc2.match(/\d+\s*inch/i)?.[0] || '';
+        // استخراج الأرقام (الأحجام) من التوصيف بدقة أكبر
+        const size1 = desc1.match(/\d+["'']/g)?.[0]?.replace(/["'']/g, '') || 
+                     desc1.match(/\d+\s*inch/gi)?.[0]?.match(/\d+/)?.[0] || '';
+        const size2 = desc2.match(/\d+["'']/g)?.[0]?.replace(/["'']/g, '') || 
+                     desc2.match(/\d+\s*inch/gi)?.[0]?.match(/\d+/)?.[0] || '';
         
         // إذا الأحجام مختلفة، فهي منتجات مختلفة حتى لو LINE ITEM متطابق
         if (size1 && size2 && size1 !== size2) {
-          return 0.3; // منتجات من نفس العائلة لكن أحجام مختلفة
+          console.log(`🔥 أحجام مختلفة: "${size1}" ≠ "${size2}" - منتجات منفصلة!`);
+          return 0.2; // درجة منخفضة جداً للأحجام المختلفة
         }
         
         // إذا لم توجد أحجام أو كانت متطابقة، فهي نفس المنتج
+        console.log(`✅ تطابق كامل في LINE ITEM: "${normalizedLineItem1}"`);
         return 1.0; // تطابق كامل في LINE ITEM + المواصفات
       }
     }
