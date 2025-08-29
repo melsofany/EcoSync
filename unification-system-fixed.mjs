@@ -53,13 +53,26 @@ function areProductsSimilar(desc1, desc2) {
   const keywords1 = getKeywords(clean1);
   const keywords2 = getKeywords(clean2);
   
-  // البحث عن الحجم (32", 43", 55", إلخ)
-  const sizeMatch1 = clean1.match(/(\d+)\s*(?:"|inch|بوصة)/i);
-  const sizeMatch2 = clean2.match(/(\d+)\s*(?:"|inch|بوصة)/i);
+  // البحث عن الحجم (32", 43", 55", إلخ) - نمط محسن
+  const sizeMatch1 = desc1.match(/(\d+)\s*(?:"|''|inch|بوصة)/i);
+  const sizeMatch2 = desc2.match(/(\d+)\s*(?:"|''|inch|بوصة)/i);
   
-  // يجب أن يتطابق الحجم
+  console.log(`🔍 فحص الأحجام: "${desc1.substring(0, 30)}..." vs "${desc2.substring(0, 30)}..."`);
+  console.log(`   الحجم 1: ${sizeMatch1 ? sizeMatch1[1] + '"' : 'غير محدد'}`);
+  console.log(`   الحجم 2: ${sizeMatch2 ? sizeMatch2[1] + '"' : 'غير محدد'}`);
+  
+  // يجب أن يتطابق الحجم بالضبط - هذا شرط إجباري!
   if (sizeMatch1 && sizeMatch2) {
-    if (sizeMatch1[1] !== sizeMatch2[1]) return false;
+    if (sizeMatch1[1] !== sizeMatch2[1]) {
+      console.log(`❌ رفض التطابق: أحجام مختلفة ${sizeMatch1[1]}" ≠ ${sizeMatch2[1]}"`);
+      return false;
+    }
+  }
+  
+  // إذا كان أحدهما يحتوي على حجم والآخر لا، فهما مختلفان
+  if ((sizeMatch1 && !sizeMatch2) || (!sizeMatch1 && sizeMatch2)) {
+    console.log(`❌ رفض التطابق: حجم واحد فقط محدد`);
+    return false;
   }
   
   // البحث عن العلامة التجارية
@@ -69,7 +82,10 @@ function areProductsSimilar(desc1, desc2) {
   // يجب أن تتطابق العلامة التجارية
   if (brands1.length > 0 && brands2.length > 0) {
     const commonBrands = brands1.filter(brand => brands2.includes(brand));
-    if (commonBrands.length === 0) return false;
+    if (commonBrands.length === 0) {
+      console.log(`❌ رفض التطابق: علامات تجارية مختلفة ${brands1.join(',')} ≠ ${brands2.join(',')}`);
+      return false;
+    }
   }
   
   // حساب نسبة التشابه
@@ -80,8 +96,16 @@ function areProductsSimilar(desc1, desc2) {
   
   const similarity = commonKeywords.length / totalKeywords;
   
-  // تطابق عالي = منتج متشابه
-  return similarity >= 0.6;
+  // تطابق عالي = منتج متشابه (مع التأكد من المتطلبات الأساسية)
+  const isMatch = similarity >= 0.8; // زيادة معدل التشابه المطلوب
+  
+  if (isMatch) {
+    console.log(`✅ تطابق مقبول: ${similarity.toFixed(2)} تشابه`);
+    console.log(`   النص 1: ${clean1.substring(0, 50)}...`);
+    console.log(`   النص 2: ${clean2.substring(0, 50)}...`);
+  }
+  
+  return isMatch;
 }
 
 // ==================== حفظ الحالة ====================
