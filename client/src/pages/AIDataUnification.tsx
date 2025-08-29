@@ -281,9 +281,9 @@ export default function AIDataUnification() {
                   <StatusIcon className="h-5 w-5" />
                   {statusInfo.text}
                 </h3>
-                {status.totalItems > 0 && (
+                {(status.totalItems || 0) > 0 && (
                   <p className="text-sm text-gray-600">
-                    البند {status.currentIndex + 1} من {status.totalItems}
+                    البند {(status.currentIndex || 0) + 1} من {status.totalItems || 0}
                   </p>
                 )}
               </div>
@@ -339,13 +339,13 @@ export default function AIDataUnification() {
           </div>
 
           {/* شريط التقدم */}
-          {status.totalItems > 0 && (
+          {(status.totalItems || 0) > 0 && (
             <div className="space-y-3">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>التقدم</span>
-                <span>{status.progress.toFixed(1)}%</span>
+                <span>{(status.progress || 0).toFixed(1)}%</span>
               </div>
-              <Progress value={status.progress} className="h-3" />
+              <Progress value={status.progress || 0} className="h-3" />
             </div>
           )}
 
@@ -376,7 +376,7 @@ export default function AIDataUnification() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-blue-700">
-              {status.totalItems.toLocaleString()}
+              {(status.totalItems || 0).toLocaleString()}
             </p>
           </CardContent>
         </Card>
@@ -390,7 +390,7 @@ export default function AIDataUnification() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-yellow-700">
-              {status.processedItems.toLocaleString()}
+              {(status.processedItems || 0).toLocaleString()}
             </p>
           </CardContent>
         </Card>
@@ -404,7 +404,7 @@ export default function AIDataUnification() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-green-700">
-              {status.unifiedItems.toLocaleString()}
+              {(status.unifiedItems || 0).toLocaleString()}
             </p>
           </CardContent>
         </Card>
@@ -418,8 +418,8 @@ export default function AIDataUnification() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-purple-700">
-              {status.processedItems > 0 ? 
-                ((status.unifiedItems / status.processedItems) * 100).toFixed(1) : '0'}%
+              {(status.processedItems || 0) > 0 ? 
+                (((status.unifiedItems || 0) / (status.processedItems || 1)) * 100).toFixed(1) : '0'}%
             </p>
           </CardContent>
         </Card>
