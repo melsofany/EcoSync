@@ -7268,9 +7268,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log('🤖 بدء توحيد المعرفات بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
       
       // استخدام النظام الدلالي الجديد لتوحيد المنتجات
-      // استدعاء مباشر للنظام الجديد
-      const unifier = await initializeAIUnifier();
-      await unifier.startBackgroundUnification();
+      // استدعاء النظام الذكي العالمي
+      if (!global.aiUnifier) {
+        throw new Error('نظام التوحيد الذكي غير مُهيأ');
+      }
+      
+      await global.aiUnifier.startBackgroundUnification();
       
       const result = {
         success: true,
@@ -7348,9 +7351,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log(`🛑 طلب إيقاف التوحيد من المستخدم: ${req.session?.user?.username}`);
       
-      // استدعاء مباشر للنظام الجديد
-      const unifier = await initializeAIUnifier();
-      unifier.stopUnification();
+      // استدعاء النظام الذكي العالمي
+      if (!global.aiUnifier) {
+        throw new Error('نظام التوحيد الذكي غير مُهيأ');
+      }
+      
+      global.aiUnifier.stopUnification();
       
       await logActivity(req, "stop_ai_unification", "ai_unification", "deepseek", "إيقاف التوحيد الذكي نهائياً");
       

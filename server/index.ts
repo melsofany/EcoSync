@@ -10,6 +10,22 @@ import("./simple-unification").then(module => {
   console.error('⚠️ خطأ في تهيئة خدمة التوحيد:', err);
 });
 
+// تهيئة نظام التوحيد الذكي الجديد
+import("./ai-background-unifier").then(async module => {
+  const { AIBackgroundUnifier } = module;
+  const { GoogleSheetsRealtimeData } = await import("./google-sheets-realtime-data");
+  
+  const dataService = new GoogleSheetsRealtimeData();
+  const aiUnifier = new AIBackgroundUnifier(dataService);
+  
+  // تصدير النظام للاستخدام العالمي
+  global.aiUnifier = aiUnifier;
+  
+  console.log('✅ تم تهيئة نظام التوحيد الذكي الجديد');
+}).catch(err => {
+  console.error('❌ خطأ في تهيئة نظام التوحيد الذكي:', err);
+});
+
 // تهيئة البوت التليجرام فقط في التطوير
 if (process.env.NODE_ENV !== 'production') {
   import("./telegram-bot").then(() => {
@@ -25,6 +41,7 @@ if (process.env.NODE_ENV !== 'production') {
 declare global {
   var SYSTEM_COMPLETELY_EMPTY: boolean;
   var TARGET_TOTAL_VALUE: number;
+  var aiUnifier: any;
 }
 
 const app = express();
