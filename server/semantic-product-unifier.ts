@@ -423,7 +423,7 @@ export class SemanticProductUnifier {
       
       if (normalizedPart1 === normalizedPart2 && normalizedPart1.length > 3) {
         // ✅ **لكن تأكد من عدم وجود فروق جوهرية أخرى**
-        const criticalDiffs = this.findCriticalDifferences(specs1, specs2);
+        const criticalDiffs = this.findCriticalDifferences(specs1, specs2, item1, item2);
         if (criticalDiffs.length === 0) {
           score += 0.7;
           reason = `نفس رقم القطعة: ${item1.partNumber}`;
@@ -442,7 +442,7 @@ export class SemanticProductUnifier {
           specs1.model !== '') {
         
         // ✅ **تأكد من عدم وجود فروق حرجة**
-        const criticalDiffs = this.findCriticalDifferences(specs1, specs2);
+        const criticalDiffs = this.findCriticalDifferences(specs1, specs2, item1, item2);
         if (criticalDiffs.length === 0) {
           score += 0.6;
           reason = reason ? reason + ` + نفس الموديل: ${specs1.model}` : 
@@ -466,14 +466,24 @@ export class SemanticProductUnifier {
     return { score: 0, reason: 'لا يوجد تطابق دلالي كافي' };
   }
 
-  // ✅ **دالة ذكية للعثور على الفروق الحرجة**
-  private findCriticalDifferences(specs1: ProductSpecs, specs2: ProductSpecs): string[] {
+  // ✅ **دالة ذكية محسنة للعثور على الفروق الحرجة**
+  private findCriticalDifferences(specs1: ProductSpecs, specs2: ProductSpecs, item1: ProductItem, item2: ProductItem): string[] {
     const differences = [];
 
-    // فحص الحجم (للشاشات والأجهزة)
-    if (specs1.screenSize && specs2.screenSize && 
-        specs1.screenSize !== specs2.screenSize) {
-      differences.push(`حجم مختلف: ${specs1.screenSize} vs ${specs2.screenSize}`);
+    // 🔥 **فحص الحجم من كل مكان ممكن (أهم فرق)**
+    const size1 = this.extractScreenSizeFromAllSources(item1);
+    const size2 = this.extractScreenSizeFromAllSources(item2);
+    
+    if (size1 && size2 && size1 !== size2) {
+      differences.push(`حجم مختلف: ${size1} vs ${size2}`);
+    }
+
+    // 🔥 **فحص الأسعار للتأكد من اختلاف المنتجات**
+    const price1 = this.extractPriceFromDescription(item1.description);
+    const price2 = this.extractPriceFromDescription(item2.description);
+    
+    if (price1 && price2 && Math.abs(price1 - price2) > (Math.max(price1, price2) * 0.3)) {
+      differences.push(`سعر مختلف بشكل كبير: ${price1} vs ${price2}`);
     }
 
     // فحص الجهد
@@ -495,6 +505,57 @@ export class SemanticProductUnifier {
     }
 
     return differences;
+  }
+
+  // 🔥 **استخراج حجم الشاشة من جميع المصادر**
+  private extractScreenSizeFromAllSources(item: ProductItem): string {
+    const allText = `${item.description} ${item.partNumber} ${item.lineItem}`.toUpperCase();
+    
+    // أنماط متعددة لاستخراج الحجم
+    const sizePatterns = [
+      /(\d{2})\"\s*LED/gi,
+      /(\d{2})\s*INCH/gi,
+      /(\d{2})\s*بوصة/gi,
+      /T\.V\s*(\d{2})\"/gi,
+      /TV\s*(\d{2})\"/gi,
+      /\"(\d{2})\"\s*LED/gi,
+      /(\d{2})\"\"/gi  // للحالات مثل "32""
+    ];
+    
+    for (const pattern of sizePatterns) {
+      const match = allText.match(pattern);
+      if (match && match[1]) {
+        const size = parseInt(match[1]);
+        if (size >= 20 && size <= 100) { // نطاق منطقي لأحجام الشاشات
+          return size + '"';
+        }
+      }
+    }
+    
+    return '';
+  }
+
+  // 🔥 **استخراج السعر من التوصيف**
+  private extractPriceFromDescription(description: string): number | null {
+    // البحث عن أسعار في التوصيف
+    const pricePatterns = [
+      /(\d+)\s*جنيه/gi,
+      /(\d+)\s*ج\.م/gi,
+      /(\d+)\s*EGP/gi,
+      /PRICE\s*:?\s*(\d+)/gi
+    ];
+    
+    for (const pattern of pricePatterns) {
+      const match = description.match(pattern);
+      if (match && match[1]) {
+        const price = parseInt(match[1]);
+        if (price > 100 && price < 1000000) { // نطاق منطقي للأسعار
+          return price;
+        }
+      }
+    }
+    
+    return null;
   }
 
   private normalizePartNumber(partNum: string): string {
