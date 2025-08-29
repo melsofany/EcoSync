@@ -1,37 +1,13 @@
 import { GoogleSheetsRealtimeData } from './google-sheets-realtime-data.js';
 
-// واجهة المعنى الدلالي للمنتج
-interface ProductSemantics {
-  isValid: boolean;
-  
-  // المعلومات الأساسية
-  brand: string;           // العلامة التجارية
-  model: string;           // الموديل
-  partNumber: string;      // رقم القطعة
-  category: string;        // نوع المنتج
-  
-  // المواصفات التقنية
-  voltage: string;         // الجهد
-  current: string;         // التيار
-  power: string;           // القدرة
-  frequency: string;       // التردد
-  capacity: string;        // السعة
-  
-  // الاستخدام
-  application: string[];   // الاستخدام
-  
-  // الكلمات المفتاحية
-  keywords: string[];      // الكلمات المهمة
-}
-
+// واجهات البيانات
 export interface ProductItem {
-  itemNumber: string;        // P-XXXXXXX
-  description: string;       // التوصيف الكامل
-  partNumber: string;        // رقم القطعة
-  lineItem: string;          // LINE ITEM
-  uom: string;               // وحدة القياس
-  rfq: string;               // RFQ
-  extractedSpecs: any;       // المواصفات المستخرجة
+  itemNumber: string;
+  description: string;
+  partNumber: string;
+  lineItem: string;
+  uom: string;
+  rfq: string;
 }
 
 export interface UnificationGroup {
@@ -48,25 +24,32 @@ export interface UnificationResult {
   groupsFound: number;
   groups: UnificationGroup[];
   message?: string;
+  processedCount?: number;
 }
 
 export class SemanticProductUnifier {
   private dataService: GoogleSheetsRealtimeData;
+  private progressCallback?: (progress: number, message: string) => void;
 
   constructor(dataService: GoogleSheetsRealtimeData) {
     this.dataService = dataService;
   }
 
+  // تعيين دالة متابعة التقدم
+  setProgressCallback(callback: (progress: number, message: string) => void) {
+    this.progressCallback = callback;
+  }
+
+  // الدالة الرئيسية للتوحيد
   async unifyItems(): Promise<UnificationResult> {
     try {
-      console.log('🔄 بدء عملية التوحيد الدلالي الذكي...');
+      this.updateProgress(0, 'بدء تحميل البيانات...');
       
-      // قراءة البيانات
+      // تحميل البيانات
       const items = await this.dataService.getAllItems();
       console.log(`📊 تم تحميل ${items.length} بند للتحليل`);
 
       if (items.length === 0) {
-        console.log('❌ لا توجد بيانات للتوحيد - تم إنهاء العملية');
         return {
           success: false,
           totalItems: 0,
@@ -76,63 +59,39 @@ export class SemanticProductUnifier {
         };
       }
 
-      console.log(`🔍 معاينة البيانات المحملة:`);
+      this.updateProgress(10, 'تحليل وفلترة البيانات...');
       
-      // تحليل توزيع المعرفات
-      const idCounts = new Map<string, number>();
-      for (const item of items) {
-        const id = item.itemNumber || item.id || 'unknown';
-        idCounts.set(id, (idCounts.get(id) || 0) + 1);
-      }
-      
-      console.log(`📊 إحصائيات المعرفات:`);
-      const sortedIds = Array.from(idCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      for (const [id, count] of sortedIds) {
-        console.log(`   - ${id}: ${count} بند`);
-      }
-      
-      // فلترة البيانات لتجنب البنود الموحدة مسبقاً
-      const unifiedItems = items.filter(item => 
-        (item.itemNumber || item.id) !== 'P-0000135' && 
-        (item.description || '').trim().length > 10
-      );
-      
-      console.log(`📝 تم فلترة البيانات: ${unifiedItems.length} بند غير موحد من ${items.length} بند إجمالي`);
-      
-      for (let i = 0; i < Math.min(3, unifiedItems.length); i++) {
-        const item = unifiedItems[i];
-        console.log(`  ${i + 1}. ID: ${item.itemNumber || item.id}`);
-        console.log(`     التوصيف: ${(item.description || '').substring(0, 80)}...`);
-        console.log(`     رقم القطعة: ${item.partNumber || 'غير محدد'}`);
-        console.log(`     ---`);
+      // تنظيف وفلترة البيانات
+      const cleanedItems = this.cleanAndFilterItems(items);
+      console.log(`✨ تم تنظيف البيانات: ${cleanedItems.length} بند صالح للتحليل`);
+
+      if (cleanedItems.length < 2) {
+        return {
+          success: false,
+          totalItems: items.length,
+          groupsFound: 0,
+          groups: [],
+          message: 'عدد البنود الصالحة للتحليل قليل جداً'
+        };
       }
 
-      // تحويل البيانات المفلترة إلى التنسيق المطلوب
-      const productItems: ProductItem[] = unifiedItems.map(item => ({
-        itemNumber: item.itemNumber || item.id,
-        description: item.description || '',
-        partNumber: item.partNumber || '',
-        lineItem: item.lineItem || '',
-        uom: item.uom || '',
-        rfq: item.rfqNumber || '',
-        extractedSpecs: {}
-      }));
-
-      console.log(`🔍 عينة من البيانات المفلترة للتحليل:`);
-      for (let i = 0; i < Math.min(5, productItems.length); i++) {
-        const item = productItems[i];
-        console.log(`  ${i + 1}. ${item.itemNumber}: ${item.description.substring(0, 60)}...`);
-      }
-
-      // تجميع البنود المتشابهة
-      const groups = this.findSemanticGroups(productItems);
+      this.updateProgress(20, 'بدء عملية التحليل الدلالي...');
+      
+      // البحث عن المجموعات المتطابقة
+      const groups = await this.findSimilarGroups(cleanedItems);
+      
+      this.updateProgress(100, 'تم الانتهاء من التحليل');
       console.log(`✅ تم العثور على ${groups.length} مجموعة متطابقة`);
 
       return {
         success: true,
         totalItems: items.length,
         groupsFound: groups.length,
-        groups: groups
+        groups: groups,
+        processedCount: cleanedItems.length,
+        message: groups.length > 0 ? 
+          `تم العثور على ${groups.length} مجموعة منتجات متطابقة` :
+          'لم يتم العثور على منتجات متطابقة'
       };
 
     } catch (error) {
@@ -147,316 +106,185 @@ export class SemanticProductUnifier {
     }
   }
 
-  private findSemanticGroups(items: ProductItem[]): UnificationGroup[] {
-    console.log(`🔍 بدء البحث عن المجموعات المتطابقة في ${items.length} منتج...`);
-    
+  // تنظيف وفلترة البيانات
+  private cleanAndFilterItems(items: any[]): ProductItem[] {
+    const uniqueItems = new Map<string, ProductItem>();
+    let processedCount = 0;
+
+    for (const item of items) {
+      processedCount++;
+      
+      // تحديث التقدم
+      if (processedCount % 500 === 0) {
+        const progress = 10 + (processedCount / items.length) * 10;
+        this.updateProgress(progress, `فلترة البيانات... ${processedCount}/${items.length}`);
+      }
+
+      // تجاهل البنود الفارغة أو قصيرة التوصيف
+      const description = (item.description || '').trim();
+      if (description.length < 10) continue;
+
+      // تجاهل البنود المكررة بناءً على التوصيف
+      const normalizedDesc = this.normalizeDescription(description);
+      if (uniqueItems.has(normalizedDesc)) continue;
+
+      // إنشاء بند منتج نظيف
+      const productItem: ProductItem = {
+        itemNumber: item.itemNumber || item.id || `ITEM-${processedCount}`,
+        description: description,
+        partNumber: (item.partNumber || '').trim(),
+        lineItem: (item.lineItem || '').trim(),
+        uom: (item.uom || '').trim(),
+        rfq: (item.rfqNumber || '').trim()
+      };
+
+      uniqueItems.set(normalizedDesc, productItem);
+    }
+
+    return Array.from(uniqueItems.values());
+  }
+
+  // البحث عن المجموعات المتشابهة
+  private async findSimilarGroups(items: ProductItem[]): Promise<UnificationGroup[]> {
     const groups: UnificationGroup[] = [];
     const processedItems = new Set<string>();
-    
-    let comparisonCount = 0;
-    let validComparisonCount = 0;
+    let comparisons = 0;
+    const maxComparisons = Math.min(items.length * 10, 5000); // تحديد عدد المقارنات
 
-    // تحديد عدد البنود للمعالجة (للاختبار السريع)
-    const maxItems = Math.min(items.length, 100);
-    console.log(`🔄 معالجة أول ${maxItems} بند من ${items.length} بند إجمالي`);
+    console.log(`🔍 بدء البحث في ${items.length} منتج (حد أقصى ${maxComparisons} مقارنة)`);
 
-    for (let i = 0; i < maxItems; i++) {
+    for (let i = 0; i < items.length && comparisons < maxComparisons; i++) {
       const item1 = items[i];
       
-      if (processedItems.has(item1.itemNumber)) {
-        continue;
-      }
+      if (processedItems.has(item1.itemNumber)) continue;
 
-      const groupItems: ProductItem[] = [item1];
+      const similarItems = [item1];
       processedItems.add(item1.itemNumber);
 
-      // البحث عن العناصر المتطابقة
-      for (let j = i + 1; j < maxItems; j++) {
+      // البحث عن منتجات مشابهة
+      for (let j = i + 1; j < items.length && comparisons < maxComparisons; j++) {
         const item2 = items[j];
         
-        if (processedItems.has(item2.itemNumber)) {
-          continue;
+        if (processedItems.has(item2.itemNumber)) continue;
+
+        comparisons++;
+        
+        // تحديث التقدم
+        if (comparisons % 100 === 0) {
+          const progress = 20 + (comparisons / maxComparisons) * 70;
+          this.updateProgress(progress, `تحليل المنتجات... ${comparisons}/${maxComparisons}`);
         }
 
-        comparisonCount++;
-        const similarity = this.calculateSemanticSimilarity(item1, item2);
+        // حساب التشابه
+        const similarity = this.calculateSimilarity(item1, item2);
         
-        if (similarity.score > 0) {
-          validComparisonCount++;
-        }
-        
-        // عرض عينة من المقارنات للتشخيص
-        if (comparisonCount <= 5) {
-          console.log(`🧪 مقارنة ${comparisonCount}: ${item1.itemNumber} مع ${item2.itemNumber}`);
-          console.log(`    البند الأول: ${item1.description.substring(0, 50)}...`);
-          console.log(`    البند الثاني: ${item2.description.substring(0, 50)}...`);
-          console.log(`    النتيجة: ${similarity.score.toFixed(3)} - ${similarity.reason}`);
-        }
-        
-        // تقليل عتبة التطابق لإيجاد مجموعات أكثر
-        if (similarity.score >= 0.6) {
-          console.log(`🔍 تطابق محتمل: ${item1.itemNumber} مع ${item2.itemNumber} - درجة: ${similarity.score.toFixed(2)} - السبب: ${similarity.reason}`);
-          groupItems.push(item2);
+        if (similarity.score >= 0.7) { // عتبة التشابه
+          console.log(`🎯 تطابق: ${item1.itemNumber} ↔ ${item2.itemNumber} (${similarity.score.toFixed(2)})`);
+          similarItems.push(item2);
           processedItems.add(item2.itemNumber);
-        } else if (similarity.score >= 0.4) {
-          console.log(`⚠️ تطابق ضعيف: ${item1.itemNumber} مع ${item2.itemNumber} - درجة: ${similarity.score.toFixed(2)} - السبب: ${similarity.reason}`);
         }
       }
 
-      // إنشاء مجموعة إذا كان هناك أكثر من عنصر
-      if (groupItems.length > 1) {
+      // إنشاء مجموعة إذا وُجدت منتجات مشابهة
+      if (similarItems.length > 1) {
         groups.push({
           masterId: item1.itemNumber,
           masterDescription: item1.description,
-          items: groupItems,
+          items: similarItems,
           similarity: 0.9,
-          reason: 'تطابق دلالي ذكي'
+          reason: `${similarItems.length} منتج متشابه`
         });
       }
     }
 
-    console.log(`📊 إحصائيات البحث:`);
-    console.log(`   - إجمالي المقارنات: ${comparisonCount}`);
-    console.log(`   - المقارنات الصحيحة: ${validComparisonCount}`);
-    console.log(`   - المجموعات الموحدة: ${groups.length}`);
+    console.log(`📊 إجمالي المقارنات: ${comparisons}`);
+    console.log(`📊 المجموعات المكتشفة: ${groups.length}`);
 
     return groups;
   }
 
-  private calculateSemanticSimilarity(item1: ProductItem, item2: ProductItem): {score: number, reason: string} {
-    // تجنب مقارنة البند مع نفسه
-    if (item1.itemNumber === item2.itemNumber) {
-      return { score: 0, reason: 'نفس البند - مرفوض' };
-    }
-    
-    // التحليل الدلالي الذكي للمنتجات
-    const semantics1 = this.extractProductSemantics(item1.description, item1.partNumber);
-    const semantics2 = this.extractProductSemantics(item2.description, item2.partNumber);
-    
-    if (!semantics1.isValid || !semantics2.isValid) {
-      return { score: 0, reason: 'بيانات غير كافية للمقارنة' };
-    }
-    
-    // حساب التطابق الدلالي
-    const similarity = this.calculateSemanticMatch(semantics1, semantics2);
-    
-    return similarity;
-  }
-
-  private extractProductSemantics(description: string, partNumber: string = ''): ProductSemantics {
-    const text = (description + ' ' + partNumber).toUpperCase();
-    
-    const semantics: ProductSemantics = {
-      isValid: false,
-      brand: this.extractBrand(text),
-      model: this.extractModel(text),
-      partNumber: this.extractPartNumber(text, partNumber),
-      category: this.extractCategory(text),
-      voltage: this.extractVoltage(text),
-      current: this.extractCurrent(text),
-      power: this.extractPower(text),
-      frequency: this.extractFrequency(text),
-      capacity: this.extractCapacity(text),
-      application: this.extractApplication(text),
-      keywords: this.extractKeywords(text)
-    };
-    
-    // تحديد صحة البيانات
-    semantics.isValid = !!(semantics.brand && semantics.category) || 
-                       !!(semantics.partNumber && semantics.category) ||
-                       !!(semantics.model && semantics.category);
-    
-    return semantics;
-  }
-
-  private calculateSemanticMatch(sem1: ProductSemantics, sem2: ProductSemantics): {score: number, reason: string} {
+  // حساب التشابه بين منتجين
+  private calculateSimilarity(item1: ProductItem, item2: ProductItem): {score: number, reason: string} {
     let score = 0;
-    let matchReasons: string[] = [];
-    
-    // مطابقة رقم القطعة (وزن 40%)
-    if (sem1.partNumber && sem2.partNumber && this.normalizePartNumber(sem1.partNumber) === this.normalizePartNumber(sem2.partNumber)) {
-      score += 0.4;
-      matchReasons.push('رقم قطعة متطابق');
-    }
-    
-    // مطابقة العلامة التجارية + الموديل (وزن 35%)
-    if (sem1.brand && sem2.brand && this.normalizeBrand(sem1.brand) === this.normalizeBrand(sem2.brand)) {
-      if (sem1.model && sem2.model && this.normalizeModel(sem1.model) === this.normalizeModel(sem2.model)) {
-        score += 0.35;
-        matchReasons.push(`${sem1.brand} ${sem1.model}`);
-      } else if (!sem1.model || !sem2.model) {
-        score += 0.2; // مطابقة علامة فقط
-        matchReasons.push(`علامة ${sem1.brand}`);
+    const reasons: string[] = [];
+
+    // مقارنة رقم القطعة (وزن 40%)
+    if (item1.partNumber && item2.partNumber) {
+      const partSim = this.comparePartNumbers(item1.partNumber, item2.partNumber);
+      if (partSim > 0.8) {
+        score += 0.4;
+        reasons.push('رقم قطعة متطابق');
       }
     }
+
+    // مقارنة التوصيف (وزن 60%)
+    const descSim = this.compareDescriptions(item1.description, item2.description);
+    score += descSim * 0.6;
     
-    // مطابقة الفئة + المواصفات (وزن 25%)
-    if (sem1.category && sem2.category && sem1.category === sem2.category) {
-      let specMatches = 0;
-      if (sem1.voltage && sem2.voltage && sem1.voltage === sem2.voltage) specMatches++;
-      if (sem1.current && sem2.current && sem1.current === sem2.current) specMatches++;
-      if (sem1.power && sem2.power && sem1.power === sem2.power) specMatches++;
-      if (sem1.frequency && sem2.frequency && sem1.frequency === sem2.frequency) specMatches++;
-      
-      if (specMatches >= 2) {
-        score += 0.25;
-        matchReasons.push(`${sem1.category} بمواصفات متطابقة`);
-      } else if (specMatches >= 1) {
-        score += 0.15;
-        matchReasons.push(`${sem1.category} بمواصفات جزئية`);
-      } else {
-        score += 0.05; // مطابقة فئة فقط
-        matchReasons.push(`نفس الفئة: ${sem1.category}`);
-      }
+    if (descSim > 0.7) {
+      reasons.push('توصيف متشابه');
     }
-    
-    // تحسين: مطابقة الكلمات المفتاحية المشتركة
-    if (sem1.keywords.length > 0 && sem2.keywords.length > 0) {
-      const commonKeywords = sem1.keywords.filter(k1 => 
-        sem2.keywords.some(k2 => this.normalizeKeyword(k1) === this.normalizeKeyword(k2))
-      );
-      
-      if (commonKeywords.length >= 3) {
-        score += 0.15;
-        matchReasons.push(`كلمات مشتركة: ${commonKeywords.slice(0, 2).join(', ')}`);
-      } else if (commonKeywords.length >= 2) {
-        score += 0.1;
-        matchReasons.push(`كلمات مشتركة: ${commonKeywords.join(', ')}`);
-      }
-    }
-    
-    const reason = matchReasons.length > 0 ? matchReasons.join(' + ') : 'لا توجد تطابقات دلالية';
-    return { score, reason };
-  }
-  
-  private normalizeKeyword(keyword: string): string {
-    return keyword.replace(/[^\w]/g, '').toUpperCase();
-  }
-  
-  // دوال استخراج المعلومات 
-  private extractBrand(text: string): string {
-    const brands = [
-      'SCHNEIDER', 'SCHNIEDER', 'TELEMECANIQUE',
-      'ABB', 'SIEMENS', 'OMRON', 'ALLEN BRADLEY',
-      'LEGRAND', 'HAGER', 'LOVATO', 'CHINT',
-      'شنايدر', 'سيمنس', 'أبي'
-    ];
-    
-    for (const brand of brands) {
-      if (text.includes(brand)) {
-        return brand;
-      }
-    }
-    return '';
-  }
-  
-  private extractModel(text: string): string {
-    // استخراج الموديل من النص
-    const modelPatterns = [
-      /LC1D\s*\d+\s*[A-Z]\d*/g,    // LC1D 32 M7
-      /[A-Z]+\d+[A-Z]*\d*/g        // نماذج عامة
-    ];
-    
-    for (const pattern of modelPatterns) {
-      const matches = text.match(pattern);
-      if (matches) {
-        return matches[0].replace(/\s+/g, '');
-      }
-    }
-    return '';
-  }
-  
-  private extractPartNumber(text: string, providedPartNumber: string): string {
-    if (providedPartNumber && providedPartNumber.trim() !== '') {
-      return providedPartNumber.trim();
-    }
-    
-    // استخراج رقم القطعة من النص
-    const partNumberPatterns = [
-      /P\/N\s*:?\s*([A-Z0-9\-\s]+)/i,
-      /PART\s*NO\.?\s*:?\s*([A-Z0-9\-\s]+)/i,
-      /REF\.?\s*PN\/\s*([A-Z0-9\-\s]+)/i
-    ];
-    
-    for (const pattern of partNumberPatterns) {
-      const match = text.match(pattern);
-      if (match) {
-        return match[1].trim().split(' ')[0]; // أول جزء
-      }
-    }
-    return '';
-  }
-  
-  private extractCategory(text: string): string {
-    const categories = [
-      'CONTACTOR', 'RELAY', 'BREAKER', 'SWITCH', 'FUSE',
-      'MOTOR', 'TRANSFORMER', 'CAPACITOR', 'RESISTOR',
-      'كونتاكتور', 'ريلاي', 'قاطع'
-    ];
-    
-    for (const category of categories) {
-      if (text.includes(category)) {
-        return category;
-      }
-    }
-    return '';
-  }
-  
-  private extractVoltage(text: string): string {
-    const voltageMatch = text.match(/(\d+)\s*V(?!A)/g);
-    return voltageMatch ? voltageMatch[0] : '';
-  }
-  
-  private extractCurrent(text: string): string {
-    const currentMatch = text.match(/(\d+)\s*A(?:MP)?/g);
-    return currentMatch ? currentMatch[0] : '';
-  }
-  
-  private extractPower(text: string): string {
-    const powerMatch = text.match(/(\d+)\s*KW/g);
-    return powerMatch ? powerMatch[0] : '';
-  }
-  
-  private extractFrequency(text: string): string {
-    const frequencyMatch = text.match(/(\d+)\s*HZ/g);
-    return frequencyMatch ? frequencyMatch[0] : '';
-  }
-  
-  private extractCapacity(text: string): string {
-    const capacityMatch = text.match(/(\d+)\s*AMP/g);
-    return capacityMatch ? capacityMatch[0] : '';
-  }
-  
-  private extractApplication(text: string): string[] {
-    const applications = [];
-    if (text.includes('GRILL')) applications.push('GRILL');
-    if (text.includes('FRYER')) applications.push('FRYER');
-    if (text.includes('MOTOR')) applications.push('MOTOR');
-    if (text.includes('ELECTRIC')) applications.push('ELECTRIC');
-    return applications;
-  }
-  
-  private extractKeywords(text: string): string[] {
-    return text.split(/\s+/)
-      .filter(word => word.length > 2)
-      .filter(word => !['THE', 'AND', 'FOR', 'WITH'].includes(word))
-      .slice(0, 10);
-  }
-  
-  // دوال التطبيع
-  private normalizePartNumber(partNumber: string): string {
-    return partNumber.replace(/[\s\-\_]/g, '').toUpperCase();
-  }
-  
-  private normalizeBrand(brand: string): string {
-    const brandMap: {[key: string]: string} = {
-      'SCHNIEDER': 'SCHNEIDER',
-      'TELEMECANIQUE': 'SCHNEIDER'
+
+    return {
+      score,
+      reason: reasons.length > 0 ? reasons.join(' + ') : 'تشابه ضعيف'
     };
-    return brandMap[brand] || brand;
   }
-  
-  private normalizeModel(model: string): string {
-    return model.replace(/[\s\-]/g, '').toUpperCase();
+
+  // مقارنة أرقام القطع
+  private comparePartNumbers(part1: string, part2: string): number {
+    const norm1 = part1.replace(/[\s\-\_\.]/g, '').toUpperCase();
+    const norm2 = part2.replace(/[\s\-\_\.]/g, '').toUpperCase();
+    
+    if (norm1 === norm2) return 1.0;
+    if (norm1.includes(norm2) || norm2.includes(norm1)) return 0.8;
+    
+    return 0;
+  }
+
+  // مقارنة التوصيف
+  private compareDescriptions(desc1: string, desc2: string): number {
+    const words1 = this.extractKeywords(desc1);
+    const words2 = this.extractKeywords(desc2);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    const commonWords = words1.filter(word => words2.includes(word));
+    const similarity = (2 * commonWords.length) / (words1.length + words2.length);
+    
+    return Math.min(similarity, 1.0);
+  }
+
+  // استخراج الكلمات المفتاحية
+  private extractKeywords(text: string): string[] {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(word => word.length > 2)
+      .filter(word => !this.isStopWord(word));
+  }
+
+  // الكلمات المستبعدة
+  private isStopWord(word: string): boolean {
+    const stopWords = ['and', 'or', 'for', 'with', 'the', 'من', 'إلى', 'في', 'على', 'عن'];
+    return stopWords.includes(word);
+  }
+
+  // تطبيع التوصيف
+  private normalizeDescription(description: string): string {
+    return description
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // تحديث التقدم
+  private updateProgress(progress: number, message: string) {
+    if (this.progressCallback) {
+      this.progressCallback(Math.min(progress, 100), message);
+    }
+    console.log(`📈 ${progress.toFixed(0)}% - ${message}`);
   }
 }
