@@ -8768,8 +8768,20 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const status = JSON.parse(fileData);
       const currentProgress = Math.max(status.currentIndex || 0, status.processedItems || 0);
       
-      // إذا كان هناك تقدم، فالنظام يعمل
-      const isReallyRunning = currentProgress > 0 && currentProgress < 5604;
+      // فحص إذا كان النظام يعمل فعلاً من خلال العملية الجارية
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+      
+      let isProcessRunning = false;
+      try {
+        const { stdout } = await execAsync('pgrep -f "unification-system-improved.mjs"');
+        isProcessRunning = stdout.trim() !== '';
+      } catch {
+        isProcessRunning = false;
+      }
+      
+      const isReallyRunning = isProcessRunning || (currentProgress > 0 && currentProgress < 5604);
       
       const response = {
         isRunning: isReallyRunning,
@@ -8789,7 +8801,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         timestamp: Date.now()
       };
       
-      console.log(`📊 إرسال حالة: ${isReallyRunning ? 'يعمل' : 'متوقف'} - التقدم: ${currentProgress}/5604`);
+      console.log(`📊 إرسال حالة: ${isReallyRunning ? 'يعمل' : 'متوقف'} - التقدم: ${currentProgress}/5604 - عملية جارية: ${isProcessRunning}`);
       res.json(response);
       
     } catch (error: any) {
