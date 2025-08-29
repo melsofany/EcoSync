@@ -95,11 +95,48 @@ export class AIBackgroundUnifier extends EventEmitter {
   private async loadItems(): Promise<void> {
     this.addLog('📋 تحميل البيانات من Google Sheets...');
     
-    const rawItems = await this.dataService.getAllItemsRaw();
-    this.addLog(`📊 تم جلب ${rawItems.length} بند خام من Google Sheets`);
-    
-    // تنظيف وفلترة البيانات
-    this.items = rawItems
+    try {
+      const rawItems = await this.dataService.getAllItemsRaw();
+      this.addLog(`📊 تم جلب ${rawItems.length} بند خام من Google Sheets`);
+      
+      if (rawItems.length === 0) {
+        this.addLog('⚠️ لم يتم جلب أي بيانات من getAllItemsRaw - جاري المحاولة مع getAllItems...');
+        const alternativeItems = await this.dataService.getAllItems();
+        this.addLog(`📊 تم جلب ${alternativeItems.length} بند من getAllItems البديلة`);
+        
+        if (alternativeItems.length > 0) {
+          // تحويل البيانات لتتطابق مع التنسيق المطلوب
+          const convertedItems = alternativeItems.map((item, index) => ({
+            id: item.id || `item-${index}`,
+            itemNumber: item.itemNumber || item.id || `ITEM-${index}`,
+            description: item.description || '',
+            partNumber: item.partNumber || '',
+            rowIndex: index + 2,
+            processed: false
+          }));
+          
+          this.items = convertedItems.filter(item => {
+            const hasDesc = item.description.length > 5;
+            const notUnified = !item.itemNumber.startsWith('P-');
+            
+            if (!hasDesc) {
+              this.addLog(`⚠️ تجاهل بند بوصف قصير: ${item.id} - "${item.description}"`);
+            }
+            if (!notUnified) {
+              this.addLog(`⚠️ تجاهل بند موحد مسبقاً: ${item.id}`);
+            }
+            
+            return hasDesc && notUnified;
+          });
+          
+          this.state.totalItems = this.items.length;
+          this.addLog(`✅ تم تحويل وتحميل ${this.items.length} بند للمعالجة (من ${alternativeItems.length} بند بديل)`);
+          return;
+        }
+      }
+      
+      // تنظيف وفلترة البيانات من getAllItemsRaw
+      this.items = rawItems
       .map((item, index) => ({
         id: item.itemNumber || item.id || `ITEM-${index}`,
         description: (item.description || '').trim(),
@@ -124,11 +161,15 @@ export class AIBackgroundUnifier extends EventEmitter {
     this.state.totalItems = this.items.length;
     this.addLog(`✅ تم تحميل ${this.items.length} بند للمعالجة (من ${rawItems.length} بند إجمالي)`);
     
-    if (this.items.length === 0) {
-      this.addLog(`🔍 تفاصيل البيانات المتاحة:`);
-      rawItems.slice(0, 5).forEach((item, index) => {
-        this.addLog(`📝 البند ${index + 1}: ID=${item.itemNumber || item.id || 'غير محدد'}, Desc="${(item.description || '').substring(0, 50)}..."`);
-      });
+      if (this.items.length === 0) {
+        this.addLog(`🔍 تفاصيل البيانات المتاحة:`);
+        rawItems.slice(0, 5).forEach((item, index) => {
+          this.addLog(`📝 البند ${index + 1}: ID=${item.itemNumber || item.id || 'غير محدد'}, Desc="${(item.description || '').substring(0, 50)}..."`);
+        });
+      }
+    } catch (error: any) {
+      this.addLog(`❌ خطأ في تحميل البيانات: ${error.message}`, 'error');
+      throw error;
     }
   }
 

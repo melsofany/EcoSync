@@ -385,7 +385,7 @@ export class GoogleSheetsRealtimeData {
         let rowsWithData = 0;
         let emptyRows = 0;
         for (let i = 0; i < rows.length; i++) {
-          if (rows[i] && rows[i].length > 0 && rows[i].some(cell => cell && cell.toString().trim() !== '')) {
+          if (rows[i] && rows[i].length > 0 && rows[i].some((cell: any) => cell && cell.toString().trim() !== '')) {
             rowsWithData++;
           } else {
             emptyRows++;
@@ -733,41 +733,6 @@ export class GoogleSheetsRealtimeData {
     }
   }
 
-  async getAllItems(): Promise<any[]> {
-    try {
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A2:AA'
-      });
-
-      const rows = response.data.values || [];
-      const items = [];
-
-      for (const row of rows) {
-        if (row[3] && row[4]) { // Part Number and Description exist
-          items.push({
-            id: row[0] || '', // Column A - Item Number
-            itemNumber: row[0] || '',
-            partNumber: row[3] || '', // Column D - Part Number
-            description: row[4] || '', // Column E - Description
-            rfqNumber: row[5] || '', // Column F - RFQ Number
-            requestDate: row[6] || '', // Column G - Request Date
-            quantity: row[7] || '', // Column H - Quantity
-            poNumber: row[10] || '', // Column K - رقم أمر الشراء
-            poDate: row[11] || '', // Column L - تاريخ أمر الشراء
-            poQuantity: row[12] || '', // Column M - كمية أمر الشراء
-            poPrice: row[13] || '', // Column N - سعر أمر الشراء
-            clientName: row[16] || '' // Column Q - Client Name
-          });
-        }
-      }
-
-      return items;
-    } catch (error) {
-      console.error('❌ خطأ في جلب جميع الأصناف:', error);
-      return [];
-    }
-  }
 
   /**
    * قراءة البيانات من صفحة تسعير الموردين
