@@ -8697,6 +8697,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       if (global.aiUnifier) {
         const status = global.aiUnifier.getStatus();
         
+        // إعداد headers لمنع الكاش
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        
         res.json({
           isRunning: status.isRunning || false,
           isPaused: status.isPaused || false,
@@ -8712,7 +8717,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           errorCount: status.errorCount || 0,
           message: status.isRunning ? 
             `جاري المعالجة... ${status.processedItems}/${status.totalItems}` : 
-            'النظام جاهز للتوحيد الذكي'
+            'النظام جاهز للتوحيد الذكي',
+          timestamp: Date.now() // طابع زمني للتأكد من التحديث
         });
         
         return;

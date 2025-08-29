@@ -64,8 +64,13 @@ export default function AIDataUnification() {
   useEffect(() => {
     const pollStatus = async () => {
       try {
-        const response = await fetch('/api/ai-unification/status', {
-          credentials: 'include'
+        const response = await fetch('/api/ai-unification/status?' + Date.now(), {
+          credentials: 'include',
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
         
         if (response.ok) {

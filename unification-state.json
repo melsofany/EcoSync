@@ -2,115 +2,115 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 237,
+    "currentIndex": 356,
     "totalItems": 5604,
-    "processedItems": 236,
+    "processedItems": 355,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
-    "lastSaveTime": "2025-08-29T17:06:01.598Z",
+    "lastSaveTime": "2025-08-29T17:09:07.942Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٥:٠٥:٥٣ م] 📊 التقدم: 203/5604 (4%)",
-      "[٥:٠٥:٥٥ م] 🔍 معالجة البند 205/5604: 1 CONDUCTOR X 50 SQUERE MM \nYELLOW/GREEN SOFT ( EL...",
-      "[٥:٠٥:٥٥ م] ✅ تم معالجة البند 205: P-0000135",
-      "[٥:٠٥:٥٥ م] 📊 التقدم: 204/5604 (4%)",
-      "[٥:٠٥:٥٧ م] 🔍 معالجة البند 206/5604: PN: FSKD5-15 , APPLETON 15AMP,125V \nRECEPTACLE WIT...",
-      "[٥:٠٥:٥٧ م] ✅ تم معالجة البند 206: P-0000135",
-      "[٥:٠٥:٥٧ م] 📊 التقدم: 205/5604 (4%)",
-      "[٥:٠٥:٥٩ م] 🔍 معالجة البند 207/5604: 70 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER...",
-      "[٥:٠٥:٥٩ م] ✅ تم معالجة البند 207: P-0000135",
-      "[٥:٠٥:٥٩ م] 📊 التقدم: 206/5604 (4%)",
-      "[٥:٠٦:٠١ م] 🔍 معالجة البند 208/5604: 50 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER...",
-      "[٥:٠٦:٠١ م] ✅ تم معالجة البند 208: P-0000135",
-      "[٥:٠٦:٠١ م] 📊 التقدم: 207/5604 (4%)",
-      "[٥:٠٦:٠٣ م] 🔍 معالجة البند 209/5604: 70 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN...",
-      "[٥:٠٦:٠٣ م] ✅ تم معالجة البند 209: P-0000135",
-      "[٥:٠٦:٠٣ م] 📊 التقدم: 208/5604 (4%)",
-      "[٥:٠٦:٠٥ م] 🔍 معالجة البند 210/5604: 50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN...",
-      "[٥:٠٦:٠٥ م] ✅ تم معالجة البند 210: P-0000135",
-      "[٥:٠٦:٠٥ م] 📊 التقدم: 209/5604 (4%)",
-      "[٥:٠٦:٠٧ م] 🔍 معالجة البند 211/5604: 50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN...",
-      "[٥:٠٦:٠٧ م] ✅ تم معالجة البند 211: P-0000135",
-      "[٥:٠٦:٠٧ م] 📊 التقدم: 210/5604 (4%)",
-      "[٥:٠٦:٠٩ م] 🔍 معالجة البند 212/5604: 50 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN...",
-      "[٥:٠٦:٠٩ م] ✅ تم معالجة البند 212: P-0000135",
-      "[٥:٠٦:٠٩ م] 📊 التقدم: 211/5604 (4%)",
-      "[٥:٠٦:١١ م] 🔍 معالجة البند 213/5604: 10 MM2CABLE LUGS WITH 6 MM HOLE DIAMETER MADE IN C...",
-      "[٥:٠٦:١١ م] ✅ تم معالجة البند 213: P-0000135",
-      "[٥:٠٦:١١ م] 📊 التقدم: 212/5604 (4%)",
-      "[٥:٠٦:١٣ م] 🔍 معالجة البند 214/5604: 6 MM2CABLE LUGS WITH 6 MM HOLE \nDIAMETER MADE IN C...",
-      "[٥:٠٦:١٣ م] ✅ تم معالجة البند 214: P-0000135",
-      "[٥:٠٦:١٣ م] 📊 التقدم: 213/5604 (4%)",
-      "[٥:٠٦:١٥ م] 🔍 معالجة البند 215/5604: COPPER CLAD, POINTED SECTIONAL \nGROUND ROD - 3/4 I...",
-      "[٥:٠٦:١٥ م] ✅ تم معالجة البند 215: P-0000135",
-      "[٥:٠٦:١٥ م] 📊 التقدم: 214/5604 (4%)",
-      "[٥:٠٦:١٧ م] 🔍 معالجة البند 216/5604: 1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( EL...",
-      "[٥:٠٦:١٧ م] ✅ تم معالجة البند 216: P-0000135",
-      "[٥:٠٦:١٧ م] 📊 التقدم: 215/5604 (4%)",
-      "[٥:٠٦:١٩ م] 🔍 معالجة البند 217/5604: PN: 28209 , EYE BOLT FOR MAR LIGHT \nFIXTURES...",
-      "[٥:٠٦:١٩ م] ✅ تم معالجة البند 217: P-0000135",
-      "[٥:٠٦:١٩ م] 📊 التقدم: 216/5604 (4%)",
-      "[٥:٠٦:٢١ م] 🔍 معالجة البند 218/5604: P/N : 109R0624S4021 , DC FAN, 60 * 25 MM, 24 \nVDC....",
-      "[٥:٠٦:٢١ م] ✅ تم معالجة البند 218: P-0000135",
-      "[٥:٠٦:٢١ م] 📊 التقدم: 217/5604 (4%)",
-      "[٥:٠٦:٢٣ م] 🔍 معالجة البند 219/5604: 1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( EL...",
-      "[٥:٠٦:٢٣ م] ✅ تم معالجة البند 219: P-0000135",
-      "[٥:٠٦:٢٣ م] 📊 التقدم: 218/5604 (4%)",
-      "[٥:٠٦:٢٥ م] 🔍 معالجة البند 220/5604: 70 MM2CABLE LUGS WITH 12 MM HOLE \nDIAMETER...",
-      "[٥:٠٦:٢٥ م] ✅ تم معالجة البند 220: P-0000135",
-      "[٥:٠٦:٢٥ م] 📊 التقدم: 219/5604 (4%)",
-      "[٥:٠٦:٢٧ م] 🔍 معالجة البند 221/5604: 70 SQ.MM, ,WELDING CABLE, COPPER ( EACH\n= METER...",
-      "[٥:٠٦:٢٧ م] ✅ تم معالجة البند 221: P-0000135",
-      "[٥:٠٦:٢٧ م] 📊 التقدم: 220/5604 (4%)",
-      "[٥:٠٦:٢٩ م] 🔍 معالجة البند 222/5604: LONG-BARREL SPLICE, 4 AWG WIRE GAUGE, \nGREEN COLOR...",
-      "[٥:٠٦:٢٩ م] ✅ تم معالجة البند 222: P-0000135",
-      "[٥:٠٦:٢٩ م] 📊 التقدم: 221/5604 (4%)",
-      "[٥:٠٦:٣١ م] 🔍 معالجة البند 223/5604: LONG-BARREL SPLICE, BLUE, 6 AWG WIRE \nGAUGE, ( REF...",
-      "[٥:٠٦:٣١ م] ✅ تم معالجة البند 223: P-0000135",
-      "[٥:٠٦:٣١ م] 📊 التقدم: 222/5604 (4%)",
-      "[٥:٠٦:٣٣ م] 🔍 معالجة البند 224/5604: P/N : A9F77440 & A9F77440 ,MINIATUR \nCIRCUIT-BREAK...",
-      "[٥:٠٦:٣٣ م] ✅ تم معالجة البند 224: P-0000135",
-      "[٥:٠٦:٣٣ م] 📊 التقدم: 223/5604 (4%)",
-      "[٥:٠٦:٣٥ م] 🔍 معالجة البند 225/5604: P/N : LRD340C , \nLRD THERMAL OVERLOAD RELAY ( \nSCH...",
-      "[٥:٠٦:٣٥ م] ✅ تم معالجة البند 225: P-0000135",
-      "[٥:٠٦:٣٥ م] 📊 التقدم: 224/5604 (4%)",
-      "[٥:٠٦:٣٧ م] 🔍 معالجة البند 226/5604: P/N : A9D31620 , RESIDUAL CURRENT \nBREAKER WITH OV...",
-      "[٥:٠٦:٣٧ م] ✅ تم معالجة البند 226: P-0000135",
-      "[٥:٠٦:٣٧ م] 📊 التقدم: 225/5604 (4%)",
-      "[٥:٠٦:٣٩ م] 🔍 معالجة البند 227/5604: LED FLOOD LIGHT,100 WATT, FOR CAMP \nCARAVAN ( OUT ...",
-      "[٥:٠٦:٣٩ م] ✅ تم معالجة البند 227: P-0000135",
-      "[٥:٠٦:٣٩ م] 📊 التقدم: 226/5604 (4%)",
-      "[٥:٠٦:٤١ م] 🔍 معالجة البند 228/5604: P/N : LC1D09M7 , 9A TP CONTACTOR 230V \nFOR MAIN FR...",
-      "[٥:٠٦:٤١ م] ✅ تم معالجة البند 228: P-0000135",
-      "[٥:٠٦:٤١ م] 📊 التقدم: 227/5604 (4%)",
-      "[٥:٠٦:٤٣ م] 🔍 معالجة البند 229/5604: P/N : LRD32 , \nLRD THERMAL OVERLOAD RELAY ( SCHNEI...",
-      "[٥:٠٦:٤٣ م] ✅ تم معالجة البند 229: P-0000135",
-      "[٥:٠٦:٤٣ م] 📊 التقدم: 228/5604 (4%)",
-      "[٥:٠٦:٤٥ م] 🔍 معالجة البند 230/5604: P/N : TP1616SS , CIRCUIT BREAKER, 3P, 600V,\n1600AM...",
-      "[٥:٠٦:٤٥ م] ✅ تم معالجة البند 230: P-0000135",
-      "[٥:٠٦:٤٥ م] 📊 التقدم: 229/5604 (4%)",
-      "[٥:٠٦:٤٧ م] 🔍 معالجة البند 231/5604: P/N : EGH3100FFG , CIRCUIT BREAKER 100 \nAMPS , STY...",
-      "[٥:٠٦:٤٧ م] ✅ تم معالجة البند 231: P-0000135",
-      "[٥:٠٦:٤٧ م] 📊 التقدم: 230/5604 (4%)",
-      "[٥:٠٦:٤٩ م] 🔍 معالجة البند 232/5604: P/N : OVA44013 , EXIWAY LIGHT, UP TO \n250LM, IP65,...",
-      "[٥:٠٦:٤٩ م] ✅ تم معالجة البند 232: P-0000135",
-      "[٥:٠٦:٤٩ م] 📊 التقدم: 231/5604 (4%)",
-      "[٥:٠٦:٥١ م] 🔍 معالجة البند 233/5604: DIN 3 RAIL WITH CENTERLINE, 7.5MM DEEP, \n1M LONG (...",
-      "[٥:٠٦:٥١ م] ✅ تم معالجة البند 233: P-0000135",
-      "[٥:٠٦:٥١ م] 📊 التقدم: 232/5604 (4%)",
-      "[٥:٠٦:٥٣ م] 🔍 معالجة البند 234/5604: EUROPEAN TO AMERICAN ADAPTER PLUG...",
-      "[٥:٠٦:٥٣ م] ✅ تم معالجة البند 234: P-0000135",
-      "[٥:٠٦:٥٣ م] 📊 التقدم: 233/5604 (4%)",
-      "[٥:٠٦:٥٥ م] 🔍 معالجة البند 235/5604: CONNECTOR, POWER, QD, PIN/FLNG, \nBULKHD, WHITE , 1...",
-      "[٥:٠٦:٥٥ م] ✅ تم معالجة البند 235: P-0000135",
-      "[٥:٠٦:٥٥ م] 📊 التقدم: 234/5604 (4%)",
-      "[٥:٠٦:٥٧ م] 🔍 معالجة البند 236/5604: COPPER CLAD, POINTED SECTIONAL \nGROUND ROD - 3/4 I...",
-      "[٥:٠٦:٥٧ م] ✅ تم معالجة البند 236: P-0000135",
-      "[٥:٠٦:٥٧ م] 📊 التقدم: 235/5604 (4%)",
-      "[٥:٠٦:٥٩ م] 🔍 معالجة البند 237/5604: 1 CONDUCTOR X 50 SQUERE MM \nYELLOW/GREEN SOFT ( EL...",
-      "[٥:٠٦:٥٩ م] ✅ تم معالجة البند 237: P-0000135",
-      "[٥:٠٦:٥٩ م] 📊 التقدم: 236/5604 (4%)"
+      "[٥:٠٨:٤٧ م] 📊 التقدم: 322/5604 (6%)",
+      "[٥:٠٨:٤٩ م] 🔍 معالجة البند 324/5604: HOLDER FOR LED LCD TV / TILT TV WALL\nMOUNT FOR USE...",
+      "[٥:٠٨:٤٩ م] ✅ تم معالجة البند 324: P-0000135",
+      "[٥:٠٨:٤٩ م] 📊 التقدم: 323/5604 (6%)",
+      "[٥:٠٨:٤٩ م] 🔍 معالجة البند 325/5604: REMOTE CONTROL FOR BEIN SPORT\nRECEIVER...",
+      "[٥:٠٨:٤٩ م] ✅ تم معالجة البند 325: P-0000135",
+      "[٥:٠٨:٤٩ م] 📊 التقدم: 324/5604 (6%)",
+      "[٥:٠٨:٤٩ م] 🔍 معالجة البند 326/5604: 1X8 OUTPUT LNB...",
+      "[٥:٠٨:٤٩ م] ✅ تم معالجة البند 326: P-0000135",
+      "[٥:٠٨:٤٩ م] 📊 التقدم: 325/5604 (6%)",
+      "[٥:٠٨:٥١ م] 🔍 معالجة البند 327/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
+      "[٥:٠٨:٥١ م] ✅ تم معالجة البند 327: P-0000135",
+      "[٥:٠٨:٥١ م] 📊 التقدم: 326/5604 (6%)",
+      "[٥:٠٨:٥١ م] 🔍 معالجة البند 328/5604: RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT...",
+      "[٥:٠٨:٥١ م] ✅ تم معالجة البند 328: P-0000135",
+      "[٥:٠٨:٥١ م] 📊 التقدم: 327/5604 (6%)",
+      "[٥:٠٨:٥١ م] 🔍 معالجة البند 329/5604: SATELLITE DISH Prefix 70...",
+      "[٥:٠٨:٥١ م] ✅ تم معالجة البند 329: P-0000135",
+      "[٥:٠٨:٥١ م] 📊 التقدم: 328/5604 (6%)",
+      "[٥:٠٨:٥٣ م] 🔍 معالجة البند 330/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
+      "[٥:٠٨:٥٣ م] ✅ تم معالجة البند 330: P-0000135",
+      "[٥:٠٨:٥٣ م] 📊 التقدم: 329/5604 (6%)",
+      "[٥:٠٨:٥٣ م] 🔍 معالجة البند 331/5604: RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT...",
+      "[٥:٠٨:٥٣ م] ✅ تم معالجة البند 331: P-0000135",
+      "[٥:٠٨:٥٣ م] 📊 التقدم: 330/5604 (6%)",
+      "[٥:٠٨:٥٣ م] 🔍 معالجة البند 332/5604: ASTRA MINI SATELLITE RECIVER HD...",
+      "[٥:٠٨:٥٣ م] ✅ تم معالجة البند 332: P-0000135",
+      "[٥:٠٨:٥٣ م] 📊 التقدم: 331/5604 (6%)",
+      "[٥:٠٨:٥٥ م] 🔍 معالجة البند 333/5604: AUDIO / VIDEO CABLE 3 X 3 TO CONNECT\nRECIVER WITH ...",
+      "[٥:٠٨:٥٥ م] ✅ تم معالجة البند 333: P-0000135",
+      "[٥:٠٨:٥٥ م] 📊 التقدم: 332/5604 (6%)",
+      "[٥:٠٨:٥٥ م] 🔍 معالجة البند 334/5604: F-COUPLER (RF COUPLER IS THE\nCONNECTION THAT IS MA...",
+      "[٥:٠٨:٥٥ م] ✅ تم معالجة البند 334: P-0000135",
+      "[٥:٠٨:٥٥ م] 📊 التقدم: 333/5604 (6%)",
+      "[٥:٠٨:٥٥ م] 🔍 معالجة البند 335/5604: RG6 F-TYPE MALE CONNECTOR FOR\nCOAXIAL CABLE RG6...",
+      "[٥:٠٨:٥٥ م] ✅ تم معالجة البند 335: P-0000135",
+      "[٥:٠٨:٥٥ م] 📊 التقدم: 334/5604 (6%)",
+      "[٥:٠٨:٥٧ م] 🔍 معالجة البند 336/5604: AUDIO / VIDEO CABLE 3 X 1 FOR MINI\nRECIVER ( ASTRA...",
+      "[٥:٠٨:٥٧ م] ✅ تم معالجة البند 336: P-0000135",
+      "[٥:٠٨:٥٧ م] 📊 التقدم: 335/5604 (6%)",
+      "[٥:٠٨:٥٧ م] 🔍 معالجة البند 337/5604: RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT...",
+      "[٥:٠٨:٥٧ م] ✅ تم معالجة البند 337: P-0000135",
+      "[٥:٠٨:٥٧ م] 📊 التقدم: 336/5604 (6%)",
+      "[٥:٠٨:٥٧ م] 🔍 معالجة البند 338/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
+      "[٥:٠٨:٥٧ م] ✅ تم معالجة البند 338: P-0000135",
+      "[٥:٠٨:٥٧ م] 📊 التقدم: 337/5604 (6%)",
+      "[٥:٠٨:٥٩ م] 🔍 معالجة البند 339/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
+      "[٥:٠٨:٥٩ م] ✅ تم معالجة البند 339: P-0000135",
+      "[٥:٠٨:٥٩ م] 📊 التقدم: 338/5604 (6%)",
+      "[٥:٠٨:٥٩ م] 🔍 معالجة البند 340/5604: MODEL: KM 285 , KENWOOD FOOD\nPROCESSOR SERIES PROS...",
+      "[٥:٠٨:٥٩ م] ✅ تم معالجة البند 340: P-0000135",
+      "[٥:٠٨:٥٩ م] 📊 التقدم: 339/5604 (6%)",
+      "[٥:٠٨:٥٩ م] 🔍 معالجة البند 341/5604: 1X8 OUTPUT LNB...",
+      "[٥:٠٨:٥٩ م] ✅ تم معالجة البند 341: P-0000135",
+      "[٥:٠٨:٥٩ م] 📊 التقدم: 340/5604 (6%)",
+      "[٥:٠٩:٠١ م] 🔍 معالجة البند 342/5604: CO-AXIAL CABLE/METER CABLE FOR TV...",
+      "[٥:٠٩:٠١ م] ✅ تم معالجة البند 342: P-0000135",
+      "[٥:٠٩:٠١ م] 📊 التقدم: 341/5604 (6%)",
+      "[٥:٠٩:٠١ م] 🔍 معالجة البند 343/5604: F-COUPLER (RF COUPLER IS THE\nCONNECTION THAT IS MA...",
+      "[٥:٠٩:٠١ م] ✅ تم معالجة البند 343: P-0000135",
+      "[٥:٠٩:٠١ م] 📊 التقدم: 342/5604 (6%)",
+      "[٥:٠٩:٠١ م] 🔍 معالجة البند 344/5604: WALL TYPE EXHAUST FAN INTERNAL DIM.\n25X25 CM WITH ...",
+      "[٥:٠٩:٠١ م] ✅ تم معالجة البند 344: P-0000135",
+      "[٥:٠٩:٠١ م] 📊 التقدم: 343/5604 (6%)",
+      "[٥:٠٩:٠٣ م] 🔍 معالجة البند 345/5604: WALL TYPE EXHAUST FAN INTERNAL DIM.\n30X30 CM WITH ...",
+      "[٥:٠٩:٠٣ م] ✅ تم معالجة البند 345: P-0000135",
+      "[٥:٠٩:٠٣ م] 📊 التقدم: 344/5604 (6%)",
+      "[٥:٠٩:٠٣ م] 🔍 معالجة البند 346/5604: T.V 50\" LED, MODEL : 50US3500E, MAKER :\nTORNADO...",
+      "[٥:٠٩:٠٣ م] ✅ تم معالجة البند 346: P-0000135",
+      "[٥:٠٩:٠٣ م] 📊 التقدم: 345/5604 (6%)",
+      "[٥:٠٩:٠٣ م] 🔍 معالجة البند 347/5604: REFRIGRATOR , SHARP 16 FEET 220 VOLT\nPN: SJ-PC48A-...",
+      "[٥:٠٩:٠٣ م] ✅ تم معالجة البند 347: P-0000135",
+      "[٥:٠٩:٠٣ م] 📊 التقدم: 346/5604 (6%)",
+      "[٥:٠٩:٠٥ م] 🔍 معالجة البند 348/5604: SPEAKER AMPLIFIERS 360 WATTS,220 VOLTS\nXPLOD AUDIO...",
+      "[٥:٠٩:٠٥ م] ✅ تم معالجة البند 348: P-0000135",
+      "[٥:٠٩:٠٥ م] 📊 التقدم: 347/5604 (6%)",
+      "[٥:٠٩:٠٥ م] 🔍 معالجة البند 349/5604: OUTDOOR SPEAKER (HORN) 100 WATT\nXPLOD AUDIO XP-H10...",
+      "[٥:٠٩:٠٥ م] ✅ تم معالجة البند 349: P-0000135",
+      "[٥:٠٩:٠٥ م] 📊 التقدم: 348/5604 (6%)",
+      "[٥:٠٩:٠٥ م] 🔍 معالجة البند 350/5604: CALL STATION PAGING MICROPHONE WITH\nFLEXIBLE MICRO...",
+      "[٥:٠٩:٠٥ م] ✅ تم معالجة البند 350: P-0000135",
+      "[٥:٠٩:٠٥ م] 📊 التقدم: 349/5604 (6%)",
+      "[٥:٠٩:٠٧ م] 🔍 معالجة البند 351/5604: P/N : 60021-301, BASIC CABLE TWO\nCONDUCTOR ONE TWE...",
+      "[٥:٠٩:٠٧ م] ✅ تم معالجة البند 351: P-0000135",
+      "[٥:٠٩:٠٧ م] 📊 التقدم: 350/5604 (6%)",
+      "[٥:٠٩:٠٧ م] 🔍 معالجة البند 352/5604: P/N : RJ45, COUPLER TO CONNECT TWO LAN\nCABLE EACH ...",
+      "[٥:٠٩:٠٧ م] ✅ تم معالجة البند 352: P-0000135",
+      "[٥:٠٩:٠٧ م] 📊 التقدم: 351/5604 (6%)",
+      "[٥:٠٩:٠٧ م] 🔍 معالجة البند 353/5604: P/N : GZ-2 , INDOOR UNIT SPEAKER FOR\nFUXIN HEMEI T...",
+      "[٥:٠٩:٠٧ م] ✅ تم معالجة البند 353: P-0000135",
+      "[٥:٠٩:٠٧ م] 📊 التقدم: 352/5604 (6%)",
+      "[٥:٠٩:٠٩ م] 🔍 معالجة البند 354/5604: P/N : 472991314, BEARING SET FOR\nELECTROLUX WASHIN...",
+      "[٥:٠٩:٠٩ م] ✅ تم معالجة البند 354: P-0000135",
+      "[٥:٠٩:٠٩ م] 📊 التقدم: 353/5604 (6%)",
+      "[٥:٠٩:٠٩ م] 🔍 معالجة البند 355/5604: GASKET RUBBER FOR DOOR IN FREEZER\n(SEAL DOOR) FOR ...",
+      "[٥:٠٩:٠٩ م] ✅ تم معالجة البند 355: P-0000135",
+      "[٥:٠٩:٠٩ م] 📊 التقدم: 354/5604 (6%)",
+      "[٥:٠٩:٠٩ م] 🔍 معالجة البند 356/5604: P/N : CR0589660 , THERMOSTAT TEMP\nRANGE 99-185 C 1...",
+      "[٥:٠٩:٠٩ م] ✅ تم معالجة البند 356: P-0000135",
+      "[٥:٠٩:٠٩ م] 📊 التقدم: 355/5604 (6%)"
     ]
   },
   "items": [
@@ -1778,833 +1778,833 @@
       "description": "CONNECTION CERAMIC THERMAL SIZE 6 MM\n4 EYS , REF. PN/ 1104181 (ACCESSORY)",
       "partNumber": "1104181",
       "rowIndex": 239,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR \nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 240,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : ZFL-H38-1024BM-G8~26FD-2M-J, \nENCODER FOR TANSHUI VFD HOUSE MODEL:\nSP70L-74A",
       "partNumber": "ZFL-H38-1024BM G8~26Fd 2m-J",
       "rowIndex": 241,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 438975103-07 , MOTOR CONTROLLER \nFOR ELECTROLUX WASHING MACHINE \nMODEL WN6-14",
       "partNumber": "438975103-07",
       "rowIndex": 242,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 03505060 , INDOOR MAIN CONTROL \nBOARD SUBASSEMBLY ( STICKER ) FOR \nCARIER AIR CONDITION MODEL 42QHCT18-\n708J",
       "partNumber": "3505060",
       "rowIndex": 243,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY RAP CABLE TIE TY-527M, CV-360, KSS , \nBLACK , (6.9MM W X 343MM) (PCE=PACK OF \n100) MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 244,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY RAP CABLE TIE TY-527M, CV-360, KSS , \nBLACK , (6.9MM W X 343MM) (PCE=PACK OF \n100) MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 245,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY- RAP CABLE TIE, TY-529M, CV-762B, KSS, \nBLACK (7.7MM W X 762MM) PK=100 PCE \nMADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 246,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TY RAP CABLE TIE TY-527M, CV-360, KSS , \nBLACK , (6.9MM W X 343MM) (PCE=PACK OF \n100) MADE IN TAIWAN",
       "partNumber": "",
       "rowIndex": 247,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LONG-BARREL SPLICE, 4 AWG WIRE GAUGE, \nGREEN COLOR CODE, 1.81 IN LENGTH ( \nMAKER : THOMAS & BETTS )( REF. P/N : \n3LN06 GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 248,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LONG-BARREL SPLICE, 2 AWG WIRE GAUGE, \nPINK COLOR CODE, 1.81 IN LENGTH ( MAKER \n: THOMAS & BETTS )( REF. P/N : 3LN07 \nGRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 249,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LONG-BARREL SPLICE, 1 AWG WIRE GAUGE, \nGOLD COLOR CODE, 2.38 IN LENGTH ( \nMAKER : THOMAS & BETTS )( REF. P/N : \n3LN08 GRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 250,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CR123C151B , OVERLOAD HEATER \nELEMENT ,FOR GENERAL ELECTRIC MCC MOTOR STARTER",
       "partNumber": "CR123C151B",
       "rowIndex": 251,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WIRE TERMINAL KIT, TERMINAL TYPE: VINYL \nINSULATED, NUMBER OF PIECES: 850, \nNUMBER OF SIZES: 13 ( REF. P/N : 2FZL6 \nGRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 252,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated butt splice connector wire size 10 \nto 12 awg",
       "partNumber": "",
       "rowIndex": 253,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated butt splice connector wire size 14 \nto 16 awg",
       "partNumber": "",
       "rowIndex": 254,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated butt splice connector wire size 6 to \n8 awg",
       "partNumber": "",
       "rowIndex": 255,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated female disconnect terminals - wire\nsize 10 to 12 awg",
       "partNumber": "",
       "rowIndex": 256,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated female disconnect terminals - wire\nsize 14 to 16 awg",
       "partNumber": "",
       "rowIndex": 257,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated fork terminals - wire size 10 to 12 \nawg - stud size 10",
       "partNumber": "",
       "rowIndex": 258,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated fork terminals - wire size 14 to 16 \nawg - stud size 10",
       "partNumber": "",
       "rowIndex": 259,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated fork terminals - wire size 14 to 16 \nawg - stud size 8",
       "partNumber": "",
       "rowIndex": 260,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated ring terminals - wire size 10 to 12 \nawg - stud size 1/4",
       "partNumber": "",
       "rowIndex": 261,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated ring terminals - wire size 10 to 12 \nawg - stud size 10",
       "partNumber": "",
       "rowIndex": 262,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "vinyl insulated ring terminals - wire size 14 to 16 \nawg - stud size 10",
       "partNumber": "",
       "rowIndex": 263,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 264,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 10 MM HOLE \nDIAMETER MADE IN CHINA ( REF CODE \n1001.001.USED.0047 )",
       "partNumber": "",
       "rowIndex": 265,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "25 MM2CABLE LUGS WITH 8 MM HOLE \nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 266,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 25 SQUERE MM \nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 267,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM \nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 268,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRENNENSTUHL CORD REEL WITH 50 MTR \nELECTRIC CABLE WITH 4 OUTLET",
       "partNumber": "WITH 4 OUTLET",
       "rowIndex": 269,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FACE,F/PUSH BUTTON 800H-2HA7 P/NO. \n800H-NP15",
       "partNumber": "800HNP15",
       "rowIndex": 270,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 271,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 272,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TAPE,2\",PVC",
       "partNumber": "",
       "rowIndex": 273,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FLUORESCENT LAMP 36W,TL-D 36W/54-765 \nCOOLDAYLIGHT",
       "partNumber": "",
       "rowIndex": 274,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R9R51463 , EARTH LEAKAGE CIRCUIT \nBREAKER, 3 PH, 63A, 4WIRE ( SCHNEIDER \nCAT.) ( OLD PN: 16794 -DCKB4 )",
       "partNumber": "R9R51463",
       "rowIndex": 275,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 120CM, 18W, 1750LM ( ELSEWEEDY )",
       "partNumber": "",
       "rowIndex": 276,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED VENUS LAMP SPRENT 9 WATT",
       "partNumber": "",
       "rowIndex": 277,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LEGRAND P/N : 572302, RJ 45 MODULE FOR  FACE PLATE 10 PIECE RJ 45 MODULE FOR FACE PLATE",
       "partNumber": "562302",
       "rowIndex": 278,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRAUN SOMMELIER WATER KETTLE WK300\n1.6 LITERS 2200W 220-240V 50-60 HZ 1.85K\nTO 2.2KW CHINA",
       "partNumber": "",
       "rowIndex": 279,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TORNADO AUTOMATIC TURKISH COFFEE\nMAKER 330ML, 735 WATT, TCME-100 RG.",
       "partNumber": "",
       "rowIndex": 280,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BRAUN SOMMELIER WATER KETTLE WK300\n1.6 LITERS 2200W 220-240V 50-60 HZ 1.85K\nTO 2.2KW CHINA",
       "partNumber": "",
       "rowIndex": 281,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ARZUM OKKA AUTOMATIC 220V\nTURKISH/GREEK COFFEE MACHINE ( REF.\nMODEL : OK002W",
       "partNumber": "",
       "rowIndex": 282,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PLUG, 2PIN,10-16A,220V BEMIS IP44 , BYES",
       "partNumber": "",
       "rowIndex": 283,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RECEPTACLE 10-16 A 220V, IP44 (BEMIS) ,\nBYES",
       "partNumber": "",
       "rowIndex": 284,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 285,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 286,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WATER HEATER 150 LTR, 2200W ,220V,\nVERTICAL WALL MOUNTED, MAKER : THERMOR",
       "partNumber": "",
       "rowIndex": 287,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 288,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 289,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ELECTRIC WATER HEATER, MAKER :\nARISTON, 80 LITERS 220 VOLT",
       "partNumber": "",
       "rowIndex": 290,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ELECTRIC WATER HEATER, MAKER :\nARISTON, 80 LITERS 220 VOLT",
       "partNumber": "",
       "rowIndex": 291,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 292,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WATER HEATER 150 LTR, 2200W ,220V,\nVERTICAL WALL MOUNTED, MAKER : THERMOR",
       "partNumber": "",
       "rowIndex": 293,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 294,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 295,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ARISTON ELECTRIC WATER HEATER 100\nLITERS 220 VOLT",
       "partNumber": "",
       "rowIndex": 296,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ARISTON ELECTRIC WATER HEATER 100\nLITERS 220 VOLT",
       "partNumber": "",
       "rowIndex": 297,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 298,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 40 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 299,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OLYMPIC WATER HEATER 50 LTR 220 VOLT",
       "partNumber": "",
       "rowIndex": 300,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 6EP1333-4BA00 , POWER SUPPLY\nSIMATIC PM 1507 24 V/8 A REGULATED\nINPUT: 120/230 V AC, OUTPUT: 24 V DC/8 A\nFOR SIEMENS SCR/VFD/PLC MODELS7-1500",
       "partNumber": "6EP1333-4BA00",
       "rowIndex": 301,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 302,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT CONNECT THE CABLE TO RECEIVER)",
       "partNumber": "",
       "rowIndex": 303,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1X8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 304,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 305,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT CONNECT THE CABLE TO RECEIVER)",
       "partNumber": "",
       "rowIndex": 306,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SATELLITE DISH Prefix 70",
       "partNumber": "",
       "rowIndex": 307,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 308,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3 X 3 TO CONNECT RECIVER WITH TV",
       "partNumber": "",
       "rowIndex": 309,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 310,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1X8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 311,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1X8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 312,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 313,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT CONNECT THE CABLE TO RECEIVER)",
       "partNumber": "",
       "rowIndex": 314,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 315,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MINI RECEIVER SATELLITE 1 X 80 LNB\nSATELLITE DISH 70",
       "partNumber": "",
       "rowIndex": 316,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SATELLITE DISH Prefix 70",
       "partNumber": "",
       "rowIndex": 317,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1X8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 318,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 319,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 320,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT CONNECT THE CABLE TO RECEIVER)",
       "partNumber": "",
       "rowIndex": 321,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SATELLITE DISH Prefix 70",
       "partNumber": "",
       "rowIndex": 322,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3 X 3 TO CONNECT\nRECIVER WITH TV",
       "partNumber": "",
       "rowIndex": 323,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WALL TYPE EXHAUST FAN INTERNAL DIM.\n25X25 CM WITH GUARD ( OLYMPIC , TOSHIBA )",
       "partNumber": "",
       "rowIndex": 324,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "HOLDER FOR LED LCD TV / TILT TV WALL\nMOUNT FOR USE WITH TV MOUNTS TV SIZE\nFROM 23\" TO 55\" ( REF. P/N : 45PF69 GRAINGER )",
       "partNumber": "",
       "rowIndex": 325,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "REMOTE CONTROL FOR BEIN SPORT\nRECEIVER",
       "partNumber": "",
       "rowIndex": 326,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1X8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 327,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 328,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT CONNECT THE CABLE TO\nRECEIVER)",
       "partNumber": "",
       "rowIndex": 329,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SATELLITE DISH Prefix 70",
       "partNumber": "",
       "rowIndex": 330,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 331,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT CONNECT THE CABLE TO\nRECEIVER)",
       "partNumber": "",
       "rowIndex": 332,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ASTRA MINI SATELLITE RECIVER HD",
       "partNumber": "",
       "rowIndex": 333,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3 X 3 TO CONNECT\nRECIVER WITH TV",
       "partNumber": "",
       "rowIndex": 334,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "F-COUPLER (RF COUPLER IS THE\nCONNECTION THAT IS MADE IN THE MIDDLE\nBETWEEN TWO CABLES)",
       "partNumber": "",
       "rowIndex": 335,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RG6 F-TYPE MALE CONNECTOR FOR\nCOAXIAL CABLE RG6",
       "partNumber": "",
       "rowIndex": 336,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AUDIO / VIDEO CABLE 3 X 1 FOR MINI\nRECIVER ( ASTRA ) TO TV LENGTH 1.5 METER",
       "partNumber": "",
       "rowIndex": 337,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RF CONNECTOR TV (RF COUPLER IS THE\nCONNECTION THAT CONNECT THE CABLE TO RECEIVER)",
       "partNumber": "",
       "rowIndex": 338,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 339,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 340,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MODEL: KM 285 , KENWOOD FOOD\nPROCESSOR SERIES PROSPERO, 900 W,\n4.3L, 220V, ALL ACCESSORIES",
       "partNumber": "",
       "rowIndex": 341,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1X8 OUTPUT LNB",
       "partNumber": "",
       "rowIndex": 342,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CO-AXIAL CABLE/METER CABLE FOR TV",
       "partNumber": "",
       "rowIndex": 343,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "F-COUPLER (RF COUPLER IS THE\nCONNECTION THAT IS MADE IN THE MIDDLE\nBETWEEN TWO CABLES)",
       "partNumber": "",
       "rowIndex": 344,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WALL TYPE EXHAUST FAN INTERNAL DIM.\n25X25 CM WITH GUARD ( OLYMPIC , TOSHIBA )",
       "partNumber": "",
       "rowIndex": 345,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "WALL TYPE EXHAUST FAN INTERNAL DIM.\n30X30 CM WITH GUARD ( OLYMPIC , TOSHIBA )",
       "partNumber": "",
       "rowIndex": 346,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "T.V 50\" LED, MODEL : 50US3500E, MAKER :\nTORNADO",
       "partNumber": "",
       "rowIndex": 347,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "REFRIGRATOR , SHARP 16 FEET 220 VOLT\nPN: SJ-PC48A-WHT",
       "partNumber": "SJ-PC48AWHT",
       "rowIndex": 348,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SPEAKER AMPLIFIERS 360 WATTS,220 VOLTS\nXPLOD AUDIO XP-AM360 ( LOCAL MARKET )",
       "partNumber": "",
       "rowIndex": 349,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OUTDOOR SPEAKER (HORN) 100 WATT\nXPLOD AUDIO XP-H100( LOCAL MARKET )",
       "partNumber": "",
       "rowIndex": 350,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CALL STATION PAGING MICROPHONE WITH\nFLEXIBLE MICROPHONE DESK MIC XPLOD\nXP-MD898 ( LOCAL MARKET )",
       "partNumber": "",
       "rowIndex": 351,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 60021-301, BASIC CABLE TWO\nCONDUCTOR ONE TWESTED PAIR 18 AWG,\nOLD PN : 600201-301( MULTIPLE OF 250 FT )",
       "partNumber": "60021-301",
       "rowIndex": 352,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : RJ45, COUPLER TO CONNECT TWO LAN\nCABLE EACH OTHER FOR COMMUNICATION\nSYSTEM",
       "partNumber": "coupleur RJ45/RJ45",
       "rowIndex": 353,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : GZ-2 , INDOOR UNIT SPEAKER FOR\nFUXIN HEMEI TELEPHONE",
       "partNumber": "GZ-2",
       "rowIndex": 354,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 472991314, BEARING SET FOR\nELECTROLUX WASHING MACHINE",
       "partNumber": "472991314",
       "rowIndex": 355,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GASKET RUBBER FOR DOOR IN FREEZER\n(SEAL DOOR) FOR MAIN FREEZER UNIT, MOG CAT.",
       "partNumber": "",
       "rowIndex": 356,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : CR0589660 , THERMOSTAT TEMP\nRANGE 99-185 C 1 POLE FOR MARENO\nELECTRIC HEATED FRYER 15 LITRS",
       "partNumber": "CR0589660",
       "rowIndex": 357,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
