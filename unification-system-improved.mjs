@@ -25,10 +25,11 @@ const sheets = google.sheets({ version: 'v4', auth: authClient });
 
 // ==================== قاعدة معرفة المنتجات المتشابهة ====================
 const PRODUCT_EQUIVALENTS = {
-  // كونتاكتور Schneider Electric LC1D32M7
-  'LC1D32M7': ['2102034', '2102049', 'LC1D32', 'LC1D32M7C', 'LC1D32BD'],
-  '2102034': ['LC1D32M7', '2102049', 'LC1D32'],
-  '2102049': ['LC1D32M7', '2102034', 'LC1D32'],
+  // كونتاكتور Schneider Electric LC1D32M7 - نفس المنتج بأرقام مختلفة
+  'LC1D32M7': ['2102034', '2102049', 'LC1D32', 'LC1D32M7C', 'LC1D32BD', 'LC1D32M7'],
+  '2102034': ['LC1D32M7', '2102049', 'LC1D32', 'LC1D32M7C', 'LC1D32BD'],
+  '2102049': ['LC1D32M7', '2102034', 'LC1D32', 'LC1D32M7C', 'LC1D32BD'],
+  'LC1D32': ['LC1D32M7', '2102034', '2102049', 'LC1D32M7C', 'LC1D32BD'],
   
   // يمكن إضافة المزيد من المنتجات هنا في المستقبل
 };
@@ -107,9 +108,20 @@ function areProductsEquivalent(description1, description2) {
     return true;
   }
   
-  // 2. التحقق من أرقام الأجزاء المتشابهة
+  // 2. التحقق من أرقام الأجزاء المتشابهة - محسن للكونتاكتور
   const partNumbers1 = extractPartNumbers(description1);
   const partNumbers2 = extractPartNumbers(description2);
+  
+  // فحص خاص للكونتاكتور LC1D32M7
+  const isContactor1 = normalized1.includes('lc1d') && normalized1.includes('32') && normalized1.includes('m7');
+  const isContactor2 = normalized2.includes('lc1d') && normalized2.includes('32') && normalized2.includes('m7');
+  const hasContractorNumber1 = normalized1.includes('2102034') || normalized1.includes('2102049');
+  const hasContractorNumber2 = normalized2.includes('2102034') || normalized2.includes('2102049');
+  
+  // إذا كان أحدهما LC1D32M7 والآخر 2102034/2102049 فهما نفس المنتج
+  if ((isContractor1 && hasContractorNumber2) || (isContractor2 && hasContractorNumber1)) {
+    return true;
+  }
   
   if (partNumbers1.length > 0 && partNumbers2.length > 0) {
     const commonNumbers = partNumbers1.filter(num => partNumbers2.includes(num));
@@ -137,7 +149,25 @@ function areProductsEquivalent(description1, description2) {
     return false;
   }
   
-  // 5. حساب التشابه النصي
+  // 5. فحص إضافي للكونتاكتور - التأكد من نفس المواصفات
+  const isSchneiderContactor1 = normalized1.includes('schneider') && normalized1.includes('contactor') && 
+                                (normalized1.includes('220v') || normalized1.includes('50a') || normalized1.includes('15kw'));
+  const isSchneiderContactor2 = normalized2.includes('schneider') && normalized2.includes('contactor') && 
+                                (normalized2.includes('220v') || normalized2.includes('50a') || normalized2.includes('15kw'));
+  
+  if (isSchneiderContractor1 && isSchneiderContactor2) {
+    // إذا كان كلاهما كونتاكتور شنايدر بنفس المواصفات، فهما نفس المنتج
+    const hasLC1D1 = normalized1.includes('lc1d') && normalized1.includes('32');
+    const hasLC1D2 = normalized2.includes('lc1d') && normalized2.includes('32');
+    const has2102_1 = normalized1.includes('2102034') || normalized1.includes('2102049');
+    const has2102_2 = normalized2.includes('2102034') || normalized2.includes('2102049');
+    
+    if ((hasLC1D1 || has2102_1) && (hasLC1D2 || has2102_2)) {
+      return true;
+    }
+  }
+  
+  // 6. حساب التشابه النصي
   const words1 = new Set(normalized1.split(/\s+/).filter(w => w.length > 2));
   const words2 = new Set(normalized2.split(/\s+/).filter(w => w.length > 2));
   
