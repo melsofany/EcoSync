@@ -327,7 +327,7 @@ export class SemanticProductUnifier {
       const currentItem = items[i];
       
       // عرض البند الحالي الذي يتم تحليله
-      if (i % 50 === 0) { // عرض أكثر تكراراً
+      if (i % 25 === 0) { // عرض أكثر تكراراً
         this.currentProcessingItem = {
           description: currentItem.description,
           partNumber: currentItem.partNumber,
