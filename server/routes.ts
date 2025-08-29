@@ -2558,10 +2558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/monitor/start", async (req: Request, res: Response) => {
     try {
-      console.log('🚀 بدء نظام التوحيد الذكي الجديد...');
-      
-      // استخدام child_process لتشغيل نظام التوحيد الجديد
-      const { spawn } = await import('child_process');
+      console.log('🚀 بدء نظام التوحيد الجديد...');
       
       // تشغيل ملف التوحيد المصحح
       const unificationProcess = spawn('node', ['unification-system-fixed.mjs'], {
@@ -2579,12 +2576,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`✅ انتهت عملية التوحيد مع الكود: ${code}`);
       });
       
-      // فصل العملية عن العملية الأساسية
       unificationProcess.unref();
       
       res.json({
         success: true,
-        message: "تم بدء نظام التوحيد الذكي الجديد - تحقق من السجلات لمتابعة التقدم"
+        message: "تم بدء نظام التوحيد الجديد"
       });
     } catch (error: any) {
       console.error('❌ خطأ في بدء التوحيد:', error);
@@ -2597,18 +2593,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/monitor/stop", async (req: Request, res: Response) => {
     try {
-      if (smartEngine) {
-        smartEngine.stopUnification();
-        smartEngine = null; // مسح المحرك بعد الإيقاف
-      }
+      // إيقاف عمليات التوحيد
+      const { exec } = await import('child_process');
+      exec('pkill -f unification-system-fixed.mjs', (error) => {
+        if (error) console.log('لا توجد عمليات توحيد للإيقاف');
+      });
+      
       res.json({
         success: true,
-        message: "تم إيقاف التوحيد الذكي"
+        message: "تم إيقاف التوحيد"
       });
     } catch (error: any) {
       res.status(500).json({
         success: false,
-        message: "خطأ في إيقاف التوحيد الذكي: " + error.message
+        message: "خطأ في إيقاف التوحيد: " + error.message
       });
     }
   });

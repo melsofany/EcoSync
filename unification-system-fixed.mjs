@@ -98,14 +98,13 @@ async function unifyItems() {
       let groupId = null;
       let matchReason = '';
       
-      // يجب أن تتطابق جميع الحقول للتوحيد (وصف + رقم قطعة + رقم بند)
-      if (description && partNumber && lineItem) {
+      // مطابقة صارمة: فقط إذا تطابق الوصف بالضبط
+      if (description) {
         for (const [key, group] of groups.entries()) {
-          if (group.descriptions.has(description) && 
-              group.partNumbers.has(partNumber) && 
-              group.lineItems.has(lineItem)) {
+          // فقط الأوصاف المتطابقة تماماً يمكن دمجها
+          if (group.descriptions.has(description)) {
             groupId = key;
-            matchReason = `تطابق كامل: ${description.substring(0, 30)}...`;
+            matchReason = `وصف متطابق: ${description.substring(0, 30)}...`;
             break;
           }
         }
