@@ -7139,42 +7139,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         accuracy: 85,
         quotaExceeded: false,
         statusMessage: "جاهز للتوحيد الدلالي",
-        currentItem: null
-      });
-      
-      // إضافة رسائل واضحة عن حالة النظام
-      let statusMessage = 'النظام جاهز للتوحيد';
-      let pauseReason = '';
-      
-      if (status.quotaExceeded) {
-        statusMessage = '🚫 توقف بسبب نفاد رصيد الـ AI';
-        pauseReason = 'نفد رصيد DeepSeek API - يرجى إعادة التعبئة للمتابعة';
-      } else if (status.isRunning) {
-        statusMessage = '🔄 جاري التوحيد الذكي...';
-      } else if (status.isPaused) {
-        statusMessage = '⏸️ متوقف مؤقتاً';
-        pauseReason = status.pauseReason || 'تم إيقاف العملية مؤقتاً';
-      } else if (status.progress >= 100) {
-        statusMessage = '✅ اكتمل التوحيد بنجاح';
-      }
-      
-      res.json({
-        isRunning: status.isRunning || false,
-        isPaused: status.isPaused || false,
-        progress: status.progress || 0,
-        total: status.total || 0,
-        processed: status.processed || 0,
-        unified: status.unified || 0,
-        skipped: status.skipped || 0,
-        errors: status.errors || 0,
-        currentItem: status.currentItem || null,
-        startTime: status.startTime || null,
-        estimatedTimeRemaining: status.estimatedTimeRemaining || null,
-        accuracy: status.accuracy || 0,
-        quotaExceeded: status.quotaExceeded || false,
-        pauseReason: pauseReason,
-        statusMessage: statusMessage,
-        aiCallCount: status.aiCallCount || 0
+        currentItem: null,
+        startTime: null,
+        estimatedTimeRemaining: null,
+        pauseReason: '',
+        aiCallCount: 0
       });
 
     } catch (error) {
