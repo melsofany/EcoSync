@@ -95,7 +95,7 @@ export class AIBackgroundUnifier extends EventEmitter {
   private async loadItems(): Promise<void> {
     this.addLog('📋 تحميل البيانات من Google Sheets...');
     
-    const rawItems = await this.dataService.getAllItems();
+    const rawItems = await this.dataService.getAllItemsRaw();
     this.addLog(`📊 تم جلب ${rawItems.length} بند خام من Google Sheets`);
     
     // تنظيف وفلترة البيانات
