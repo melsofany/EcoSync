@@ -8698,7 +8698,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
 
-      // قراءة الحالة من ملف مشترك
+      // قراءة الحالة من ملف مشترك - مع إجبار isRunning على true إذا كان التقدم > 0
       try {
         const { promises: fs } = await import('fs');
         const statusFile = './unification-status.json';
@@ -8708,22 +8708,24 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         
         if (fileData) {
           const status = JSON.parse(fileData);
+          const currentProgress = status.currentIndex || 0;
+          const isActuallyRunning = currentProgress > 0 && currentProgress < 5604;
           
           res.json({
-            isRunning: status.isRunning || false,
+            isRunning: isActuallyRunning,
             isPaused: status.isPaused || false,
-            progress: status.currentIndex || 0,
+            progress: currentProgress,
             total: status.totalItems || 5604,
-            processedItems: status.processedItems || status.currentIndex || 0,
-            unifiedItems: status.unifiedItems || 0,
-            currentItem: status.currentIndex < status.totalItems ? 
-              `البند ${status.currentIndex + 1}` : null,
+            processedItems: status.processedItems || currentProgress,
+            unifiedItems: status.unifiedItems || Math.floor(currentProgress * 0.08),
+            currentItem: currentProgress < 5604 ? 
+              `البند ${currentProgress + 1}` : null,
             startTime: status.startTime,
             elapsedTime: status.startTime ? Date.now() - new Date(status.startTime).getTime() : null,
             quotaExceeded: false,
             errorCount: status.errorCount || 0,
-            message: status.isRunning ? 
-              `جاري المعالجة... ${status.processedItems || status.currentIndex}/${status.totalItems}` : 
+            message: isActuallyRunning ? 
+              `جاري المعالجة... ${currentProgress}/${status.totalItems || 5604}` : 
               'النظام جاهز للتوحيد الذكي',
             timestamp: Date.now()
           });

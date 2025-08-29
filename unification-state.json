@@ -2,115 +2,115 @@
   "state": {
     "isRunning": true,
     "isPaused": false,
-    "currentIndex": 864,
+    "currentIndex": 1050,
     "totalItems": 5604,
-    "processedItems": 863,
+    "processedItems": 1049,
     "unifiedItems": 0,
     "startTime": "2025-08-29T16:52:47.687Z",
-    "lastSaveTime": "2025-08-29T17:16:55.000Z",
+    "lastSaveTime": "2025-08-29T17:22:09.589Z",
     "quotaExceeded": false,
     "errorCount": 0,
     "logs": [
-      "[٥:١٧:٢٨ م] ✅ تم معالجة البند 832: P-0000135",
-      "[٥:١٧:٢٨ م] 📊 التقدم: 831/5604 (15%)",
-      "[٥:١٧:٢٩ م] 🔍 معالجة البند 833/5604: DUCT TAPE...",
-      "[٥:١٧:٢٩ م] ✅ تم معالجة البند 833: P-0000135",
-      "[٥:١٧:٢٩ م] 📊 التقدم: 832/5604 (15%)",
-      "[٥:١٧:٢٩ م] 🔍 معالجة البند 834/5604: LAMP,FLUORESCENT,ULTRAVIOLET,220V,20WATT,INSECT KI...",
-      "[٥:١٧:٢٩ م] ✅ تم معالجة البند 834: P-0000135",
-      "[٥:١٧:٢٩ م] 📊 التقدم: 833/5604 (15%)",
-      "[٥:١٧:٣٠ م] 🔍 معالجة البند 835/5604: كشاف 60 سم ( 2 لمبة ) ضد المياه السويدي...",
-      "[٥:١٧:٣٠ م] ✅ تم معالجة البند 835: P-0000135",
-      "[٥:١٧:٣٠ م] 📊 التقدم: 834/5604 (15%)",
-      "[٥:١٨:٠٩ م] 🔄 تم استعادة الحالة المحفوظة - البند 836 من 5604",
-      "[٥:١٨:٠٩ م] 📊 بدء المعالجة من البند 836 من 5604",
-      "[٥:١٨:١١ م] 🔍 معالجة البند 836/5604: كشاف 120 سم ( 2 لمبة) ضد المياه ليد السويدي...",
-      "[٥:١٨:١١ م] ✅ تم معالجة البند 836: P-0000135",
-      "[٥:١٨:١١ م] 📊 التقدم: 835/5604 (15%)",
-      "[٥:١٨:١٣ م] 🔍 معالجة البند 837/5604: P/N : C63N32D630 , CIRCUIT BREAKERS\nMERLIN GERIN C...",
-      "[٥:١٨:١٣ م] ✅ تم معالجة البند 837: P-0000135",
-      "[٥:١٨:١٣ م] 📊 التقدم: 836/5604 (15%)",
-      "[٥:١٨:١٥ م] 🔍 معالجة البند 838/5604: P/N : 800H-AP1A , MOMENTARY CONTACT\nPUSH BUTTON ST...",
-      "[٥:١٨:١٥ م] ✅ تم معالجة البند 838: P-0000135",
-      "[٥:١٨:١٥ م] 📊 التقدم: 837/5604 (15%)",
-      "[٥:١٨:١٧ م] 🔍 معالجة البند 839/5604: P/N : 800H-AP6A , MOMENTARY CONTACT\nPUSH BUTTON ST...",
-      "[٥:١٨:١٧ م] ✅ تم معالجة البند 839: P-0000135",
-      "[٥:١٨:١٧ م] 📊 التقدم: 838/5604 (15%)",
-      "[٥:١٨:١٩ م] 🔍 معالجة البند 840/5604: CHANGEOVER SWITCH , - 0 - , REF. NO.\n41AC4040 ( SO...",
-      "[٥:١٨:١٩ م] ✅ تم معالجة البند 840: P-0000135",
-      "[٥:١٨:١٩ م] 📊 التقدم: 839/5604 (15%)",
-      "[٥:١٨:٢١ م] 🔍 معالجة البند 841/5604: TERMINAL BLOCK 4 MM , TWO WAY (10 AMP.)\n( 600 V)...",
-      "[٥:١٨:٢١ م] ✅ تم معالجة البند 841: P-0000135",
-      "[٥:١٨:٢١ م] 📊 التقدم: 840/5604 (15%)",
-      "[٥:١٨:٢٣ م] 🔍 معالجة البند 842/5604: TERMINAL BLOCK 6 MM , TWO WAY ( 16 AMP.)\n(600 V)...",
-      "[٥:١٨:٢٣ م] ✅ تم معالجة البند 842: P-0000135",
-      "[٥:١٨:٢٣ م] 📊 التقدم: 841/5604 (15%)",
-      "[٥:١٨:٢٥ م] 🔍 معالجة البند 843/5604: TERMINAL BLOCK 10 MM , TWO WAY (20\nAMP.) (600 V)...",
-      "[٥:١٨:٢٥ م] ✅ تم معالجة البند 843: P-0000135",
-      "[٥:١٨:٢٥ م] 📊 التقدم: 842/5604 (15%)",
-      "[٥:١٨:٢٧ م] 🔍 معالجة البند 844/5604: TERMINAL BLOCK 16 MM , TWO WAY (32\nAMP.) (600 V)...",
-      "[٥:١٨:٢٧ م] ✅ تم معالجة البند 844: P-0000135",
-      "[٥:١٨:٢٧ م] 📊 التقدم: 843/5604 (15%)",
-      "[٥:١٨:٢٩ م] 🔍 معالجة البند 845/5604: TERMINAL BLOCK END STOP 4-10 MM , TWO\nWAY EX CERTI...",
-      "[٥:١٨:٢٩ م] ✅ تم معالجة البند 845: P-0000135",
-      "[٥:١٨:٢٩ م] 📊 التقدم: 844/5604 (15%)",
-      "[٥:١٨:٣١ م] 🔍 معالجة البند 846/5604: TERMINAL BLOCK END STOP 16-35 MM , TWO\nWAY EX CERT...",
-      "[٥:١٨:٣١ م] ✅ تم معالجة البند 846: P-0000135",
-      "[٥:١٨:٣١ م] 📊 التقدم: 845/5604 (15%)",
-      "[٥:١٨:٣٣ م] 🔍 معالجة البند 847/5604: GROUND TERMINAL BLOCK 10 MM , TWO\nWAY EX CERTIFIED...",
-      "[٥:١٨:٣٣ م] ✅ تم معالجة البند 847: P-0000135",
-      "[٥:١٨:٣٣ م] 📊 التقدم: 846/5604 (15%)",
-      "[٥:١٨:٣٥ م] 🔍 معالجة البند 848/5604: TERMINAL BLOCK END STOP , TWO WAY EX\nCERTIFIED...",
-      "[٥:١٨:٣٥ م] ✅ تم معالجة البند 848: P-0000135",
-      "[٥:١٨:٣٥ م] 📊 التقدم: 847/5604 (15%)",
-      "[٥:١٨:٣٧ م] 🔍 معالجة البند 849/5604: DIN-RAIL TERMINAL BLOCK HOLDER , TWO\nWAY , 2 MTR E...",
-      "[٥:١٨:٣٧ م] ✅ تم معالجة البند 849: P-0000135",
-      "[٥:١٨:٣٧ م] 📊 التقدم: 848/5604 (15%)",
-      "[٥:١٨:٣٩ م] 🔍 معالجة البند 850/5604: RS P/N : 125-3710, FOOT SWITCH, CAST IRON\nMOMENTAR...",
-      "[٥:١٨:٣٩ م] ✅ تم معالجة البند 850: P-0000135",
-      "[٥:١٨:٣٩ م] 📊 التقدم: 849/5604 (15%)",
-      "[٥:١٨:٤١ م] 🔍 معالجة البند 851/5604: ENERGIZER BATTERY 9V...",
-      "[٥:١٨:٤١ م] ✅ تم معالجة البند 851: P-0000135",
-      "[٥:١٨:٤١ م] 📊 التقدم: 850/5604 (15%)",
-      "[٥:١٨:٤٣ م] 🔍 معالجة البند 852/5604: ENERGIZER BATTERY 1,5V SIZE AA...",
-      "[٥:١٨:٤٣ م] ✅ تم معالجة البند 852: P-0000135",
-      "[٥:١٨:٤٣ م] 📊 التقدم: 851/5604 (15%)",
-      "[٥:١٨:٤٥ م] 🔍 معالجة البند 853/5604: ENERGIZER BATTERY,1.5V,SIZE AAA...",
-      "[٥:١٨:٤٥ م] ✅ تم معالجة البند 853: P-0000135",
-      "[٥:١٨:٤٥ م] 📊 التقدم: 852/5604 (15%)",
-      "[٥:١٨:٤٧ م] 🔍 معالجة البند 854/5604: ENERGIZER BATTERY 1,5V SIZE C...",
-      "[٥:١٨:٤٧ م] ✅ تم معالجة البند 854: P-0000135",
-      "[٥:١٨:٤٧ م] 📊 التقدم: 853/5604 (15%)",
-      "[٥:١٨:٤٩ م] 🔍 معالجة البند 855/5604: TAPE,2\",PVC...",
-      "[٥:١٨:٤٩ م] ✅ تم معالجة البند 855: P-0000135",
-      "[٥:١٨:٤٩ م] 📊 التقدم: 854/5604 (15%)",
-      "[٥:١٨:٥١ م] 🔍 معالجة البند 856/5604: PLAYGROUND LED LIGHT VENUS FIXTURE,\n100W, 10000 LM...",
-      "[٥:١٨:٥١ م] ✅ تم معالجة البند 856: P-0000135",
-      "[٥:١٨:٥١ م] 📊 التقدم: 855/5604 (15%)",
-      "[٥:١٨:٥٣ م] 🔍 معالجة البند 857/5604: 200 WATT , 220 VOLT OUTDOOR LED FLOOD\nLIGHT ( COMA...",
-      "[٥:١٨:٥٣ م] ✅ تم معالجة البند 857: P-0000135",
-      "[٥:١٨:٥٣ م] 📊 التقدم: 856/5604 (15%)",
-      "[٥:١٨:٥٥ م] 🔍 معالجة البند 858/5604: P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, ...",
-      "[٥:١٨:٥٥ م] ✅ تم معالجة البند 858: P-0000135",
-      "[٥:١٨:٥٥ م] 📊 التقدم: 857/5604 (15%)",
-      "[٥:١٨:٥٧ م] 🔍 معالجة البند 859/5604: GROUND CABLE CONNECTOR, MALE/FEMALE\n2MPC , ( REF. ...",
-      "[٥:١٨:٥٧ م] ✅ تم معالجة البند 859: P-0000135",
-      "[٥:١٨:٥٧ م] 📊 التقدم: 858/5604 (15%)",
-      "[٥:١٨:٥٩ م] 🔍 معالجة البند 860/5604: P/N : BST-RMR16-WP-LED, EMERGENCY\nLIGHT - WET LOCA...",
-      "[٥:١٨:٥٩ م] ✅ تم معالجة البند 860: P-0000135",
-      "[٥:١٨:٥٩ م] 📊 التقدم: 859/5604 (15%)",
-      "[٥:١٩:٠١ م] 🔍 معالجة البند 861/5604: LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT D...",
-      "[٥:١٩:٠١ م] ✅ تم معالجة البند 861: P-0000135",
-      "[٥:١٩:٠١ م] 📊 التقدم: 860/5604 (15%)",
-      "[٥:١٩:٠٣ م] 🔍 معالجة البند 862/5604: P/N : A9R41440 , RESIDUAL CURRENT\nCIRCUIT BREAKER ...",
-      "[٥:١٩:٠٣ م] ✅ تم معالجة البند 862: P-0000135",
-      "[٥:١٩:٠٣ م] 📊 التقدم: 861/5604 (15%)",
-      "[٥:١٩:٠٥ م] 🔍 معالجة البند 863/5604: PN: QP0233 , UNIVERSAL 3PINS QP2-33\nREFRIGERATOR F...",
-      "[٥:١٩:٠٥ م] ✅ تم معالجة البند 863: P-0000135",
-      "[٥:١٩:٠٥ م] 📊 التقدم: 862/5604 (15%)",
-      "[٥:١٩:٠٧ م] 🔍 معالجة البند 864/5604: P/N : 11-11110-00 , LIMIT SWITCH 10 SERIES\nGO SWIT...",
-      "[٥:١٩:٠٧ م] ✅ تم معالجة البند 864: P-0000135",
-      "[٥:١٩:٠٧ م] 📊 التقدم: 863/5604 (15%)"
+      "[٥:٢١:٤٧ م] 📊 التقدم: 1016/5604 (18%)",
+      "[٥:٢١:٤٩ م] 🔍 معالجة البند 1018/5604: LED VENUS LAMP SPRENT 9 WATT...",
+      "[٥:٢١:٤٩ م] ✅ تم معالجة البند 1018: P-0000135",
+      "[٥:٢١:٤٩ م] 📊 التقدم: 1017/5604 (18%)",
+      "[٥:٢١:٤٩ م] 🔍 معالجة البند 1019/5604: COMPLETE FLORESCENT LIGHT FIXTURE , 60\nCM 220 VOLT...",
+      "[٥:٢١:٤٩ م] ✅ تم معالجة البند 1019: P-0000135",
+      "[٥:٢١:٤٩ م] 📊 التقدم: 1018/5604 (18%)",
+      "[٥:٢١:٤٩ م] 🔍 معالجة البند 1020/5604: EXPLOSION PROOF LED FLOODLIGHT,\n90WATTS, TYPE: BAT...",
+      "[٥:٢١:٤٩ م] ✅ تم معالجة البند 1020: P-0000135",
+      "[٥:٢١:٤٩ م] 📊 التقدم: 1019/5604 (18%)",
+      "[٥:٢١:٥١ م] 🔍 معالجة البند 1021/5604: P/N : 47100215 , BATTERY SWITCH FOR\nCARRIER (MR800...",
+      "[٥:٢١:٥١ م] ✅ تم معالجة البند 1021: P-0000135",
+      "[٥:٢١:٥١ م] 📊 التقدم: 1020/5604 (18%)",
+      "[٥:٢١:٥١ م] 🔍 معالجة البند 1022/5604: INSECT KILLER LAMP: P/N: F15W/T8/BL350,\nFOR INSECT...",
+      "[٥:٢١:٥١ م] ✅ تم معالجة البند 1022: P-0000135",
+      "[٥:٢١:٥١ م] 📊 التقدم: 1021/5604 (18%)",
+      "[٥:٢١:٥١ م] 🔍 معالجة البند 1023/5604: P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, ...",
+      "[٥:٢١:٥١ م] ✅ تم معالجة البند 1023: P-0000135",
+      "[٥:٢١:٥١ م] 📊 التقدم: 1022/5604 (18%)",
+      "[٥:٢١:٥٣ م] 🔍 معالجة البند 1024/5604: P/N : 3UG4614-1BR20 , UNDER/OVER\nVOLTAGE RELAY ( S...",
+      "[٥:٢١:٥٣ م] ✅ تم معالجة البند 1024: P-0000135",
+      "[٥:٢١:٥٣ م] 📊 التقدم: 1023/5604 (18%)",
+      "[٥:٢١:٥٣ م] 🔍 معالجة البند 1025/5604: P/N : A9F77463 , IC60N - MINIATURE CIRCUIT\nBREAKER...",
+      "[٥:٢١:٥٣ م] ✅ تم معالجة البند 1025: P-0000135",
+      "[٥:٢١:٥٣ م] 📊 التقدم: 1024/5604 (18%)",
+      "[٥:٢١:٥٣ م] 🔍 معالجة البند 1026/5604: P/N : A9R41440 , RESIDUAL CURRENT\nCIRCUIT BREAKER ...",
+      "[٥:٢١:٥٣ م] ✅ تم معالجة البند 1026: P-0000135",
+      "[٥:٢١:٥٣ م] 📊 التقدم: 1025/5604 (18%)",
+      "[٥:٢١:٥٥ م] 🔍 معالجة البند 1027/5604: P/N : A9F77440 & A9F77440 ,MINIATUR\nCIRCUIT-BREAKE...",
+      "[٥:٢١:٥٥ م] ✅ تم معالجة البند 1027: P-0000135",
+      "[٥:٢١:٥٥ م] 📊 التقدم: 1026/5604 (18%)",
+      "[٥:٢١:٥٥ م] 🔍 معالجة البند 1028/5604: P/N : MOT07972 , BLOWER FAN MOTOR ,\nGENTEQ , 3/4 H...",
+      "[٥:٢١:٥٥ م] ✅ تم معالجة البند 1028: P-0000135",
+      "[٥:٢١:٥٥ م] 📊 التقدم: 1027/5604 (18%)",
+      "[٥:٢١:٥٥ م] 🔍 معالجة البند 1029/5604: P/N : HD60FK655,\nMOTOR,INDOOR(IFM)STD(PSN 4502GXXX...",
+      "[٥:٢١:٥٥ م] ✅ تم معالجة البند 1029: P-0000135",
+      "[٥:٢١:٥٥ م] 📊 التقدم: 1028/5604 (18%)",
+      "[٥:٢١:٥٧ م] 🔍 معالجة البند 1030/5604: P/N : P463-A53 , BELT FOR VFD AIR\nCONDITION CARRIE...",
+      "[٥:٢١:٥٧ م] ✅ تم معالجة البند 1030: P-0000135",
+      "[٥:٢١:٥٧ م] 📊 التقدم: 1029/5604 (18%)",
+      "[٥:٢١:٥٧ م] 🔍 معالجة البند 1031/5604: P/N : P291-1003, CAPACITOR (CAP2) FOR\nCARRIER SCR ...",
+      "[٥:٢١:٥٧ م] ✅ تم معالجة البند 1031: P-0000135",
+      "[٥:٢١:٥٧ م] 📊 التقدم: 1030/5604 (18%)",
+      "[٥:٢١:٥٧ م] 🔍 معالجة البند 1032/5604: P/N : H886LES , A/C BLOWER MOTOR 2 HP, 3\nPH, 60 HZ...",
+      "[٥:٢١:٥٧ م] ✅ تم معالجة البند 1032: P-0000135",
+      "[٥:٢١:٥٧ م] 📊 التقدم: 1031/5604 (18%)",
+      "[٥:٢١:٥٩ م] 🔍 معالجة البند 1033/5604: P/N : LC1-D32-B7 , SCHNEIDER CONTACTOR  LC1-D32-B7...",
+      "[٥:٢١:٥٩ م] ✅ تم معالجة البند 1033: P-0000135",
+      "[٥:٢١:٥٩ م] 📊 التقدم: 1032/5604 (18%)",
+      "[٥:٢١:٥٩ م] 🔍 معالجة البند 1034/5604: CONTACTOR FOR COMPRSSOR, 024-00580-8-\n1 ,208/240 V...",
+      "[٥:٢١:٥٩ م] ✅ تم معالجة البند 1034: P-0000135",
+      "[٥:٢١:٥٩ م] 📊 التقدم: 1033/5604 (18%)",
+      "[٥:٢١:٥٩ م] 🔍 معالجة البند 1035/5604: COMPLETE FLORESCENT LIGHT FIXTURE,\n120 CM 220 VOLT...",
+      "[٥:٢١:٥٩ م] ✅ تم معالجة البند 1035: P-0000135",
+      "[٥:٢١:٥٩ م] 📊 التقدم: 1034/5604 (18%)",
+      "[٥:٢٢:٠١ م] 🔍 معالجة البند 1036/5604: L32650- Brothersكشاف عين بقرة 3...",
+      "[٥:٢٢:٠١ م] ✅ تم معالجة البند 1036: P-0000135",
+      "[٥:٢٢:٠١ م] 📊 التقدم: 1035/5604 (18%)",
+      "[٥:٢٢:٠١ م] 🔍 معالجة البند 1037/5604: FLEXIBLE ELECTRICAL HOSE PVC SIZE 20\nMM -- ENGINEE...",
+      "[٥:٢٢:٠١ م] ✅ تم معالجة البند 1037: P-0000135",
+      "[٥:٢٢:٠١ م] 📊 التقدم: 1036/5604 (18%)",
+      "[٥:٢٢:٠١ م] 🔍 معالجة البند 1038/5604: LED VENUS LAMP SPRENT 9 WATT...",
+      "[٥:٢٢:٠١ م] ✅ تم معالجة البند 1038: P-0000135",
+      "[٥:٢٢:٠١ م] 📊 التقدم: 1037/5604 (19%)",
+      "[٥:٢٢:٠٣ م] 🔍 معالجة البند 1039/5604: P/N : 69543-101 , PCBA FOR TALK-BACK\nSYSTEM RIG FL...",
+      "[٥:٢٢:٠٣ م] ✅ تم معالجة البند 1039: P-0000135",
+      "[٥:٢٢:٠٣ م] 📊 التقدم: 1038/5604 (19%)",
+      "[٥:٢٢:٠٣ م] 🔍 معالجة البند 1040/5604: P/N : 12801-002 , AUXILIARY GOOSENECK\nMICROPHONE F...",
+      "[٥:٢٢:٠٣ م] ✅ تم معالجة البند 1040: P-0000135",
+      "[٥:٢٢:٠٣ م] 📊 التقدم: 1039/5604 (19%)",
+      "[٥:٢٢:٠٣ م] 🔍 معالجة البند 1041/5604: P/N : 13314-002 , HORN DRIVER UNIT 30WATT\nRMS 16 O...",
+      "[٥:٢٢:٠٣ م] ✅ تم معالجة البند 1041: P-0000135",
+      "[٥:٢٢:٠٣ م] 📊 التقدم: 1040/5604 (19%)",
+      "[٥:٢٢:٠٥ م] 🔍 معالجة البند 1042/5604: LOCAL P/N : 13304-002, HORN ALUMINUM\nEPOXY 16.5 DI...",
+      "[٥:٢٢:٠٥ م] ✅ تم معالجة البند 1042: P-0000135",
+      "[٥:٢٢:٠٥ م] 📊 التقدم: 1041/5604 (19%)",
+      "[٥:٢٢:٠٥ م] 🔍 معالجة البند 1043/5604: P/N : 13411-002 , VOICE COIL 16 OHM CON\nSPEAKER FO...",
+      "[٥:٢٢:٠٥ م] ✅ تم معالجة البند 1043: P-0000135",
+      "[٥:٢٢:٠٥ م] 📊 التقدم: 1042/5604 (19%)",
+      "[٥:٢٢:٠٥ م] 🔍 معالجة البند 1044/5604: A2F CABLE GLAND UNARMORED BRASS M20...",
+      "[٥:٢٢:٠٥ م] ✅ تم معالجة البند 1044: P-0000135",
+      "[٥:٢٢:٠٥ م] 📊 التقدم: 1043/5604 (19%)",
+      "[٥:٢٢:٠٧ م] 🔍 معالجة البند 1045/5604: A2F CABLE GLAND UNARMORED BRASS M25...",
+      "[٥:٢٢:٠٧ م] ✅ تم معالجة البند 1045: P-0000135",
+      "[٥:٢٢:٠٧ م] 📊 التقدم: 1044/5604 (19%)",
+      "[٥:٢٢:٠٧ م] 🔍 معالجة البند 1046/5604: A2F CABLE GLAND UNARMORED BRASS M32...",
+      "[٥:٢٢:٠٧ م] ✅ تم معالجة البند 1046: P-0000135",
+      "[٥:٢٢:٠٧ م] 📊 التقدم: 1045/5604 (19%)",
+      "[٥:٢٢:٠٧ م] 🔍 معالجة البند 1047/5604: A2F CABLE GLAND UNARMORED BRASS M40...",
+      "[٥:٢٢:٠٧ م] ✅ تم معالجة البند 1047: P-0000135",
+      "[٥:٢٢:٠٧ م] 📊 التقدم: 1046/5604 (19%)",
+      "[٥:٢٢:٠٩ م] 🔍 معالجة البند 1048/5604: A2F CABLE GLAND UNARMORED BRASS 1/2\"\nNPT...",
+      "[٥:٢٢:٠٩ م] ✅ تم معالجة البند 1048: P-0000135",
+      "[٥:٢٢:٠٩ م] 📊 التقدم: 1047/5604 (19%)",
+      "[٥:٢٢:٠٩ م] 🔍 معالجة البند 1049/5604: A2F CABLE EX GLAND UNARMORED BRASS\n3/4\" NPT...",
+      "[٥:٢٢:٠٩ م] ✅ تم معالجة البند 1049: P-0000135",
+      "[٥:٢٢:٠٩ م] 📊 التقدم: 1048/5604 (19%)",
+      "[٥:٢٢:٠٩ م] 🔍 معالجة البند 1050/5604: A2F CABLE GLAND UNARMORED BRASS 1\n1/4\" NPT...",
+      "[٥:٢٢:٠٩ م] ✅ تم معالجة البند 1050: P-0000135",
+      "[٥:٢٢:٠٩ م] 📊 التقدم: 1049/5604 (19%)"
     ]
   },
   "items": [
@@ -6167,1302 +6167,1302 @@
       "description": "LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT DOOR AREA) WEATHER\nPROOF IP66 WITH GLAND",
       "partNumber": "",
       "rowIndex": 866,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "STEEL GROUND STUD [CYLINDER SHAPE\nINNER THREAD] DIM 20 MM X LENGTH 30 MM\nCOMPLETE WITH M8 STAINLESS STEEL BOLT\nWITH FLAT & SPRING WASHER [FOR\nELECTRICAL USE]",
       "partNumber": "",
       "rowIndex": 867,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "STEEL GROUND STUD [CYLINDER SHAPE\nINNER THREAD] DIM 40 MM X LENGTH 30 MM\nCOMPLETE WITH M12 STAINLESS STEEL\nBOLT WITH FLAT & SPRING WASHER [FOR\nELECTRICAL USE]",
       "partNumber": "",
       "rowIndex": 868,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "L32650- Brothersكشاف عين بقرة 3",
       "partNumber": "",
       "rowIndex": 869,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED VENUS LAMP SPRENT 9 WATT",
       "partNumber": "",
       "rowIndex": 870,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DUCT TAPE",
       "partNumber": "",
       "rowIndex": 871,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DUCT TAPE",
       "partNumber": "",
       "rowIndex": 872,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TAPE,2\",PVC",
       "partNumber": "",
       "rowIndex": 873,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 874,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 60 CM, 9W, 855LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 875,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EXPLOSION PROOF LED FLOODLIGHT,\n90WATTS, TYPE: BAT86-90-90Y (WAROM\nCAT.)",
       "partNumber": "",
       "rowIndex": 876,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 47100215 , BATTERY SWITCH FOR\nCARRIER (MR8000 ELECTRICAL DIGRAM AND\nPARTS LIST )",
       "partNumber": "47100215",
       "rowIndex": 877,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "INSECT KILLER LAMP: P/N: F15W/T8/BL350,\nFOR INSECT KILLER MODEL ( WE-150-2) WITH\nLENGTH 18 INCH WITH BI PIN",
       "partNumber": "F15W/T8/BL350",
       "rowIndex": 878,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "RS-150-24 AC-DC SINGLE OUTPUT\nENCLOSED POWER SUPPLY; OUTPUT 24VDC\nSINGLE OUTPUT AT 6.5A; FREE AIR\nCONVECTION ( MEAN WEEL CAT.)",
       "partNumber": "",
       "rowIndex": 879,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : MCH 48211 , 110VAC GEAR MOTOR FOR\nSCHNEIDER MAIN GENERATOR",
       "partNumber": "MCH48211",
       "rowIndex": 880,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : MN33668 , UV RELEASE24VDC FOR\nSCHNEIDER MAIN GENERATOR",
       "partNumber": "MN33668",
       "rowIndex": 881,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : XF 47352 , CLOSING RELEASE 110 VAC\nFOR SCHNEIDER MAIN GENERATOR",
       "partNumber": "XF 47352",
       "rowIndex": 882,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : YW03010012BH , DC FAN , 30 X 10MM ,\n12VDC, 0.11A ( Y.S. TECH CAT.)",
       "partNumber": "YW03010012BH",
       "rowIndex": 883,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "DANFOSS MANEUROP COMPRESSOR ,\nMODEL NO.MT80HP4AVE , 9HP , 380 V , 50/60\nHZ FOR CARRIER CENTRAL AC UNIT 38BB145",
       "partNumber": "",
       "rowIndex": 884,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LOCAL KIT,SPLICING ELECT 82-A2 (3M CAT.)",
       "partNumber": "82-A2",
       "rowIndex": 885,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LOCAL KIT,SPLICING ELECT.82-A3 (3M CAT.)",
       "partNumber": "82A3",
       "rowIndex": 886,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LOCAL KIT,SPLICING ELECT.82-A1 (3M CAT.)",
       "partNumber": "82-A1",
       "rowIndex": 887,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 60300002B , CJC FINE FILTER HDU 15/25\nPV WALL MOUNTEDINSERT BG 15/25PUMP\nPV7-4 WITH VEM MOTOR 55L/H,\n60HZVOLTAGE & FREQUENCY 3 X\n44HZPRESSURE GAUGE 0-4 BAR,\nAISI304,WITH SCALE\nFILTERCHANGESAMPLING PO FOR\nC.C.JENSEN MODEL CJC HDU 15/25",
       "partNumber": "60300002B",
       "rowIndex": 888,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : PA9501340 , SPARE INSERT BG 15/25\nFOR C.C.JENSEN CJC FINE FILTER HDU\nMODEL CJC HDU 15/25",
       "partNumber": "PA9501340",
       "rowIndex": 889,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : FD34041 , SEAL KIT HDU 15/25 FOR\nC.C.JENSEN CJC FINE FILTER HDU MODEL\nCJC HDU 15/25",
       "partNumber": "FD34041",
       "rowIndex": 890,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "MAG-LITE ML 125 LED RECHARGEABLE\nFLASHLIGHT SYSTEM REF -\nHTTP//MAGLITE.COM",
       "partNumber": "",
       "rowIndex": 891,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SH-264 , FLASHING LIGHT WITH\nVEHICLE PLUG, 12V, BEACON LIGH FOR 3500\n( OLD P/N : 5808T93 )",
       "partNumber": "SH-264",
       "rowIndex": 892,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 330612 , BLADDER FOR ZILMET - GITRAL\n- LOWARA - ULTRA PRO PRESSURE TANK -\n200L ( ZILMET CAT.)",
       "partNumber": "330612",
       "rowIndex": 893,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : S-N25 , 3 PHASE MAGNETIC\nCONTACTOR 220 V COIL , 35 AMP CONTACT\nRATING FOR DEEP FRYER ( MITSUBISHI\nCAT.)",
       "partNumber": "S-N25",
       "rowIndex": 894,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SALAD REFRIGERATOR, DIM 150CM X 70CM X\n85CM, CAPACITY: 8 GN 1/2 WITH LIDS, MADE:\nS.S 304, WITH 2 LOWER HINGED\nDOORS&meddde shelf, thermostat range: +2/+3,\nCOOLING/CONDENSAING UNITS IS\nEUROPEAN MADE, VOLTAGE : 220V/50/1",
       "partNumber": "",
       "rowIndex": 895,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "SALAD REFRIGERATOR, DIM 150CM X 70CM X\n85CM, CAPACITY: 8 GN 1/2 WITH LIDS, MADE:\nS.S 304, WITH 2 LOWER HINGED\nDOORS&meddde shelf, thermostat range: +2/+3,\nCOOLING/CONDENSAING UNITS IS\nEUROPEAN MADE, VOLTAGE : 220V/50/1",
       "partNumber": "",
       "rowIndex": 896,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "JAC MICROWAVE 25 LITER DIGITAL CONTROL\nPANEL WITH GRILL",
       "partNumber": "",
       "rowIndex": 897,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 898,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 899,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "Central Air Condition / Carrier Model 38BB-90 /\n40AB-90-C (Arrangment C) Split system\n,Condensing unit model : 38BB-90 ,Evaporator\nunit model : 40AB-90-C (Arrangment C) , Cooling\nonly , 460 V , 60 HZ , 3Phase , R22",
       "partNumber": "",
       "rowIndex": 900,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "BATTERY CHARGER { 12/24 VDC), 230V\nTELWIN MODEL: DYNAMIC START 620",
       "partNumber": "620",
       "rowIndex": 901,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : AV-OL-70-R , CARMANAH SOLARPOWERED RED LIGHT (CARMANAHAIRPORTS\nCAT.) ( OLD P/N : A650 )",
       "partNumber": "AV-OL-70-R",
       "rowIndex": 902,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "PN: 1000108319 , EZQ 20/4 E Ex e MAICO FAN\n440 M3 45 WATT 50HZ 230VAC FOR USED IN\nHAZARDOUS LOCATION ZONE 1, MAX.\nAMBIENT TEMPERATURE +55 DEG C",
       "partNumber": "1000108319",
       "rowIndex": 903,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 2400379 , DUAL CAPACITOR 50+5 MFD440VA FOR CARRIER AIR CONDITIONERS\n42QG18-H,38QG18-H",
       "partNumber": "2400379",
       "rowIndex": 904,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : HN61KK324B , CARRIER PILOT DUTY\nRELAY HN61KK324 FOR HVAC PRECOOLING\nUNIT ( TYCO CAT.)",
       "partNumber": "HN61KK324B",
       "rowIndex": 905,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 02508809, REMOTE CONTROL (\nRG56N2/BGEF ) ,REF CARRIER CAT.",
       "partNumber": "2508809",
       "rowIndex": 906,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : YSDM1901208011 , COMPRESSOR FOR\nKRATON JIANGSU KETENG AIR\nCONDITIONING, R-134A, 460 V AT 60 HZ, 3\nPHASE, 5.5 KW COOLING CAPACITY (\nCOPELAND CAT.)",
       "partNumber": "YSDM1901208011",
       "rowIndex": 907,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERATOR",
       "partNumber": "R134A",
       "rowIndex": 908,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : R134A, FREON FOR REFRIGERATOR",
       "partNumber": "R134A",
       "rowIndex": 909,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB.( Egyptian , Indian , EU )",
       "partNumber": "",
       "rowIndex": 910,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 410A, FREON FOR DRILLER CABIN\nCARRIER",
       "partNumber": "410A",
       "rowIndex": 911,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 404A-24LB, 10.9 KGM ( Egyptian , Indian\n, EU, Tiba Int. )",
       "partNumber": "",
       "rowIndex": 912,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "START CAPACITOR",
       "partNumber": "",
       "rowIndex": 913,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FREON 22 25 LB.( Egyptian , Indian , EU )",
       "partNumber": "",
       "rowIndex": 914,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 915,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 916,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 917,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 918,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 919,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 920,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER WINDOW TYPE MODEL:\n51GSR187M-0M / 240V ? 1Ph ? 50Hz / 18,000\nBTU/Hr / COOLING ONLY",
       "partNumber": "51GSR187M-0M",
       "rowIndex": 921,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-24, 3\nH.P SPLIT 220V 50-60HZ.",
       "partNumber": "QHCT-24",
       "rowIndex": 922,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A/C CARRIER OPTIMAX MODEL QHCT-18-,\n2.25 H.P SPLIT (WITHOUT CANTILEVER)",
       "partNumber": "QHCT-18",
       "rowIndex": 923,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : MOT07972 , BLOWER FAN MOTOR ,\nGENTEQ , 3/4 HP,208-230 VOLT, 1075 RPM, 4.0\nAMP FULL LOAD, 48\" FRAME FOR TRANE\nSCR AIR CONDITION MODEL TTA060C400A0",
       "partNumber": "MOT07972",
       "rowIndex": 924,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : HD60FK655,\nMOTOR,INDOOR(IFM)STD(PSN 4502GXXXXX)\nFOR CARRIER VFD AIR CONDITIONER\n50TFF014...610..",
       "partNumber": "HD60FK655",
       "rowIndex": 925,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : P463-A53 , BELT FOR VFD AIR\nCONDITION CARRIER",
       "partNumber": "P463-A53",
       "rowIndex": 926,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : P291-1003, CAPACITOR (CAP2) FOR\nCARRIER SCR AIR CONDITION 50GS-060\n60/CC",
       "partNumber": "P291-1003",
       "rowIndex": 927,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : H886LES , A/C BLOWER MOTOR 2 HP, 3\nPH, 60 HZ, 230/460 V, 1800 RPM, 56HZ FRAME,\nDP ( REGAL REXNORD CAT.)",
       "partNumber": "H886LES",
       "rowIndex": 928,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1-D32-B7 , SCHNEIDER CONTACTOR LC1-D32-B7 WITH OVER LOAD ( 9-13 AMP ) ,\nFOR FREEZER AND A/C",
       "partNumber": "LC1-D32-B7",
       "rowIndex": 929,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CONTACTOR FOR COMPRSSOR, 024-00580-8-\n1 ,208/240 VAC,50/60 HZ",
       "partNumber": "",
       "rowIndex": 930,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 060-124166 , DANFOSS DUAL PRESSUER\nCONTROL KP15 - LP : -0.9 TO 7 BAR & HP\nFROM +8 TO 32 BAR , CONNECTION 1/4 \"\nFLARE FOR FREEZER AND A/C ( OLD P/N :\n060-126166 )",
       "partNumber": "060-124166",
       "rowIndex": 931,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : DHY01294 , DRIER FILTER LIQUID SIZE 3\n, .50 FOR FREEZER AND A/C",
       "partNumber": "DHY01294",
       "rowIndex": 932,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : DHY01295 , DRIER FILTER LIQUID SIZE 5\n, .50 FOR FREEZER AND A/C",
       "partNumber": "DHY01295",
       "rowIndex": 933,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : SVE-5-CP100 , THERMAL EXPANSION\nVALVE FOR FREEZER AND A/C",
       "partNumber": "SVE-5-CP100",
       "rowIndex": 934,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/4, FOR FREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 935,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 1/2 90 FOR FREEZER AND\nA/C",
       "partNumber": "",
       "rowIndex": 936,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 5/8 FOR FREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 937,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 1/8 COPPER ELBOW WITH ANGLE 45\nDEGREEFOR FREEZER UNIT SOUTH AFRICAN\n(ORIGINAL)",
       "partNumber": "",
       "rowIndex": 938,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 1/2 FOR FREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 939,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/8 ANGLE 45 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 940,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/8 ANGLE 90 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 941,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 7/8 ANGLE 45 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 942,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 7/8 ANGLE 90 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 943,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER SLEEVE 7/8 FOR FREEZER AND\nA/C",
       "partNumber": "",
       "rowIndex": 944,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1/4 COPPER NUTFOR FREEZER UNIT SOUTH\nAFRICAN (ORIGINAL)",
       "partNumber": "",
       "rowIndex": 945,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 4032316 , 3/8'' FILTER WITH NUTFOR\nFREEZER UNIT SDML-163",
       "partNumber": "4032316",
       "rowIndex": 946,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LEGRAND P/N : 412812 , DIN RAIL MOUNT\nTIMER ANALOGUE 16 A/250 V FOR LEGRAND\nFREEZER UNIT MICROREX T31",
       "partNumber": "412812",
       "rowIndex": 947,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/8 ANGLE 45 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 948,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 1/8 COPPER ELBOW WITH ANGLE 45\nDEGREEFOR FREEZER UNIT SOUTH AFRICAN\n(ORIGINAL)",
       "partNumber": "",
       "rowIndex": 949,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 1/8 COPPER HARD PIPEFOR FREEZER UNIT\nSOUTH AFRICAN (ORIGINAL)",
       "partNumber": "",
       "rowIndex": 950,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 1.1/8 ANGLE 90 FOR\nFREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 951,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 7856K572 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING SIZE 1/2\" COLOR WHITE.",
       "partNumber": "7856K572",
       "rowIndex": 952,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 7856K573 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING SIZE 1/2\" COLOR CLEAR",
       "partNumber": "7856K573",
       "rowIndex": 953,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 170-4573 , TE CONNECTIVITY HEAT\nSHRINK TUBING, CLEAR 19MMSLEEVE DIA. X\n1.2M LENGTH 2:1 RATIO, CGPT\nSERIESBRAND MATERIAL\nPOLYOLEFINFLAME RETARDANT\nYESHALOGEN FREE NOSERIES\nCGPTSTANDARDS MET CSA, UL ( OLD P/N:\n7856K583 )",
       "partNumber": "170-4573",
       "rowIndex": 954,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 170-6664 , TE CONNECTIVITY HEAT\nSHRINK TUBING, CLEAR 25.4MMSLEEVE DIA.\nX 1.2M LENGTH 2:1 RATIO, RNF-100\nSERIESBRAND MATERIAL\nPOLYOLEFINFLAME RETARDANT\nYESHALOGEN FREE NOSERIES\nCGPTSTANDARDS MET CSA, U( OLD\nP/N:7856K593 )",
       "partNumber": "170-6664",
       "rowIndex": 955,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 113-2568 , TE CONNECTIVITY HEAT\nSHRINK TUBING, CLEAR 38MMSLEEVE DIA. X\n1.2M LENGTH 2:1 RATIO, RNF-100\nSERIESBRAND ( OLD P/N:7856K612 )",
       "partNumber": "113-2568",
       "rowIndex": 956,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N:7856K613 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING 100 FT LONG SIZE 11/2\"\nCOLOR CLEAR",
       "partNumber": "7856K613",
       "rowIndex": 957,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N:7856K592 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING SIZE 1\" COLOR WHITE",
       "partNumber": "7856K592",
       "rowIndex": 958,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 7856K572 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING SIZE 1/2\" COLOR WHITE.",
       "partNumber": "7856K572",
       "rowIndex": 959,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 7856K573 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING SIZE 1/2\" COLOR CLEAR",
       "partNumber": "7856K573",
       "rowIndex": 960,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 7856K582 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING SIZE 3/4\" COLOR WHITE",
       "partNumber": "7856K582",
       "rowIndex": 961,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 170-4573 , TE CONNECTIVITY HEAT\nSHRINK TUBING, CLEAR 19MMSLEEVE DIA. X\n1.2M LENGTH 2:1 RATIO, CGPT\nSERIESBRAND MATERIAL\nPOLYOLEFINFLAME RETARDANT\nYESHALOGEN FREE NOSERIES\nCGPTSTANDARDS MET CSA, UL ( OLD P/N:\n7856K583 )",
       "partNumber": "170-4573",
       "rowIndex": 962,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N: 170-6664 , TE CONNECTIVITY HEAT\nSHRINK TUBING, CLEAR 25.4MMSLEEVE DIA.\nX 1.2M LENGTH 2:1 RATIO, RNF-100\nSERIESBRAND MATERIAL\nPOLYOLEFINFLAME RETARDANT\nYESHALOGEN FREE NOSERIES\nCGPTSTANDARDS MET CSA, U( OLD\nP/N:7856K593 )",
       "partNumber": "170-6664",
       "rowIndex": 963,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 113-2568 , TE CONNECTIVITY HEAT\nSHRINK TUBING, CLEAR 38MMSLEEVE DIA. X\n1.2M LENGTH 2:1 RATIO, RNF-100\nSERIESBRAND ( OLD P/N:7856K612 )",
       "partNumber": "113-2568",
       "rowIndex": 964,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N:7856K613 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING 100 FT LONG SIZE 11/2\"\nCOLOR CLEAR",
       "partNumber": "7856K613",
       "rowIndex": 965,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N:7856K592 FLEXIBLE POLYOLEFIN HEAT\nSHRINK TUBING SIZE 1\" COLOR WHITE",
       "partNumber": "7856K592",
       "rowIndex": 966,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : MTO19023 , TRANE AIR HANDLER\nBLOWER MOTOR FOR TRANE SCR AIR\nCONDITION MODEL TWE063P130A0 ( OLD P/N\n: MOT06360 )",
       "partNumber": "MTO19023",
       "rowIndex": 967,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "AIR CONDITIONING FOR DRILLER CABIN,\nMAKER: WAROM, MODEL: BKF-71/220, (IIB)\n220 V 50 / 60 HZ, HIGH TEMPERATURE SPLIT\nTYPE INDOOR AND OUTDOOR UNITS ARE\nEXPLOSION-PROOF",
       "partNumber": "BKF71/220",
       "rowIndex": 968,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER SLEEVER 1.1/8 FOR FREEZER AND\nA/C",
       "partNumber": "",
       "rowIndex": 969,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 7/8 FOR FREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 970,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 1.3/8 ANGLE 45 FOR\nFREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 971,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 1.3/8 ANGLE 90 FOR\nFREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 972,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 1.3/8 ANGLE 90 FOR\nFREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 973,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/4 ANGLE 45 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 974,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/4 ANGLE 90 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 975,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/4 ANGLE 90 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 976,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 1.1/8 ANGLE 90 FOR\nFREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 977,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 1.1/8 ANGLE 90 FOR\nFREEZER AND A/C",
       "partNumber": "",
       "rowIndex": 978,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/8 ANGLE 45 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 979,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/8 ANGLE 90 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 980,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COPPER ELBOW 3/8 ANGLE 90 FOR FREEZER\nAND A/C",
       "partNumber": "",
       "rowIndex": 981,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ELECTRIC SHOCK PROTECTION MAT WITH\nDIAMOND TREAD, 36\" WIDE, 3/16\" THICK /\n(SWITCHBOARD MATS & ANTISLIP TAPE) (\nREF. PN : 6873T72 MCMASTER CAT.)( 1\nPIECE = 1 FEET )",
       "partNumber": "",
       "rowIndex": 982,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "70 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN CHINA ( REF CODE\n1001.001.USED.0047 )",
       "partNumber": "",
       "rowIndex": 983,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "50 MM2CABLE LUGS WITH 10 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 984,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "25 MM2CABLE LUGS WITH 8 MM HOLE\nDIAMETER MADE IN CHINA",
       "partNumber": "",
       "rowIndex": 985,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 25 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 986,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 50 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 987,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 988,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 989,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 990,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 991,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 70 SQUERE MM\nYELLOW/GREEN SOFT ( ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 992,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 10 SQUERE MM\nYELLOW/GREEN SOFT STRANDED CABLE ( 1\nEA = 1 METER )",
       "partNumber": "",
       "rowIndex": 993,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "1 CONDUCTOR X 16 SQUERE MM\nYELLOW/GREEN SOFT STRANDED CABLE EA\n= METER )",
       "partNumber": "",
       "rowIndex": 994,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TRANSFORMER,112.5 KVA,THREE PHASE 480\nDELTA PRIMARY VOLTS 380Y/220\nSECONDARY VOLTS-HAMMOND POWER\nSOLUTIONS INC. P/N: SG3A0112KY0C",
       "partNumber": "SG3A0112KY0C",
       "rowIndex": 995,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TRANSFORMER,112.5 KVA,THREE PHASE 480\nDELTA PRIMARY VOLTS 380Y/220\nSECONDARY VOLTS-HAMMOND POWER\nSOLUTIONS INC. P/N: SG3A0112KY0C",
       "partNumber": "SG3A0112KY0C",
       "rowIndex": 996,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "TRANSFORMER,112.5 KVA,THREE PHASE 480\nDELTA PRIMARY VOLTS 380Y/220\nSECONDARY VOLTS-HAMMOND POWER\nSOLUTIONS INC. P/N: SG3A0112KY0C",
       "partNumber": "SG3A0112KY0C",
       "rowIndex": 997,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GENLITEC SILENT GENERATOR SOUND\nPROOF HOUSE, (ENGINE/GENERATOR) FOR\nEMERGENCY, D.E, 120KW PRIME, 150 KVA,\n460V, 3 PH, 0.8 PF, 60 HZ, IP 23, 50C,\nPOWERED BY CUMMINS MODEL :\nGENLITEC/GPC150S6",
       "partNumber": "",
       "rowIndex": 998,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "GENLITEC SILENT GENERATOR SOUND\nPROOF HOUSE, (ENGINE/GENERATOR) FOR\nEMERGENCY, D.E, 120KW PRIME, 150 KVA,\n460V, 3 PH, 0.8 PF, 60 HZ, IP 23, 50C,\nPOWERED BY CUMMINS MODEL :\nGENLITEC/GPC150S6",
       "partNumber": "",
       "rowIndex": 999,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "OUTLET STRIP, 6 OUTLETS, 20.0 MAX. AMPS,\n15 FT. CORD LENGTH ( REF. P/N : 2KGD7\nGRAINGER CAT.)",
       "partNumber": "",
       "rowIndex": 1000,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "200 WATT , 220 VOLT OUTDOOR LED FLOOD\nLIGHT ( COMANDA CAT.)",
       "partNumber": "",
       "rowIndex": 1001,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 9V",
       "partNumber": "",
       "rowIndex": 1002,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1003,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1004,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1005,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1006,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1007,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY 1,5V SIZE AA",
       "partNumber": "",
       "rowIndex": 1008,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1009,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1010,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1011,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1012,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "ENERGIZER BATTERY,1.5V,SIZE AAA",
       "partNumber": "",
       "rowIndex": 1013,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 120CM, 18W, 1750LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 1014,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED TUBE LAMP 60 CM, 9W, 855LM ( EL\nSEWEEDY )",
       "partNumber": "",
       "rowIndex": 1015,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED FLOOD LIGHT,100 WATT, FOR CAMP\nCARAVAN ( OUT DOOR AREA) WEATHER\nPROOF IP66 WITH GLAND",
       "partNumber": "",
       "rowIndex": 1016,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : XALACS1, 22 MM MUSHROOM HEAD\nMAINTAINED BUTTON SWITCH CONTROL\nSTATION FOR FREEZER UNIT (SHNEIDER\nCAT.)",
       "partNumber": "XALACS1",
       "rowIndex": 1017,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CATALOG# MAR800-4U COMPLETE FOUR\nFOOT FIXTURE 60W,RAPED START HIGHT\nOUTPUT T-12 RECESSED DOUBLE CONTACT\n800MA,48\".",
       "partNumber": "MAR8004U",
       "rowIndex": 1018,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED VENUS LAMP SPRENT 9 WATT",
       "partNumber": "",
       "rowIndex": 1019,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COMPLETE FLORESCENT LIGHT FIXTURE , 60\nCM 220 VOLTS 50 HZ ( MAKER : ELSEWEDY )",
       "partNumber": "",
       "rowIndex": 1020,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "EXPLOSION PROOF LED FLOODLIGHT,\n90WATTS, TYPE: BAT86-90-90Y (WAROM\nCAT.)",
       "partNumber": "",
       "rowIndex": 1021,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 47100215 , BATTERY SWITCH FOR\nCARRIER (MR8000 ELECTRICAL DIGRAM AND\nPARTS LIST )",
       "partNumber": "47100215",
       "rowIndex": 1022,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "INSECT KILLER LAMP: P/N: F15W/T8/BL350,\nFOR INSECT KILLER MODEL ( WE-150-2) WITH\nLENGTH 18 INCH WITH BI PIN",
       "partNumber": "F15W/T8/BL350",
       "rowIndex": 1023,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : OVA44013 , EXIWAY LIGHT, UP TO\n250LM, IP65, STANDARD, SELECTABLE\nDURATION ( SCHNEIDER CAT.)",
       "partNumber": "OVA44013",
       "rowIndex": 1024,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 3UG4614-1BR20 , UNDER/OVER\nVOLTAGE RELAY ( SIEMENS CAT.)",
       "partNumber": "3UG4614-1BR20",
       "rowIndex": 1025,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9F77463 , IC60N - MINIATURE CIRCUIT\nBREAKER - 4P - 63A - C CURVE (SCHNIDER\nCAT.)",
       "partNumber": "A9F77463",
       "rowIndex": 1026,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9R41440 , RESIDUAL CURRENT\nCIRCUIT BREAKER EARTH LEAKAGE40\nA,ACTI 9 IID-RCCB-4P-40A-30MA-TYPE AC400VAC (SCHNIDER CAT.)",
       "partNumber": "A9R81440",
       "rowIndex": 1027,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : A9F77440 & A9F77440 ,MINIATUR\nCIRCUIT-BREAKER,ACTI9 IC60N, 4P,40A, C\nCURVE6000 A (IEC60898-1), 10\nKA(IEC609472)(SCHNEIDER CAT.)",
       "partNumber": "A9F77440",
       "rowIndex": 1028,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : MOT07972 , BLOWER FAN MOTOR ,\nGENTEQ , 3/4 HP,208-230 VOLT, 1075 RPM, 4.0\nAMP FULL LOAD, 48\" FRAME FOR TRANE\nSCR AIR CONDITION MODEL TTA060C400A0",
       "partNumber": "MOT07972",
       "rowIndex": 1029,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : HD60FK655,\nMOTOR,INDOOR(IFM)STD(PSN 4502GXXXXX)\nFOR CARRIER VFD AIR CONDITIONER\n50TFF014...610..",
       "partNumber": "HD60FK655",
       "rowIndex": 1030,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : P463-A53 , BELT FOR VFD AIR\nCONDITION CARRIER",
       "partNumber": "P463-A53",
       "rowIndex": 1031,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : P291-1003, CAPACITOR (CAP2) FOR\nCARRIER SCR AIR CONDITION 50GS-060\n60/CC",
       "partNumber": "P291-1003",
       "rowIndex": 1032,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : H886LES , A/C BLOWER MOTOR 2 HP, 3\nPH, 60 HZ, 230/460 V, 1800 RPM, 56HZ FRAME,\nDP ( REGAL REXNORD CAT.)",
       "partNumber": "H886LES",
       "rowIndex": 1033,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : LC1-D32-B7 , SCHNEIDER CONTACTOR  LC1-D32-B7 WITH OVER LOAD ( 9-13 AMP ) ,\nFOR FREEZER AND A/C",
       "partNumber": "LC1-D32-B7",
       "rowIndex": 1034,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "CONTACTOR FOR COMPRSSOR, 024-00580-8-\n1 ,208/240 VAC,50/60 HZ",
       "partNumber": "",
       "rowIndex": 1035,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "COMPLETE FLORESCENT LIGHT FIXTURE,\n120 CM 220 VOLTS 50 HZ PHILLIPS",
       "partNumber": "",
       "rowIndex": 1036,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "L32650- Brothersكشاف عين بقرة 3",
       "partNumber": "",
       "rowIndex": 1037,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "FLEXIBLE ELECTRICAL HOSE PVC SIZE 20\nMM -- ENGINEERING HOME MANUFACTURE\n-- CODE : - 5220 -- 30 MTR ( WITH COC )",
       "partNumber": "",
       "rowIndex": 1038,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LED VENUS LAMP SPRENT 9 WATT",
       "partNumber": "",
       "rowIndex": 1039,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 69543-101 , PCBA FOR TALK-BACK\nSYSTEM RIG FLOOR MODEL 400-006 ( GAITRONICS CAT.)",
       "partNumber": "69543-101",
       "rowIndex": 1040,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 12801-002 , AUXILIARY GOOSENECK\nMICROPHONE FOR TALK-BACK SYSTEM RIG\nFLOOR MODEL 400-006 ( GAI-TRONICS CAT.)",
       "partNumber": "12801-002",
       "rowIndex": 1041,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 13314-002 , HORN DRIVER UNIT 30WATT\nRMS 16 OHM",
       "partNumber": "13314-002",
       "rowIndex": 1042,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "LOCAL P/N : 13304-002, HORN ALUMINUM\nEPOXY 16.5 DIAMETER",
       "partNumber": "13304-002",
       "rowIndex": 1043,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "P/N : 13411-002 , VOICE COIL 16 OHM CON\nSPEAKER FOR GAI-TRONICS SPEAKER HORN",
       "partNumber": "13411-002",
       "rowIndex": 1044,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A2F CABLE GLAND UNARMORED BRASS M20",
       "partNumber": "",
       "rowIndex": 1045,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A2F CABLE GLAND UNARMORED BRASS M25",
       "partNumber": "",
       "rowIndex": 1046,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A2F CABLE GLAND UNARMORED BRASS M32",
       "partNumber": "",
       "rowIndex": 1047,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A2F CABLE GLAND UNARMORED BRASS M40",
       "partNumber": "",
       "rowIndex": 1048,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A2F CABLE GLAND UNARMORED BRASS 1/2\"\nNPT",
       "partNumber": "",
       "rowIndex": 1049,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A2F CABLE EX GLAND UNARMORED BRASS\n3/4\" NPT",
       "partNumber": "",
       "rowIndex": 1050,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
       "description": "A2F CABLE GLAND UNARMORED BRASS 1\n1/4\" NPT",
       "partNumber": "",
       "rowIndex": 1051,
-      "processed": false
+      "processed": true
     },
     {
       "id": "P-0000135",
