@@ -7268,13 +7268,14 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log('🤖 بدء توحيد المعرفات بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
       
       // استخدام النظام الدلالي الجديد لتوحيد المنتجات
-      // إعادة توجيه لنظام التوحيد الجديد
-      const response = await fetch(`${req.protocol}://${req.get('host')}/api/ai-unification/start`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      // استدعاء مباشر للنظام الجديد
+      const unifier = await initializeAIUnifier();
+      await unifier.startBackgroundUnification();
       
-      const result = await response.json();
+      const result = {
+        success: true,
+        message: 'تم بدء التوحيد الذكي في الخلفية'
+      };
       
       await logActivity(req, "start_identifier_unification", "ai_unification", "identifier", "بدء توحيد المعرفات بالذكاء الاصطناعي");
       
@@ -7347,11 +7348,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log(`🛑 طلب إيقاف التوحيد من المستخدم: ${req.session?.user?.username}`);
       
-      // إعادة توجيه لنظام التوحيد الجديد
-      const response = await fetch(`${req.protocol}://${req.get('host')}/api/ai-unification/stop`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      // استدعاء مباشر للنظام الجديد
+      const unifier = await initializeAIUnifier();
+      unifier.stopUnification();
       
       await logActivity(req, "stop_ai_unification", "ai_unification", "deepseek", "إيقاف التوحيد الذكي نهائياً");
       
