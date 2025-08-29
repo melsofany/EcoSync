@@ -7268,11 +7268,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log('🤖 بدء توحيد المعرفات بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
       
       // استخدام النظام الدلالي الجديد لتوحيد المنتجات
-      const { SemanticProductUnifier } = await import('./semantic-product-unifier.js');
-      const unifier = new SemanticProductUnifier(googleSheetsRealTimeData);
+      // إعادة توجيه لنظام التوحيد الجديد
+      const response = await fetch(`${req.protocol}://${req.get('host')}/api/ai-unification/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
       
-      // بدء التحليل الدلالي
-      const result = await unifier.unifyItems();
+      const result = await response.json();
       
       await logActivity(req, "start_identifier_unification", "ai_unification", "identifier", "بدء توحيد المعرفات بالذكاء الاصطناعي");
       
@@ -7345,8 +7347,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log(`🛑 طلب إيقاف التوحيد من المستخدم: ${req.session?.user?.username}`);
       
-      const { semanticProductUnifier } = await import('./semantic-product-unifier.js');
-      semanticProductUnifier.stopOperation();
+      // إعادة توجيه لنظام التوحيد الجديد
+      const response = await fetch(`${req.protocol}://${req.get('host')}/api/ai-unification/stop`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
       
       await logActivity(req, "stop_ai_unification", "ai_unification", "deepseek", "إيقاف التوحيد الذكي نهائياً");
       
