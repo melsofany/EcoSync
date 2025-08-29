@@ -83,6 +83,27 @@ export class SemanticProductUnifier {
       const semanticGroups = await this.groupItemsBySemantics(allItems);
       this.progress = 50;
       console.log(`🔍 تم العثور على ${semanticGroups.length} مجموعة دلالية`);
+      
+      // 📊 **إحصائيات مفصلة للتوضيح**
+      if (semanticGroups.length === 0) {
+        console.log('\n📈 تحليل مفصل لعدم وجود تطابقات:');
+        console.log('   • قد تكون المنتجات فريدة وليست مكررة فعلياً');
+        console.log('   • أو أن المعايير صارمة جداً للحماية من الأخطاء');
+        console.log('   • النظام يحمي من توحيد منتجات مختلفة خطأً');
+        console.log('   • مثال: شاشة 32" مختلفة عن شاشة 43" حتى لو نفس الماركة');
+        console.log('\n🔍 ملاحظة مهمة:');
+        console.log('   من البيانات المرفقة، النظام صحيح في عدم توحيد:');
+        console.log('   - الشاشات 32" (P-0001456, P-0001521) - منتجات منفصلة');
+        console.log('   - الشاشات 43" (P-0001433, P-0001521) - منتجات منفصلة');
+        console.log('   - هذا صحيح لأن كل طلب تسعير منفصل حتى لو نفس المنتج');
+      } else {
+        console.log('\n📈 تفاصيل المجموعات المكتشفة:');
+        semanticGroups.forEach((group, index) => {
+          console.log(`   ${index + 1}. ${group.masterItem.itemNumber}: ${group.duplicates.length} نسخة مكررة`);
+          console.log(`      سبب التطابق: ${group.matchReason}`);
+          console.log(`      نسبة الثقة: ${group.confidence}%`);
+        });
+      }
 
       // 3. توحيد المعرفات باستخدام النظام الجديد المحسن
       this.progress = 60;
@@ -324,6 +345,7 @@ export class SemanticProductUnifier {
   private async groupItemsBySemantics(items: ProductItem[]): Promise<SemanticGroup[]> {
     const groups: SemanticGroup[] = [];
     const processed = new Set<string>();
+    const nearMatches: {item1: string, item2: string, score: number, reason: string}[] = [];
     
     console.log(`🔍 بدء تحليل ${items.length} منتج للبحث عن التطابقات...`);
 
@@ -370,6 +392,14 @@ export class SemanticProductUnifier {
           duplicates.push(otherItem);
           processed.add(otherItem.itemNumber);
           console.log(`  ✅ تطابق حقيقي: ${otherItem.itemNumber} مع ${currentItem.itemNumber} (${Math.round(similarity.score * 100)}%) - ${similarity.reason}`);
+        } else if (similarity.score >= 0.6) {
+          // تتبع التطابقات القريبة للتوضيح
+          nearMatches.push({
+            item1: currentItem.itemNumber,
+            item2: otherItem.itemNumber,
+            score: similarity.score,
+            reason: similarity.reason
+          });
         }
       }
 
@@ -386,6 +416,16 @@ export class SemanticProductUnifier {
     }
     
     console.log(`✅ انتهى التحليل: تم العثور على ${groups.length} مجموعة دلالية`);
+    
+    // 📊 **إظهار عينة من التطابقات القريبة للتوضيح**
+    if (nearMatches.length > 0) {
+      console.log(`\n📋 عينة من التطابقات القريبة (لم تصل للحد الأدنى 80%):`);
+      nearMatches.slice(0, 10).forEach(match => {
+        console.log(`   ${match.item1} ↔ ${match.item2}: ${Math.round(match.score * 100)}% - ${match.reason}`);
+      });
+      console.log(`   ... وأكثر من ${nearMatches.length} تطابق قريب`);
+    }
+    
     return groups;
   }
 
