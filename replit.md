@@ -1,76 +1,76 @@
-# Overview
+# قرطبة للتوريدات - نظام إدارة التوريدات
 
-This is a comprehensive supply chain management system called "Qortoba Supplies System" (نظام قرطبة للتوريدات) built for the Egyptian company "Qortoba for General Supplies and Contracting". The system handles the complete quotation-to-purchase-order workflow, managing RFQs (Request for Quotations), supplier pricing, customer pricing, and purchase orders. It features a modern web interface with Arabic language support, role-based access control, and integrates with Google Sheets for data persistence and AI-powered item matching via DeepSeek API.
+## Overview
+A comprehensive web application for قرطبة للتوريدات (Qurtoba Supplies) managing quotation requests, item cataloging, purchase orders, and administrative operations. It features role-based access control and AI-powered item analysis for duplicate detection. The system is designed as a demand-based procurement system without inventory management, aiming to streamline supply chain processes, improve data quality, and enhance supply chain efficiency.
 
-# User Preferences
-
+## User Preferences
 Preferred communication style: Simple, everyday language.
+Data source: Google Sheets ONLY - no database storage, all data must come from Google Sheets exclusively.
+UI Preferences: No unification buttons in main Items page - all unification operations should be separate/programmatic.
+Supplier Pricing Requirements: Enhanced supplier pricing form with detailed supplier information, VAT handling, and extended terms including contact details, payment terms, and warranty information.
+Permission System: Single permission-based system using numbered permissions (perm-001 through perm-049). ROLE field is used for job title display only, while PERMISSIONS field contains actual access rights.
 
-# System Architecture
+## System Architecture
 
-## Frontend Architecture
-- **Framework**: React with TypeScript using Vite for development
-- **UI Components**: Shadcn/ui components library built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom Arabic RTL support and neutral color scheme
-- **State Management**: TanStack React Query for server state management
-- **Routing**: Wouter for client-side routing
-- **Form Handling**: React Hook Form with Zod validation
+### UI/UX Decisions
+- **Framework**: React with TypeScript and Vite.
+- **UI Library**: Shadcn/ui (built on Radix UI) with Tailwind CSS.
+- **Internationalization**: Arabic RTL (right-to-left) interface with Arabic content.
+- **Design Principles**: Focus on clear, intuitive workflows for various user roles, with consistent styling and new company branding. Fully responsive design optimized for smartphones and tablets.
 
-## Backend Architecture
-- **Runtime**: Node.js with Express.js server
-- **Language**: TypeScript with ES modules
-- **Database**: PostgreSQL with Drizzle ORM for schema management
-- **Session Management**: Express sessions with PostgreSQL store
-- **Authentication**: Custom role-based authentication system
-- **File Storage**: Google Cloud Storage for file uploads
-- **API Design**: RESTful endpoints with proper error handling and logging
+### Technical Implementations
+- **Frontend State Management**: TanStack Query (React Query) for server state and caching.
+- **Routing**: Wouter for lightweight client-side routing.
+- **Form Handling**: React Hook Form with Zod validation.
+- **Backend Runtime**: Node.js with Express.js (TypeScript, ES modules).
+- **Authentication**: Complete Google Sheets-based user management system with Express sessions and bcrypt password hashing. Comprehensive role-based access control (manager, it_admin, data_entry, purchasing, accounting).
+- **API Design**: RESTful API with centralized error handling and activity logging.
+- **Data Validation**: Zod schemas for type-safe data validation.
+- **Activity Tracking**: Comprehensive logging of user actions and online status.
+- **Item Numbering**: Automatic generation of P-format item numbers with mass update capability.
+- **Permissions Management**: Flexible, checkbox-based permissions system allowing granular control over view, create, edit, and delete operations for various sections.
+- **Profile Image System**: Displays profile images with fallback to user initials, with a file upload system supporting drag-drop, size limits, and image formats.
+- **Deployment**: Comprehensive deployment packages for Windows RDP, Linux servers, and Railway.app cloud deployment, including Docker Compose setup, automated deployment scripts, and GitHub integration with CI/CD pipelines.
 
-## Data Storage Architecture
-- **Primary Database**: PostgreSQL via Neon Database serverless
-- **Secondary Storage**: Google Sheets integration for data synchronization and backup
-- **File Storage**: Google Cloud Storage bucket for document attachments
-- **Session Store**: PostgreSQL-based session storage for user authentication
+### Feature Specifications
+- **Quotation Management**: Full lifecycle from request to completion with accurate data import. **FIXED (Jan 19, 2025):** Resolved critical issue where only 1031 quotations were displayed instead of 1533. Root cause was getAllItems() filtering out rows with RFQ data (17 columns) and only processing rows without RFQ (15 columns). Solution: Created getAllItemsRaw() method that processes all 8895 rows without filtering, ensuring all quotations including 25R000057 are properly displayed. **ENHANCED (Jan 20, 2025):** Activated automatic DeepSeek AI matching when entering new quotation requests - system now compares each new item against 9001 existing items using AI similarity analysis, ensuring unique identifiers (P-XXXXXXX) for distinct items and preventing duplicate entries.
+- **Purchase Order Creation**: **FIXED (Jan 20, 2025):** Successfully resolved fetch execution error that was preventing purchase order creation. The system now properly saves purchase orders to Google Sheets with complete item selection functionality from multiple quotations. **ENHANCED (Jan 20, 2025):** Added automatic row duplication for items with existing purchase orders - when selecting an item that already has a PO, the system automatically inserts a new row with all quotation data copied (including description in column E) except quantity (column H), then adds the new PO data in columns K-N.
+- **Item Catalog**: AI-enhanced item management with intelligent duplicate detection, focusing on part number normalization, description similarity, and keyword extraction.
+- **AI-Powered Item Unification**: Advanced Google Sheets integration for intelligent item consolidation. System processes data, analyzes part numbers and descriptions using AI similarity matching, then assigns unified item IDs to matching rows. **Updated (Jan 20, 2025):** Automatic AI matching has been enhanced for real-time duplicate detection during quotation entry. System now performs instant DeepSeek AI analysis with 80% similarity threshold when adding new items, preventing duplicate entries and ensuring each unique item receives its own P-identifier.
+- **Purchase Order Details System**: Complete purchase order item viewing system with accurate column mapping and Google Sheets real-time integration.
+- **Enhanced Supplier Pricing System**: Complete supplier pricing system with organized 3-tab modal (Pricing, Supplier Info, Terms), supporting 27 comprehensive fields (A-AA columns) including detailed supplier information (name, contact, phone, email, address), VAT management (inclusive/exclusive pricing, VAT rates, automatic calculations), extended terms (payment conditions, warranty periods, delivery specifications), comprehensive notes, and employee name tracking. Fully integrated with updated Google Sheets structure with Arabic column headers. Fixed critical data submission bug where form sent item.id instead of item.itemNumber. **UPDATED (Jan 18, 2025):** Fixed supplier price and name display in customer pricing page - now correctly fetches supplier price from Column O and supplier name from Column J in supplier pricing sheet, with LINE ITEM from DATA sheet Column C. **UPDATED (Jan 18, 2025):** Customer pricing now saves directly to Column I in DATA sheet instead of separate pricing sheet, with employee name saved to Column S (not Column Q).
+- **Purchase Order Processing**: Integration with the quotation system, including robust search capabilities.
+- **User Management**: Role-based access and activity monitoring.
+- **Client & Supplier Management**: Functionality for adding, editing, and deleting clients and suppliers with soft delete logic. Full supplier endpoint functionality with Google Sheets integration.
+- **Data Import/Export**: IT admin-only functionality for importing quotation requests from .xlsx/.xls files (with dual header fix, data preview, and error handling) and exporting various system data to .xlsx.
+- **Customer Pricing**: Enhanced customer pricing system with employee name tracking, supporting 17 comprehensive fields (A-Q columns) including pricing details, profit margin calculations, and automatic employee name logging for all pricing entries. Fully integrated with Google Sheets real-time data. **UPDATED (Jan 19, 2025):** Fixed column mapping issue in comprehensive data display - corrected reading from Google Sheets columns (DATE/RFQ from G, QTY from H) allowing proper display of all 27 DATA sheet rows for items with accurate field values.
+- **Quotation Requests Management**: Complete quotation request system with automatic saving to dedicated Google Sheets tab ('طلبات_التسعير'), automatic item distribution to both supplier and customer pricing sheets, and full integration with AI item matching.
+- **Database Backup**: Comprehensive backup system for IT administrators, generating executable SQL files for complete system restoration.
+- **RDP Server Integration**: System for deploying on Windows RDP servers with external network access, including SSH-based connection, network diagnostics, and webhook integration for GitHub updates.
 
-## Authentication & Authorization
-- **User Roles**: Multi-tier system with manager, IT admin, data entry, and purchasing roles
-- **Session-based Authentication**: Server-side sessions with secure cookie handling
-- **Password Security**: bcrypt hashing for password storage
-- **Role-based Access Control**: Different UI components and API endpoints based on user roles
+## External Dependencies
 
-## Key Business Logic Components
-- **Smart Item Unification**: DeepSeek AI integration for intelligent item matching and duplicate detection
-- **Quotation Workflow**: Complete RFQ to PO lifecycle management
-- **Pricing Management**: Separate supplier and customer pricing with margin calculations
-- **Multi-language Support**: Arabic primary interface with English technical terms
-- **Real-time Synchronization**: Automatic Google Sheets sync for data consistency
+### Core Infrastructure
+- **Database**: PostgreSQL (via Neon serverless or self-hosted).
+- **Session Store**: PostgreSQL with `connect-pg-simple`.
 
-# External Dependencies
+### AI Services
+- **DeepSeek API**: Used for AI-powered item analysis and duplicate detection.
+- **Telegram Bot Integration**: Fully operational @Req_item_bot with comprehensive analysis notifications, advanced image search system, enhanced expiry date formatting (🔥 bold + underline), test message functionality, dynamic token management, and real-time DeepSeek API balance monitoring in dashboard supporting sales representatives with item analysis for quotations.
 
-## Cloud Services
-- **Neon Database**: PostgreSQL serverless database hosting
-- **Google Cloud Platform**: Service account authentication and Cloud Storage
-- **Railway/Vercel**: Application deployment platforms
-- **DeepSeek API**: AI-powered text analysis for item matching
+### Development & Build Tools
+- **Vite**: Frontend development and build tool.
+- **esbuild**: Server-side code bundling.
 
-## Third-party APIs & Services
-- **Google Sheets API**: Data synchronization and backup storage
-- **Google Cloud Storage**: File and document storage
-- **SendGrid**: Email notification service (optional)
-- **Resend**: Alternative email service
-- **Anthropic SDK**: AI integration capabilities
-- **Telegram Bot API**: External user management and notifications
+### UI & Styling Libraries
+- **Tailwind CSS**: Utility-first CSS framework.
+- **Radix UI**: Headless UI components.
+- **Lucide React**: Icon library.
 
-## Key Libraries & Frameworks
-- **Drizzle ORM**: Type-safe database operations with PostgreSQL
-- **Radix UI**: Headless UI components for accessibility
-- **Tailwind CSS**: Utility-first CSS framework
-- **TanStack React Query**: Server state management and caching
-- **Zod**: Runtime type validation and schema definition
-- **Multer**: File upload handling middleware
-- **XLSX**: Excel file processing for data import/export
-
-## Development & Build Tools
-- **Vite**: Frontend development server and build tool
-- **esbuild**: Fast JavaScript bundler for server-side code
-- **TypeScript**: Type-safe development environment
-- **ESLint**: Code quality and style enforcement
+### Utility Libraries
+- **date-fns**: Date manipulation.
+- **bcrypt**: Password hashing.
+- **nanoid**: Unique ID generation.
+- **clsx**: Conditional class name utilities.
+- **XLSX**: For Excel file operations (import/export).
+```
