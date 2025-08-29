@@ -20,6 +20,7 @@ export interface ProductSpecs {
   current: string;          // التيار
   power: string;            // القدرة
   frequency: string;        // التردد
+  screenSize: string;       // حجم الشاشة (للتلفزيونات)
   
   // المواصفات التقنية
   specifications: string[];  // قائمة المواصفات
@@ -450,6 +451,29 @@ export class SemanticProductUnifier {
       .replace(/[\s\-_\.]/g, '')  // إزالة المسافات والرموز
       .replace(/[^\w\d]/g, '')   // إزالة أي رموز أخرى
       .trim();
+  }
+
+  // استخراج حجم الشاشة من النص
+  private extractScreenSize(text: string): string {
+    // استخراج الأحجام بالبوصة
+    const sizePatterns = [
+      /(\d{2})\"\s*LED/gi,
+      /(\d{2})\s*INCH/gi,
+      /(\d{2})\s*بوصة/gi,
+      /T\.V\s*(\d{2})\"/gi,
+      /TV\s*(\d{2})\"/gi,
+      /(\d{2})\"\s*T\.V/gi,
+      /(\d{2})\"\s*TV/gi
+    ];
+    
+    for (const pattern of sizePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        return match[1] + '"'; // إرجاع الحجم بالبوصة
+      }
+    }
+    
+    return '';
   }
 
   private isSchneiderLC1D32M7(item1: ProductItem, item2: ProductItem): boolean {
