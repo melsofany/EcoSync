@@ -1043,21 +1043,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // تحويل البيانات الخام إلى تنسيق منظم
       const sheetsData = {
         items: rawData.map((row: any[], index: number) => ({
-          id: row[0] || `P-${String(index + 1).padStart(7, '0')}`, // العمود A - معرف البند
-          lineItem: row[2] || '', // العمود C - LINE ITEM
-          partNumber: row[3] || '', // العمود D - PART NO  
-          description: row[4] || '', // العمود E - الوصف
-          uom: row[5] || '', // العمود F - وحدة القياس
-          rfqNumber: row[6] || '', // العمود G - رقم طلب التسعير
-          rfqDate: row[7] || '', // العمود H - تاريخ طلب التسعير
-          rfqQuantity: row[8] || '', // العمود I - كمية طلب التسعير
-          rfqPrice: row[9] || '', // العمود J - سعر طلب التسعير
-          responseDate: row[10] || '', // العمود K - تاريخ الاستجابة
-          poNumber: row[11] || '', // العمود L - رقم أمر الشراء
-          poDate: row[12] || '', // العمود M - تاريخ أمر الشراء
-          poQuantity: row[13] || '', // العمود N - كمية أمر الشراء
-          poPrice: row[14] || '', // العمود O - سعر أمر الشراء
-          totalPOValue: row[15] || '' // العمود P - إجمالي قيمة أمر الشراء
+          id: row[0] || `P-${String(index + 1).padStart(7, '0')}`, // A - معرف البند
+          uom: row[1] || '', // B - UOM
+          lineItem: row[2] || '', // C - LINE ITEM
+          partNumber: row[3] || '', // D - PART NO
+          description: row[4] || '', // E - DESCRIPTION
+          rfqNumber: row[5] || '', // F - RFQ
+          rfqDate: row[6] || '', // G - DATE/RFQ
+          rfqQuantity: row[7] || '', // H - QTY
+          rfqPrice: row[8] || '', // I - PRICE RFQ
+          responseDate: row[9] || '', // J - RES. DATE
+          poNumber: row[10] || '', // K - PO
+          poDate: row[11] || '', // L - DATE /PO
+          poQuantity: row[12] || '', // M - Quantity/PO
+          poPrice: row[13] || '', // N - PRICE/PO
+          totalPOValue: row[14] || '', // O - TOTAL PO
+          client: row[15] || '', // P - العميل
+          responsibleEmployee: row[16] || '', // Q - الموظف المسؤول
+          requestEmployee: row[17] || '', // R - اسم الموظف مدخل الطلب
+          priceEmployee: row[18] || '' // S - اسم الموظف المدخل لسعر العميل
         }))
       };
       
