@@ -7092,6 +7092,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         totalItems: dataRows.length,
         processedItems: 0,
         unifiedItems: 0,
+        percentage: 0,
         startTime: new Date().toISOString(),
         errorCount: 0
       };
@@ -7166,6 +7167,23 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         if (currentItem.existingId && currentItem.existingId.startsWith('P-')) {
           currentItem.unifiedId = currentItem.existingId;
           processedIndices.add(i);
+          
+          // أضف هذا كمجموعة منفردة للإحصائيات
+          groups.push({
+            unifiedId: currentItem.existingId,
+            items: [currentItem],
+            count: 1
+          });
+          
+          // تحديث التقدم
+          statusUpdate.processedItems = processedIndices.size;
+          statusUpdate.unifiedItems = groups.length;
+          statusUpdate.currentIndex = i;
+          
+          if (i % 50 === 0) {
+            writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+            console.log(`⏳ التقدم: ${i + 1}/${processedItems.length} عنصر (${Math.round((i + 1) / processedItems.length * 100)}%)`); 
+          }
           continue;
         }
         
@@ -7237,37 +7255,70 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         nextUnifiedId++;
         
         // تحديث التقدم
-        statusUpdate.processedItems = Array.from(processedIndices).length;
+        statusUpdate.processedItems = processedIndices.size;
         statusUpdate.unifiedItems = groups.length;
-        writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+        statusUpdate.currentIndex = i;
+        
+        // حساب النسبة المئوية الحقيقية
+        const percentage = Math.round((processedIndices.size / processedItems.length) * 100);
+        statusUpdate.percentage = percentage;
+        
+        // تحديث كل 10 عناصر أو عند الوصول لمضاعفات 5%
+        if (i % 10 === 0 || percentage % 5 === 0) {
+          writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+          console.log(`📊 التقدم: ${processedIndices.size}/${processedItems.length} عنصر (${percentage}%) - ${groups.length} مجموعة`);
+        }
         
         if (currentGroup.length > 1) {
           console.log(`🔗 مجموعة موحدة ${unifiedId}: تحتوي على ${currentGroup.length} عنصر متطابق`);
-          currentGroup.forEach(item => {
-            console.log(`   - ${item.description.substring(0, 60)}...`);
-          });
+          if (currentGroup.length <= 3) {
+            currentGroup.forEach(item => {
+              const desc = item.description || 'بدون وصف';
+              console.log(`   - ${desc.substring(0, 60)}...`);
+            });
+          }
         }
         
-        // توقف قصير لتجنب الضغط على API
-        if (currentGroup.length > 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
-        // تحديث الشاشة كل 10 مجموعات
-        if (groups.length % 10 === 0) {
-          console.log(`📊 التقدم: ${groups.length} مجموعة، ${Array.from(processedIndices).length}/${processedItems.length} عنصر`);
+        // توقف قصير لتجنب الضغط على API والسماح بالتحديث التدريجي
+        if (i % 5 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
       }
       
-      console.log(`🎯 تم إنشاء ${groups.length} مجموعة موحدة`);
+      // التأكد من معالجة جميع العناصر المتبقية
+      console.log(`🔍 التحقق من العناصر غير المعالجة...`);
+      for (let i = 0; i < processedItems.length; i++) {
+        if (!processedIndices.has(i)) {
+          const item = processedItems[i];
+          const unifiedId = `P-${String(nextUnifiedId).padStart(7, '0')}`;
+          item.unifiedId = unifiedId;
+          
+          groups.push({
+            unifiedId,
+            items: [item],
+            count: 1
+          });
+          
+          nextUnifiedId++;
+          processedIndices.add(i);
+          console.log(`➕ عنصر منفرد جديد: ${unifiedId} - ${(item.description || 'بدون وصف').substring(0, 50)}...`);
+        }
+      }
+      
+      console.log(`🎯 تم إنشاء ${groups.length} مجموعة موحدة من إجمالي ${processedItems.length} عنصر`);
+      console.log(`📊 الإحصائيات النهائية:`);
+      console.log(`   - العناصر المعالجة: ${processedIndices.size}`);
+      console.log(`   - المجموعات الموحدة: ${groups.length}`);
+      console.log(`   - استدعاءات AI: ${aiCallCount}`);
       
       // كتابة النتائج إلى Google Sheets
       await writeUnifiedIdsToSheets(sheets, spreadsheetId, processedItems);
       
       // تحديث الحالة النهائية
       statusUpdate.isRunning = false;
-      statusUpdate.processedItems = dataRows.length;
+      statusUpdate.processedItems = processedItems.length;
       statusUpdate.unifiedItems = groups.length;
+      statusUpdate.percentage = 100;
       statusUpdate.endTime = new Date().toISOString();
       writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
       
