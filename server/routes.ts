@@ -7039,14 +7039,29 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
       
       // قراءة جميع البيانات
+      console.log('🔍 محاولة قراءة البيانات من Google Sheets...');
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId,
-        range: 'DATA!A:E'
+        range: 'DATA!A:AA' // توسيع النطاق لقراءة جميع الأعمدة
       });
       
       const rows = response.data.values || [];
+      console.log(`📋 تم قراءة ${rows.length} صف من Google Sheets`);
+      
       if (rows.length <= 1) {
         console.log('❌ لا توجد بيانات للمعالجة');
+        // إنشاء حالة افتراضية
+        const defaultStatus = {
+          isRunning: false,
+          isPaused: false,
+          currentIndex: 0,
+          totalItems: 5604,
+          processedItems: 0,
+          unifiedItems: 0,
+          startTime: null,
+          errorCount: 0
+        };
+        writeFileSync(statusPath, JSON.stringify(defaultStatus, null, 2));
         return;
       }
       
