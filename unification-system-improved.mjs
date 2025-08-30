@@ -23,16 +23,7 @@ const auth = new google.auth.GoogleAuth({
 const authClient = await auth.getClient();
 const sheets = google.sheets({ version: 'v4', auth: authClient });
 
-// ==================== قاعدة معرفة المنتجات المتشابهة ====================
-const PRODUCT_EQUIVALENTS = {
-  // كونتاكتور Schneider Electric LC1D32M7 - نفس المنتج بأرقام مختلفة
-  'LC1D32M7': ['2102034', '2102049', 'LC1D32', 'LC1D32M7C', 'LC1D32BD', 'LC1D32M7'],
-  '2102034': ['LC1D32M7', '2102049', 'LC1D32', 'LC1D32M7C', 'LC1D32BD'],
-  '2102049': ['LC1D32M7', '2102034', 'LC1D32', 'LC1D32M7C', 'LC1D32BD'],
-  'LC1D32': ['LC1D32M7', '2102034', '2102049', 'LC1D32M7C', 'LC1D32BD'],
-  
-  // يمكن إضافة المزيد من المنتجات هنا في المستقبل
-};
+// تم إزالة قاعدة المعرفة - الآن نعتمد على الذكاء الاصطناعي بالكامل
 
 // ==================== دوال المعالجة المسبقة للنصوص ====================
 function normalize(text) {
@@ -60,272 +51,88 @@ function extractKeyFeatures(text) {
   return result.replace(/\s+/g, ' ').trim();
 }
 
-// ==================== دالة استخراج أرقام الأجزاء المحسنة ====================
-function extractPartNumbers(description) {
-  const patterns = [
-    /(?:p\/n|part\s*number|ref|reference)[\s:]*([a-z0-9\s]+)/gi,
-    /\b([a-z]{2,}\d+[a-z0-9]*)\b/gi,
-    /\b(\d+[a-z][a-z0-9]*)\b/gi,
-    /\b(lc1d\s*\d+\s*[a-z]\d*)\b/gi
-  ];
-  
-  const numbers = new Set();
-  
-  patterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(description.toLowerCase())) !== null) {
-      if (match[1]) {
-        const cleanNumber = match[1].replace(/\s+/g, '').toUpperCase().trim();
-        if (cleanNumber.length >= 3) {
-          numbers.add(cleanNumber);
-        }
-      }
-    }
-  });
-  
-  // إضافة الأرقام المكافئة من قاعدة المعرفة
-  const finalNumbers = new Set([...numbers]);
-  numbers.forEach(number => {
-    if (PRODUCT_EQUIVALENTS[number]) {
-      PRODUCT_EQUIVALENTS[number].forEach(equivalent => {
-        finalNumbers.add(equivalent);
-      });
-    }
-  });
-  
-  return Array.from(finalNumbers);
-}
+// تم حذف دالة استخراج أرقام الأجزاء - لا نحتاجها مع الذكاء الاصطناعي
 
-// ==================== إطار العمل الشامل للتوحيد الذكي ====================
+// ==================== نظام التوحيد الذكي بالذكاء الاصطناعي ====================
 
-// إطار عمل التوحيد الذكي - يعمل مع أي منتج حالياً ومستقبلاً
-function areProductsEquivalent(description1, description2) {
+// النظام الرئيسي للتوحيد - يعتمد بالكامل على الذكاء الاصطناعي
+async function areProductsEquivalent(description1, description2) {
   if (!description1 || !description2) return false;
   
-  const normalized1 = normalize(description1);
-  const normalized2 = normalize(description2);
-  
-  // خطوة 1: تحليل هوية المنتج الأساسية
-  const identity1 = extractProductIdentity(description1);
-  const identity2 = extractProductIdentity(description2);
-  
-  // خطوة 2: التحقق من التطابق التام بعد التطبيع
-  if (identity1.cleanDescription === identity2.cleanDescription) {
+  // إذا كان الوصفان متطابقان تماماً
+  if (normalize(description1) === normalize(description2)) {
     return true;
   }
   
-  // خطوة 3: قواعد الاستبعاد الصارمة
-  if (!passesExclusionRules(identity1, identity2)) {
-    return false;
-  }
-  
-  // خطوة 4: حساب درجة التطابق الشاملة
-  const matchScore = calculateOverallMatchScore(identity1, identity2);
-  
-  // خطوة 5: تطبيق العتبة الديناميكية
-  const threshold = getDynamicThreshold(identity1, identity2);
-  
-  return matchScore >= threshold;
+  // إرسال للذكاء الاصطناعي لتحديد التطابق
+  return await checkProductEquivalenceWithAI(description1, description2);
 }
 
-// استخراج هوية المنتج الشاملة
-function extractProductIdentity(description) {
-  const normalized = normalize(description);
-  
-  return {
-    // الهوية الأساسية
-    brand: extractBrandSmart(normalized),
-    category: extractCategorySmart(normalized),
-    productType: extractProductTypeSmart(normalized),
-    
-    // المواصفات التقنية
-    electricalSpecs: extractElectricalSpecs(normalized),
-    physicalSpecs: extractPhysicalSpecs(normalized),
-    functionalSpecs: extractFunctionalSpecs(normalized),
-    
-    // الخصائص الدلالية
-    coreFunction: extractCoreFunction(normalized),
-    applicationArea: extractApplicationArea(normalized),
-    
-    // النص المنظف
-    cleanDescription: removeAllNoise(normalized),
-    
-    // مؤشرات الجودة
-    confidence: calculateExtractionConfidence(normalized)
-  };
-}
+// فحص التطابق باستخدام الذكاء الاصطناعي
+async function checkProductEquivalenceWithAI(description1, description2) {
+  try {
+    const prompt = `أنت خبير في تحليل المنتجات الصناعية والكهربائية. مهمتك تحديد ما إذا كان المنتجان التاليان متطابقان أم لا.
 
-// قواعد الاستبعاد الصارمة
-function passesExclusionRules(identity1, identity2) {
-  // قاعدة 1: العلامة التجارية يجب أن تكون متطابقة
-  if (identity1.brand && identity2.brand && identity1.brand !== identity2.brand) {
-    return false;
-  }
-  
-  // قاعدة 2: الفئة الأساسية يجب أن تكون متطابقة
-  if (identity1.category && identity2.category && identity1.category !== identity2.category) {
-    return false;
-  }
-  
-  // قاعدة 3: نوع المنتج يجب أن يكون متطابق
-  if (identity1.productType && identity2.productType && identity1.productType !== identity2.productType) {
-    return false;
-  }
-  
-  // قاعدة 4: المواصفات الكهربائية الأساسية يجب أن تكون متطابقة
-  if (!areElectricalSpecsCompatible(identity1.electricalSpecs, identity2.electricalSpecs)) {
-    return false;
-  }
-  
-  // قاعدة 5: المواصفات الفيزيائية الرئيسية يجب أن تكون متطابقة
-  if (!arePhysicalSpecsCompatible(identity1.physicalSpecs, identity2.physicalSpecs)) {
-    return false;
-  }
-  
-  return true;
-}
+المنتج الأول:
+${description1}
 
-// حساب درجة التطابق الشاملة
-function calculateOverallMatchScore(identity1, identity2) {
-  let totalScore = 0;
-  let maxScore = 0;
-  
-  // وزن 30% - التطابق الدلالي للوصف المنظف
-  const semanticScore = calculateSemanticSimilarity(identity1.cleanDescription, identity2.cleanDescription);
-  totalScore += semanticScore * 30;
-  maxScore += 30;
-  
-  // وزن 25% - تطابق الوظيفة الأساسية
-  const functionScore = identity1.coreFunction === identity2.coreFunction ? 25 : 0;
-  totalScore += functionScore;
-  maxScore += 25;
-  
-  // وزن 20% - تطابق المواصفات الوظيفية
-  const functionalScore = compareFunctionalSpecs(identity1.functionalSpecs, identity2.functionalSpecs);
-  totalScore += functionalScore * 20;
-  maxScore += 20;
-  
-  // وزن 15% - تطابق مجال التطبيق
-  const applicationScore = identity1.applicationArea === identity2.applicationArea ? 15 : 0;
-  totalScore += applicationScore;
-  maxScore += 15;
-  
-  // وزن 10% - جودة الاستخراج
-  const confidenceScore = Math.min(identity1.confidence, identity2.confidence) * 10;
-  totalScore += confidenceScore;
-  maxScore += 10;
-  
-  return maxScore > 0 ? totalScore / maxScore : 0;
-}
+المنتج الثاني: 
+${description2}
 
-// عتبة ديناميكية حسب نوع المنتج وجودة البيانات
-function getDynamicThreshold(identity1, identity2) {
-  let baseThreshold = 0.75; // عتبة أساسية 75%
-  
-  // تعديل حسب نوع المنتج
-  const productTypeAdjustments = {
-    'electrical_component': -0.1, // مكونات كهربائية: عتبة أقل (65%)
-    'electronic_device': 0.05,   // أجهزة إلكترونية: عتبة أعلى (80%)
-    'appliance': 0.1,            // أجهزة منزلية: عتبة أعلى (85%)
-    'industrial_equipment': -0.05 // معدات صناعية: عتبة متوسطة (70%)
-  };
-  
-  const category1 = identity1.category || 'unknown';
-  const category2 = identity2.category || 'unknown';
-  
-  if (category1 === category2 && productTypeAdjustments[category1]) {
-    baseThreshold += productTypeAdjustments[category1];
-  }
-  
-  // تعديل حسب جودة البيانات
-  const avgConfidence = (identity1.confidence + identity2.confidence) / 2;
-  if (avgConfidence < 0.5) {
-    baseThreshold -= 0.1; // بيانات ضعيفة: عتبة أقل
-  } else if (avgConfidence > 0.8) {
-    baseThreshold += 0.05; // بيانات قوية: عتبة أعلى
-  }
-  
-  // ضمان أن العتبة في نطاق معقول
-  return Math.max(0.5, Math.min(0.9, baseThreshold));
-}
+قواعد التحليل:
+1. تجاهل أرقام القطع (Part Numbers) والمراجع (References) تماماً
+2. ركز على الوظيفة والمواصفات التقنية والعلامة التجارية
+3. المنتجات متطابقة إذا كانت لها نفس:
+   - العلامة التجارية (Schneider = Telemecanique)
+   - الوظيفة الأساسية (Contactor)
+   - المواصفات الكهربائية (220V, 50A, 15KW)
+   - نفس الاستخدام
 
-// ==================== دوال الاستخراج الذكية الشاملة ====================
+أجب بـ "YES" إذا كانا نفس المنتج أو "NO" إذا كانا مختلفين.
+فقط YES أو NO - لا تكتب أي شيء آخر.`;
 
-// استخراج العلامة التجارية الذكي
-function extractBrandSmart(description) {
-  const brandPatterns = {
-    'schneider': /schneider|schnieder|telemecanique/gi,
-    'samsung': /samsung/gi,
-    'lg': /lg/gi,
-    'toshiba': /toshiba/gi,
-    'sony': /sony/gi,
-    'tornado': /tornado/gi,
-    'philips': /philips/gi,
-    'siemens': /siemens/gi,
-    'abb': /abb/gi,
-    'omron': /omron/gi
-  };
-  
-  for (const [brand, pattern] of Object.entries(brandPatterns)) {
-    if (pattern.test(description)) {
-      return brand;
+    const response = await fetch(DEEPSEEK_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 10,
+        temperature: 0.1
+      })
+    });
+
+    if (!response.ok) {
+      console.error('فشل في استدعاء DeepSeek API:', response.status);
+      return false; // في حالة فشل API، نرجع false
     }
+
+    const data = await response.json();
+    const aiResponse = data.choices?.[0]?.message?.content?.trim().toLowerCase();
+    
+    console.log(`🤖 AI التطابق: "${description1.substring(0, 30)}..." vs "${description2.substring(0, 30)}..." = ${aiResponse}`);
+    
+    return aiResponse === 'yes';
+    
+  } catch (error) {
+    console.error('خطأ في فحص التطابق بالذكاء الاصطناعي:', error);
+    return false; // في حالة الخطأ، نرجع false
   }
-  return null;
 }
 
-// استخراج الفئة الذكي
-function extractCategorySmart(description) {
-  const categoryPatterns = {
-    'electrical_component': /contactor|relay|switch|breaker|fuse|transformer/gi,
-    'electronic_device': /tv|television|monitor|display|projector/gi,
-    'appliance': /refrigerator|washing machine|dishwasher|microwave|oven/gi,
-    'kitchen_equipment': /grill|fryer|blender|mixer|cooker/gi,
-    'industrial_equipment': /motor|pump|compressor|generator|welder/gi,
-    'lighting': /led|lamp|bulb|fixture|spotlight/gi,
-    'hvac': /air conditioner|heater|fan|ventilator|humidifier/gi
-  };
-  
-  for (const [category, pattern] of Object.entries(categoryPatterns)) {
-    if (pattern.test(description)) {
-      return category;
-    }
-  }
-  return null;
-}
 
-// استخراج نوع المنتج الذكي
-function extractProductTypeSmart(description) {
-  const typePatterns = {
-    // مكونات كهربائية
-    'contactor': /contactor/gi,
-    'relay': /relay/gi,
-    'switch': /switch/gi,
-    'breaker': /circuit.*breaker|breaker/gi,
-    
-    // أجهزة إلكترونية
-    'smart_tv': /smart.*tv|android.*tv/gi,
-    'led_tv': /led.*tv/gi,
-    'lcd_tv': /lcd.*tv/gi,
-    'tv': /tv|television|تلفزيون/gi,
-    
-    // معدات مطبخ
-    'electric_grill': /electric.*grill|grill.*electric/gi,
-    'gas_grill': /gas.*grill|grill.*gas/gi,
-    'fryer': /fryer|قلاية/gi,
-    
-    // أجهزة منزلية
-    'refrigerator': /refrigerator|fridge|ثلاجة/gi,
-    'washing_machine': /washing.*machine|غسالة/gi
-  };
-  
-  for (const [type, pattern] of Object.entries(typePatterns)) {
-    if (pattern.test(description)) {
-      return type;
-    }
-  }
-  return null;
-}
+
+
+
+// تم حذف دوال الاستخراج المعقدة - الآن نعتمد بالكامل على الذكاء الاصطناعي
 
 // استخراج المواصفات الكهربائية
 function extractElectricalSpecs(description) {
@@ -643,11 +450,7 @@ class ProductGroupManager {
       this.productToGroupMap.set(lineItem, groupId);
     }
     
-    // إضافة أرقام الأجزاء المستخرجة إلى الخريطة
-    const partNumbers = extractPartNumbers(description || '');
-    partNumbers.forEach(pn => {
-      this.productToGroupMap.set(pn, groupId);
-    });
+    // تم إزالة استخراج أرقام الأجزاء - الآن نعتمد على الذكاء الاصطناعي
     
     if (rowIndex >= 0) {
       group.rows.push(rowIndex);
@@ -716,9 +519,9 @@ async function unifyProducts() {
       if (!groupId) {
         for (const [existingGroupId, group] of manager.groups.entries()) {
           for (const existingDesc of group.descriptions) {
-            if (areProductsEquivalent(description, existingDesc)) {
+            if (await areProductsEquivalent(description, existingDesc)) {
               groupId = existingGroupId;
-              console.log(`   🎯 تطابق مع المجموعة: ${groupId}`);
+              console.log(`   🎯 AI: تطابق مع المجموعة: ${groupId}`);
               break;
             }
           }
@@ -822,7 +625,7 @@ console.log('   نظام التوحيد الذكي المحسن');
 console.log('   الإصدار النهائي المطور');
 console.log('=====================================\n');
 
-console.log('🔧 استخدام نظام المقارنة المحسن مع قاعدة المعرفة');
-console.log('📋 قاعدة معرفة المنتجات: LC1D32M7, 2102034, 2102049');
+console.log('🔧 استخدام نظام التوحيد بالذكاء الاصطناعي (DeepSeek)');
+console.log('🧠 سيتم إرسال جميع الأوصاف للذكاء الاصطناعي لتحديد التطابق');
 
 unifyProducts();
