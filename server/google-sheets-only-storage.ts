@@ -444,36 +444,6 @@ export class GoogleSheetsOnlyStorage {
   async getQuotationRequest() { return undefined; }
   async updateQuotationRequest() { return {}; }
   async deleteQuotationRequest() { return; }
-  
-  // دالة التحقق من وجود طلب تسعير بنفس الرقم
-  async getQuotationByCustomNumber(customNumber: string) {
-    try {
-      if (!this.sheets) return undefined;
-      
-      const response = await this.sheets.spreadsheets.values.get({
-        spreadsheetId: this.spreadsheetId,
-        range: 'DATA!F:F' // العمود F يحتوي على أرقام RFQ
-      });
-      
-      const values = response.data.values || [];
-      
-      // البحث عن الرقم المطلوب
-      for (let i = 1; i < values.length; i++) {
-        if (values[i][0] === customNumber) {
-          return { 
-            id: `rfq-${customNumber}`,
-            customRequestNumber: customNumber,
-            exists: true 
-          };
-        }
-      }
-      
-      return undefined;
-    } catch (error) {
-      console.error('خطأ في البحث عن طلب التسعير:', error);
-      return undefined;
-    }
-  }
   async getItem() { return undefined; }
   async updateItem() { return {}; }
   async deleteItem() { return; }
