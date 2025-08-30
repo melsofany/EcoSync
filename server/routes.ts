@@ -7402,7 +7402,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             // طباعة رسالة كل 50 عنصر
             if (i % 50 === 0) {
               console.log(`📊 التقدم: ${processedCount}/${processedItems.length} عنصر (${percentage}%) - ${groups.length} مجموعة`);
-              console.log(`   آخر مجموعة: ${currentGroup.length} عنصر بالمعرف ${unifiedId}`);
+              if (currentGroup.length > 0 && currentItem.unifiedId) {
+                console.log(`   آخر مجموعة: ${currentGroup.length} عنصر بالمعرف ${currentItem.unifiedId}`);
+              }
             }
             
             // إضافة تأخير حقيقي كل 10 عناصر للمعالجة الحقيقية
