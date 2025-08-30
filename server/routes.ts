@@ -7170,83 +7170,83 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             // لا نحتفظ بالمعرف الموجود - سنقوم بإعادة التوحيد
           }
           */
-        
-        const currentGroup = [currentItem];
-        processedIndices.add(i);
-        
-        // البحث عن العناصر المتشابهة فقط إذا كان هناك وصف أو رقم جزء
-        if (currentItem.description || currentItem.partNumber) {
-          for (let j = i + 1; j < processedItems.length; j++) {
-            if (processedIndices.has(j)) continue;
+          
+          const currentGroup = [currentItem];
+          processedIndices.add(i);
+          
+          // البحث عن العناصر المتشابهة فقط إذا كان هناك وصف أو رقم جزء
+          if (currentItem.description || currentItem.partNumber) {
+            for (let j = i + 1; j < processedItems.length; j++) {
+              if (processedIndices.has(j)) continue;
             
-            const compareItem = processedItems[j];
-            
-            // لا نتخطى أي عناصر - سنقارن جميع العناصر
-            // if (compareItem.existingId && compareItem.existingId.startsWith('P-')) {
-            //   continue;
-            // }
-            
-            let isMatch = false;
-            
-            // 1. التحقق من تطابق رقم الجزء تماماً
-            if (currentItem.partNumber && compareItem.partNumber) {
-              const cleanPart1 = currentItem.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
-              const cleanPart2 = compareItem.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
-              if (cleanPart1 && cleanPart1 === cleanPart2 && cleanPart1.length > 0) {
-                isMatch = true;
-                console.log(`✅ تطابق رقم الجزء: ${currentItem.partNumber} = ${compareItem.partNumber}`);
-              }
-            }
-            
-            // 2. إذا لم يتطابق رقم الجزء، قارن الأوصاف
-            if (!isMatch && currentItem.description && compareItem.description && aiCallCount < MAX_AI_CALLS) {
-              // مقارنة بسيطة للكلمات المفتاحية أولاً
-              const desc1Words = currentItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-              const desc2Words = compareItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-              const commonWords = desc1Words.filter(word => desc2Words.includes(word) && word.length > 3);
+              const compareItem = processedItems[j];
               
-              // إذا كان هناك تشابه كبير، استدعي AI
-              if (commonWords.length >= 3 || (desc1Words.length > 0 && commonWords.length / desc1Words.length > 0.5)) {
-                console.log(`🔍 مقارنة AI #${aiCallCount + 1} بين الصف ${i+2} والصف ${j+2}`);
-                isMatch = await compareWithAI(currentItem.description, compareItem.description);
-                aiCallCount++;
-                
-                if (isMatch) {
-                  console.log(`✅ تطابق AI: العنصران في الصف ${i+2} و ${j+2} متطابقان`);
+              // لا نتخطى أي عناصر - سنقارن جميع العناصر
+              // if (compareItem.existingId && compareItem.existingId.startsWith('P-')) {
+              //   continue;
+              // }
+              
+              let isMatch = false;
+            
+              // 1. التحقق من تطابق رقم الجزء تماماً
+              if (currentItem.partNumber && compareItem.partNumber) {
+                const cleanPart1 = currentItem.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                const cleanPart2 = compareItem.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                if (cleanPart1 && cleanPart1 === cleanPart2 && cleanPart1.length > 0) {
+                  isMatch = true;
+                  console.log(`✅ تطابق رقم الجزء: ${currentItem.partNumber} = ${compareItem.partNumber}`);
                 }
               }
-            }
             
-            if (isMatch) {
-              currentGroup.push(compareItem);
-              processedIndices.add(j);
+              // 2. إذا لم يتطابق رقم الجزء، قارن الأوصاف
+              if (!isMatch && currentItem.description && compareItem.description && aiCallCount < MAX_AI_CALLS) {
+                // مقارنة بسيطة للكلمات المفتاحية أولاً
+                const desc1Words = currentItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                const desc2Words = compareItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                const commonWords = desc1Words.filter(word => desc2Words.includes(word) && word.length > 3);
+                
+                // إذا كان هناك تشابه كبير، استدعي AI
+                if (commonWords.length >= 3 || (desc1Words.length > 0 && commonWords.length / desc1Words.length > 0.5)) {
+                  console.log(`🔍 مقارنة AI #${aiCallCount + 1} بين الصف ${i+2} والصف ${j+2}`);
+                  isMatch = await compareWithAI(currentItem.description, compareItem.description);
+                  aiCallCount++;
+                  
+                  if (isMatch) {
+                    console.log(`✅ تطابق AI: العنصران في الصف ${i+2} و ${j+2} متطابقان`);
+                  }
+                }
+              }
+              
+              if (isMatch) {
+                currentGroup.push(compareItem);
+                processedIndices.add(j);
+              }
             }
           }
-        }
-        
-        // تعيين معرف موحد للمجموعة
-        const unifiedId = `P-${String(nextUnifiedId).padStart(7, '0')}`;
-        currentGroup.forEach(item => {
-          item.unifiedId = unifiedId;
-        });
-        
-        groups.push({
-          unifiedId,
-          items: currentGroup,
-          count: currentGroup.length
-        });
-        
-        nextUnifiedId++;
-        
-        // تحديث التقدم
-        statusUpdate.processedItems = processedIndices.size;
-        statusUpdate.unifiedItems = groups.length;
-        statusUpdate.currentIndex = i;
-        
-        // حساب النسبة المئوية الحقيقية
-        const percentage = Math.round((processedIndices.size / processedItems.length) * 100);
-        statusUpdate.percentage = percentage;
-        
+          
+          // تعيين معرف موحد للمجموعة
+          const unifiedId = `P-${String(nextUnifiedId).padStart(7, '0')}`;
+          currentGroup.forEach(item => {
+            item.unifiedId = unifiedId;
+          });
+          
+          groups.push({
+            unifiedId,
+            items: currentGroup,
+            count: currentGroup.length
+          });
+          
+          nextUnifiedId++;
+          
+          // تحديث التقدم
+          statusUpdate.processedItems = processedIndices.size;
+          statusUpdate.unifiedItems = groups.length;
+          statusUpdate.currentIndex = i;
+          
+          // حساب النسبة المئوية الحقيقية
+          const percentage = Math.round((processedIndices.size / processedItems.length) * 100);
+          statusUpdate.percentage = percentage;
+          
           // تحديث كل 3 عناصر للحصول على تقدم سلس
           if (i % 3 === 0 || percentage % 2 === 0) {
             writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
