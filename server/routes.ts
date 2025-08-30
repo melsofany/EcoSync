@@ -8172,7 +8172,7 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
       }
 
       // إدراج طلب التسعير
-      const insertResult = await sheetsWriter.insertNewQuotation({
+      const insertResult = await sheetsWriter.writeQuotation({
         clientName,
         rfqNumber,
         requestDate,
@@ -8187,7 +8187,7 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
           unitPrice: parseFloat(item.unitPrice) || 0,
           notes: item.notes || ''
         }))
-      });
+      }, req.session.user?.username || 'غير معروف');
 
       if (insertResult.success) {
         await logActivity(req, "quotation_create", "quotations", req.session.user!.id, 
@@ -8211,20 +8211,18 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
           // Wait longer for Google Sheets to fully sync  
           await new Promise(resolve => setTimeout(resolve, 3000));
           
-          // Send analysis for each new item using real item IDs from Google Sheets
+          // Send analysis for each new item
           for (let i = 0; i < items.length; i++) {
             const item = items[i];
-            const realItemId = insertResult.itemIds[i]; // استخدام معرف البند الحقيقي من العمود A
             
-            if (item.partNumber && realItemId) {
+            if (item.partNumber) {
               console.log(`📱 [TELEGRAM BOT] إرسال تحليل مباشر للبند: ${item.partNumber} - ${item.description}`);
-              console.log(`🆔 [TELEGRAM BOT] معرف البند الحقيقي من العمود A: ${realItemId}`);
               
               try {
-                // Create new item data with real item ID from Google Sheets column A
+                // Create new item data
                 const newItemData = {
-                  id: realItemId, // استخدام معرف البند الحقيقي من العمود A
-                  itemNumber: realItemId, // نفس المعرف
+                  id: `TEMP-${Date.now()}-${i}`, // معرف مؤقت
+                  itemNumber: `TEMP-${Date.now()}-${i}`, // نفس المعرف
                   partNumber: item.partNumber,
                   description: item.description,
                   uom: item.uom || 'EACH',
@@ -8237,16 +8235,16 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
                   quantity: item.quantity
                 };
                 
-                console.log(`📱 [TELEGRAM BOT] إرسال تحليل بالمعرف الحقيقي: ${realItemId}`);
+                console.log(`📱 [TELEGRAM BOT] إرسال تحليل للبند: ${item.partNumber}`);
                 
-                // Send analysis with the real item ID from Google Sheets
+                // Send analysis
                 await telegramBot.sendNewItemAnalysisWithData(newItemData);
-                console.log(`✅ [TELEGRAM BOT] تم إرسال التحليل بنجاح للبند: ${item.partNumber} (ID: ${realItemId})`);
+                console.log(`✅ [TELEGRAM BOT] تم إرسال التحليل بنجاح للبند: ${item.partNumber}`);
               } catch (analysisError) {
                 console.error(`❌ [TELEGRAM BOT] فشل في إرسال التحليل للبند ${item.partNumber}:`, analysisError);
               }
             } else {
-              console.warn(`⚠️ [TELEGRAM BOT] البند بدون رقم قطعة أو معرف: ${item.description}`);
+              console.warn(`⚠️ [TELEGRAM BOT] البند بدون رقم قطعة: ${item.description}`);
             }
           }
         } catch (telegramError) {
