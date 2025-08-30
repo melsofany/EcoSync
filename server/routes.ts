@@ -7068,6 +7068,22 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const dataRows = rows.slice(1); // تجاهل رأس العمود
       console.log(`📊 تم العثور على ${dataRows.length} صف للمعالجة`);
       
+      // إذا لم توجد بيانات كافية
+      if (dataRows.length === 0) {
+        console.log('⚠️ لا توجد بيانات كافية للتوحيد');
+        writeFileSync(statusPath, JSON.stringify({
+          isRunning: false,
+          isPaused: false,
+          currentIndex: 0,
+          totalItems: 0,
+          processedItems: 0,
+          unifiedItems: 0,
+          startTime: null,
+          errorCount: 0
+        }, null, 2));
+        return;
+      }
+      
       // تحديث الحالة الأولية
       const statusUpdate = {
         isRunning: true,
@@ -7080,6 +7096,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         errorCount: 0
       };
       writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+      console.log(`✅ تم تحديث الحالة: ${dataRows.length} عنصر للمعالجة`);
       
       // بناء قاموس للبحث السريع
       const itemsMap = new Map();
@@ -7116,6 +7133,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const groups = [];
       const processedIndices = new Set();
       let nextUnifiedId = 1;
+      let aiCallCount = 0;
+      const MAX_AI_CALLS = 100; // حد أقصى لاستدعاءات AI
+      
+      console.log(`🚀 بدء التوحيد الذكي لـ ${processedItems.length} عنصر`);
       
       for (let i = 0; i < processedItems.length; i++) {
         if (processedIndices.has(i)) continue;
@@ -7124,19 +7145,47 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         const currentGroup = [currentItem];
         processedIndices.add(i);
         
-        // البحث عن العناصر المتشابهة باستخدام الذكاء الاصطناعي
+        // البحث عن العناصر المتشابهة
         for (let j = i + 1; j < processedItems.length; j++) {
           if (processedIndices.has(j)) continue;
           
           const compareItem = processedItems[j];
           
-          // استدعاء الذكاء الاصطناعي للمقارنة
-          const isMatch = await compareWithAI(currentItem.description, compareItem.description);
+          // مقارنة سريعة أولاً - إذا كان رقم الجزء متطابق
+          let isMatch = false;
+          
+          // 1. التحقق من تطابق رقم الجزء تماماً
+          if (currentItem.partNumber && compareItem.partNumber) {
+            const cleanPart1 = currentItem.partNumber.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+            const cleanPart2 = compareItem.partNumber.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (cleanPart1 && cleanPart1 === cleanPart2) {
+              isMatch = true;
+              console.log(`✅ تطابق رقم الجزء: ${currentItem.partNumber} = ${compareItem.partNumber}`);
+            }
+          }
+          
+          // 2. إذا لم يتطابق رقم الجزء، استخدم AI (بحد أقصى)
+          if (!isMatch && aiCallCount < MAX_AI_CALLS) {
+            // مقارنة بسيطة للكلمات المفتاحية أولاً
+            const desc1Words = currentItem.description.toLowerCase().split(/\s+/);
+            const desc2Words = compareItem.description.toLowerCase().split(/\s+/);
+            const commonWords = desc1Words.filter(word => desc2Words.includes(word) && word.length > 3);
+            
+            // إذا كان هناك كلمات مشتركة كافية، استدعي AI
+            if (commonWords.length >= 3) {
+              console.log(`🔍 مقارنة AI #${aiCallCount + 1}: "${currentItem.description.substring(0, 50)}..." مع "${compareItem.description.substring(0, 50)}..."`);
+              isMatch = await compareWithAI(currentItem.description, compareItem.description);
+              aiCallCount++;
+              
+              if (isMatch) {
+                console.log(`✅ تطابق AI: العنصران متطابقان`);
+              }
+            }
+          }
           
           if (isMatch) {
             currentGroup.push(compareItem);
             processedIndices.add(j);
-            console.log(`✅ تطابق AI: "${currentItem.description}" مع "${compareItem.description}"`);
           }
         }
         
@@ -7159,11 +7208,21 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         statusUpdate.unifiedItems = groups.length;
         writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
         
-        console.log(`🔗 مجموعة ${unifiedId}: ${currentGroup.length} عنصر`);
+        if (currentGroup.length > 1) {
+          console.log(`🔗 مجموعة موحدة ${unifiedId}: تحتوي على ${currentGroup.length} عنصر متطابق`);
+          currentGroup.forEach(item => {
+            console.log(`   - ${item.description.substring(0, 60)}...`);
+          });
+        }
         
         // توقف قصير لتجنب الضغط على API
         if (currentGroup.length > 1) {
           await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        // تحديث الشاشة كل 10 مجموعات
+        if (groups.length % 10 === 0) {
+          console.log(`📊 التقدم: ${groups.length} مجموعة، ${Array.from(processedIndices).length}/${processedItems.length} عنصر`);
         }
       }
       
