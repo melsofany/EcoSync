@@ -96,219 +96,491 @@ function extractPartNumbers(description) {
   return Array.from(finalNumbers);
 }
 
-// ==================== دالة المقارنة المحسنة - تعتمد على دلالة التوصيف ====================
+// ==================== إطار العمل الشامل للتوحيد الذكي ====================
+
+// إطار عمل التوحيد الذكي - يعمل مع أي منتج حالياً ومستقبلاً
 function areProductsEquivalent(description1, description2) {
   if (!description1 || !description2) return false;
   
   const normalized1 = normalize(description1);
   const normalized2 = normalize(description2);
   
-  // 1. التحقق من التطابق التام بعد التطبيع
-  if (normalized1 === normalized2) {
+  // خطوة 1: تحليل هوية المنتج الأساسية
+  const identity1 = extractProductIdentity(description1);
+  const identity2 = extractProductIdentity(description2);
+  
+  // خطوة 2: التحقق من التطابق التام بعد التطبيع
+  if (identity1.cleanDescription === identity2.cleanDescription) {
     return true;
   }
   
-  // 2. استخراج الخصائص الأساسية للمنتج (بدون أرقام القطع)
-  const getProductCharacteristics = (desc) => {
-    const normalized = normalize(desc);
+  // خطوة 3: قواعد الاستبعاد الصارمة
+  if (!passesExclusionRules(identity1, identity2)) {
+    return false;
+  }
+  
+  // خطوة 4: حساب درجة التطابق الشاملة
+  const matchScore = calculateOverallMatchScore(identity1, identity2);
+  
+  // خطوة 5: تطبيق العتبة الديناميكية
+  const threshold = getDynamicThreshold(identity1, identity2);
+  
+  return matchScore >= threshold;
+}
+
+// استخراج هوية المنتج الشاملة
+function extractProductIdentity(description) {
+  const normalized = normalize(description);
+  
+  return {
+    // الهوية الأساسية
+    brand: extractBrandSmart(normalized),
+    category: extractCategorySmart(normalized),
+    productType: extractProductTypeSmart(normalized),
     
-    // استخراج نوع المنتج
-    const productType = getProductType(normalized);
+    // المواصفات التقنية
+    electricalSpecs: extractElectricalSpecs(normalized),
+    physicalSpecs: extractPhysicalSpecs(normalized),
+    functionalSpecs: extractFunctionalSpecs(normalized),
     
-    // استخراج العلامة التجارية
-    const brand = getBrand(normalized);
+    // الخصائص الدلالية
+    coreFunction: extractCoreFunction(normalized),
+    applicationArea: extractApplicationArea(normalized),
     
-    // استخراج المواصفات التقنية
-    const specs = getTechnicalSpecs(normalized);
+    // النص المنظف
+    cleanDescription: removeAllNoise(normalized),
     
-    // استخراج الوظيفة/الاستخدام
-    const usage = getUsage(normalized);
-    
-    return { productType, brand, specs, usage };
+    // مؤشرات الجودة
+    confidence: calculateExtractionConfidence(normalized)
   };
-  
-  const chars1 = getProductCharacteristics(description1);
-  const chars2 = getProductCharacteristics(description2);
-  
-  // 3. فحص خاص للكونتاكتور LC1D32M7 قبل أي شيء
-  const isSchneiderContactor1 = normalized1.includes('schneider') && normalized1.includes('contactor');
-  const isSchneiderContactor2 = normalized2.includes('schneider') && normalized2.includes('contactor');
-  
-  if (isSchneiderContactor1 && isSchneiderContactor2) {
-    // فحص المواصفات الرئيسية للكونتاكتور
-    const has220v1 = normalized1.includes('220v') || normalized1.includes('220 v');
-    const has220v2 = normalized2.includes('220v') || normalized2.includes('220 v');
-    const has50a1 = normalized1.includes('50a') || normalized1.includes('50 a');
-    const has50a2 = normalized2.includes('50a') || normalized2.includes('50 a');
-    const has15kw1 = normalized1.includes('15kw') || normalized1.includes('15 kw');
-    const has15kw2 = normalized2.includes('15kw') || normalized2.includes('15 kw');
-    
-    // إذا كان كلاهما كونتاكتور شنايدر بنفس المواصفات الأساسية
-    if ((has220v1 && has220v2) || (has50a1 && has50a2) || (has15kw1 && has15kw2)) {
-      return true; // نفس المنتج
-    }
-  }
-  
-  // 4. مقارنة الخصائص الأساسية
-  
-  // نوع المنتج يجب أن يكون متطابق
-  if (chars1.productType && chars2.productType && chars1.productType !== chars2.productType) {
+}
+
+// قواعد الاستبعاد الصارمة
+function passesExclusionRules(identity1, identity2) {
+  // قاعدة 1: العلامة التجارية يجب أن تكون متطابقة
+  if (identity1.brand && identity2.brand && identity1.brand !== identity2.brand) {
     return false;
   }
   
-  // العلامة التجارية يجب أن تكون متطابقة
-  if (chars1.brand && chars2.brand && chars1.brand !== chars2.brand) {
+  // قاعدة 2: الفئة الأساسية يجب أن تكون متطابقة
+  if (identity1.category && identity2.category && identity1.category !== identity2.category) {
     return false;
   }
   
-  // المواصفات التقنية يجب أن تكون متقاربة
-  const specsMatch = compareSpecs(chars1.specs, chars2.specs);
-  if (!specsMatch) {
+  // قاعدة 3: نوع المنتج يجب أن يكون متطابق
+  if (identity1.productType && identity2.productType && identity1.productType !== identity2.productType) {
     return false;
   }
   
-  // 5. حساب التشابه الدلالي للوصف (بدون أرقام القطع)
-  const cleanDesc1 = removePartNumbers(normalized1);
-  const cleanDesc2 = removePartNumbers(normalized2);
-  
-  const words1 = new Set(cleanDesc1.split(/\s+/).filter(w => w.length > 2));
-  const words2 = new Set(cleanDesc2.split(/\s+/).filter(w => w.length > 2));
-  
-  const commonWords = new Set([...words1].filter(word => words2.has(word)));
-  const allWords = new Set([...words1, ...words2]);
-  
-  const similarity = allWords.size > 0 ? commonWords.size / allWords.size : 0;
-  
-  // عتبة مرنة للتشابه الدلالي
-  const threshold = chars1.productType === 'contactor' ? 0.6 : 0.8;
-  return similarity >= threshold;
-}
-
-// دالة استخراج نوع المنتج
-function getProductType(description) {
-  const types = [
-    { pattern: /contactor/gi, type: 'contactor' },
-    { pattern: /tv|television|تلفزيون/gi, type: 'tv' },
-    { pattern: /led.*tv/gi, type: 'led_tv' },
-    { pattern: /smart.*tv/gi, type: 'smart_tv' },
-    { pattern: /grill/gi, type: 'grill' },
-    { pattern: /fryer/gi, type: 'fryer' },
-    { pattern: /switch/gi, type: 'switch' },
-    { pattern: /relay/gi, type: 'relay' }
-  ];
-  
-  for (const { pattern, type } of types) {
-    if (pattern.test(description)) {
-      return type;
-    }
-  }
-  return 'unknown';
-}
-
-// دالة استخراج العلامة التجارية
-function getBrand(description) {
-  const brands = [
-    { pattern: /schneider|schnieder/gi, brand: 'schneider' },
-    { pattern: /telemecanique/gi, brand: 'schneider' }, // Telemecanique هي جزء من Schneider
-    { pattern: /samsung/gi, brand: 'samsung' },
-    { pattern: /lg/gi, brand: 'lg' },
-    { pattern: /toshiba/gi, brand: 'toshiba' },
-    { pattern: /sony/gi, brand: 'sony' },
-    { pattern: /tornado/gi, brand: 'tornado' }
-  ];
-  
-  for (const { pattern, brand } of brands) {
-    if (pattern.test(description)) {
-      return brand;
-    }
-  }
-  return 'unknown';
-}
-
-// دالة استخراج المواصفات التقنية
-function getTechnicalSpecs(description) {
-  const specs = {};
-  
-  // الجهد
-  const voltageMatch = description.match(/(\d+)v/gi);
-  if (voltageMatch) specs.voltage = voltageMatch.map(v => v.toLowerCase());
-  
-  // التيار
-  const currentMatch = description.match(/(\d+)a/gi);
-  if (currentMatch) specs.current = currentMatch.map(c => c.toLowerCase());
-  
-  // القدرة
-  const powerMatch = description.match(/(\d+)\s*kw/gi);
-  if (powerMatch) specs.power = powerMatch.map(p => p.toLowerCase().replace(/\s/g, ''));
-  
-  // التردد
-  const freqMatch = description.match(/(\d+\/\d+)\s*hz/gi);
-  if (freqMatch) specs.frequency = freqMatch.map(f => f.toLowerCase().replace(/\s/g, ''));
-  
-  // الحجم (للتلفزيونات)
-  const sizeMatch = description.match(/(\d+)\s*(?:''|"|inch|بوصة)/gi);
-  if (sizeMatch) specs.size = sizeMatch.map(s => s.replace(/[^0-9]/g, ''));
-  
-  return specs;
-}
-
-// دالة استخراج الاستخدام
-function getUsage(description) {
-  const usages = [];
-  
-  if (/grill/gi.test(description)) usages.push('grill');
-  if (/fryer/gi.test(description)) usages.push('fryer');
-  if (/electric/gi.test(description)) usages.push('electric');
-  if (/kitchen/gi.test(description)) usages.push('kitchen');
-  if (/smart/gi.test(description)) usages.push('smart');
-  
-  return usages;
-}
-
-// دالة مقارنة المواصفات
-function compareSpecs(specs1, specs2) {
-  // إذا كان أحدهما فارغ، نعتبرهما متطابقين
-  if (!specs1 || !specs2) return true;
-  
-  // مقارنة الجهد
-  if (specs1.voltage && specs2.voltage) {
-    const voltageMatch = specs1.voltage.some(v => specs2.voltage.includes(v));
-    if (!voltageMatch) return false;
+  // قاعدة 4: المواصفات الكهربائية الأساسية يجب أن تكون متطابقة
+  if (!areElectricalSpecsCompatible(identity1.electricalSpecs, identity2.electricalSpecs)) {
+    return false;
   }
   
-  // مقارنة التيار
-  if (specs1.current && specs2.current) {
-    const currentMatch = specs1.current.some(c => specs2.current.includes(c));
-    if (!currentMatch) return false;
-  }
-  
-  // مقارنة القدرة
-  if (specs1.power && specs2.power) {
-    const powerMatch = specs1.power.some(p => specs2.power.includes(p));
-    if (!powerMatch) return false;
-  }
-  
-  // مقارنة الحجم (مهم جداً للتلفزيونات)
-  if (specs1.size && specs2.size) {
-    const sizeMatch = specs1.size.some(s => specs2.size.includes(s));
-    if (!sizeMatch) return false;
+  // قاعدة 5: المواصفات الفيزيائية الرئيسية يجب أن تكون متطابقة
+  if (!arePhysicalSpecsCompatible(identity1.physicalSpecs, identity2.physicalSpecs)) {
+    return false;
   }
   
   return true;
 }
 
-// دالة إزالة أرقام القطع من النص
-function removePartNumbers(description) {
+// حساب درجة التطابق الشاملة
+function calculateOverallMatchScore(identity1, identity2) {
+  let totalScore = 0;
+  let maxScore = 0;
+  
+  // وزن 30% - التطابق الدلالي للوصف المنظف
+  const semanticScore = calculateSemanticSimilarity(identity1.cleanDescription, identity2.cleanDescription);
+  totalScore += semanticScore * 30;
+  maxScore += 30;
+  
+  // وزن 25% - تطابق الوظيفة الأساسية
+  const functionScore = identity1.coreFunction === identity2.coreFunction ? 25 : 0;
+  totalScore += functionScore;
+  maxScore += 25;
+  
+  // وزن 20% - تطابق المواصفات الوظيفية
+  const functionalScore = compareFunctionalSpecs(identity1.functionalSpecs, identity2.functionalSpecs);
+  totalScore += functionalScore * 20;
+  maxScore += 20;
+  
+  // وزن 15% - تطابق مجال التطبيق
+  const applicationScore = identity1.applicationArea === identity2.applicationArea ? 15 : 0;
+  totalScore += applicationScore;
+  maxScore += 15;
+  
+  // وزن 10% - جودة الاستخراج
+  const confidenceScore = Math.min(identity1.confidence, identity2.confidence) * 10;
+  totalScore += confidenceScore;
+  maxScore += 10;
+  
+  return maxScore > 0 ? totalScore / maxScore : 0;
+}
+
+// عتبة ديناميكية حسب نوع المنتج وجودة البيانات
+function getDynamicThreshold(identity1, identity2) {
+  let baseThreshold = 0.75; // عتبة أساسية 75%
+  
+  // تعديل حسب نوع المنتج
+  const productTypeAdjustments = {
+    'electrical_component': -0.1, // مكونات كهربائية: عتبة أقل (65%)
+    'electronic_device': 0.05,   // أجهزة إلكترونية: عتبة أعلى (80%)
+    'appliance': 0.1,            // أجهزة منزلية: عتبة أعلى (85%)
+    'industrial_equipment': -0.05 // معدات صناعية: عتبة متوسطة (70%)
+  };
+  
+  const category1 = identity1.category || 'unknown';
+  const category2 = identity2.category || 'unknown';
+  
+  if (category1 === category2 && productTypeAdjustments[category1]) {
+    baseThreshold += productTypeAdjustments[category1];
+  }
+  
+  // تعديل حسب جودة البيانات
+  const avgConfidence = (identity1.confidence + identity2.confidence) / 2;
+  if (avgConfidence < 0.5) {
+    baseThreshold -= 0.1; // بيانات ضعيفة: عتبة أقل
+  } else if (avgConfidence > 0.8) {
+    baseThreshold += 0.05; // بيانات قوية: عتبة أعلى
+  }
+  
+  // ضمان أن العتبة في نطاق معقول
+  return Math.max(0.5, Math.min(0.9, baseThreshold));
+}
+
+// ==================== دوال الاستخراج الذكية الشاملة ====================
+
+// استخراج العلامة التجارية الذكي
+function extractBrandSmart(description) {
+  const brandPatterns = {
+    'schneider': /schneider|schnieder|telemecanique/gi,
+    'samsung': /samsung/gi,
+    'lg': /lg/gi,
+    'toshiba': /toshiba/gi,
+    'sony': /sony/gi,
+    'tornado': /tornado/gi,
+    'philips': /philips/gi,
+    'siemens': /siemens/gi,
+    'abb': /abb/gi,
+    'omron': /omron/gi
+  };
+  
+  for (const [brand, pattern] of Object.entries(brandPatterns)) {
+    if (pattern.test(description)) {
+      return brand;
+    }
+  }
+  return null;
+}
+
+// استخراج الفئة الذكي
+function extractCategorySmart(description) {
+  const categoryPatterns = {
+    'electrical_component': /contactor|relay|switch|breaker|fuse|transformer/gi,
+    'electronic_device': /tv|television|monitor|display|projector/gi,
+    'appliance': /refrigerator|washing machine|dishwasher|microwave|oven/gi,
+    'kitchen_equipment': /grill|fryer|blender|mixer|cooker/gi,
+    'industrial_equipment': /motor|pump|compressor|generator|welder/gi,
+    'lighting': /led|lamp|bulb|fixture|spotlight/gi,
+    'hvac': /air conditioner|heater|fan|ventilator|humidifier/gi
+  };
+  
+  for (const [category, pattern] of Object.entries(categoryPatterns)) {
+    if (pattern.test(description)) {
+      return category;
+    }
+  }
+  return null;
+}
+
+// استخراج نوع المنتج الذكي
+function extractProductTypeSmart(description) {
+  const typePatterns = {
+    // مكونات كهربائية
+    'contactor': /contactor/gi,
+    'relay': /relay/gi,
+    'switch': /switch/gi,
+    'breaker': /circuit.*breaker|breaker/gi,
+    
+    // أجهزة إلكترونية
+    'smart_tv': /smart.*tv|android.*tv/gi,
+    'led_tv': /led.*tv/gi,
+    'lcd_tv': /lcd.*tv/gi,
+    'tv': /tv|television|تلفزيون/gi,
+    
+    // معدات مطبخ
+    'electric_grill': /electric.*grill|grill.*electric/gi,
+    'gas_grill': /gas.*grill|grill.*gas/gi,
+    'fryer': /fryer|قلاية/gi,
+    
+    // أجهزة منزلية
+    'refrigerator': /refrigerator|fridge|ثلاجة/gi,
+    'washing_machine': /washing.*machine|غسالة/gi
+  };
+  
+  for (const [type, pattern] of Object.entries(typePatterns)) {
+    if (pattern.test(description)) {
+      return type;
+    }
+  }
+  return null;
+}
+
+// استخراج المواصفات الكهربائية
+function extractElectricalSpecs(description) {
+  const specs = {};
+  
+  // الجهد
+  const voltageMatch = description.match(/(\d+)\s*v(?:olt)?/gi);
+  if (voltageMatch) {
+    specs.voltage = voltageMatch.map(v => parseInt(v.replace(/[^0-9]/g, '')));
+  }
+  
+  // التيار
+  const currentMatch = description.match(/(\d+)\s*a(?:mp)?/gi);
+  if (currentMatch) {
+    specs.current = currentMatch.map(c => parseInt(c.replace(/[^0-9]/g, '')));
+  }
+  
+  // القدرة
+  const powerMatch = description.match(/(\d+(?:\.\d+)?)\s*(?:kw|w)/gi);
+  if (powerMatch) {
+    specs.power = powerMatch.map(p => {
+      const num = parseFloat(p.replace(/[^0-9.]/g, ''));
+      return p.toLowerCase().includes('kw') ? num * 1000 : num;
+    });
+  }
+  
+  // التردد
+  const freqMatch = description.match(/(\d+(?:[-/]\d+)?)\s*hz/gi);
+  if (freqMatch) {
+    specs.frequency = freqMatch.map(f => f.replace(/[^0-9-/]/g, ''));
+  }
+  
+  return specs;
+}
+
+// استخراج المواصفات الفيزيائية
+function extractPhysicalSpecs(description) {
+  const specs = {};
+  
+  // الحجم (للتلفزيونات والشاشات)
+  const sizeMatch = description.match(/(\d+)\s*(?:''|"|inch|بوصة)/gi);
+  if (sizeMatch) {
+    specs.screenSize = sizeMatch.map(s => parseInt(s.replace(/[^0-9]/g, '')));
+  }
+  
+  // الأبعاد
+  const dimensionMatch = description.match(/(\d+)\s*x\s*(\d+)\s*(?:x\s*(\d+))?\s*(?:cm|mm|m)/gi);
+  if (dimensionMatch) {
+    specs.dimensions = dimensionMatch;
+  }
+  
+  // الوزن
+  const weightMatch = description.match(/(\d+(?:\.\d+)?)\s*(?:kg|g|lb)/gi);
+  if (weightMatch) {
+    specs.weight = weightMatch;
+  }
+  
+  return specs;
+}
+
+// استخراج المواصفات الوظيفية
+function extractFunctionalSpecs(description) {
+  const specs = {};
+  
+  // خصائص الذكاء
+  specs.smart = /smart|android|wifi|bluetooth|internet/gi.test(description);
+  
+  // نوع التحكم
+  if (/remote|ريموت/gi.test(description)) specs.control = 'remote';
+  if (/manual|يدوي/gi.test(description)) specs.control = 'manual';
+  if (/automatic|تلقائي/gi.test(description)) specs.control = 'automatic';
+  
+  // مصدر الطاقة
+  if (/electric|كهربائي/gi.test(description)) specs.powerSource = 'electric';
+  if (/gas|غاز/gi.test(description)) specs.powerSource = 'gas';
+  if (/battery|بطارية/gi.test(description)) specs.powerSource = 'battery';
+  
+  // مستوى الكفاءة
+  const efficiencyMatch = description.match(/energy.*star|efficiency.*class\s*([a-g])/gi);
+  if (efficiencyMatch) specs.efficiency = efficiencyMatch;
+  
+  return specs;
+}
+
+// استخراج الوظيفة الأساسية
+function extractCoreFunction(description) {
+  const functionPatterns = {
+    'switching': /switch|contactor|relay/gi,
+    'protection': /breaker|fuse|protector/gi,
+    'display': /tv|monitor|display|screen/gi,
+    'cooking': /grill|fryer|oven|cooker/gi,
+    'cooling': /refrigerator|freezer|air.*conditioner/gi,
+    'cleaning': /washing.*machine|dishwasher|vacuum/gi,
+    'lighting': /lamp|bulb|led|light/gi,
+    'heating': /heater|boiler|warmer/gi
+  };
+  
+  for (const [func, pattern] of Object.entries(functionPatterns)) {
+    if (pattern.test(description)) {
+      return func;
+    }
+  }
+  return null;
+}
+
+// استخراج مجال التطبيق
+function extractApplicationArea(description) {
+  const applicationPatterns = {
+    'industrial': /industrial|factory|manufacturing/gi,
+    'commercial': /commercial|office|business/gi,
+    'residential': /home|house|domestic|residential/gi,
+    'kitchen': /kitchen|cooking|food/gi,
+    'entertainment': /entertainment|media|gaming/gi,
+    'automation': /automation|control|smart/gi
+  };
+  
+  for (const [area, pattern] of Object.entries(applicationPatterns)) {
+    if (pattern.test(description)) {
+      return area;
+    }
+  }
+  return null;
+}
+
+// إزالة جميع الضوضاء من النص
+function removeAllNoise(description) {
   return description
-    .replace(/p\/n\s*:?\s*[a-z0-9\s]+/gi, '') // إزالة P/N
-    .replace(/ref\s*:?\s*[a-z0-9\s]+/gi, '') // إزالة REF
-    .replace(/\blc1d\d+[a-z0-9]*\b/gi, '') // إزالة LC1D32M7
-    .replace(/\b\d{7}\b/gi, '') // إزالة أرقام 7 خانات
-    .replace(/\b2102\d{3}\b/gi, '') // إزالة 2102034, 2102049
-    .replace(/\b[a-z]{2,}\d+[a-z0-9]*\b/gi, '') // إزالة باقي أرقام القطع
+    // إزالة أرقام القطع
+    .replace(/p\/n\s*:?\s*[a-z0-9\s]+/gi, '')
+    .replace(/ref\s*:?\s*[a-z0-9\s]+/gi, '')
+    .replace(/model\s*:?\s*[a-z0-9\s]+/gi, '')
+    .replace(/\b[a-z]{2,}\d+[a-z0-9]*\b/gi, '')
+    .replace(/\b\d{7,}\b/gi, '')
+    
+    // إزالة كلمات عامة
+    .replace(/\b(the|and|or|for|with|by|from|to|of|in|on|at)\b/gi, '')
+    
+    // تنظيف المسافات
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+// حساب ثقة الاستخراج
+function calculateExtractionConfidence(description) {
+  let confidence = 0.5; // قيمة أساسية
+  
+  // زيادة الثقة للنصوص الطويلة والمفصلة
+  if (description.length > 50) confidence += 0.1;
+  if (description.length > 100) confidence += 0.1;
+  
+  // زيادة الثقة لوجود مواصفات تقنية
+  if (/\d+v|\d+a|\d+kw|\d+hz/gi.test(description)) confidence += 0.15;
+  
+  // زيادة الثقة لوجود علامة تجارية معروفة
+  if (/schneider|samsung|lg|toshiba|sony/gi.test(description)) confidence += 0.1;
+  
+  // تقليل الثقة للنصوص الغامضة
+  if (description.length < 20) confidence -= 0.2;
+  if (!/[a-z]/gi.test(description)) confidence -= 0.3;
+  
+  return Math.max(0.1, Math.min(1.0, confidence));
+}
+
+// ==================== دوال المقارنة والتوافق ====================
+
+// مقارنة المواصفات الكهربائية
+function areElectricalSpecsCompatible(specs1, specs2) {
+  if (!specs1 && !specs2) return true;
+  if (!specs1 || !specs2) return true; // إذا كان أحدهما فارغ، نعتبرهما متوافقين
+  
+  // مقارنة الجهد
+  if (specs1.voltage && specs2.voltage) {
+    const hasCommonVoltage = specs1.voltage.some(v => specs2.voltage.includes(v));
+    if (!hasCommonVoltage) return false;
+  }
+  
+  // مقارنة التيار (يجب أن يكون في نطاق معقول)
+  if (specs1.current && specs2.current) {
+    const avgCurrent1 = specs1.current.reduce((a, b) => a + b, 0) / specs1.current.length;
+    const avgCurrent2 = specs2.current.reduce((a, b) => a + b, 0) / specs2.current.length;
+    const diff = Math.abs(avgCurrent1 - avgCurrent2) / Math.max(avgCurrent1, avgCurrent2);
+    if (diff > 0.2) return false; // اختلاف أكثر من 20% غير مقبول
+  }
+  
+  // مقارنة القدرة
+  if (specs1.power && specs2.power) {
+    const avgPower1 = specs1.power.reduce((a, b) => a + b, 0) / specs1.power.length;
+    const avgPower2 = specs2.power.reduce((a, b) => a + b, 0) / specs2.power.length;
+    const diff = Math.abs(avgPower1 - avgPower2) / Math.max(avgPower1, avgPower2);
+    if (diff > 0.15) return false; // اختلاف أكثر من 15% غير مقبول
+  }
+  
+  return true;
+}
+
+// مقارنة المواصفات الفيزيائية
+function arePhysicalSpecsCompatible(specs1, specs2) {
+  if (!specs1 && !specs2) return true;
+  if (!specs1 || !specs2) return true;
+  
+  // مقارنة حجم الشاشة (مهم جداً للتلفزيونات)
+  if (specs1.screenSize && specs2.screenSize) {
+    const hasCommonSize = specs1.screenSize.some(s => specs2.screenSize.includes(s));
+    if (!hasCommonSize) return false;
+  }
+  
+  return true;
+}
+
+// مقارنة المواصفات الوظيفية
+function compareFunctionalSpecs(specs1, specs2) {
+  if (!specs1 && !specs2) return 1.0;
+  if (!specs1 || !specs2) return 0.7;
+  
+  let matches = 0;
+  let total = 0;
+  
+  // مقارنة الذكاء
+  if ('smart' in specs1 && 'smart' in specs2) {
+    total++;
+    if (specs1.smart === specs2.smart) matches++;
+  }
+  
+  // مقارنة نوع التحكم
+  if (specs1.control && specs2.control) {
+    total++;
+    if (specs1.control === specs2.control) matches++;
+  }
+  
+  // مقارنة مصدر الطاقة
+  if (specs1.powerSource && specs2.powerSource) {
+    total++;
+    if (specs1.powerSource === specs2.powerSource) matches++;
+  }
+  
+  return total > 0 ? matches / total : 1.0;
+}
+
+// حساب التشابه الدلالي
+function calculateSemanticSimilarity(desc1, desc2) {
+  if (!desc1 || !desc2) return 0;
+  
+  const words1 = new Set(desc1.split(/\s+/).filter(w => w.length > 2));
+  const words2 = new Set(desc2.split(/\s+/).filter(w => w.length > 2));
+  
+  if (words1.size === 0 && words2.size === 0) return 1.0;
+  if (words1.size === 0 || words2.size === 0) return 0;
+  
+  const commonWords = new Set([...words1].filter(word => words2.has(word)));
+  const allWords = new Set([...words1, ...words2]);
+  
+  return commonWords.size / allWords.size;
+}
+
+
 
 // ==================== نظام إدارة المجموعات ====================
 class ProductGroupManager {
