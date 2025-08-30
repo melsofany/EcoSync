@@ -15,6 +15,7 @@ import { randomBytes } from "crypto";
 import path from "path";
 import multer from "multer";
 import { promises as fs, readFileSync, writeFileSync } from "fs";
+import { spawn } from "child_process";
 import { writeUniqueIdsToSheets } from "./write-unique-ids-to-sheets";
 import { writeIdsDirectlyToSheets } from "./write-ids-directly";
 import { GoogleSheetsRealtimeData, googleSheetsRealtimeData } from "./google-sheets-realtime-data";
@@ -140,7 +141,8 @@ async function aiUnifyItems(items: any[]): Promise<any[]> {
 // كتابة النتائج الموحدة إلى Google Sheets
 async function writeUnifiedResultsToGoogleSheets(unifiedItems: any[]): Promise<void> {
   try {
-    const { googleSheetsRealTimeData } = await import('./google-sheets-realtime-data.js');
+    // Use the imported instance directly
+    const googleSheetsRealTimeData = googleSheetsRealtimeData;
     
     console.log(`🔄 تحديث ${unifiedItems.length} معرف موحد في Google Sheets...`);
     
@@ -181,7 +183,8 @@ async function runQuickMatchingForNewItems(newItems: any[]): Promise<void> {
   
   try {
     // جلب جميع البنود الموجودة للمقارنة من Google Sheets
-    const { googleSheetsRealTimeData } = await import('./google-sheets-realtime-data.js');
+    // Use the imported instance directly
+    const googleSheetsRealTimeData = googleSheetsRealtimeData;
     const existingItems = await googleSheetsRealTimeData.getAllItems();
     console.log(`📊 مقارنة مع ${existingItems.length} بند موجود في النظام`);
     
@@ -2204,24 +2207,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🔄 طلب توحيد تدريجي محدود...');
       
-      const { smartUnifyGradual } = await import('./smart-unify-gradual.js');
-      const result = await smartUnifyGradual.performLimitedUnification();
+      // TODO: Fix missing module import
+      // const { smartUnifyGradual } = await import('./smart-unify-gradual.js');
+      // const result = await smartUnifyGradual.performLimitedUnification();
       
-      if (result.success) {
-        console.log(`✅ تم توحيد ${result.processedMatches} مجموعة بنجاح`);
-        res.json({
-          success: true,
-          message: result.message,
-          processedMatches: result.processedMatches
-        });
-      } else {
-        console.error('❌ فشل التوحيد التدريجي:', result.error);
-        res.status(500).json({
-          success: false,
-          message: result.message,
-          error: result.error
-        });
-      }
+      res.status(501).json({
+        success: false,
+        message: "الوظيفة غير متوفرة حاليا - في طور التطوير",
+        error: "Module not implemented"
+      });
     } catch (error) {
       console.error('❌ خطأ في API endpoint التوحيد التدريجي:', error);
       res.status(500).json({
@@ -2545,14 +2539,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(result);
     } catch (error: any) {
-      // إذا فشلت القراءة من Google Sheets، استخدم المحرك الافتراضي
-      if (!smartEngine) {
-        const { SmartUnificationEngine } = await import('./smart-unification-engine');
-        smartEngine = new SmartUnificationEngine();
-      }
-      
-      const stats = smartEngine.getStats();
-      res.json(stats);
+      // إذا فشلت القراءة من Google Sheets، إرجاع حالة افتراضية
+      console.error('❌ خطأ في جلب إحصائيات التوحيد:', error);
+      res.json({
+        total: 0,
+        unified: 0,
+        duplicateGroups: 0,
+        duplicateItems: 0,
+        groupsCreated: 0,
+        duplicatesFound: 0,
+        uniqueGroups: 0
+      });
     }
   });
 
@@ -2733,27 +2730,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🤖 طلب توحيد المعرفات باستخدام الذكاء الاصطناعي...');
       
-      const { aiItemUnifier } = await import('./ai-item-unifier.js');
-      const result = await aiItemUnifier.unifyItemsInSheets();
+      // TODO: Fix missing module import
+      // const { aiItemUnifier } = await import('./ai-item-unifier.js');
+      // const result = await aiItemUnifier.unifyItemsInSheets();
       
-      if (result.success) {
-        console.log(`✅ تم توحيد ${result.unifiedGroups} مجموعة، حذف ${result.duplicatesRemoved} صنف مكرر`);
-        res.json({
-          success: true,
-          message: `تم توحيد ${result.unifiedGroups} مجموعة من الأصناف المكررة بنجاح`,
-          totalItems: result.totalItems,
-          unifiedGroups: result.unifiedGroups,
-          duplicatesRemoved: result.duplicatesRemoved,
-          unifiedItems: result.unifiedItems
-        });
-      } else {
-        console.error('❌ فشل توحيد المعرفات:', result.error);
-        res.status(500).json({
-          success: false,
-          message: "فشل في توحيد المعرفات",
-          error: result.error
-        });
-      }
+      res.status(501).json({
+        success: false,
+        message: "الوظيفة غير متوفرة حاليا - في طور التطوير",
+        error: "Module not implemented"
+      });
     } catch (error) {
       console.error('❌ خطأ في API endpoint التوحيد:', error);
       res.status(500).json({
@@ -3318,6 +3303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Send items to supplier pricing
+          const googleSheetsWriter = new GoogleSheetsWriter();
           await googleSheetsWriter.sendItemsToSupplierPricing(enrichedItems);
           console.log(`✅ تم إرسال البنود إلى تسعير الموردين`);
           
@@ -3872,6 +3858,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // إنشاء ورقة تسعير الموردين الجديدة
   app.post("/api/create-supplier-pricing-sheet", requireAuth, requireRole(["manager", "data_entry", "purchasing"]), async (req: Request, res: Response) => {
     try {
+      const googleSheetsWriter = new GoogleSheetsWriter();
       await googleSheetsWriter.setupSupplierPricingSheetHeaders();
       res.json({ 
         message: "تم إنشاء ورقة تسعير الموردين بنجاح مع جميع الحقول المطلوبة",
@@ -3892,7 +3879,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log('🔍 API call received for Google Sheets purchase orders list');
       
       // قراءة البيانات مباشرة من Google Sheets بدون استخدام ذاكرة التخزين المؤقت
-      const { googleSheetsRealtimeData } = await import('./google-sheets-realtime-data.js');
+      const googleSheetsRealTimeData = googleSheetsRealtimeData;
       
       // قراءة البيانات الخام مباشرة من Google Sheets
       console.log('📊 قراءة أوامر الشراء مباشرة من Google Sheets...');
@@ -5446,6 +5433,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       // تحديث Google Sheets مباشرة بدلاً من استخدام storage
       if (googleSheetsWriter) {
         try {
+          const googleSheetsWriter = new GoogleSheetsWriter();
           await googleSheetsWriter.updateSupplierPricingRow(
             req.body.itemId,
             {
@@ -5717,6 +5705,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Clear all pricing sheets endpoint (admin only)
   app.delete("/api/clear-pricing-sheets", requireAuth, requireRole(['manager']), async (req: Request, res: Response) => {
     try {
+      const googleSheetsWriter = new GoogleSheetsWriter();
       await googleSheetsWriter.initialize();
       await googleSheetsWriter.clearAllPricingSheets();
       await logActivity(req, "clear_pricing_sheets", "admin", "system", "تم مسح جميع البنود من صفحات التسعير");
@@ -9014,7 +9003,7 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
         timestamp: Date.now()
       };
       
-      console.log(`📊 إرسال حالة: ${isReallyRunning ? 'يعمل' : 'متوقف'} - التقدم: ${currentProgress}/5604 - عملية جارية: ${isProcessRunning}`);
+      console.log(`📊 إرسال حالة: ${isReallyRunning ? 'يعمل' : 'متوقف'} - التقدم: ${currentProgress}/5604 - عملية جارية: ${isReallyRunning}`);
       res.json(response);
       
     } catch (error: any) {
