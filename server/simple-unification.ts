@@ -1,6 +1,20 @@
 import { writeFileSync, readFileSync } from 'fs';
 import { google } from 'googleapis';
 
+// خدمة التوحيد البسيط
+class SimpleUnificationService {
+  async initialize() {
+    console.log('✅ تم تهيئة خدمة التوحيد البسيط');
+    return true;
+  }
+  
+  async run() {
+    return runSimpleUnification();
+  }
+}
+
+export const simpleUnificationService = new SimpleUnificationService();
+
 // دالة توحيد بسيطة وقوية
 export async function runSimpleUnification() {
   console.log('🚀 بدء التوحيد البسيط والقوي');

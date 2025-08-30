@@ -635,6 +635,14 @@ ${itemsList}
    */
   private async findLastRowInSheet(sheetName: string): Promise<number> {
     try {
+      // التأكد من تهيئة sheets
+      if (!this.sheets) {
+        const initialized = await this.initialize();
+        if (!initialized) {
+          throw new Error('فشل في تهيئة Google Sheets');
+        }
+      }
+
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
         range: `${sheetName}!A:A`
@@ -663,6 +671,14 @@ ${itemsList}
    */
   private async createPricingSheetIfNotExists(sheetName: string, headers: string[]): Promise<void> {
     try {
+      // التأكد من تهيئة sheets
+      if (!this.sheets) {
+        const initialized = await this.initialize();
+        if (!initialized) {
+          throw new Error('فشل في تهيئة Google Sheets');
+        }
+      }
+
       // التحقق من وجود الصفحة
       const spreadsheet = await this.sheets.spreadsheets.get({
         spreadsheetId: this.spreadsheetId
@@ -700,9 +716,12 @@ ${itemsList}
         });
 
         console.log(`✅ تم إنشاء صفحة ${sheetName} مع العناوين`);
+      } else {
+        console.log(`📋 الصفحة ${sheetName} موجودة بالفعل`);
       }
     } catch (error) {
       console.error(`❌ خطأ في إنشاء صفحة ${sheetName}:`, error);
+      throw error; // إعادة رمي الخطأ للتعامل معه في المستوى الأعلى
     }
   }
 
