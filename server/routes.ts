@@ -7573,11 +7573,19 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
         startTime: new Date().toISOString(),
         errorCount: 0
       };
-      writeFileSync(statusPath, JSON.stringify(initialStatus, null, 2));
+      fs.writeFileSync(statusPath, JSON.stringify(initialStatus, null, 2));
       
       // بدء التوحيد المتطور في الخلفية
+      console.log('🚀 بدء نظام التوحيد المتطور بالذكاء الاصطناعي الخالص');
       setImmediate(async () => {
-        await runAdvancedAIUnification();
+        try {
+          console.log('🏃 بدء تنفيذ runAdvancedAIUnification...');
+          await runAdvancedAIUnification();
+          console.log('✅ انتهى تنفيذ runAdvancedAIUnification');
+        } catch (error) {
+          console.error('❌ خطأ في تشغيل التوحيد:', error);
+          console.error('❌ تفاصيل الخطأ:', error.stack);
+        }
       });
       
       await logActivity(req, "start_advanced_ai_unification", "ai_unification", "deepseek", "بدء التوحيد المتطور بالذكاء الاصطناعي");
