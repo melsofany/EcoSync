@@ -64,18 +64,30 @@ export async function runAdvancedUnification() {
       const partNumber = (row[3] || '').trim().toUpperCase(); // العمود D - PART NO  
       const description = (row[4] || '').trim().toUpperCase(); // العمود E - DESCRIPTION
       
-      // إنشاء مفتاح ذكي للمنتج
-      let productKey = createSmartProductKey(lineItem, partNumber, description);
+      // استخراج المعلومات الحقيقية للمنتج من الوصف
+      const actualProduct = extractActualProduct(description);
       
-      // البحث عن منتج مطابق بذكاء
+      // البحث عن منتج مطابق
       let matchFound = false;
+      let matchedProduct = null;
+      
       for (const [existingKey, product] of uniqueProducts) {
-        // مقارنة ذكية للمنتجات
-        if (areProductsSimilar(productKey, existingKey, lineItem, partNumber, description, product)) {
-          // وجدنا تطابق - استخدم نفس المعرف
+        // مقارنة ذكية جداً
+        if (areProductsIdentical(
+          actualProduct,
+          product.actualProduct,
+          lineItem,
+          product.lineItem,
+          partNumber,
+          product.partNumber,
+          description,
+          product.description
+        )) {
+          // وجدنا تطابق
           product.rows.push(i + 2);
           product.count++;
           matchFound = true;
+          matchedProduct = product;
           break;
         }
       }
@@ -83,16 +95,21 @@ export async function runAdvancedUnification() {
       // إذا لم نجد تطابق، أنشئ منتج جديد
       if (!matchFound) {
         const unifiedId = `P-${String(nextId++).padStart(7, '0')}`;
+        const productKey = actualProduct.key || `${lineItem}_${partNumber}`;
+        
         uniqueProducts.set(productKey, {
           id: unifiedId,
           rows: [i + 2],
           lineItem: lineItem,
           partNumber: partNumber,
           description: description,
+          actualProduct: actualProduct,
           count: 1
         });
         
-        console.log(`🆕 منتج فريد #${nextId - 1}: ${productKey.substring(0, 60)}...`);
+        console.log(`🆕 منتج فريد #${nextId - 1}: ${actualProduct.name || productKey.substring(0, 60)}`);
+      } else if (matchedProduct) {
+        console.log(`🔗 توحيد: ${actualProduct.name || 'منتج'} - الصف ${i + 2} مع ${matchedProduct.id}`);
       }
       
       // تحديث الحالة
@@ -121,7 +138,7 @@ export async function runAdvancedUnification() {
     let examples = 0;
     for (const [key, product] of uniqueProducts) {
       if (product.count > 1) {
-        console.log(`   ${product.id}: ${product.count} صف - ${product.description.substring(0, 60)}...`);
+        console.log(`   ${product.id}: ${product.count} صف - ${product.actualProduct.name || product.description.substring(0, 60)}...`);
         examples++;
         if (examples >= 10) break;
       }
@@ -177,258 +194,325 @@ export async function runAdvancedUnification() {
   }
 }
 
-// إنشاء مفتاح ذكي للمنتج
-function createSmartProductKey(lineItem: string, partNumber: string, description: string): string {
-  // الأولوية للمعلومات الأساسية
-  const parts = [];
+// استخراج المعلومات الحقيقية للمنتج
+function extractActualProduct(description: string): any {
+  const normalized = description.toUpperCase().replace(/\s+/g, ' ').trim();
   
-  // استخدم LINE ITEM إذا كان متاحاً ومفيداً
-  if (lineItem && lineItem.length > 3) {
-    parts.push(lineItem);
-  }
+  // استخراج المعلومات الأساسية من الوصف
+  const result: any = {
+    key: '',
+    name: '',
+    brand: '',
+    model: '',
+    specs: [],
+    type: ''
+  };
   
-  // استخدم PART NUMBER إذا كان متاحاً ومختلفاً عن LINE ITEM
-  if (partNumber && partNumber.length > 2 && partNumber !== lineItem) {
-    parts.push(partNumber);
-  }
+  // قائمة الكونتاكتورات المعروفة
+  const contactors = {
+    'LC1D 32 M7': 'SCHNEIDER CONTACTOR LC1D32M7',
+    'LC1D32M7': 'SCHNEIDER CONTACTOR LC1D32M7',
+    'LC1D 32M7': 'SCHNEIDER CONTACTOR LC1D32M7',
+    'LC1D 25 M7': 'SCHNEIDER CONTACTOR LC1D25M7',
+    'LC1D25M7': 'SCHNEIDER CONTACTOR LC1D25M7',
+    'LC1D 25M7': 'SCHNEIDER CONTACTOR LC1D25M7',
+    'LC1D 18 M7': 'SCHNEIDER CONTACTOR LC1D18M7',
+    'LC1D18M7': 'SCHNEIDER CONTACTOR LC1D18M7',
+    'LC1D 18M7': 'SCHNEIDER CONTACTOR LC1D18M7'
+  };
   
-  // استخرج المعلومات المهمة من الوصف
-  if (description) {
-    const importantInfo = extractCoreProductInfo(description);
-    if (importantInfo) {
-      parts.push(importantInfo);
+  // البحث عن الكونتاكتور في الوصف
+  for (const [pattern, productName] of Object.entries(contactors)) {
+    if (normalized.includes(pattern.toUpperCase())) {
+      result.type = 'CONTACTOR';
+      result.model = pattern.replace(/\s+/g, '');
+      result.name = productName;
+      result.brand = 'SCHNEIDER';
+      
+      // استخراج المواصفات
+      const voltMatch = normalized.match(/(\d+)\s*V(?:OLT)?/);
+      if (voltMatch) result.specs.push(voltMatch[0]);
+      
+      const ampMatch = normalized.match(/(\d+)\s*A(?:MP)?/);
+      if (ampMatch) result.specs.push(ampMatch[0]);
+      
+      const kwMatch = normalized.match(/(\d+)\s*KW/);
+      if (kwMatch) result.specs.push(kwMatch[0]);
+      
+      const hzMatch = normalized.match(/\d+\/?\d*\s*HZ/);
+      if (hzMatch) result.specs.push(hzMatch[0]);
+      
+      result.key = `CONTACTOR_${result.model}_${result.specs.join('_')}`;
+      return result;
     }
   }
   
-  // إذا لم نجد أي معلومات، استخدم الوصف مباشرة
-  if (parts.length === 0 && description) {
-    return normalizeText(description);
+  // معالجة المنتجات الأخرى
+  
+  // التلفزيونات
+  if (normalized.includes('TV') || normalized.includes('TELEVISION') || normalized.includes('LED')) {
+    result.type = 'TV';
+    
+    // استخراج الحجم
+    const sizeMatch = normalized.match(/(\d+)\s*"?\s*(INCH|LED)?/);
+    if (sizeMatch) {
+      result.specs.push(sizeMatch[1] + '"');
+      result.name = `TV ${sizeMatch[1]}" LED`;
+    }
+    
+    // استخراج البراند
+    const brands = ['SAMSUNG', 'TORNADO', 'TOSHIBA', 'LG', 'SONY'];
+    for (const brand of brands) {
+      if (normalized.includes(brand)) {
+        result.brand = brand;
+        break;
+      }
+    }
+    
+    // استخراج الموديل
+    const modelMatch = normalized.match(/MODEL\s*:?\s*([A-Z0-9\-]+)/);
+    if (modelMatch) {
+      result.model = modelMatch[1];
+    }
+    
+    result.key = `TV_${result.specs.join('_')}_${result.brand || 'GENERIC'}`;
+    return result;
   }
   
-  return parts.join('_');
+  // البطاريات
+  if (normalized.includes('BATTERY') || normalized.includes('ENERGIZER')) {
+    result.type = 'BATTERY';
+    result.brand = 'ENERGIZER';
+    
+    // نوع البطارية
+    if (normalized.includes('AAA')) {
+      result.model = 'AAA';
+      result.name = 'ENERGIZER BATTERY AAA';
+    } else if (normalized.includes('AA')) {
+      result.model = 'AA';
+      result.name = 'ENERGIZER BATTERY AA';
+    }
+    
+    // الفولت
+    const voltMatch = normalized.match(/(\d+\.?\d*)\s*V/);
+    if (voltMatch) result.specs.push(voltMatch[0]);
+    
+    result.key = `BATTERY_${result.brand}_${result.model}`;
+    return result;
+  }
+  
+  // HOT PLATES
+  if (normalized.includes('HOT PLATE')) {
+    result.type = 'HOT_PLATE';
+    result.name = 'HOT PLATE';
+    
+    // استخراج الحجم
+    const sizeMatch = normalized.match(/(\d+X\d+|\d+\s*X\s*\d+)/);
+    if (sizeMatch) result.specs.push(sizeMatch[0]);
+    
+    // استخراج القوة
+    const powerMatch = normalized.match(/(\d+\.?\d*)\s*KW/);
+    if (powerMatch) result.specs.push(powerMatch[0]);
+    
+    // استخراج الفولت
+    const voltMatch = normalized.match(/(\d+)\s*VOLT/);
+    if (voltMatch) result.specs.push(voltMatch[0]);
+    
+    // استخراج رقم الموديل
+    const pnMatch = normalized.match(/P\/N\s*:?\s*([0-9\.]+)/);
+    if (pnMatch) result.model = pnMatch[1];
+    
+    result.key = `HOT_PLATE_${result.model || result.specs.join('_')}`;
+    return result;
+  }
+  
+  // THERMOSTATS
+  if (normalized.includes('THERMOSTAT')) {
+    result.type = 'THERMOSTAT';
+    result.name = 'THERMOSTAT';
+    
+    // البراند
+    if (normalized.includes('DIXELL')) result.brand = 'DIXELL';
+    else if (normalized.includes('EGO')) result.brand = 'EGO';
+    
+    // الموديل
+    const modelMatch = normalized.match(/([A-Z]{2,}[\d]+[A-Z\d]*)/);
+    if (modelMatch) result.model = modelMatch[1];
+    
+    // درجة الحرارة
+    const tempMatch = normalized.match(/(\d+\/\d+|\d+-\d+|\d+)\s*[OC°]/);
+    if (tempMatch) result.specs.push(tempMatch[0]);
+    
+    result.key = `THERMOSTAT_${result.brand}_${result.model}`;
+    return result;
+  }
+  
+  // BRACKETS
+  if (normalized.includes('BRACKET')) {
+    result.type = 'BRACKET';
+    
+    // الاتجاه
+    if (normalized.includes('LEFT')) {
+      result.name = 'LEFT BRACKET';
+      result.specs.push('LEFT');
+    } else if (normalized.includes('RIGHT')) {
+      result.name = 'RIGHT BRACKET';
+      result.specs.push('RIGHT');
+    } else {
+      result.name = 'BRACKET';
+    }
+    
+    // البراند أو النوع
+    if (normalized.includes('CARRIER')) {
+      result.brand = 'CARRIER';
+      result.specs.push('CARRIER');
+    }
+    
+    // الموديل
+    const modelMatch = normalized.match(/MODEL\s*([A-Z0-9]+)|([0-9]{2}[A-Z]{2}[0-9]+)/);
+    if (modelMatch) result.model = modelMatch[1] || modelMatch[2];
+    
+    result.key = `BRACKET_${result.specs.join('_')}_${result.model || ''}`;
+    return result;
+  }
+  
+  // WATER HEATERS
+  if (normalized.includes('WATER HEATER')) {
+    result.type = 'WATER_HEATER';
+    result.name = 'WATER HEATER';
+    
+    // البراند
+    if (normalized.includes('OLYMPIC')) result.brand = 'OLYMPIC';
+    else if (normalized.includes('ARISTON')) result.brand = 'ARISTON';
+    
+    // الحجم
+    const sizeMatch = normalized.match(/(\d+)\s*(LTR|LITER)/);
+    if (sizeMatch) {
+      result.specs.push(sizeMatch[1] + ' LTR');
+      result.name = `${result.brand || ''} WATER HEATER ${sizeMatch[1]} LTR`.trim();
+    }
+    
+    result.key = `WATER_HEATER_${result.brand}_${result.specs.join('_')}`;
+    return result;
+  }
+  
+  // إذا لم نتعرف على المنتج، استخدم المعلومات الأساسية
+  result.name = normalized.substring(0, 100);
+  result.key = normalized.replace(/[^\w]/g, '_').substring(0, 100);
+  
+  return result;
 }
 
-// مقارنة ذكية للمنتجات
-function areProductsSimilar(
-  key1: string, 
-  key2: string, 
-  lineItem: string, 
-  partNumber: string, 
-  description: string,
-  existingProduct: any
+// مقارنة ذكية جداً للمنتجات
+function areProductsIdentical(
+  product1: any,
+  product2: any,
+  lineItem1: string,
+  lineItem2: string,
+  partNumber1: string,
+  partNumber2: string,
+  desc1: string,
+  desc2: string
 ): boolean {
   
-  // إذا كان LINE ITEM و PART NUMBER متطابقان تماماً، فهو نفس المنتج
-  if (lineItem && existingProduct.lineItem && 
-      lineItem === existingProduct.lineItem &&
-      partNumber && existingProduct.partNumber &&
-      partNumber === existingProduct.partNumber) {
+  // إذا كان لدينا معلومات منتج محددة
+  if (product1.type && product2.type) {
+    // نفس النوع من المنتج
+    if (product1.type === product2.type) {
+      // للكونتاكتورات - تحقق من الموديل
+      if (product1.type === 'CONTACTOR') {
+        // نفس الموديل = نفس المنتج
+        if (product1.model === product2.model) {
+          return true;
+        }
+      }
+      
+      // للتلفزيونات - تحقق من الحجم والبراند
+      if (product1.type === 'TV') {
+        const sameSize = product1.specs[0] === product2.specs[0];
+        const sameBrand = product1.brand === product2.brand || 
+                          (!product1.brand && !product2.brand);
+        return sameSize && sameBrand;
+      }
+      
+      // للبطاريات
+      if (product1.type === 'BATTERY') {
+        return product1.model === product2.model && 
+               product1.brand === product2.brand;
+      }
+      
+      // لل HOT PLATES
+      if (product1.type === 'HOT_PLATE') {
+        // نفس الموديل أو نفس المواصفات
+        if (product1.model && product2.model) {
+          return product1.model === product2.model;
+        }
+        // مقارنة المواصفات
+        const specs1 = product1.specs.join('_');
+        const specs2 = product2.specs.join('_');
+        return specs1 === specs2;
+      }
+      
+      // للثرموستات
+      if (product1.type === 'THERMOSTAT') {
+        return product1.model === product2.model && 
+               product1.brand === product2.brand;
+      }
+      
+      // للبراكيت
+      if (product1.type === 'BRACKET') {
+        // نفس الاتجاه والموديل
+        const sameDirection = product1.specs.includes('LEFT') === product2.specs.includes('LEFT') &&
+                             product1.specs.includes('RIGHT') === product2.specs.includes('RIGHT');
+        const sameModel = product1.model === product2.model;
+        return sameDirection && (sameModel || (!product1.model && !product2.model));
+      }
+      
+      // لسخانات المياه
+      if (product1.type === 'WATER_HEATER') {
+        const sameBrand = product1.brand === product2.brand;
+        const sameSize = product1.specs[0] === product2.specs[0];
+        return sameBrand && sameSize;
+      }
+    }
+  }
+  
+  // إذا كان LINE ITEM و PART NUMBER متطابقان تماماً
+  if (lineItem1 && lineItem2 && lineItem1 === lineItem2 &&
+      partNumber1 && partNumber2 && partNumber1 === partNumber2) {
     return true;
   }
   
   // إذا كان LINE ITEM متطابق والوصف متشابه جداً
-  if (lineItem && existingProduct.lineItem && 
-      lineItem === existingProduct.lineItem) {
-    // تحقق من تشابه الوصف
-    const similarity = calculateSimilarity(description, existingProduct.description);
-    if (similarity > 0.85) {
+  if (lineItem1 && lineItem2 && lineItem1 === lineItem2) {
+    const similarity = calculateSimilarity(desc1, desc2);
+    if (similarity > 0.9) {
       return true;
     }
   }
   
-  // إذا كان PART NUMBER متطابق والوصف متشابه
-  if (partNumber && existingProduct.partNumber && 
-      partNumber === existingProduct.partNumber &&
-      partNumber.length > 3) { // تجاهل الأرقام القصيرة جداً
-    const similarity = calculateSimilarity(description, existingProduct.description);
-    if (similarity > 0.8) {
-      return true;
-    }
-  }
-  
-  // للتلفزيونات والأجهزة الإلكترونية - تحقق من الحجم والنوع
-  if (isElectronicDevice(description) && isElectronicDevice(existingProduct.description)) {
-    return areElectronicDevicesSimilar(description, existingProduct.description);
-  }
-  
-  // مقارنة المفاتيح المنشأة
-  if (key1 === key2) {
+  // مقارنة المفاتيح
+  if (product1.key && product2.key && product1.key === product2.key) {
     return true;
   }
   
   return false;
 }
 
-// استخراج المعلومات الأساسية من وصف المنتج
-function extractCoreProductInfo(description: string): string {
-  const normalized = normalizeText(description);
-  
-  // استخراج نوع المنتج الأساسي
-  const productTypes = [
-    'TV', 'TELEVISION', 'LED', 'SMART TV',
-    'BRACKET', 'MOUNT', 'HOLDER',
-    'BATTERY', 'ENERGIZER', 'DURACELL',
-    'HOT PLATE', 'HEATER', 'COOKER', 'OVEN',
-    'THERMOSTAT', 'CONTROLLER', 'REGULATOR',
-    'GASKET', 'SEAL', 'DOOR GASKET',
-    'CABLE', 'WIRE', 'CORD',
-    'RECEIVER', 'SATELLITE', 'DISH', 'LNB',
-    'FAN', 'EXHAUST', 'VENTILATOR',
-    'VACUUM', 'CLEANER', 'HOOVER',
-    'WATER HEATER', 'BOILER',
-    'CONTACTOR', 'RELAY', 'SWITCH',
-    'BLENDER', 'MIXER', 'PROCESSOR'
-  ];
-  
-  let productType = '';
-  for (const type of productTypes) {
-    if (normalized.includes(type)) {
-      productType = type;
-      break;
-    }
-  }
-  
-  // استخراج البراند
-  const brands = [
-    'CARRIER', 'ENERGIZER', 'DURACELL', 'BRENNENSTUHL', 
-    'EGO', 'DIXELL', 'TORNADO', 'TOSHIBA', 'SAMSUNG', 
-    'OLYMPIC', 'ARISTON', 'SCHNEIDER', 'TELEMECANIQUE', 
-    'BRAUN', 'CROWN', 'ASTRA', 'BEIN', 'LG', 'SONY'
-  ];
-  
-  let brand = '';
-  for (const b of brands) {
-    if (normalized.includes(b)) {
-      brand = b;
-      break;
-    }
-  }
-  
-  // استخراج الحجم أو القوة
-  const sizeMatch = normalized.match(/(\d+)\s*(INCH|"|LTR|LITER|WATT|KW|VOLT|V|MM|CM|M)/);
-  const size = sizeMatch ? sizeMatch[0] : '';
-  
-  // استخراج الموديل المحدد
-  const modelMatch = normalized.match(/MODEL\s*:?\s*([A-Z0-9\-]+)/);
-  const model = modelMatch ? modelMatch[1] : '';
-  
-  // دمج المعلومات المهمة
-  const parts = [];
-  if (productType) parts.push(productType);
-  if (brand) parts.push(brand);
-  if (size) parts.push(size);
-  if (model) parts.push(model);
-  
-  return parts.join('_');
-}
-
-// تطبيع النص
-function normalizeText(text: string): string {
-  return text
-    .toUpperCase()
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 // حساب التشابه بين نصين
 function calculateSimilarity(text1: string, text2: string): number {
-  const norm1 = normalizeText(text1);
-  const norm2 = normalizeText(text2);
+  const norm1 = text1.toUpperCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const norm2 = text2.toUpperCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
   
   if (norm1 === norm2) return 1;
   
-  const words1 = norm1.split(' ');
-  const words2 = norm2.split(' ');
+  const words1 = norm1.split(' ').filter(w => w.length > 2);
+  const words2 = norm2.split(' ').filter(w => w.length > 2);
   
-  const allWords = new Set([...words1, ...words2]);
+  if (words1.length === 0 || words2.length === 0) return 0;
+  
   const commonWords = words1.filter(w => words2.includes(w));
+  const unionWords = new Set([...words1, ...words2]);
   
-  return commonWords.length / allWords.size;
-}
-
-// التحقق من كون المنتج جهاز إلكتروني
-function isElectronicDevice(description: string): boolean {
-  const electronics = ['TV', 'LED', 'TELEVISION', 'RECEIVER', 'SATELLITE', 'FAN', 'VACUUM', 'WATER HEATER', 'BLENDER'];
-  const normalized = normalizeText(description);
-  return electronics.some(e => normalized.includes(e));
-}
-
-// مقارنة الأجهزة الإلكترونية بذكاء
-function areElectronicDevicesSimilar(desc1: string, desc2: string): boolean {
-  const norm1 = normalizeText(desc1);
-  const norm2 = normalizeText(desc2);
-  
-  // استخراج النوع والحجم للتلفزيونات
-  const tvPattern = /(\d+)\s*"?\s*(INCH|LED|TV)/;
-  const tv1 = norm1.match(tvPattern);
-  const tv2 = norm2.match(tvPattern);
-  
-  if (tv1 && tv2) {
-    // نفس الحجم = نفس المنتج للتلفزيونات
-    if (tv1[1] === tv2[1]) {
-      // تحقق من البراند أيضاً
-      const sameBrand = ['TORNADO', 'TOSHIBA', 'SAMSUNG', 'LG', 'SONY'].some(
-        brand => norm1.includes(brand) && norm2.includes(brand)
-      );
-      return sameBrand || (!norm1.match(/TORNADO|TOSHIBA|SAMSUNG|LG|SONY/) && !norm2.match(/TORNADO|TOSHIBA|SAMSUNG|LG|SONY/));
-    }
-  }
-  
-  // للأجهزة الأخرى
-  const device1Type = extractDeviceType(norm1);
-  const device2Type = extractDeviceType(norm2);
-  
-  if (device1Type === device2Type && device1Type !== '') {
-    // نفس النوع، تحقق من المواصفات
-    const specs1 = extractSpecs(norm1);
-    const specs2 = extractSpecs(norm2);
-    
-    // إذا كانت المواصفات متطابقة، فهو نفس المنتج
-    if (specs1.length > 0 && specs2.length > 0) {
-      const commonSpecs = specs1.filter(s => specs2.includes(s));
-      return commonSpecs.length / Math.max(specs1.length, specs2.length) > 0.7;
-    }
-  }
-  
-  return false;
-}
-
-// استخراج نوع الجهاز
-function extractDeviceType(text: string): string {
-  const types = {
-    'TV': ['TV', 'TELEVISION', 'LED TV'],
-    'RECEIVER': ['RECEIVER', 'SATELLITE', 'RECIVER'],
-    'FAN': ['FAN', 'EXHAUST', 'WALL FAN'],
-    'WATER_HEATER': ['WATER HEATER', 'BOILER'],
-    'VACUUM': ['VACUUM', 'CLEANER'],
-    'BLENDER': ['BLENDER', 'MIXER']
-  };
-  
-  for (const [key, patterns] of Object.entries(types)) {
-    if (patterns.some(p => text.includes(p))) {
-      return key;
-    }
-  }
-  
-  return '';
-}
-
-// استخراج المواصفات
-function extractSpecs(text: string): string[] {
-  const specs = [];
-  
-  // الأحجام
-  const sizes = text.match(/\d+\s*(INCH|"|LTR|LITER|CM|MM)/g);
-  if (sizes) specs.push(...sizes);
-  
-  // القوة
-  const power = text.match(/\d+\s*(WATT|KW|VOLT|V)/g);
-  if (power) specs.push(...power);
-  
-  // الموديلات
-  const models = text.match(/[A-Z]{2,}[\d]+[A-Z\d]*/g);
-  if (models) specs.push(...models);
-  
-  return specs;
+  return commonWords.length / unionWords.size;
 }
