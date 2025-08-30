@@ -7569,7 +7569,7 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
         startTime: new Date().toISOString(),
         errorCount: 0
       };
-      fs.writeFileSync(statusPath, JSON.stringify(initialStatus, null, 2));
+      writeFileSync(statusPath, JSON.stringify(initialStatus, null, 2));
       
       // بدء التوحيد المتطور في الخلفية
       setImmediate(async () => {
