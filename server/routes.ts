@@ -7164,42 +7164,50 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       nextUnifiedId = maxExistingId + 1;
       console.log(`📝 بدء الترقيم من: P-${String(nextUnifiedId).padStart(7, '0')}`);
       
-      for (let i = 0; i < processedItems.length; i++) {
-        if (processedIndices.has(i)) continue;
-        
-        const currentItem = processedItems[i];
-        
-        // إذا كان العنصر له معرف موجود بالفعل، احتفظ به
-        if (currentItem.existingId && currentItem.existingId.startsWith('P-')) {
-          currentItem.unifiedId = currentItem.existingId;
-          processedIndices.add(i);
+      // معالجة تدريجية مع تأخير حقيقي
+      const processInBatches = async () => {
+        for (let i = 0; i < processedItems.length; i++) {
+          if (processedIndices.has(i)) continue;
           
-          // أضف هذا كمجموعة منفردة للإحصائيات
-          groups.push({
-            unifiedId: currentItem.existingId,
-            items: [currentItem],
-            count: 1
-          });
+          const currentItem = processedItems[i];
           
-          // تحديث التقدم
-          statusUpdate.processedItems = processedIndices.size;
-          statusUpdate.unifiedItems = groups.length;
-          statusUpdate.currentIndex = i;
-          
-          // حساب النسبة المئوية الحقيقية
-          const currentPercentage = Math.round((processedIndices.size / processedItems.length) * 100);
-          statusUpdate.percentage = currentPercentage;
-          
-          if (i % 10 === 0) {
-            writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+          // إذا كان العنصر له معرف موجود بالفعل، احتفظ به
+          if (currentItem.existingId && currentItem.existingId.startsWith('P-')) {
+            currentItem.unifiedId = currentItem.existingId;
+            processedIndices.add(i);
             
-            // طباعة رسالة كل 50 عنصر فقط
-            if (i % 50 === 0) {
-              console.log(`⏳ التقدم: ${i + 1}/${processedItems.length} عنصر (${currentPercentage}%)`); 
+            // أضف هذا كمجموعة منفردة للإحصائيات
+            groups.push({
+              unifiedId: currentItem.existingId,
+              items: [currentItem],
+              count: 1
+            });
+            
+            // تحديث التقدم
+            statusUpdate.processedItems = processedIndices.size;
+            statusUpdate.unifiedItems = groups.length;
+            statusUpdate.currentIndex = i;
+            
+            // حساب النسبة المئوية الحقيقية
+            const currentPercentage = Math.round((processedIndices.size / processedItems.length) * 100);
+            statusUpdate.percentage = currentPercentage;
+            
+            // تحديث الحالة كل 5 عناصر
+            if (i % 5 === 0) {
+              writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+              
+              // طباعة رسالة كل 50 عنصر فقط
+              if (i % 50 === 0) {
+                console.log(`⏳ التقدم: ${i + 1}/${processedItems.length} عنصر (${currentPercentage}%)`); 
+              }
+              
+              // إضافة تأخير صغير كل 20 عنصر لمحاكاة المعالجة الحقيقية
+              if (i % 20 === 0 && i > 0) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+              }
             }
+            continue;
           }
-          continue;
-        }
         
         const currentGroup = [currentItem];
         processedIndices.add(i);
@@ -7277,31 +7285,25 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         const percentage = Math.round((processedIndices.size / processedItems.length) * 100);
         statusUpdate.percentage = percentage;
         
-        // تحديث كل 5 عناصر للحصول على تقدم سلس
-        if (i % 5 === 0 || percentage % 5 === 0) {
-          writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
-          
-          // طباعة رسالة كل 25 عنصر فقط
-          if (i % 25 === 0 || percentage % 10 === 0) {
-            console.log(`📊 التقدم: ${processedIndices.size}/${processedItems.length} عنصر (${percentage}%) - ${groups.length} مجموعة`);
+          // تحديث كل 3 عناصر للحصول على تقدم سلس
+          if (i % 3 === 0 || percentage % 2 === 0) {
+            writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+            
+            // طباعة رسالة كل 25 عنصر فقط
+            if (i % 25 === 0 || percentage % 10 === 0) {
+              console.log(`📊 التقدم: ${processedIndices.size}/${processedItems.length} عنصر (${percentage}%) - ${groups.length} مجموعة`);
+            }
+            
+            // إضافة تأخير صغير كل 15 عنصر لمحاكاة المعالجة الحقيقية
+            if (i % 15 === 0 && i > 0) {
+              await new Promise(resolve => setTimeout(resolve, 50));
+            }
           }
         }
-        
-        if (currentGroup.length > 1) {
-          console.log(`🔗 مجموعة موحدة ${unifiedId}: تحتوي على ${currentGroup.length} عنصر متطابق`);
-          if (currentGroup.length <= 3) {
-            currentGroup.forEach(item => {
-              const desc = item.description || 'بدون وصف';
-              console.log(`   - ${desc.substring(0, 60)}...`);
-            });
-          }
-        }
-        
-        // توقف قصير لتجنب الضغط على API والسماح بالتحديث التدريجي
-        if (i % 5 === 0) {
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-      }
+      };
+      
+      // بدء المعالجة التدريجية
+      await processInBatches();
       
       // التأكد من معالجة جميع العناصر المتبقية
       console.log(`🔍 التحقق من العناصر غير المعالجة...`);
@@ -7320,6 +7322,14 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           nextUnifiedId++;
           processedIndices.add(i);
           console.log(`➕ عنصر منفرد جديد: ${unifiedId} - ${(item.description || 'بدون وصف').substring(0, 50)}...`);
+          
+          // تحديث النسبة المئوية للعناصر المتبقية
+          statusUpdate.processedItems = processedIndices.size;
+          statusUpdate.percentage = Math.round((processedIndices.size / processedItems.length) * 100);
+          
+          if (i % 5 === 0) {
+            writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+          }
         }
       }
       
