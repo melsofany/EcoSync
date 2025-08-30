@@ -7058,6 +7058,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           totalItems: 5604,
           processedItems: 0,
           unifiedItems: 0,
+          percentage: 0,
           startTime: null,
           errorCount: 0
         };
@@ -7710,9 +7711,10 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
         isRunning: true,
         isPaused: false,
         currentIndex: 0,
-        totalItems: 0,
+        totalItems: 5604,
         processedItems: 0,
         unifiedItems: 0,
+        percentage: 0,
         startTime: new Date().toISOString(),
         errorCount: 0
       };
