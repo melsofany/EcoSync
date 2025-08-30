@@ -198,27 +198,27 @@ export default function AIDataUnification() {
         color: 'bg-orange-500',
         icon: AlertTriangle
       };
+    } else if (status.progress >= 100 && status.processedItems > 0) {
+      return {
+        text: 'مكتمل - جاهز للبدء من جديد',
+        color: 'bg-blue-500',
+        icon: CheckCircle2
+      };
     } else if (status.isRunning && status.isPaused) {
       return {
         text: 'متوقف مؤقتاً',
         color: 'bg-yellow-500',
         icon: Pause
       };
-    } else if (status.isRunning) {
+    } else if (status.isRunning && status.progress < 100) {
       return {
         text: 'يعمل في الخلفية',
         color: 'bg-green-500',
         icon: Zap
       };
-    } else if (status.processedItems > 0) {
-      return {
-        text: 'مكتمل',
-        color: 'bg-blue-500',
-        icon: CheckCircle2
-      };
     } else {
       return {
-        text: 'في انتظار البدء',
+        text: 'جاهز للبدء',
         color: 'bg-gray-400',
         icon: Clock
       };
@@ -275,18 +275,20 @@ export default function AIDataUnification() {
 
             {/* أزرار التحكم */}
             <div className="flex items-center gap-2">
-              {!status.isRunning && (
+              {/* زر البداء - يظهر دائماً عندما العملية متوقفة */}
+              {(!status.isRunning || status.progress >= 100) && (
                 <Button
                   onClick={() => startUnification.mutate()}
                   disabled={startUnification.isPending}
                   className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
                 >
                   <PlayCircle className="ml-2 h-4 w-4" />
-                  بدء التوحيد
+                  {status.progress >= 100 ? 'إعادة بدء التوحيد' : 'بدء التوحيد'}
                 </Button>
               )}
 
-              {status.isRunning && !status.isPaused && (
+              {/* زر الإيقاف المؤقت - يظهر عند العمل */}
+              {status.isRunning && !status.isPaused && status.progress < 100 && (
                 <Button
                   onClick={() => pauseUnification.mutate()}
                   disabled={pauseUnification.isPending}
@@ -298,6 +300,7 @@ export default function AIDataUnification() {
                 </Button>
               )}
 
+              {/* زر الاستئناف - يظهر عند الإيقاف المؤقت */}
               {status.isRunning && status.isPaused && (
                 <Button
                   onClick={() => resumeUnification.mutate()}
@@ -309,7 +312,8 @@ export default function AIDataUnification() {
                 </Button>
               )}
 
-              {status.isRunning && (
+              {/* زر الإيقاف النهائي - يظهر عند العمل */}
+              {status.isRunning && status.progress < 100 && (
                 <Button
                   onClick={() => stopUnification.mutate()}
                   disabled={stopUnification.isPending}
@@ -317,6 +321,26 @@ export default function AIDataUnification() {
                 >
                   <Square className="ml-2 h-4 w-4" />
                   إيقاف نهائي
+                </Button>
+              )}
+
+              {/* زر إعادة تعيين - للحالات المختلطة */}
+              {(status.progress >= 100 || (!status.isRunning && status.processedItems > 0)) && (
+                <Button
+                  onClick={() => {
+                    // إعادة تعيين الحالة يدوياً
+                    setStatus(prev => ({
+                      ...prev,
+                      isRunning: false,
+                      isPaused: false,
+                      progress: 0
+                    }));
+                  }}
+                  variant="outline"
+                  className="border-gray-300 hover:bg-gray-50"
+                >
+                  <RotateCcw className="ml-2 h-4 w-4" />
+                  إعادة تعيين
                 </Button>
               )}
             </div>
