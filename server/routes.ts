@@ -7889,13 +7889,13 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
       };
       writeFileSync(statusPath, JSON.stringify(initialStatus, null, 2));
       
-      // بدء التوحيد البسيط والقوي في الخلفية
-      console.log('🚀 بدء نظام التوحيد البسيط والقوي');
+      // بدء التوحيد المتقدم الذكي في الخلفية
+      console.log('🚀 بدء نظام التوحيد المتقدم الذكي');
       setImmediate(async () => {
         try {
-          console.log('🏃 بدء تنفيذ التوحيد...');
-          const { runSimpleUnification } = await import('./simple-unification');
-          await runSimpleUnification();
+          console.log('🏃 بدء تنفيذ التوحيد المتقدم...');
+          const { runAdvancedUnification } = await import('./advanced-unification');
+          await runAdvancedUnification();
           console.log('✅ انتهى التوحيد بنجاح');
         } catch (error) {
           console.error('❌ خطأ في تشغيل التوحيد:', error);
