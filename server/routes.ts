@@ -141,30 +141,65 @@ async function aiUnifyItems(items: any[]): Promise<any[]> {
 // كتابة النتائج الموحدة إلى Google Sheets
 async function writeUnifiedResultsToGoogleSheets(unifiedItems: any[]): Promise<void> {
   try {
-    // Use the imported instance directly
-    const googleSheetsRealTimeData = googleSheetsRealtimeData;
+    const { google } = await import('googleapis');
+    
+    // إعداد Google Sheets API
+    const auth = new google.auth.GoogleAuth({
+      keyFile: './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json',
+      scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    });
+    
+    const authClient = await auth.getClient();
+    const sheets = google.sheets({ version: 'v4', auth: authClient });
+    const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
     
     console.log(`🔄 تحديث ${unifiedItems.length} معرف موحد في Google Sheets...`);
     
-    // إعداد التحديثات المجمعة
-    const updates = [];
+    // قراءة البيانات الحالية أولاً
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'DATA!A:A' // قراءة العمود A (المعرفات)
+    });
+    
+    const rows = response.data.values || [];
+    
+    // إعداد التحديثات
+    const batchData = [];
+    let updatedCount = 0;
     
     for (const unifiedItem of unifiedItems) {
       // تحديث جميع البنود الأصلية بالمعرف الموحد الجديد
       for (const originalId of unifiedItem.originalIds) {
-        updates.push({
-          oldId: originalId,
-          newId: unifiedItem.itemNumber // P-0000XXX الجديد
-        });
+        // البحث عن الصف الذي يحتوي على المعرف الأصلي
+        for (let i = 1; i < rows.length; i++) { // تجاهل رأس العمود
+          if (rows[i] && rows[i][0] === originalId) {
+            batchData.push({
+              range: `DATA!A${i + 1}`, // +1 لأن الفهرس يبدأ من 1 في Sheets
+              values: [[unifiedItem.itemNumber]] // P-0000XXX الجديد
+            });
+            updatedCount++;
+            break;
+          }
+        }
       }
     }
     
-    console.log(`📊 إرسال ${updates.length} تحديث مجمع إلى Google Sheets...`);
-    
-    // تطبيق التحديثات المجمعة
-    await googleSheetsRealTimeData.batchUpdateUnifiedIds(updates);
-    
-    console.log('✅ تم تحديث جميع المعرفات الموحدة في Google Sheets بنجاح!');
+    if (batchData.length > 0) {
+      console.log(`📊 إرسال ${batchData.length} تحديث إلى Google Sheets...`);
+      
+      // تطبيق التحديثات المجمعة
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId,
+        requestBody: {
+          valueInputOption: 'RAW',
+          data: batchData
+        }
+      });
+      
+      console.log(`✅ تم تحديث ${updatedCount} معرف موحد في Google Sheets بنجاح!`);
+    } else {
+      console.log('⚠️ لا توجد معرفات للتحديث');
+    }
     
   } catch (error) {
     console.error('❌ خطأ في كتابة النتائج إلى Google Sheets:', error);
@@ -7242,7 +7277,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
               }
               
               // تجنب مقارنة العناصر المعالجة مسبقاً
-              if (processedIds.has(compareItem.originalIndex)) {
+              if (processedIndices.has(compareItem.originalIndex)) {
                 continue;
               }
               
