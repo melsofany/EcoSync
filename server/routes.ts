@@ -7031,6 +7031,252 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // دالة التوحيد المتطور بالذكاء الاصطناعي الخالص
+  async function runAdvancedAIUnification() {
+    console.log('🚀 بدء نظام التوحيد المتطور بالذكاء الاصطناعي الخالص');
+    
+    const statusPath = './unification-status.json';
+    const { google } = await import('googleapis');
+    
+    try {
+      // إعداد Google Sheets API
+      const auth = new google.auth.GoogleAuth({
+        keyFile: './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json',
+        scopes: ['https://www.googleapis.com/auth/spreadsheets']
+      });
+      
+      const authClient = await auth.getClient();
+      const sheets = google.sheets({ version: 'v4', auth: authClient });
+      const spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
+      
+      // قراءة جميع البيانات
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: 'DATA!A:E'
+      });
+      
+      const rows = response.data.values || [];
+      if (rows.length <= 1) {
+        console.log('❌ لا توجد بيانات للمعالجة');
+        return;
+      }
+      
+      const dataRows = rows.slice(1); // تجاهل رأس العمود
+      console.log(`📊 تم العثور على ${dataRows.length} صف للمعالجة`);
+      
+      // تحديث الحالة الأولية
+      const statusUpdate = {
+        isRunning: true,
+        isPaused: false,
+        currentIndex: 0,
+        totalItems: dataRows.length,
+        processedItems: 0,
+        unifiedItems: 0,
+        startTime: new Date().toISOString(),
+        errorCount: 0
+      };
+      fs.writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+      
+      // بناء قاموس للبحث السريع
+      const itemsMap = new Map();
+      const processedItems = [];
+      
+      for (let i = 0; i < dataRows.length; i++) {
+        const row = dataRows[i];
+        const description = row[4] || ''; // العمود E
+        
+        if (description.trim()) {
+          const itemData = {
+            rowIndex: i + 2, // +2 لأن الفهرس يبدأ من 1 ورأس العمود
+            originalIndex: i,
+            description: description.trim(),
+            partNumber: row[1] || '', // العمود B
+            unifiedId: null
+          };
+          
+          itemsMap.set(i, itemData);
+          processedItems.push(itemData);
+        }
+        
+        // تحديث التقدم
+        if (i % 100 === 0) {
+          statusUpdate.currentIndex = i;
+          statusUpdate.processedItems = i;
+          fs.writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+        }
+      }
+      
+      console.log(`🔍 تم جمع ${processedItems.length} عنصر للتحليل`);
+      
+      // بدء عملية التوحيد بالذكاء الاصطناعي
+      const groups = [];
+      const processedIndices = new Set();
+      let nextUnifiedId = 1;
+      
+      for (let i = 0; i < processedItems.length; i++) {
+        if (processedIndices.has(i)) continue;
+        
+        const currentItem = processedItems[i];
+        const currentGroup = [currentItem];
+        processedIndices.add(i);
+        
+        // البحث عن العناصر المتشابهة باستخدام الذكاء الاصطناعي
+        for (let j = i + 1; j < processedItems.length; j++) {
+          if (processedIndices.has(j)) continue;
+          
+          const compareItem = processedItems[j];
+          
+          // استدعاء الذكاء الاصطناعي للمقارنة
+          const isMatch = await compareWithAI(currentItem.description, compareItem.description);
+          
+          if (isMatch) {
+            currentGroup.push(compareItem);
+            processedIndices.add(j);
+            console.log(`✅ تطابق AI: "${currentItem.description}" مع "${compareItem.description}"`);
+          }
+        }
+        
+        // تعيين معرف موحد للمجموعة
+        const unifiedId = `P-${String(nextUnifiedId).padStart(7, '0')}`;
+        currentGroup.forEach(item => {
+          item.unifiedId = unifiedId;
+        });
+        
+        groups.push({
+          unifiedId,
+          items: currentGroup,
+          count: currentGroup.length
+        });
+        
+        nextUnifiedId++;
+        
+        // تحديث التقدم
+        statusUpdate.processedItems = Array.from(processedIndices).length;
+        statusUpdate.unifiedItems = groups.length;
+        fs.writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+        
+        console.log(`🔗 مجموعة ${unifiedId}: ${currentGroup.length} عنصر`);
+        
+        // توقف قصير لتجنب الضغط على API
+        if (currentGroup.length > 1) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+      
+      console.log(`🎯 تم إنشاء ${groups.length} مجموعة موحدة`);
+      
+      // كتابة النتائج إلى Google Sheets
+      await writeUnifiedIdsToSheets(sheets, spreadsheetId, processedItems);
+      
+      // تحديث الحالة النهائية
+      statusUpdate.isRunning = false;
+      statusUpdate.processedItems = dataRows.length;
+      statusUpdate.unifiedItems = groups.length;
+      statusUpdate.endTime = new Date().toISOString();
+      fs.writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+      
+      console.log('✅ تم إكمال التوحيد المتطور بالذكاء الاصطناعي بنجاح');
+      
+    } catch (error) {
+      console.error('❌ خطأ في التوحيد المتطور:', error);
+      
+      // تحديث الحالة بالخطأ
+      const errorStatus = JSON.parse(fs.readFileSync(statusPath, 'utf-8'));
+      errorStatus.isRunning = false;
+      errorStatus.errorCount += 1;
+      errorStatus.lastError = error.message;
+      fs.writeFileSync(statusPath, JSON.stringify(errorStatus, null, 2));
+    }
+  }
+  
+  // دالة مقارنة المنتجات باستخدام الذكاء الاصطناعي
+  async function compareWithAI(description1: string, description2: string): Promise<boolean> {
+    try {
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            {
+              role: 'user',
+              content: `Compare these two product descriptions and determine if they represent the SAME physical product:
+
+Description 1: "${description1}"
+Description 2: "${description2}"
+
+Consider:
+- Part numbers, model numbers, brands
+- Technical specifications (voltage, amperage, power, size)  
+- Product type and function
+- Ignore minor formatting differences
+
+Respond with only "YES" if they are the same product, or "NO" if different products.`
+            }
+          ],
+          max_tokens: 10,
+          temperature: 0.1
+        })
+      });
+      
+      if (!response.ok) {
+        console.error(`❌ خطأ في API الذكاء الاصطناعي: ${response.status}`);
+        return false;
+      }
+      
+      const data = await response.json();
+      const aiResponse = data.choices?.[0]?.message?.content?.trim().toUpperCase();
+      
+      return aiResponse === 'YES';
+      
+    } catch (error) {
+      console.error('❌ خطأ في استدعاء الذكاء الاصطناعي:', error);
+      return false;
+    }
+  }
+  
+  // دالة كتابة المعرفات الموحدة إلى Google Sheets
+  async function writeUnifiedIdsToSheets(sheets: any, spreadsheetId: string, items: any[]) {
+    console.log('📝 كتابة المعرفات الموحدة إلى Google Sheets...');
+    
+    const batchData = [];
+    
+    for (const item of items) {
+      if (item.unifiedId) {
+        batchData.push({
+          range: `DATA!A${item.rowIndex}`,
+          values: [[item.unifiedId]]
+        });
+      }
+    }
+    
+    if (batchData.length > 0) {
+      // كتابة الدفعات
+      const chunkSize = 100;
+      for (let i = 0; i < batchData.length; i += chunkSize) {
+        const chunk = batchData.slice(i, i + chunkSize);
+        
+        await sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId,
+          requestBody: {
+            data: chunk,
+            valueInputOption: 'RAW'
+          }
+        });
+        
+        console.log(`✅ تم كتابة دفعة ${Math.floor(i/chunkSize) + 1} (${chunk.length} عنصر)`);
+        
+        // توقف قصير
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+    }
+    
+    console.log(`✅ تم كتابة ${batchData.length} معرف موحد إلى Google Sheets`);
+  }
+
   // تطبيق التصحيح النهائي للقيمة المالية
   app.post('/api/fix/final-value', requireAuth, async (req, res) => {
     try {
@@ -7306,12 +7552,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
-  // بدء عملية التوحيد الجديد
+  // بدء عملية التوحيد الجديد - نظام متطور بالذكاء الاصطناعي
   app.post("/api/ai-unification/start", requireAuth, requireRole(["it_admin"]), async (req: Request, res: Response) => {
     try {
-      console.log('🚀 بدء نظام التوحيد الجديد من المستخدم:', req.session?.user?.username);
-      
-      const { spawn } = await import('child_process');
+      console.log('🚀 بدء نظام التوحيد المتطور بالذكاء الاصطناعي من المستخدم:', req.session?.user?.username);
       
       // إعادة تعيين ملف الحالة قبل البدء
       const statusPath = './unification-status.json';
@@ -7319,7 +7563,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         isRunning: true,
         isPaused: false,
         currentIndex: 0,
-        totalItems: 5604,
+        totalItems: 0,
         processedItems: 0,
         unifiedItems: 0,
         startTime: new Date().toISOString(),
@@ -7327,37 +7571,17 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       };
       fs.writeFileSync(statusPath, JSON.stringify(initialStatus, null, 2));
       
-      // تشغيل ملف التوحيد المحسن
-      const unificationProcess = spawn('node', ['unification-system-improved.mjs'], {
-        cwd: process.cwd(),
-        env: process.env,
-        detached: true,
-        stdio: 'inherit'
+      // بدء التوحيد المتطور في الخلفية
+      setImmediate(async () => {
+        await runAdvancedAIUnification();
       });
       
-      unificationProcess.on('error', (error) => {
-        console.error('❌ خطأ في تشغيل التوحيد:', error);
-      });
-      
-      unificationProcess.on('exit', (code) => {
-        console.log(`✅ انتهت عملية التوحيد مع الكود: ${code}`);
-      });
-      
-      unificationProcess.unref();
-      
-      const result = {
-        success: true,
-        message: 'تم بدء التوحيد الذكي في الخلفية'
-      };
-      
-      await logActivity(req, "start_identifier_unification", "ai_unification", "identifier", "بدء توحيد المعرفات بالذكاء الاصطناعي");
+      await logActivity(req, "start_advanced_ai_unification", "ai_unification", "deepseek", "بدء التوحيد المتطور بالذكاء الاصطناعي");
       
       res.json({
-        success: result.success,
-        message: result.success ? "تم التوحيد الدلالي بنجاح" : result.message,
-        totalItems: result.totalItems,
-        groupsFound: result.groupsFound,
-        groups: result.groups
+        success: true,
+        message: "تم بدء التوحيد المتطور بالذكاء الاصطناعي في الخلفية",
+        status: "running"
       });
 
     } catch (error) {
