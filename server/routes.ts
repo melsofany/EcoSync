@@ -7125,12 +7125,17 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         itemsMap.set(i, itemData);
         processedItems.push(itemData);
         
-        // تحديث التقدم
-        if (i % 100 === 0 || i === dataRows.length - 1) {
+        // تحديث التقدم بشكل أكثر تكراراً
+        if (i % 10 === 0 || i === dataRows.length - 1) {
           statusUpdate.currentIndex = i;
           statusUpdate.processedItems = i + 1;
+          statusUpdate.percentage = Math.round((i + 1) / dataRows.length * 100);
           writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
-          console.log(`⏳ معالجة: ${i + 1}/${dataRows.length} صف`);
+          
+          // طباعة رسالة كل 100 عنصر فقط لتقليل الإخراج
+          if (i % 100 === 0 || i === dataRows.length - 1) {
+            console.log(`⏳ معالجة: ${i + 1}/${dataRows.length} صف (${statusUpdate.percentage}%)`);
+          }
         }
       }
       
@@ -7181,9 +7186,17 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           statusUpdate.unifiedItems = groups.length;
           statusUpdate.currentIndex = i;
           
-          if (i % 50 === 0) {
+          // حساب النسبة المئوية الحقيقية
+          const currentPercentage = Math.round((processedIndices.size / processedItems.length) * 100);
+          statusUpdate.percentage = currentPercentage;
+          
+          if (i % 10 === 0) {
             writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
-            console.log(`⏳ التقدم: ${i + 1}/${processedItems.length} عنصر (${Math.round((i + 1) / processedItems.length * 100)}%)`); 
+            
+            // طباعة رسالة كل 50 عنصر فقط
+            if (i % 50 === 0) {
+              console.log(`⏳ التقدم: ${i + 1}/${processedItems.length} عنصر (${currentPercentage}%)`); 
+            }
           }
           continue;
         }
@@ -7264,10 +7277,14 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         const percentage = Math.round((processedIndices.size / processedItems.length) * 100);
         statusUpdate.percentage = percentage;
         
-        // تحديث كل 10 عناصر أو عند الوصول لمضاعفات 5%
-        if (i % 10 === 0 || percentage % 5 === 0) {
+        // تحديث كل 5 عناصر للحصول على تقدم سلس
+        if (i % 5 === 0 || percentage % 5 === 0) {
           writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
-          console.log(`📊 التقدم: ${processedIndices.size}/${processedItems.length} عنصر (${percentage}%) - ${groups.length} مجموعة`);
+          
+          // طباعة رسالة كل 25 عنصر فقط
+          if (i % 25 === 0 || percentage % 10 === 0) {
+            console.log(`📊 التقدم: ${processedIndices.size}/${processedItems.length} عنصر (${percentage}%) - ${groups.length} مجموعة`);
+          }
         }
         
         if (currentGroup.length > 1) {

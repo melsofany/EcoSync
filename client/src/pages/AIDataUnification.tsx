@@ -90,6 +90,10 @@ export default function AIDataUnification() {
           });
           
           setIsConnected(true);
+        } else if (response.status === 401) {
+          // المستخدم غير مسجل الدخول
+          console.log('المستخدم غير مسجل الدخول');
+          setIsConnected(false);
         }
       } catch (error) {
         console.warn('خطأ في جلب الحالة:', error);
@@ -97,8 +101,8 @@ export default function AIDataUnification() {
       }
     };
 
-    // استطلاع الحالة كل ثانيتين
-    const interval = setInterval(pollStatus, 2000);
+    // استطلاع الحالة كل ثانية للحصول على تحديثات أسرع
+    const interval = setInterval(pollStatus, 1000);
     pollStatus(); // أول استدعاء فوري
 
     return () => clearInterval(interval);
