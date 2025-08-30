@@ -7098,32 +7098,37 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
       console.log(`✅ تم تحديث الحالة: ${dataRows.length} عنصر للمعالجة`);
       
-      // بناء قاموس للبحث السريع
+      // بناء قاموس للبحث السريع - معالجة جميع الصفوف
       const itemsMap = new Map();
       const processedItems = [];
       
+      console.log(`📋 معالجة جميع الـ ${dataRows.length} صف بدون استثناء...`);
+      
       for (let i = 0; i < dataRows.length; i++) {
         const row = dataRows[i];
-        const description = row[4] || ''; // العمود E
+        const description = row[4] || ''; // العمود E - الوصف
+        const partNumber = row[1] || ''; // العمود B - رقم الجزء
+        const existingId = row[0] || ''; // العمود A - المعرف الموجود
         
-        if (description.trim()) {
-          const itemData = {
-            rowIndex: i + 2, // +2 لأن الفهرس يبدأ من 1 ورأس العمود
-            originalIndex: i,
-            description: description.trim(),
-            partNumber: row[1] || '', // العمود B
-            unifiedId: null
-          };
-          
-          itemsMap.set(i, itemData);
-          processedItems.push(itemData);
-        }
+        // معالجة كل صف حتى لو كان فارغاً
+        const itemData = {
+          rowIndex: i + 2, // +2 لأن الفهرس يبدأ من 1 ورأس العمود
+          originalIndex: i,
+          description: description.trim(),
+          partNumber: partNumber.trim(),
+          existingId: existingId.trim(), // حفظ المعرف الموجود
+          unifiedId: null
+        };
+        
+        itemsMap.set(i, itemData);
+        processedItems.push(itemData);
         
         // تحديث التقدم
-        if (i % 100 === 0) {
+        if (i % 100 === 0 || i === dataRows.length - 1) {
           statusUpdate.currentIndex = i;
-          statusUpdate.processedItems = i;
+          statusUpdate.processedItems = i + 1;
           writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+          console.log(`⏳ معالجة: ${i + 1}/${dataRows.length} صف`);
         }
       }
       
@@ -7134,58 +7139,86 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const processedIndices = new Set();
       let nextUnifiedId = 1;
       let aiCallCount = 0;
-      const MAX_AI_CALLS = 100; // حد أقصى لاستدعاءات AI
+      const MAX_AI_CALLS = 500; // زيادة الحد الأقصى لاستدعاءات AI
       
-      console.log(`🚀 بدء التوحيد الذكي لـ ${processedItems.length} عنصر`);
+      console.log(`🚀 بدء التوحيد الذكي لجميع الـ ${processedItems.length} عنصر`);
+      console.log(`📊 سيتم معالجة كل صف وإعطاؤه معرف موحد`);
+      
+      // الحصول على أعلى معرف موجود لمواصلة الترقيم منه
+      let maxExistingId = 0;
+      processedItems.forEach(item => {
+        if (item.existingId && item.existingId.startsWith('P-')) {
+          const idNum = parseInt(item.existingId.substring(2));
+          if (!isNaN(idNum) && idNum > maxExistingId) {
+            maxExistingId = idNum;
+          }
+        }
+      });
+      nextUnifiedId = maxExistingId + 1;
+      console.log(`📝 بدء الترقيم من: P-${String(nextUnifiedId).padStart(7, '0')}`);
       
       for (let i = 0; i < processedItems.length; i++) {
         if (processedIndices.has(i)) continue;
         
         const currentItem = processedItems[i];
+        
+        // إذا كان العنصر له معرف موجود بالفعل، احتفظ به
+        if (currentItem.existingId && currentItem.existingId.startsWith('P-')) {
+          currentItem.unifiedId = currentItem.existingId;
+          processedIndices.add(i);
+          continue;
+        }
+        
         const currentGroup = [currentItem];
         processedIndices.add(i);
         
-        // البحث عن العناصر المتشابهة
-        for (let j = i + 1; j < processedItems.length; j++) {
-          if (processedIndices.has(j)) continue;
-          
-          const compareItem = processedItems[j];
-          
-          // مقارنة سريعة أولاً - إذا كان رقم الجزء متطابق
-          let isMatch = false;
-          
-          // 1. التحقق من تطابق رقم الجزء تماماً
-          if (currentItem.partNumber && compareItem.partNumber) {
-            const cleanPart1 = currentItem.partNumber.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-            const cleanPart2 = compareItem.partNumber.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (cleanPart1 && cleanPart1 === cleanPart2) {
-              isMatch = true;
-              console.log(`✅ تطابق رقم الجزء: ${currentItem.partNumber} = ${compareItem.partNumber}`);
-            }
-          }
-          
-          // 2. إذا لم يتطابق رقم الجزء، استخدم AI (بحد أقصى)
-          if (!isMatch && aiCallCount < MAX_AI_CALLS) {
-            // مقارنة بسيطة للكلمات المفتاحية أولاً
-            const desc1Words = currentItem.description.toLowerCase().split(/\s+/);
-            const desc2Words = compareItem.description.toLowerCase().split(/\s+/);
-            const commonWords = desc1Words.filter(word => desc2Words.includes(word) && word.length > 3);
+        // البحث عن العناصر المتشابهة فقط إذا كان هناك وصف أو رقم جزء
+        if (currentItem.description || currentItem.partNumber) {
+          for (let j = i + 1; j < processedItems.length; j++) {
+            if (processedIndices.has(j)) continue;
             
-            // إذا كان هناك كلمات مشتركة كافية، استدعي AI
-            if (commonWords.length >= 3) {
-              console.log(`🔍 مقارنة AI #${aiCallCount + 1}: "${currentItem.description.substring(0, 50)}..." مع "${compareItem.description.substring(0, 50)}..."`);
-              isMatch = await compareWithAI(currentItem.description, compareItem.description);
-              aiCallCount++;
-              
-              if (isMatch) {
-                console.log(`✅ تطابق AI: العنصران متطابقان`);
+            const compareItem = processedItems[j];
+            
+            // تخطي العناصر التي لها معرف موجود
+            if (compareItem.existingId && compareItem.existingId.startsWith('P-')) {
+              continue;
+            }
+            
+            let isMatch = false;
+            
+            // 1. التحقق من تطابق رقم الجزء تماماً
+            if (currentItem.partNumber && compareItem.partNumber) {
+              const cleanPart1 = currentItem.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+              const cleanPart2 = compareItem.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
+              if (cleanPart1 && cleanPart1 === cleanPart2 && cleanPart1.length > 0) {
+                isMatch = true;
+                console.log(`✅ تطابق رقم الجزء: ${currentItem.partNumber} = ${compareItem.partNumber}`);
               }
             }
-          }
-          
-          if (isMatch) {
-            currentGroup.push(compareItem);
-            processedIndices.add(j);
+            
+            // 2. إذا لم يتطابق رقم الجزء، قارن الأوصاف
+            if (!isMatch && currentItem.description && compareItem.description && aiCallCount < MAX_AI_CALLS) {
+              // مقارنة بسيطة للكلمات المفتاحية أولاً
+              const desc1Words = currentItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+              const desc2Words = compareItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+              const commonWords = desc1Words.filter(word => desc2Words.includes(word) && word.length > 3);
+              
+              // إذا كان هناك تشابه كبير، استدعي AI
+              if (commonWords.length >= 3 || (desc1Words.length > 0 && commonWords.length / desc1Words.length > 0.5)) {
+                console.log(`🔍 مقارنة AI #${aiCallCount + 1}`);
+                isMatch = await compareWithAI(currentItem.description, compareItem.description);
+                aiCallCount++;
+                
+                if (isMatch) {
+                  console.log(`✅ تطابق AI: العنصران متطابقان`);
+                }
+              }
+            }
+            
+            if (isMatch) {
+              currentGroup.push(compareItem);
+              processedIndices.add(j);
+            }
           }
         }
         
