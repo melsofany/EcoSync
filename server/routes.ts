@@ -7241,13 +7241,19 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
                 continue;
               }
               
+              // تجنب مقارنة العناصر المعالجة مسبقاً
+              if (processedIds.has(compareItem.originalIndex)) {
+                continue;
+              }
+              
               let isMatch = false;
             
               // 1. التحقق من تطابق رقم الجزء تماماً
               if (currentItem.partNumber && compareItem.partNumber) {
                 const cleanPart1 = currentItem.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
                 const cleanPart2 = compareItem.partNumber.toUpperCase().replace(/[^A-Z0-9]/g, '');
-                if (cleanPart1 && cleanPart1 === cleanPart2 && cleanPart1.length > 0) {
+                // تجنب المطابقات الخاطئة للأرقام القصيرة جداً
+                if (cleanPart1 && cleanPart1 === cleanPart2 && cleanPart1.length > 3) {
                   isMatch = true;
                   console.log(`✅ تطابق رقم الجزء: ${currentItem.partNumber} = ${compareItem.partNumber}`);
                 }
@@ -7266,34 +7272,36 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
                 const minSpecsLength = Math.min(currentSpecs.length, compareSpecs.length);
                 const specsSimilarity = minSpecsLength > 0 ? commonSpecs.length / minSpecsLength : 0;
                 
-                // شروط أكثر دقة للتطابق
-                // إذا كان نفس البراند ونفس جميع المواصفات
-                if (sameBrand && specsSimilarity === 1 && commonSpecs.length >= 2) {
+                // شروط أكثر دقة وصرامة للتطابق لتجنب الدمج الخاطئ
+                // إذا كان نفس البراند ونفس جميع المواصفات بالضبط
+                if (sameBrand && specsSimilarity === 1 && 
+                    currentSpecs.length === compareSpecs.length && 
+                    commonSpecs.length >= 2) {
                   isMatch = true;
                   console.log(`✅ تطابق كامل: البراند ${currentBrand} - المواصفات ${commonSpecs.join(', ')}`);
                 } 
-                // إذا كان نفس البراند ومعظم المواصفات متطابقة
-                else if (sameBrand && specsSimilarity >= 0.85 && commonSpecs.length >= 3) {
+                // إذا كان نفس البراند و95% من المواصفات على الأقل (أكثر صرامة)
+                else if (sameBrand && specsSimilarity >= 0.95 && commonSpecs.length >= 4) {
                   isMatch = true;
                   console.log(`✅ تطابق قوي: البراند ${currentBrand} - ${Math.round(specsSimilarity * 100)}% من المواصفات`);
                 } 
-                // إذا كانت جميع المواصفات متطابقة تماماً بدون براند
-                else if (!sameBrand && specsSimilarity === 1 && commonSpecs.length >= 4) {
+                // إذا كانت جميع المواصفات متطابقة تماماً بدون براند (شرط صارم جداً)
+                else if (!sameBrand && specsSimilarity === 1 && 
+                         currentSpecs.length === compareSpecs.length && 
+                         commonSpecs.length >= 5) {
                   isMatch = true;
                   console.log(`✅ تطابق المواصفات بدون براند: ${commonSpecs.join(', ')}`);
                 }
-                // استخدم AI فقط للحالات التي بها تشابه محتمل
-                else if (aiCallCount < MAX_AI_CALLS && (sameBrand || commonSpecs.length >= 2)) {
+                // استخدم AI بحذر شديد وفقط للحالات الواضحة
+                else if (aiCallCount < MAX_AI_CALLS && sameBrand && commonSpecs.length >= 3) {
                   // مقارنة بسيطة للكلمات المفتاحية أولاً
-                  const desc1Words = currentItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-                  const desc2Words = compareItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-                  const commonWords = desc1Words.filter(word => desc2Words.includes(word) && word.length > 3);
+                  const desc1Words = currentItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+                  const desc2Words = compareItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+                  const commonWords = desc1Words.filter(word => desc2Words.includes(word));
                   const wordSimilarity = desc1Words.length > 0 ? commonWords.length / desc1Words.length : 0;
                   
-                  // استخدم AI فقط إذا كان هناك احتمال قوي للتطابق
-                  if ((sameBrand && commonSpecs.length >= 1 && wordSimilarity > 0.5) || 
-                      (commonSpecs.length >= 3 && wordSimilarity > 0.7) ||
-                      (sameBrand && wordSimilarity > 0.7)) {
+                  // استخدم AI فقط إذا كان هناك احتمال قوي جداً للتطابق
+                  if (sameBrand && commonSpecs.length >= 3 && wordSimilarity > 0.8) {
                     console.log(`🔍 مقارنة AI #${aiCallCount + 1} بين الصف ${i+2} والصف ${j+2}`);
                     console.log(`   البراند: ${currentBrand || 'غير محدد'} vs ${compareBrand || 'غير محدد'}`);
                     console.log(`   المواصفات المشتركة: ${commonSpecs.join(', ') || 'لا يوجد'}`);
@@ -7316,19 +7324,29 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             }
           }
           
-          // تعيين معرف موحد للمجموعة
-          const unifiedId = `P-${String(nextUnifiedId).padStart(7, '0')}`;
-          currentGroup.forEach(item => {
-            item.unifiedId = unifiedId;
-          });
-          
-          groups.push({
-            unifiedId,
-            items: currentGroup,
-            count: currentGroup.length
-          });
-          
-          nextUnifiedId++;
+          // تعيين معرف موحد للمجموعة فقط إذا كانت تحتوي على عناصر
+          if (currentGroup.length > 0) {
+            const unifiedId = `P-${String(nextUnifiedId).padStart(7, '0')}`;
+            currentGroup.forEach(item => {
+              item.unifiedId = unifiedId;
+            });
+            
+            groups.push({
+              unifiedId,
+              items: currentGroup,
+              count: currentGroup.length
+            });
+            
+            nextUnifiedId++;
+            
+            // طباعة معلومات المجموعة
+            if (currentGroup.length > 1) {
+              const groupDesc = currentGroup[0].description || 'بدون وصف';
+              const groupBrand = extractBrand(groupDesc);
+              console.log(`📦 مجموعة ${unifiedId}: ${currentGroup.length} عنصر - ${groupBrand || 'بدون براند'}`);
+              console.log(`   الصفوف: ${currentGroup.map(item => item.rowIndex).join(', ')}`);
+            }
+          }
           
           // حساب عدد العناصر التي حصلت على معرفات
           const processedCount = processedItems.filter(item => item.unifiedId !== null).length;
