@@ -7889,16 +7889,32 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
       };
       writeFileSync(statusPath, JSON.stringify(initialStatus, null, 2));
       
-      // بدء التوحيد المتطور في الخلفية
-      console.log('🚀 بدء نظام التوحيد المتطور بالذكاء الاصطناعي الخالص');
+      // بدء التوحيد البسيط والقوي في الخلفية
+      console.log('🚀 بدء نظام التوحيد البسيط والقوي');
       setImmediate(async () => {
         try {
-          console.log('🏃 بدء تنفيذ runAdvancedAIUnification...');
-          await runAdvancedAIUnification();
-          console.log('✅ انتهى تنفيذ runAdvancedAIUnification');
+          console.log('🏃 بدء تنفيذ التوحيد...');
+          const { runSimpleUnification } = await import('./simple-unification');
+          await runSimpleUnification();
+          console.log('✅ انتهى التوحيد بنجاح');
         } catch (error) {
           console.error('❌ خطأ في تشغيل التوحيد:', error);
           console.error('❌ تفاصيل الخطأ:', error.stack);
+          
+          // تحديث الحالة بالخطأ
+          const statusPath = './unification-status.json';
+          const { writeFileSync } = await import('fs');
+          writeFileSync(statusPath, JSON.stringify({
+            isRunning: false,
+            isPaused: false,
+            currentIndex: 0,
+            totalItems: 0,
+            processedItems: 0,
+            unifiedItems: 0,
+            percentage: 0,
+            errorCount: 1,
+            lastError: error.message
+          }, null, 2));
         }
       });
       
