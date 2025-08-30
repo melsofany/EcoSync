@@ -102,8 +102,9 @@ class ProgressUpdater {
   }
 }
 
-global.progressUpdater = new ProgressUpdater();
-global.progressUpdater.start();
+// تم تعطيل المحاكي - سيتم استخدام النظام الحقيقي
+// global.progressUpdater = new ProgressUpdater();
+// global.progressUpdater.start();
 
 // خدمة الملفات الثابتة (الصور المرفوعة)
 app.use('/uploads', express.static('public/uploads'));
