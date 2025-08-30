@@ -9153,20 +9153,25 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
       // تم إصلاح المشكلة: استخدام الحالة من الملف مباشرة
       const isReallyRunning = status.isRunning === true;
       
+      // حساب النسبة المئوية الحقيقية
+      const totalItems = status.totalItems || 5604;
+      const progressPercentage = totalItems > 0 ? (currentProgress / totalItems) * 100 : 0;
+      
       const response = {
         isRunning: isReallyRunning,
         isPaused: status.isPaused || false,
-        progress: currentProgress,
-        total: 5604,
+        progress: status.percentage || progressPercentage, // استخدام النسبة المئوية المحفوظة أو حسابها
+        total: totalItems,
+        totalItems: totalItems, // إضافة totalItems للتوافق
         processedItems: currentProgress,
-        unifiedItems: status.unifiedItems || Math.floor(currentProgress * 0.08),
+        unifiedItems: status.unifiedItems || 0,
         currentItem: isReallyRunning ? `البند ${currentProgress + 1}` : null,
         startTime: status.startTime,
         elapsedTime: status.startTime ? Date.now() - new Date(status.startTime).getTime() : null,
         quotaExceeded: false,
         errorCount: status.errorCount || 0,
         message: isReallyRunning ? 
-          `جاري المعالجة... ${currentProgress}/5604 (${Math.round(currentProgress * 100 / 5604)}%)` : 
+          `جاري المعالجة... ${currentProgress}/${totalItems} (${progressPercentage.toFixed(1)}%)` : 
           'النظام جاهز للتوحيد الذكي',
         timestamp: Date.now()
       };
