@@ -130,7 +130,26 @@ function areProductsEquivalent(description1, description2) {
   const chars1 = getProductCharacteristics(description1);
   const chars2 = getProductCharacteristics(description2);
   
-  // 3. مقارنة الخصائص الأساسية
+  // 3. فحص خاص للكونتاكتور LC1D32M7 قبل أي شيء
+  const isSchneiderContactor1 = normalized1.includes('schneider') && normalized1.includes('contactor');
+  const isSchneiderContactor2 = normalized2.includes('schneider') && normalized2.includes('contactor');
+  
+  if (isSchneiderContactor1 && isSchneiderContactor2) {
+    // فحص المواصفات الرئيسية للكونتاكتور
+    const has220v1 = normalized1.includes('220v') || normalized1.includes('220 v');
+    const has220v2 = normalized2.includes('220v') || normalized2.includes('220 v');
+    const has50a1 = normalized1.includes('50a') || normalized1.includes('50 a');
+    const has50a2 = normalized2.includes('50a') || normalized2.includes('50 a');
+    const has15kw1 = normalized1.includes('15kw') || normalized1.includes('15 kw');
+    const has15kw2 = normalized2.includes('15kw') || normalized2.includes('15 kw');
+    
+    // إذا كان كلاهما كونتاكتور شنايدر بنفس المواصفات الأساسية
+    if ((has220v1 && has220v2) || (has50a1 && has50a2) || (has15kw1 && has15kw2)) {
+      return true; // نفس المنتج
+    }
+  }
+  
+  // 4. مقارنة الخصائص الأساسية
   
   // نوع المنتج يجب أن يكون متطابق
   if (chars1.productType && chars2.productType && chars1.productType !== chars2.productType) {
@@ -148,7 +167,7 @@ function areProductsEquivalent(description1, description2) {
     return false;
   }
   
-  // 4. حساب التشابه الدلالي للوصف (بدون أرقام القطع)
+  // 5. حساب التشابه الدلالي للوصف (بدون أرقام القطع)
   const cleanDesc1 = removePartNumbers(normalized1);
   const cleanDesc2 = removePartNumbers(normalized2);
   
@@ -160,8 +179,9 @@ function areProductsEquivalent(description1, description2) {
   
   const similarity = allWords.size > 0 ? commonWords.size / allWords.size : 0;
   
-  // عتبة أعلى للتشابه الدلالي
-  return similarity >= 0.8;
+  // عتبة مرنة للتشابه الدلالي
+  const threshold = chars1.productType === 'contactor' ? 0.6 : 0.8;
+  return similarity >= threshold;
 }
 
 // دالة استخراج نوع المنتج
@@ -280,10 +300,12 @@ function compareSpecs(specs1, specs2) {
 // دالة إزالة أرقام القطع من النص
 function removePartNumbers(description) {
   return description
-    .replace(/p\/n\s*:?\s*[a-z0-9\s]+/gi, '')
-    .replace(/ref\s*:?\s*[a-z0-9\s]+/gi, '')
-    .replace(/\b[a-z]{2,}\d+[a-z0-9]*\b/gi, '')
-    .replace(/\b\d{7}\b/gi, '')
+    .replace(/p\/n\s*:?\s*[a-z0-9\s]+/gi, '') // إزالة P/N
+    .replace(/ref\s*:?\s*[a-z0-9\s]+/gi, '') // إزالة REF
+    .replace(/\blc1d\d+[a-z0-9]*\b/gi, '') // إزالة LC1D32M7
+    .replace(/\b\d{7}\b/gi, '') // إزالة أرقام 7 خانات
+    .replace(/\b2102\d{3}\b/gi, '') // إزالة 2102034, 2102049
+    .replace(/\b[a-z]{2,}\d+[a-z0-9]*\b/gi, '') // إزالة باقي أرقام القطع
     .replace(/\s+/g, ' ')
     .trim();
 }
