@@ -1,10 +1,11 @@
 {
-  "isRunning": true,
+  "isRunning": false,
   "isPaused": false,
   "currentIndex": 5600,
   "totalItems": 5604,
-  "processedItems": 5600,
-  "unifiedItems": 0,
-  "startTime": "2025-08-30T09:09:18.837Z",
-  "errorCount": 0
+  "processedItems": 5604,
+  "unifiedItems": 10,
+  "startTime": "2025-08-30T09:21:38.290Z",
+  "errorCount": 2,
+  "lastError": "Quota exceeded for quota metric 'Write requests' and limit 'Write requests per minute per user' of service 'sheets.googleapis.com' for consumer 'project_number:338751861911'."
 }
