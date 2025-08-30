@@ -7177,7 +7177,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           // دالة استخراج البراند من الوصف
           const extractBrand = (desc: string): string => {
             const brands = ['TORNADO', 'TOSHIBA', 'SAMSUNG', 'OLYMPIC', 'ARISTON', 'CARRIER', 'ENERGIZER', 
-                          'BRENNENSTUHL', 'EGO', 'DIXELL', 'BRAUN', 'CROWN', 'ASTRA', 'SCHNIEDER', 'TELEMECANIQUE'];
+                          'BRENNENSTUHL', 'EGO', 'DIXELL', 'BRAUN', 'CROWN', 'ASTRA', 'SCHNEIDER', 'TELEMECANIQUE',
+                          'LG', 'SONY', 'PANASONIC', 'PHILIPS', 'BOSCH', 'SIEMENS', 'WHIRLPOOL', 'ZANUSSI',
+                          'GENERAL ELECTRIC', 'GE', 'HITACHI', 'MITSUBISHI', 'DAIKIN', 'GREE', 'MIDEA'];
             const upperDesc = desc.toUpperCase();
             for (const brand of brands) {
               if (upperDesc.includes(brand)) {
@@ -7192,14 +7194,31 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             const specs = [];
             const upperDesc = desc.toUpperCase();
             
-            // استخراج الأحجام والقياسات
-            const sizeMatches = upperDesc.match(/\d+[\s]*(INCH|LTR|LITER|MM|CM|MTR|METER|KW|WATT|V|VOLT|A|AMP)/gi);
-            if (sizeMatches) specs.push(...sizeMatches);
+            // استخراج الأحجام والقياسات بشكل أكثر دقة
+            const sizeMatches = upperDesc.match(/\d+\.?\d*[\s]*(INCH|"|LTR|LITER|L|MM|CM|M|MTR|METER|KW|KVA|WATT|W|V|VOLT|A|AMP|HP|TON)/gi);
+            if (sizeMatches) {
+              // تنظيف وتوحيد القياسات
+              sizeMatches.forEach(match => {
+                specs.push(match.toUpperCase().replace(/\s+/g, ''));
+              });
+            }
+            
+            // استخراج أرقام الموديلات
+            const modelMatches = upperDesc.match(/[A-Z]{2,}[\-]?\d+[A-Z]*/g);
+            if (modelMatches) {
+              modelMatches.forEach(match => {
+                if (match.length > 3 && match.length < 20) { // تجنب القيم القصيرة جداً أو الطويلة جداً
+                  specs.push(match);
+                }
+              });
+            }
             
             // استخراج أنواع المنتجات
-            const typeKeywords = ['WATER HEATER', 'T.V', 'LED', 'SATELLITE', 'RECIVER', 'DISH', 'FAN', 
-                                 'BATTERY', 'CABLE', 'LNB', 'REMOTE', 'VACUUM', 'BLENDER', 'HEATER', 
-                                 'THERMOSTAT', 'GASKET', 'BRACKET', 'HOT PLATE', 'CONTACTOR'];
+            const typeKeywords = ['WATER HEATER', 'T.V', 'TV', 'LED', 'LCD', 'PLASMA', 'SATELLITE', 'RECEIVER', 
+                                 'DISH', 'FAN', 'BATTERY', 'CABLE', 'LNB', 'REMOTE', 'VACUUM', 'BLENDER', 
+                                 'HEATER', 'THERMOSTAT', 'GASKET', 'BRACKET', 'HOT PLATE', 'CONTACTOR',
+                                 'REFRIGERATOR', 'FREEZER', 'WASHER', 'DRYER', 'MICROWAVE', 'OVEN',
+                                 'AIR CONDITIONER', 'AC', 'SPLIT', 'WINDOW', 'IRON', 'MIXER'];
             for (const keyword of typeKeywords) {
               if (upperDesc.includes(keyword)) {
                 specs.push(keyword);
@@ -7244,38 +7263,48 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
                 
                 // التحقق من تطابق المواصفات
                 const commonSpecs = currentSpecs.filter(spec => compareSpecs.includes(spec));
-                const specsSimilarity = Math.min(currentSpecs.length, compareSpecs.length) > 0 ? 
-                  commonSpecs.length / Math.min(currentSpecs.length, compareSpecs.length) : 0;
+                const minSpecsLength = Math.min(currentSpecs.length, compareSpecs.length);
+                const specsSimilarity = minSpecsLength > 0 ? commonSpecs.length / minSpecsLength : 0;
                 
-                // إذا كان نفس البراند و80% من المواصفات متطابقة
-                if (sameBrand && specsSimilarity >= 0.8) {
+                // شروط أكثر دقة للتطابق
+                // إذا كان نفس البراند ونفس جميع المواصفات
+                if (sameBrand && specsSimilarity === 1 && commonSpecs.length >= 2) {
                   isMatch = true;
-                  console.log(`✅ تطابق البراند والمواصفات: ${currentBrand} - ${commonSpecs.join(', ')}`);
+                  console.log(`✅ تطابق كامل: البراند ${currentBrand} - المواصفات ${commonSpecs.join(', ')}`);
                 } 
-                // أو إذا كانت المواصفات متطابقة جداً (90%+) حتى بدون براند
-                else if (specsSimilarity >= 0.9 && commonSpecs.length >= 3) {
+                // إذا كان نفس البراند ومعظم المواصفات متطابقة
+                else if (sameBrand && specsSimilarity >= 0.85 && commonSpecs.length >= 3) {
                   isMatch = true;
-                  console.log(`✅ تطابق المواصفات: ${commonSpecs.join(', ')}`);
+                  console.log(`✅ تطابق قوي: البراند ${currentBrand} - ${Math.round(specsSimilarity * 100)}% من المواصفات`);
+                } 
+                // إذا كانت جميع المواصفات متطابقة تماماً بدون براند
+                else if (!sameBrand && specsSimilarity === 1 && commonSpecs.length >= 4) {
+                  isMatch = true;
+                  console.log(`✅ تطابق المواصفات بدون براند: ${commonSpecs.join(', ')}`);
                 }
-                // استخدم AI للحالات الأقل وضوحاً
-                else if (aiCallCount < MAX_AI_CALLS) {
+                // استخدم AI فقط للحالات التي بها تشابه محتمل
+                else if (aiCallCount < MAX_AI_CALLS && (sameBrand || commonSpecs.length >= 2)) {
                   // مقارنة بسيطة للكلمات المفتاحية أولاً
                   const desc1Words = currentItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
                   const desc2Words = compareItem.description.toLowerCase().split(/\s+/).filter(w => w.length > 2);
                   const commonWords = desc1Words.filter(word => desc2Words.includes(word) && word.length > 3);
+                  const wordSimilarity = desc1Words.length > 0 ? commonWords.length / desc1Words.length : 0;
                   
-                  // إذا كان هناك تشابه معقول، استدعي AI
-                  if ((sameBrand && commonSpecs.length >= 2) || 
-                      commonWords.length >= 4 || 
-                      (desc1Words.length > 0 && commonWords.length / desc1Words.length > 0.6)) {
+                  // استخدم AI فقط إذا كان هناك احتمال قوي للتطابق
+                  if ((sameBrand && commonSpecs.length >= 1 && wordSimilarity > 0.5) || 
+                      (commonSpecs.length >= 3 && wordSimilarity > 0.7) ||
+                      (sameBrand && wordSimilarity > 0.7)) {
                     console.log(`🔍 مقارنة AI #${aiCallCount + 1} بين الصف ${i+2} والصف ${j+2}`);
                     console.log(`   البراند: ${currentBrand || 'غير محدد'} vs ${compareBrand || 'غير محدد'}`);
                     console.log(`   المواصفات المشتركة: ${commonSpecs.join(', ') || 'لا يوجد'}`);
+                    console.log(`   تشابه الكلمات: ${Math.round(wordSimilarity * 100)}%`);
                     isMatch = await compareWithAI(currentItem.description, compareItem.description);
                     aiCallCount++;
                     
                     if (isMatch) {
                       console.log(`✅ تطابق AI: العنصران في الصف ${i+2} و ${j+2} متطابقان`);
+                    } else {
+                      console.log(`❌ AI: العنصران مختلفان`);
                     }
                   }
                 }
