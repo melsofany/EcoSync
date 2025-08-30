@@ -7158,21 +7158,21 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       // معالجة تدريجية مع تأخير حقيقي
       const processInBatches = async () => {
+        // أولاً: إعادة تعيين جميع المعرفات
+        console.log('🔄 إعادة تعيين جميع المعرفات...');
+        processedItems.forEach(item => {
+          item.unifiedId = null;
+        });
+        
         for (let i = 0; i < processedItems.length; i++) {
-          if (processedIndices.has(i)) continue;
-          
           const currentItem = processedItems[i];
           
-          // تعطيل الاحتفاظ بالمعرفات الموجودة - إعادة التوحيد من الصفر
-          // سيتم توحيد جميع العناصر المتشابهة بمعرف موحد جديد
-          /*
-          if (currentItem.existingId && currentItem.existingId.startsWith('P-')) {
-            // لا نحتفظ بالمعرف الموجود - سنقوم بإعادة التوحيد
+          // إذا كان هذا العنصر حصل على معرف من مجموعة سابقة، تخطاه
+          if (currentItem.unifiedId) {
+            continue;
           }
-          */
           
           const currentGroup = [currentItem];
-          processedIndices.add(i);
           
           // دالة استخراج البراند من الوصف
           const extractBrand = (desc: string): string => {
@@ -7215,9 +7215,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             const currentSpecs = extractSpecs(currentItem.description || '');
             
             for (let j = i + 1; j < processedItems.length; j++) {
-              if (processedIndices.has(j)) continue;
-            
               const compareItem = processedItems[j];
+              
+              // إذا كان هذا العنصر حصل على معرف، تخطاه
+              if (compareItem.unifiedId) {
+                continue;
+              }
               
               let isMatch = false;
             
@@ -7280,7 +7283,6 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
               
               if (isMatch) {
                 currentGroup.push(compareItem);
-                processedIndices.add(j);
               }
             }
           }
@@ -7299,27 +7301,31 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           
           nextUnifiedId++;
           
+          // حساب عدد العناصر التي حصلت على معرفات
+          const processedCount = processedItems.filter(item => item.unifiedId !== null).length;
+          
           // تحديث التقدم
-          statusUpdate.processedItems = processedIndices.size;
+          statusUpdate.processedItems = processedCount;
           statusUpdate.unifiedItems = groups.length;
           statusUpdate.currentIndex = i;
           
           // حساب النسبة المئوية الحقيقية
-          const percentage = Math.round((processedIndices.size / processedItems.length) * 100);
+          const percentage = Math.round((processedCount / processedItems.length) * 100);
           statusUpdate.percentage = percentage;
           
-          // تحديث كل 3 عناصر للحصول على تقدم سلس
-          if (i % 3 === 0 || percentage % 2 === 0) {
+          // تحديث كل 5 عناصر للحصول على تقدم سلس
+          if (i % 5 === 0) {
             writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
             
-            // طباعة رسالة كل 25 عنصر فقط
-            if (i % 25 === 0 || percentage % 10 === 0) {
-              console.log(`📊 التقدم: ${processedIndices.size}/${processedItems.length} عنصر (${percentage}%) - ${groups.length} مجموعة`);
+            // طباعة رسالة كل 50 عنصر
+            if (i % 50 === 0) {
+              console.log(`📊 التقدم: ${processedCount}/${processedItems.length} عنصر (${percentage}%) - ${groups.length} مجموعة`);
+              console.log(`   آخر مجموعة: ${currentGroup.length} عنصر بالمعرف ${unifiedId}`);
             }
             
-            // إضافة تأخير صغير كل 15 عنصر لمحاكاة المعالجة الحقيقية
-            if (i % 15 === 0 && i > 0) {
-              await new Promise(resolve => setTimeout(resolve, 50));
+            // إضافة تأخير حقيقي كل 10 عناصر للمعالجة الحقيقية
+            if (i % 10 === 0 && i > 0) {
+              await new Promise(resolve => setTimeout(resolve, 200)); // تأخير أطول
             }
           }
         }
@@ -7330,9 +7336,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       // التأكد من معالجة جميع العناصر المتبقية
       console.log(`🔍 التحقق من العناصر غير المعالجة...`);
+      let remainingCount = 0;
       for (let i = 0; i < processedItems.length; i++) {
-        if (!processedIndices.has(i)) {
-          const item = processedItems[i];
+        const item = processedItems[i];
+        if (!item.unifiedId) {
           const unifiedId = `P-${String(nextUnifiedId).padStart(7, '0')}`;
           item.unifiedId = unifiedId;
           
@@ -7343,24 +7350,46 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           });
           
           nextUnifiedId++;
-          processedIndices.add(i);
-          console.log(`➕ عنصر منفرد جديد: ${unifiedId} - ${(item.description || 'بدون وصف').substring(0, 50)}...`);
+          remainingCount++;
+          
+          if (remainingCount <= 10) { // طباعة أول 10 عناصر منفردة فقط
+            console.log(`➕ عنصر منفرد: ${unifiedId} - ${(item.description || 'بدون وصف').substring(0, 50)}...`);
+          }
           
           // تحديث النسبة المئوية للعناصر المتبقية
-          statusUpdate.processedItems = processedIndices.size;
-          statusUpdate.percentage = Math.round((processedIndices.size / processedItems.length) * 100);
+          const processedCount = processedItems.filter(item => item.unifiedId !== null).length;
+          statusUpdate.processedItems = processedCount;
+          statusUpdate.percentage = Math.round((processedCount / processedItems.length) * 100);
           
-          if (i % 5 === 0) {
+          if (remainingCount % 10 === 0) {
             writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+            await new Promise(resolve => setTimeout(resolve, 100)); // تأخير للعناصر المتبقية
           }
         }
       }
       
+      if (remainingCount > 10) {
+        console.log(`➕ ... و ${remainingCount - 10} عنصر منفرد آخر`);
+      }
+      
       console.log(`🎯 تم إنشاء ${groups.length} مجموعة موحدة من إجمالي ${processedItems.length} عنصر`);
       console.log(`📊 الإحصائيات النهائية:`);
-      console.log(`   - العناصر المعالجة: ${processedIndices.size}`);
+      console.log(`   - العناصر المعالجة: ${processedItems.filter(item => item.unifiedId).length}`);
       console.log(`   - المجموعات الموحدة: ${groups.length}`);
+      console.log(`   - المجموعات متعددة العناصر: ${groups.filter(g => g.count > 1).length}`);
+      console.log(`   - أكبر مجموعة: ${Math.max(...groups.map(g => g.count))} عنصر`);
       console.log(`   - استدعاءات AI: ${aiCallCount}`);
+      
+      // طباعة أمثلة على المجموعات الموحدة
+      const multiItemGroups = groups.filter(g => g.count > 1).slice(0, 5);
+      if (multiItemGroups.length > 0) {
+        console.log(`
+📦 أمثلة على المنتجات الموحدة:`);
+        multiItemGroups.forEach(group => {
+          const sampleItem = group.items[0];
+          console.log(`   ${group.unifiedId}: ${group.count} عنصر - ${(sampleItem.description || 'بدون وصف').substring(0, 60)}...`);
+        });
+      }
       
       // كتابة النتائج إلى Google Sheets
       console.log('📡 بدء كتابة المعرفات الموحدة إلى Google Sheets...');
