@@ -5266,7 +5266,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         // استخدام dynamic import للتوافق مع ES modules
         const fs = await import('fs');
         const syncedDataPath = './attached_assets/synced_data_from_sheets.json';
-        const syncedData = JSON.parse(fs.readFileSync(syncedDataPath, 'utf8'));
+        const syncedData = JSON.parse(readFileSync(syncedDataPath, 'utf8'));
         
         // البحث عن الأصناف المرتبطة بأمر الشراء
         const poItems = syncedData.items.filter(item => item.poNumber === po.poNumber);
@@ -7064,7 +7064,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         startTime: new Date().toISOString(),
         errorCount: 0
       };
-      fs.writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+      writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
       
       // بناء قاموس للبحث السريع
       const itemsMap = new Map();
@@ -7091,7 +7091,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         if (i % 100 === 0) {
           statusUpdate.currentIndex = i;
           statusUpdate.processedItems = i;
-          fs.writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+          writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
         }
       }
       
@@ -7142,7 +7142,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         // تحديث التقدم
         statusUpdate.processedItems = Array.from(processedIndices).length;
         statusUpdate.unifiedItems = groups.length;
-        fs.writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+        writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
         
         console.log(`🔗 مجموعة ${unifiedId}: ${currentGroup.length} عنصر`);
         
@@ -7162,7 +7162,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       statusUpdate.processedItems = dataRows.length;
       statusUpdate.unifiedItems = groups.length;
       statusUpdate.endTime = new Date().toISOString();
-      fs.writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
+      writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
       
       console.log('✅ تم إكمال التوحيد المتطور بالذكاء الاصطناعي بنجاح');
       
@@ -7170,11 +7170,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.error('❌ خطأ في التوحيد المتطور:', error);
       
       // تحديث الحالة بالخطأ
-      const errorStatus = JSON.parse(fs.readFileSync(statusPath, 'utf-8'));
+      const errorStatus = JSON.parse(readFileSync(statusPath, 'utf-8'));
       errorStatus.isRunning = false;
       errorStatus.errorCount += 1;
       errorStatus.lastError = error.message;
-      fs.writeFileSync(statusPath, JSON.stringify(errorStatus, null, 2));
+      writeFileSync(statusPath, JSON.stringify(errorStatus, null, 2));
     }
   }
   
