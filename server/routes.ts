@@ -8993,19 +8993,8 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
       const currentProgress = Math.max(status.currentIndex || 0, status.processedItems || 0);
       
       // فحص إذا كان النظام يعمل فعلاً من خلال العملية الجارية
-      const { exec } = await import('child_process');
-      const { promisify } = await import('util');
-      const execAsync = promisify(exec);
-      
-      let isProcessRunning = false;
-      try {
-        const { stdout } = await execAsync('pgrep -f "unification-system-improved.mjs"');
-        isProcessRunning = stdout.trim() !== '';
-      } catch {
-        isProcessRunning = false;
-      }
-      
-      const isReallyRunning = isProcessRunning || (currentProgress > 0 && currentProgress < 5604);
+      // تم إصلاح المشكلة: استخدام الحالة من الملف مباشرة
+      const isReallyRunning = status.isRunning === true;
       
       const response = {
         isRunning: isReallyRunning,
