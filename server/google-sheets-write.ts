@@ -125,9 +125,6 @@ export class GoogleSheetsWriter {
           throw new Error('فشل في تهيئة Google Sheets');
         }
       }
-
-      // العثور على الصف الفارغ التالي
-      const startRow = await this.findNextEmptyRow();
       
       // تحضير البيانات للكتابة
       const dataToWrite: any[][] = [];
@@ -156,25 +153,22 @@ export class GoogleSheetsWriter {
         ];
         dataToWrite.push(row);
       }
-
-      // كتابة البيانات إلى Google Sheets
-      const range = `DATA!A${startRow}:S${startRow + dataToWrite.length - 1}`;
       
-      console.log(`📝 كتابة ${dataToWrite.length} صف إلى النطاق: ${range}`);
+      console.log(`📝 إضافة ${dataToWrite.length} صف جديد إلى ورقة DATA`);
       
-      const response = await this.sheets.spreadsheets.values.update({
+      // استخدام append بدلاً من update لإضافة البيانات في نهاية الورقة
+      const response = await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: range,
+        range: 'DATA!A:S', // النطاق الكامل للأعمدة
         valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS', // إدراج صفوف جديدة
         requestBody: {
           values: dataToWrite
         }
       });
 
       console.log('✅ تم كتابة طلب التسعير بنجاح');
-      console.log(`📊 عدد الخلايا المحدثة: ${response.data.updatedCells}`);
-      console.log(`📋 عدد الصفوف المحدثة: ${response.data.updatedRows}`);
-      console.log(`📑 عدد الأعمدة المحدثة: ${response.data.updatedColumns}`);
+      console.log(`📊 تفاصيل الكتابة:`, response.data.updates);
 
       return {
         success: true,
@@ -182,10 +176,7 @@ export class GoogleSheetsWriter {
         details: {
           rfqNumber: quotation.rfqNumber,
           itemsCount: quotation.items.length,
-          startRow: startRow,
-          endRow: startRow + dataToWrite.length - 1,
-          updatedCells: response.data.updatedCells,
-          updatedRows: response.data.updatedRows
+          updates: response.data.updates
         }
       };
     } catch (error) {
