@@ -80,13 +80,12 @@ export default function AIDataUnification() {
           setStatus({
             isRunning: statusData.isRunning || false,
             isPaused: statusData.isPaused || false,
-            currentIndex: statusData.progress || 0,
-            totalItems: statusData.total || 0,
+            currentIndex: statusData.processedItems || 0,  // استخدام processedItems للفهرس الحالي
+            totalItems: statusData.totalItems || statusData.total || 0,
             processedItems: statusData.processedItems || 0,
             unifiedItems: statusData.unifiedItems || 0,
             quotaExceeded: statusData.quotaExceeded || false,
-            progress: statusData.processedItems && statusData.total ? 
-              Math.round((statusData.processedItems / statusData.total) * 100) : 0,
+            progress: statusData.progress || 0,  // استخدام progress مباشرة من API (النسبة المئوية)
             logs: []
           });
           
