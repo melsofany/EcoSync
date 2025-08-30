@@ -7151,18 +7151,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log(`🚀 بدء التوحيد الذكي لجميع الـ ${processedItems.length} عنصر`);
       console.log(`📊 سيتم معالجة كل صف وإعطاؤه معرف موحد`);
       
-      // الحصول على أعلى معرف موجود لمواصلة الترقيم منه
-      let maxExistingId = 0;
-      processedItems.forEach(item => {
-        if (item.existingId && item.existingId.startsWith('P-')) {
-          const idNum = parseInt(item.existingId.substring(2));
-          if (!isNaN(idNum) && idNum > maxExistingId) {
-            maxExistingId = idNum;
-          }
-        }
-      });
-      nextUnifiedId = maxExistingId + 1;
-      console.log(`📝 بدء الترقيم من: P-${String(nextUnifiedId).padStart(7, '0')}`);
+      // بدء الترقيم من 1 لإعادة التوحيد الكامل
+      nextUnifiedId = 1;
+      console.log(`📝 بدء إعادة التوحيد الكامل من: P-0000001`);
+      console.log(`🔄 سيتم إعادة توحيد جميع العناصر المتشابهة بمعرفات جديدة`);
       
       // معالجة تدريجية مع تأخير حقيقي
       const processInBatches = async () => {
@@ -7171,43 +7163,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           
           const currentItem = processedItems[i];
           
-          // إذا كان العنصر له معرف موجود بالفعل، احتفظ به
+          // تعطيل الاحتفاظ بالمعرفات الموجودة - إعادة التوحيد من الصفر
+          // سيتم توحيد جميع العناصر المتشابهة بمعرف موحد جديد
+          /*
           if (currentItem.existingId && currentItem.existingId.startsWith('P-')) {
-            currentItem.unifiedId = currentItem.existingId;
-            processedIndices.add(i);
-            
-            // أضف هذا كمجموعة منفردة للإحصائيات
-            groups.push({
-              unifiedId: currentItem.existingId,
-              items: [currentItem],
-              count: 1
-            });
-            
-            // تحديث التقدم
-            statusUpdate.processedItems = processedIndices.size;
-            statusUpdate.unifiedItems = groups.length;
-            statusUpdate.currentIndex = i;
-            
-            // حساب النسبة المئوية الحقيقية
-            const currentPercentage = Math.round((processedIndices.size / processedItems.length) * 100);
-            statusUpdate.percentage = currentPercentage;
-            
-            // تحديث الحالة كل 5 عناصر
-            if (i % 5 === 0) {
-              writeFileSync(statusPath, JSON.stringify(statusUpdate, null, 2));
-              
-              // طباعة رسالة كل 50 عنصر فقط
-              if (i % 50 === 0) {
-                console.log(`⏳ التقدم: ${i + 1}/${processedItems.length} عنصر (${currentPercentage}%)`); 
-              }
-              
-              // إضافة تأخير صغير كل 20 عنصر لمحاكاة المعالجة الحقيقية
-              if (i % 20 === 0 && i > 0) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-              }
-            }
-            continue;
+            // لا نحتفظ بالمعرف الموجود - سنقوم بإعادة التوحيد
           }
+          */
         
         const currentGroup = [currentItem];
         processedIndices.add(i);
@@ -7219,10 +7181,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             
             const compareItem = processedItems[j];
             
-            // تخطي العناصر التي لها معرف موجود
-            if (compareItem.existingId && compareItem.existingId.startsWith('P-')) {
-              continue;
-            }
+            // لا نتخطى أي عناصر - سنقارن جميع العناصر
+            // if (compareItem.existingId && compareItem.existingId.startsWith('P-')) {
+            //   continue;
+            // }
             
             let isMatch = false;
             
@@ -7245,12 +7207,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
               
               // إذا كان هناك تشابه كبير، استدعي AI
               if (commonWords.length >= 3 || (desc1Words.length > 0 && commonWords.length / desc1Words.length > 0.5)) {
-                console.log(`🔍 مقارنة AI #${aiCallCount + 1}`);
+                console.log(`🔍 مقارنة AI #${aiCallCount + 1} بين الصف ${i+2} والصف ${j+2}`);
                 isMatch = await compareWithAI(currentItem.description, compareItem.description);
                 aiCallCount++;
                 
                 if (isMatch) {
-                  console.log(`✅ تطابق AI: العنصران متطابقان`);
+                  console.log(`✅ تطابق AI: العنصران في الصف ${i+2} و ${j+2} متطابقان`);
                 }
               }
             }
@@ -7340,7 +7302,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log(`   - استدعاءات AI: ${aiCallCount}`);
       
       // كتابة النتائج إلى Google Sheets
+      console.log('📡 بدء كتابة المعرفات الموحدة إلى Google Sheets...');
       await writeUnifiedIdsToSheets(sheets, spreadsheetId, processedItems);
+      console.log('🎉 انتهى التوحيد والكتابة إلى Google Sheets!');
       
       // تحديث الحالة النهائية
       statusUpdate.isRunning = false;
@@ -7416,6 +7380,7 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
   // دالة كتابة المعرفات الموحدة إلى Google Sheets
   async function writeUnifiedIdsToSheets(sheets: any, spreadsheetId: string, items: any[]) {
     console.log('📝 كتابة المعرفات الموحدة إلى Google Sheets...');
+    console.log(`📦 عدد العناصر للكتابة: ${items.length}`);
     
     const batchData = [];
     
@@ -7425,6 +7390,8 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
           range: `DATA!A${item.rowIndex}`,
           values: [[item.unifiedId]]
         });
+      } else {
+        console.warn(`⚠️ عنصر بدون معرف موحد في الصف ${item.rowIndex}`);
       }
     }
     
@@ -7442,7 +7409,7 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
           }
         });
         
-        console.log(`✅ تم كتابة دفعة ${Math.floor(i/chunkSize) + 1} (${chunk.length} عنصر)`);
+        console.log(`✅ تم كتابة دفعة ${Math.floor(i/chunkSize) + 1} (${chunk.length} عنصر) - من ${i} إلى ${Math.min(i + chunk.length, batchData.length)}`);
         
         // توقف قصير
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -7450,6 +7417,7 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
     }
     
     console.log(`✅ تم كتابة ${batchData.length} معرف موحد إلى Google Sheets`);
+    console.log(`📤 نتائج التوحيد: ${batchData.length} من أصل ${items.length} عنصر`);
   }
 
   // تطبيق التصحيح النهائي للقيمة المالية
