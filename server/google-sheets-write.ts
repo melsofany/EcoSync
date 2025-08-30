@@ -156,12 +156,11 @@ export class GoogleSheetsWriter {
       
       console.log(`📝 إضافة ${dataToWrite.length} صف جديد إلى ورقة DATA`);
       
-      // استخدام append بدلاً من update لإضافة البيانات في نهاية الورقة
+      // استخدام append بطريقة أبسط
       const response = await this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A:S', // النطاق الكامل للأعمدة
-        valueInputOption: 'USER_ENTERED',
-        insertDataOption: 'INSERT_ROWS', // إدراج صفوف جديدة
+        range: 'DATA', // الورقة فقط بدون تحديد الأعمدة
+        valueInputOption: 'RAW', // استخدام RAW بدلاً من USER_ENTERED
         requestBody: {
           values: dataToWrite
         }
