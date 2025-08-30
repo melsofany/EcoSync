@@ -63,7 +63,10 @@ export class GoogleSheetsWriter {
 
       this.auth = new GoogleAuth({
         credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets']
+        scopes: [
+          'https://www.googleapis.com/auth/spreadsheets',
+          'https://www.googleapis.com/auth/drive.file'
+        ]
       });
 
       // إضافة خيارات إضافية لحل مشاكل SSL/TLS
@@ -156,28 +159,55 @@ export class GoogleSheetsWriter {
       
       console.log(`📝 إضافة ${dataToWrite.length} صف جديد إلى ورقة DATA`);
       
-      // استخدام append بطريقة أبسط
-      const response = await this.sheets.spreadsheets.values.append({
-        spreadsheetId: this.spreadsheetId,
-        range: 'DATA', // الورقة فقط بدون تحديد الأعمدة
-        valueInputOption: 'RAW', // استخدام RAW بدلاً من USER_ENTERED
-        requestBody: {
-          values: dataToWrite
-        }
-      });
+      // محاولة استخدام batchUpdate بدلاً من append
+      try {
+        const response = await this.sheets.spreadsheets.values.batchUpdate({
+          spreadsheetId: this.spreadsheetId,
+          requestBody: {
+            valueInputOption: 'USER_ENTERED',
+            data: [{
+              range: 'DATA!A:S',
+              values: dataToWrite
+            }]
+          }
+        });
+        
+        console.log('✅ تم كتابة البيانات بنجاح باستخدام batchUpdate');
+        return {
+          success: true,
+          message: `تم إضافة طلب التسعير ${quotation.rfqNumber} بنجاح`,
+          details: {
+            rfqNumber: quotation.rfqNumber,
+            itemsCount: quotation.items.length,
+            responses: response.data.responses
+          }
+        };
+      } catch (batchError) {
+        console.log('⚠️ فشل batchUpdate، محاولة append...');
+        
+        // إذا فشل batchUpdate، نحاول append
+        const response = await this.sheets.spreadsheets.values.append({
+          spreadsheetId: this.spreadsheetId,
+          range: 'DATA!A:S',
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: dataToWrite
+          }
+        });
 
-      console.log('✅ تم كتابة طلب التسعير بنجاح');
-      console.log(`📊 تفاصيل الكتابة:`, response.data.updates);
+        console.log('✅ تم كتابة طلب التسعير بنجاح');
+        console.log(`📊 تفاصيل الكتابة:`, response.data.updates);
 
-      return {
-        success: true,
-        message: `تم إضافة طلب التسعير ${quotation.rfqNumber} بنجاح`,
-        details: {
-          rfqNumber: quotation.rfqNumber,
-          itemsCount: quotation.items.length,
-          updates: response.data.updates
-        }
-      };
+        return {
+          success: true,
+          message: `تم إضافة طلب التسعير ${quotation.rfqNumber} بنجاح`,
+          details: {
+            rfqNumber: quotation.rfqNumber,
+            itemsCount: quotation.items.length,
+            updates: response.data.updates
+          }
+        };
+      }
     } catch (error) {
       console.error('❌ خطأ في كتابة طلب التسعير:', error);
       console.error('❌ تفاصيل الخطأ:', (error as Error).stack);
