@@ -1,10 +1,10 @@
 {
-  "isRunning": true,
+  "isRunning": false,
   "isPaused": false,
-  "currentIndex": 5329,
+  "currentIndex": 0,
   "totalItems": 5604,
-  "processedItems": 5329,
-  "unifiedItems": 426,
-  "startTime": "2025-08-29T17:13:00.000Z",
+  "processedItems": 0,
+  "unifiedItems": 0,
+  "startTime": null,
   "errorCount": 0
 }
