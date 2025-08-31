@@ -843,6 +843,29 @@ export class GoogleSheetsRealtimeData {
       const rows = response.data.values || [];
       console.log(`📊 تم قراءة ${rows.length} صف من صفحة تسعير العملاء`);
 
+      // قراءة بيانات DATA للتحقق من الأسعار المحفوظة
+      const dataResponse = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'DATA!A2:AA', // قراءة كل البيانات من صفحة DATA
+      });
+      
+      const dataRows = dataResponse.data.values || [];
+      console.log(`📊 تم قراءة ${dataRows.length} صف من صفحة DATA للتحقق من الأسعار`);
+      
+      // إنشاء خريطة للأسعار المحفوظة من DATA
+      const savedPricesMap = new Map<string, string>();
+      for (const dataRow of dataRows) {
+        const dataItemNumber = dataRow[0]; // العمود A - Item Number
+        const dataRfqNumber = dataRow[5]; // العمود F - RFQ Number  
+        const dataCustomerPrice = dataRow[8]; // العمود I - Customer Price
+        
+        if (dataItemNumber && dataCustomerPrice && dataCustomerPrice !== '' && dataCustomerPrice !== '0') {
+          const key = `${dataItemNumber}_${dataRfqNumber || ''}`;
+          savedPricesMap.set(key, dataCustomerPrice);
+          console.log(`💾 سعر محفوظ في DATA: ${key} = ${dataCustomerPrice}`);
+        }
+      }
+
       // تحويل البيانات إلى تنسيق مناسب
       const items = rows.map((row: any[], index: number) => ({
         id: `customer-${index + 2}`,
@@ -869,6 +892,15 @@ export class GoogleSheetsRealtimeData {
         // التحقق من وجود رقم البند
         if (!item.itemNumber) return false;
         
+        // التحقق من السعر المحفوظ في DATA
+        const key = `${item.itemNumber}_${item.rfqNumber || ''}`;
+        const savedPrice = savedPricesMap.get(key);
+        
+        if (savedPrice) {
+          console.log(`💰 إخفاء البند ${item.itemNumber} من تسعير العملاء - تم تسعيره في DATA (${savedPrice})`);
+          return false;
+        }
+        
         // فلترة البنود المسعّرة - إخفاء البنود التي تم تسعيرها للعميل
         if (item.customerUnitPrice && item.customerUnitPrice !== '' && item.customerUnitPrice !== '0') {
           console.log(`💰 إخفاء البند ${item.itemNumber} - تم تسعيره بالفعل (${item.customerUnitPrice})`);
@@ -894,13 +926,8 @@ export class GoogleSheetsRealtimeData {
       // الآن نحتاج لجلب LINE ITEM من صفحة DATA وبيانات الموردين
       if (items.length > 0) {
         try {
-          const dataResponse = await this.sheets.spreadsheets.values.get({
-            spreadsheetId: this.spreadsheetId,
-            range: 'DATA!A2:AA', // قراءة كل البيانات من صفحة DATA
-          });
-
-          const dataRows = dataResponse.data.values || [];
-          console.log(`📊 تم قراءة ${dataRows.length} صف من صفحة DATA للبحث عن LINE ITEM`);
+          // استخدام البيانات التي قرأناها بالفعل من DATA
+          console.log(`📊 استخدام ${dataRows.length} صف من صفحة DATA للبحث عن LINE ITEM`);
           
           // جلب بيانات تسعير الموردين
           const supplierResponse = await this.sheets.spreadsheets.values.get({
