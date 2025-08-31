@@ -143,24 +143,86 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         </div>
       </div>
 
-      {/* Basic supplier pricing info - show data from item passed as prop */}
+      {/* معلومات المورد الكاملة */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
         <h4 className="font-semibold mb-3 flex items-center gap-2">
           <DollarSign className="h-4 w-4" />
           معلومات التسعير الحالي
         </h4>
-        <div className="grid grid-cols-2 gap-4">
+        
+        {/* معلومات المورد الأساسية */}
+        <div className="grid grid-cols-4 gap-4 mb-4">
           <div>
-            <label className="text-sm font-medium">سعر المورد:</label>
-            <p className="font-semibold text-green-600">
+            <label className="text-sm font-medium">اسم المورد:</label>
+            <p className="text-sm font-semibold">{detailedPricing?.supplierName || item.supplierName || "غير محدد"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">رقم الهاتف:</label>
+            <p className="text-sm" dir="ltr">{detailedPricing?.supplierPhone || item.supplierPhone || "غير متوفر"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">البريد الإلكتروني:</label>
+            <p className="text-sm">{detailedPricing?.supplierEmail || item.supplierEmail || "غير متوفر"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">العنوان:</label>
+            <p className="text-sm">{detailedPricing?.supplierAddress || item.supplierAddress || "غير متوفر"}</p>
+          </div>
+        </div>
+
+        {/* معلومات التسعير والضريبة */}
+        <div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-white rounded-lg">
+          <div className="text-center border-l">
+            <label className="text-sm font-medium block mb-1">سعر الوحدة (بدون ضريبة)</label>
+            <p className="font-bold text-green-600 text-lg">
               {formatCurrency(Number(detailedPricing?.supplierUnitPrice || item.supplierPrice || 0))}
             </p>
           </div>
-          <div>
-            <label className="text-sm font-medium">المورد:</label>
-            <p className="text-sm">{detailedPricing?.supplierName || item.supplierName || ""}</p>
+          <div className="text-center border-l">
+            <label className="text-sm font-medium block mb-1">ضريبة القيمة المضافة</label>
+            <p className="font-semibold text-blue-600">
+              {detailedPricing?.vatRate || item.vatRate || "14"}%
+            </p>
+            <p className="text-xs text-gray-600">
+              {detailedPricing?.vatInclusive === "true" || item.vatInclusive === "true" ? "شامل الضريبة" : "غير شامل الضريبة"}
+            </p>
+          </div>
+          <div className="text-center">
+            <label className="text-sm font-medium block mb-1">السعر النهائي</label>
+            <p className="font-bold text-green-700 text-lg">
+              {(() => {
+                const basePrice = Number(detailedPricing?.supplierUnitPrice || item.supplierPrice || 0);
+                const vatRate = Number(detailedPricing?.vatRate || item.vatRate || 14) / 100;
+                const isInclusive = detailedPricing?.vatInclusive === "true" || item.vatInclusive === "true";
+                return formatCurrency(isInclusive ? basePrice : basePrice * (1 + vatRate));
+              })()}
+            </p>
           </div>
         </div>
+
+        {/* الشروط والأحكام */}
+        <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 rounded-lg">
+          <div>
+            <label className="text-xs font-medium text-gray-600">شروط الدفع:</label>
+            <p className="text-sm font-medium">{detailedPricing?.paymentTerms || item.paymentTerms || "نقداً عند التسليم"}</p>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600">مدة التوريد:</label>
+            <p className="text-sm font-medium">{detailedPricing?.deliveryTime || item.deliveryTime || "فوري"}</p>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600">فترة الضمان:</label>
+            <p className="text-sm font-medium">{detailedPricing?.warrantyPeriod || item.warrantyPeriod || "غير محدد"}</p>
+          </div>
+        </div>
+
+        {/* ملاحظات إضافية */}
+        {(detailedPricing?.supplierNotes || item.supplierNotes) && (
+          <div className="mt-3 p-2 bg-yellow-50 rounded">
+            <label className="text-xs font-medium text-gray-600">ملاحظات المورد:</label>
+            <p className="text-sm mt-1">{detailedPricing?.supplierNotes || item.supplierNotes}</p>
+          </div>
+        )}
         
         <div className="mt-4 flex gap-2">
           <Button
