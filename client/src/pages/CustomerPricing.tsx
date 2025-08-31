@@ -43,8 +43,10 @@ function ItemDetailedPricing({ item }: { item: any }) {
         // Use the same successful method from simple page
         const timestamp = Date.now();
         const randomId = Math.random().toString(36).substring(7);
+        // Use itemNumber if available, otherwise use id
+        const itemIdentifier = item.itemNumber || item.id;
         const response = await fetch(
-          `/api/items/${item.id}/comprehensive-data?t=${timestamp}&r=${randomId}`,
+          `/api/items/${itemIdentifier}/comprehensive-data?t=${timestamp}&r=${randomId}`,
           { 
             method: 'GET',
             credentials: 'include',
@@ -89,7 +91,11 @@ function ItemDetailedPricing({ item }: { item: any }) {
           quantity: data.quantity || '1',
           uom: data.uom || 'EACH',
           rfqNumber: data.rfqNumber || item.requestNumber || '',
-          supplierName: data.supplierName || item.supplierName || ''
+          supplierName: data.supplierName || item.supplierName || '',
+          supplierContact: data.supplier_contact || item.supplierContact || '',
+          supplierPhone: data.supplier_phone || item.supplierPhone || '',
+          supplierEmail: data.supplier_email || item.supplierEmail || '',
+          supplierAddress: data.supplier_address || item.supplierAddress || ''
         };
         
         setDetailedPricing(newData);

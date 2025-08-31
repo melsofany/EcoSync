@@ -41,7 +41,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
   // Fetch detailed pricing when component mounts
   React.useEffect(() => {
     const fetchDetailedPricing = async () => {
-      if (!item?.id) return;
+      if (!item?.id && !item?.itemNumber) return;
       
       setIsLoading(true);
       try {
@@ -92,7 +92,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
     };
 
     fetchDetailedPricing();
-  }, [item?.id]);
+  }, [item?.id, item?.itemNumber]);
 
 
   if (isLoading) {
