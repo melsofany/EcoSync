@@ -79,6 +79,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
     console.log('comprehensiveData length:', comprehensiveData.length);
     if (comprehensiveData.length > 0) {
       console.log('First row in state:', comprehensiveData[0]);
+      console.log('supplier_contact value:', comprehensiveData[0].supplier_contact);
     }
   }, [comprehensiveData]);
 
@@ -154,7 +155,12 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="text-sm font-medium">اسم المورد:</label>
-            <p className="text-sm font-semibold">{detailedPricing?.supplierName || item.supplierName || "غير محدد"}</p>
+            <p className="text-sm font-semibold">
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_name) || 
+               detailedPricing?.supplierName || 
+               item.supplierName || 
+               "غير محدد"}
+            </p>
           </div>
           <div>
             <label className="text-sm font-medium">المسؤول عند المورد:</label>
@@ -169,15 +175,30 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div>
             <label className="text-sm font-medium">رقم الهاتف:</label>
-            <p className="text-sm" dir="ltr">{detailedPricing?.supplierPhone || item.supplierPhone || "غير متوفر"}</p>
+            <p className="text-sm" dir="ltr">
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_phone) || 
+               detailedPricing?.supplierPhone || 
+               item.supplierPhone || 
+               "غير متوفر"}
+            </p>
           </div>
           <div>
             <label className="text-sm font-medium">البريد الإلكتروني:</label>
-            <p className="text-sm">{detailedPricing?.supplierEmail || item.supplierEmail || "غير متوفر"}</p>
+            <p className="text-sm">
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_email) || 
+               detailedPricing?.supplierEmail || 
+               item.supplierEmail || 
+               "غير متوفر"}
+            </p>
           </div>
           <div>
             <label className="text-sm font-medium">العنوان:</label>
-            <p className="text-sm">{detailedPricing?.supplierAddress || item.supplierAddress || "غير متوفر"}</p>
+            <p className="text-sm">
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_address) || 
+               detailedPricing?.supplierAddress || 
+               item.supplierAddress || 
+               "غير متوفر"}
+            </p>
           </div>
         </div>
 
