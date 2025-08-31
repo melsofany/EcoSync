@@ -243,11 +243,19 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
               <p className="font-medium">{comprehensiveData[comprehensiveData.length - 1].supplier_name || "-"}</p>
             </div>
             <div>
-              <label className="text-gray-600">سعر الوحدة:</label>
+              <label className="text-gray-600">سعر المورد:</label>
               <p className="font-semibold text-green-600">
                 {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 0))}
               </p>
             </div>
+            {comprehensiveData[comprehensiveData.length - 1].customer_price && (
+              <div>
+                <label className="text-gray-600">سعر العميل:</label>
+                <p className="font-semibold text-purple-600">
+                  {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].customer_price || 0))}
+                </p>
+              </div>
+            )}
             <div>
               <label className="text-gray-600">العملة:</label>
               <p>{comprehensiveData[comprehensiveData.length - 1].supplier_currency || "EGP"}</p>
@@ -269,6 +277,22 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                   {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].vat_amount || 0))}
                 </p>
               </div>
+            )}
+            {comprehensiveData[comprehensiveData.length - 1].customer_price && comprehensiveData[comprehensiveData.length - 1].supplier_price && (
+              <>
+                <div>
+                  <label className="text-gray-600">هامش الربح:</label>
+                  <p className="font-semibold text-blue-600">
+                    {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].customer_price || 0) - Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 0))}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-gray-600">نسبة الربح:</label>
+                  <p className="font-semibold text-blue-600">
+                    {((Number(comprehensiveData[comprehensiveData.length - 1].customer_price || 0) - Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 0)) / Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 1) * 100).toFixed(2)}%
+                  </p>
+                </div>
+              </>
             )}
             {comprehensiveData[comprehensiveData.length - 1].delivery_time && (
               <div>
