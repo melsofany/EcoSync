@@ -195,7 +195,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="text-center">
             <label className="text-sm font-medium block mb-1">الشخص المسؤول</label>
             <p className="font-bold text-purple-700 text-lg">
-              {detailedData?.responsibleEmployee || detailedPricing?.responsibleEmployee || detailedPricing?.employeeName || item.employeeName || "غير محدد"}
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].responsible_employee) || detailedPricing?.responsibleEmployee || detailedPricing?.employeeName || item.employeeName || "غير محدد"}
             </p>
             <p className="text-xs text-gray-600">
               الموظف المسؤول عن التسعير
@@ -242,7 +242,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <CustomerPricingForm 
               item={{
                 ...item,
-                supplierPrice: comprehensiveData?.supplierUnitPrice || item.supplierPrice
+                supplierPrice: (comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_unit_price) || detailedPricing?.supplierUnitPrice || item.supplierPrice
               }} 
               onSuccess={() => {
                 setShowPricingForm(false);
