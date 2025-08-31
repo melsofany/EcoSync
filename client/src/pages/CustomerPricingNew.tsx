@@ -375,9 +375,29 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
 function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => void }) {
   const [customerPrice, setCustomerPrice] = useState("");
   const [profitMargin, setProfitMargin] = useState("");
+  const [profitPercentage, setProfitPercentage] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  // حساب هامش الربح والنسبة المئوية تلقائياً عند تغيير سعر العميل
+  React.useEffect(() => {
+    if (customerPrice && item.supplierPrice) {
+      const custPrice = parseFloat(customerPrice);
+      const suppPrice = parseFloat(item.supplierPrice);
+      
+      if (!isNaN(custPrice) && !isNaN(suppPrice) && suppPrice > 0) {
+        const margin = custPrice - suppPrice;
+        const percentage = ((margin / suppPrice) * 100).toFixed(2);
+        
+        setProfitMargin(margin.toFixed(2));
+        setProfitPercentage(percentage);
+      }
+    } else {
+      setProfitMargin("");
+      setProfitPercentage("");
+    }
+  }, [customerPrice, item.supplierPrice]);
 
   const handleSubmit = async () => {
     if (!customerPrice || isNaN(Number(customerPrice))) {
@@ -443,16 +463,34 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
         </div>
         
         <div>
-          <label className="text-sm font-medium">هامش الربح (%)</label>
+          <label className="text-sm font-medium">سعر المورد</label>
           <Input
             type="number"
-            value={profitMargin}
-            onChange={(e) => setProfitMargin(e.target.value)}
-            placeholder="0"
-            className="mt-1"
+            value={item.supplierPrice || ""}
+            disabled
+            className="mt-1 bg-gray-100"
           />
         </div>
       </div>
+      
+      {/* عرض هامش الربح والنسبة المئوية المحسوبة تلقائياً */}
+      {customerPrice && profitMargin && (
+        <div className="grid grid-cols-2 gap-4 p-3 bg-blue-50 rounded-lg">
+          <div>
+            <label className="text-sm font-medium text-blue-700">هامش الربح</label>
+            <p className="text-lg font-bold text-blue-900">
+              {formatCurrency(Number(profitMargin))}
+            </p>
+          </div>
+          
+          <div>
+            <label className="text-sm font-medium text-blue-700">نسبة الربح</label>
+            <p className="text-lg font-bold text-blue-900">
+              {profitPercentage}%
+            </p>
+          </div>
+        </div>
+      )}
       
       <div>
         <label className="text-sm font-medium">ملاحظات</label>
