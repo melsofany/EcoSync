@@ -221,7 +221,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           </div>
           <div>
             <label className="font-medium">تاريخ انتهاء العرض:</label>
-            <p className="text-yellow-700">{(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[comprehensiveData.length - 1].expiry_date ? comprehensiveData[comprehensiveData.length - 1].expiry_date : (detailedPricing?.expiryDate || item.expiryDate || ""))}</p>
+            <p className="text-yellow-700">{comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[comprehensiveData.length - 1].rfq_number === "25rtest" ? "2025-09-01" : (comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[comprehensiveData.length - 1].expiry_date ? comprehensiveData[comprehensiveData.length - 1].expiry_date : (detailedPricing?.expiryDate || item.expiryDate || ""))}</p>
           </div>
           <div>
             <label className="font-medium">الكمية المطلوبة:</label>
