@@ -5466,10 +5466,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       };
 
       // تحديث Google Sheets مباشرة بدلاً من استخدام storage
-      if (googleSheetsWriter) {
-        try {
-          const googleSheetsWriter = new GoogleSheetsWriter();
-          await googleSheetsWriter.updateSupplierPricingRow(
+      try {
+        const googleSheetsWriter = new GoogleSheetsWriter();
+        await googleSheetsWriter.updateSupplierPricingRow(
             req.body.itemId,
             {
               supplierName: pricingData.supplierName || "",
@@ -5497,19 +5496,15 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
           await logActivity(req, "create_supplier_pricing", "pricing", req.body.itemId, 
             `Added enhanced supplier pricing for item ${req.body.itemId} - Supplier: ${pricingData.supplierName}`);
 
-          console.log('✅ تم تحديث تسعير المورد بنجاح في Google Sheets');
-          res.status(201).json({ 
-            id: req.body.itemId,
-            message: "تم إضافة تسعير المورد بنجاح",
-            ...pricingData 
-          });
-        } catch (sheetsError) {
-          console.error('❌ خطأ في تحديث Google Sheets:', sheetsError);
-          res.status(500).json({ message: "فشل في حفظ البيانات في Google Sheets" });
-        }
-      } else {
-        console.error('❌ Google Sheets Writer غير متوفر');
-        res.status(500).json({ message: "خدمة Google Sheets غير متوفرة" });
+        console.log('✅ تم تحديث تسعير المورد بنجاح في Google Sheets');
+        res.status(201).json({ 
+          id: req.body.itemId,
+          message: "تم إضافة تسعير المورد بنجاح",
+          ...pricingData 
+        });
+      } catch (sheetsError) {
+        console.error('❌ خطأ في تحديث Google Sheets:', sheetsError);
+        res.status(500).json({ message: "فشل في حفظ البيانات في Google Sheets" });
       }
     } catch (error) {
       console.error("Create supplier pricing error:", error);
