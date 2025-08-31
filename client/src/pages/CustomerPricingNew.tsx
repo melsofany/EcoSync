@@ -192,6 +192,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
               {comprehensiveData?.[0]?.supplier_contact || 
                detailedPricing?.supplierContactPerson || 
                item.supplierContactPerson || 
+               item.supplierContact ||
                "غير محدد"}
             </p>
           </div>
@@ -203,7 +204,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <p className="text-sm font-medium text-gray-900" dir="ltr">
               {comprehensiveData?.[0]?.supplier_phone || 
                detailedPricing?.supplierPhone || 
-               item.supplierPhone || 
+               item.supplierPhone ||
                "غير متوفر"}
             </p>
           </div>
@@ -212,7 +213,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <p className="text-sm font-medium text-gray-900">
               {comprehensiveData?.[0]?.supplier_email || 
                detailedPricing?.supplierEmail || 
-               item.supplierEmail || 
+               item.supplierEmail ||
                "غير متوفر"}
             </p>
           </div>
@@ -221,7 +222,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <p className="text-sm font-medium text-gray-900">
               {comprehensiveData?.[0]?.supplier_address || 
                detailedPricing?.supplierAddress || 
-               item.supplierAddress || 
+               item.supplierAddress ||
                "غير متوفر"}
             </p>
           </div>
