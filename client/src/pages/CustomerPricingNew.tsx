@@ -76,6 +76,12 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           if (comprehensiveResult.allDataRows && comprehensiveResult.allDataRows.length > 0) {
             console.log('Setting comprehensiveData with allDataRows, count:', comprehensiveResult.allDataRows.length);
             console.log('First row data:', comprehensiveResult.allDataRows[0]);
+            console.log('Supplier info in first row:', {
+              supplier_name: comprehensiveResult.allDataRows[0].supplier_name,
+              supplier_price: comprehensiveResult.allDataRows[0].supplier_price,
+              vat_rate: comprehensiveResult.allDataRows[0].vat_rate,
+              vat_included: comprehensiveResult.allDataRows[0].vat_included
+            });
             setComprehensiveData(comprehensiveResult.allDataRows);
           } else if (comprehensiveResult.lineItem) {
             // Single row backwards compatibility
@@ -343,7 +349,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
       </div>
 
       {/* بيانات المورد والضريبة */}
-      {comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_name && (
+      {comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[comprehensiveData.length - 1].supplier_name && (
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-4 mb-4">
           <h4 className="font-semibold mb-3 text-green-800 flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -356,23 +362,23 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <label className="text-gray-600">اسم المورد:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_name || '-'}</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].supplier_name || '-'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">جهة الاتصال:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_contact || '-'}</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].supplier_contact || '-'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">الهاتف:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_phone || '-'}</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].supplier_phone || '-'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">البريد الإلكتروني:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_email || '-'}</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].supplier_email || '-'}</p>
                 </div>
                 <div className="col-span-2">
                   <label className="text-gray-600">العنوان:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_address || '-'}</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].supplier_address || '-'}</p>
                 </div>
               </div>
             </div>
@@ -383,27 +389,27 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <label className="text-gray-600">سعر الوحدة:</label>
-                  <p className="font-bold text-green-700">{comprehensiveData[0].supplier_price ? formatCurrency(Number(comprehensiveData[0].supplier_price)) : '-'}</p>
+                  <p className="font-bold text-green-700">{comprehensiveData[comprehensiveData.length - 1].supplier_price ? formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].supplier_price)) : '-'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">السعر الإجمالي:</label>
-                  <p className="font-bold text-green-700">{comprehensiveData[0].supplier_total ? formatCurrency(Number(comprehensiveData[0].supplier_total)) : '-'}</p>
+                  <p className="font-bold text-green-700">{comprehensiveData[comprehensiveData.length - 1].supplier_total ? formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].supplier_total)) : '-'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">الضريبة مشمولة:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].vat_included || 'لا'}</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].vat_included || 'لا'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">نسبة الضريبة:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].vat_rate || '0'}%</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].vat_rate || '0'}%</p>
                 </div>
                 <div>
                   <label className="text-gray-600">السعر قبل الضريبة:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].price_before_vat ? formatCurrency(Number(comprehensiveData[0].price_before_vat)) : '-'}</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].price_before_vat ? formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].price_before_vat)) : '-'}</p>
                 </div>
                 <div>
                   <label className="text-gray-600">قيمة الضريبة:</label>
-                  <p className="font-semibold text-gray-900">{comprehensiveData[0].vat_amount ? formatCurrency(Number(comprehensiveData[0].vat_amount)) : '-'}</p>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].vat_amount ? formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].vat_amount)) : '-'}</p>
                 </div>
               </div>
             </div>
@@ -414,21 +420,21 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <label className="text-gray-600">وقت التسليم:</label>
-                <p className="font-semibold text-gray-900">{comprehensiveData[0].delivery_time || '-'}</p>
+                <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].delivery_time || '-'}</p>
               </div>
               <div>
                 <label className="text-gray-600">شروط الدفع:</label>
-                <p className="font-semibold text-gray-900">{comprehensiveData[0].payment_terms || '-'}</p>
+                <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].payment_terms || '-'}</p>
               </div>
               <div>
                 <label className="text-gray-600">فترة الضمان:</label>
-                <p className="font-semibold text-gray-900">{comprehensiveData[0].warranty_period || '-'}</p>
+                <p className="font-semibold text-gray-900">{comprehensiveData[comprehensiveData.length - 1].warranty_period || '-'}</p>
               </div>
             </div>
-            {comprehensiveData[0].supplier_notes && (
+            {comprehensiveData[comprehensiveData.length - 1].supplier_notes && (
               <div className="mt-3">
                 <label className="text-gray-600">ملاحظات المورد:</label>
-                <p className="font-semibold text-gray-900 bg-yellow-50 p-2 rounded mt-1">{comprehensiveData[0].supplier_notes}</p>
+                <p className="font-semibold text-gray-900 bg-yellow-50 p-2 rounded mt-1">{comprehensiveData[comprehensiveData.length - 1].supplier_notes}</p>
               </div>
             )}
           </div>
