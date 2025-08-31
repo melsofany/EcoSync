@@ -33,38 +33,117 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
       
       setIsLoading(true);
       try {
+        // First try to fetch detailed pricing
         const response = await fetch(`/api/items/${item.itemNumber}/detailed-pricing`, {
           credentials: 'include'
         });
-        const data = await response.json();
-        console.log('detailedPricing data:', data);
-        setDetailedPricing(data);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('detailedPricing data:', data);
+          setDetailedPricing(data);
+        } else {
+          console.warn('Failed to fetch detailed pricing:', response.status);
+          // Set fallback data from item prop
+          setDetailedPricing({
+            itemNumber: item.itemNumber,
+            lineItem: item.lineItem,
+            partNumber: item.partNumber,
+            description: item.description,
+            uom: item.uom || item.unit,
+            rfqNumber: item.requestNumber,
+            requestDate: item.requestDate,
+            expiryDate: item.expiryDate,
+            quantity: item.quantity,
+            supplierUnitPrice: item.supplierPrice,
+            supplierName: item.supplierName
+          });
+        }
 
         // Also fetch comprehensive data with cache busting
         const comprehensiveResponse = await fetch(`/api/items/${item.itemNumber}/comprehensive-data?t=${Date.now()}`, {
           credentials: 'include',
           headers: { 'Cache-Control': 'no-cache' }
         });
-        const comprehensiveResult = await comprehensiveResponse.json();
-        console.log('Comprehensive data received:', comprehensiveResult);
-        console.log('allDataRows:', comprehensiveResult.allDataRows);
-        console.log('allDataRows length:', comprehensiveResult.allDataRows ? comprehensiveResult.allDataRows.length : 0);
         
-        // Check if allDataRows exists, otherwise use single row
-        if (comprehensiveResult.allDataRows && comprehensiveResult.allDataRows.length > 0) {
-          console.log('Setting comprehensiveData with allDataRows, count:', comprehensiveResult.allDataRows.length);
-          console.log('First row data:', comprehensiveResult.allDataRows[0]);
-          setComprehensiveData(comprehensiveResult.allDataRows);
-        } else if (comprehensiveResult.lineItem) {
-          // Single row backwards compatibility
-          console.log('Setting comprehensiveData with single row');
-          setComprehensiveData([comprehensiveResult]);
+        if (comprehensiveResponse.ok) {
+          const comprehensiveResult = await comprehensiveResponse.json();
+          console.log('Comprehensive data received:', comprehensiveResult);
+          console.log('allDataRows:', comprehensiveResult.allDataRows);
+          console.log('allDataRows length:', comprehensiveResult.allDataRows ? comprehensiveResult.allDataRows.length : 0);
+          
+          // Check if allDataRows exists, otherwise use single row
+          if (comprehensiveResult.allDataRows && comprehensiveResult.allDataRows.length > 0) {
+            console.log('Setting comprehensiveData with allDataRows, count:', comprehensiveResult.allDataRows.length);
+            console.log('First row data:', comprehensiveResult.allDataRows[0]);
+            setComprehensiveData(comprehensiveResult.allDataRows);
+          } else if (comprehensiveResult.lineItem) {
+            // Single row backwards compatibility
+            console.log('Setting comprehensiveData with single row');
+            setComprehensiveData([comprehensiveResult]);
+          } else {
+            console.log('No comprehensive data found, using item data');
+            // Use data from the item prop as fallback
+            setComprehensiveData([{
+              itemNumber: item.itemNumber,
+              line_item: item.lineItem,
+              part_no: item.partNumber,
+              description: item.description,
+              rfq_number: item.requestNumber,
+              rfq_date: item.requestDate,
+              rfq_qty: item.quantity,
+              customer_price: item.customerPrice,
+              supplier_price: item.supplierPrice,
+              supplier_name: item.supplierName,
+              supplier_currency: 'EGP'
+            }]);
+          }
         } else {
-          console.log('No data found, setting empty array');
-          setComprehensiveData([]);
+          console.warn('Failed to fetch comprehensive data:', comprehensiveResponse.status);
+          // Use fallback data from item
+          setComprehensiveData([{
+            itemNumber: item.itemNumber,
+            line_item: item.lineItem,
+            part_no: item.partNumber,
+            description: item.description,
+            rfq_number: item.requestNumber,
+            rfq_date: item.requestDate,
+            rfq_qty: item.quantity,
+            customer_price: item.customerPrice,
+            supplier_price: item.supplierPrice,
+            supplier_name: item.supplierName,
+            supplier_currency: 'EGP'
+          }]);
         }
       } catch (error) {
         console.error('Error fetching detailed pricing:', error);
+        // Set fallback data
+        setDetailedPricing({
+          itemNumber: item.itemNumber,
+          lineItem: item.lineItem,
+          partNumber: item.partNumber,
+          description: item.description,
+          uom: item.uom || item.unit,
+          rfqNumber: item.requestNumber,
+          requestDate: item.requestDate,
+          expiryDate: item.expiryDate,
+          quantity: item.quantity,
+          supplierUnitPrice: item.supplierPrice,
+          supplierName: item.supplierName
+        });
+        setComprehensiveData([{
+          itemNumber: item.itemNumber,
+          line_item: item.lineItem,
+          part_no: item.partNumber,
+          description: item.description,
+          rfq_number: item.requestNumber,
+          rfq_date: item.requestDate,
+          rfq_qty: item.quantity,
+          customer_price: item.customerPrice,
+          supplier_price: item.supplierPrice,
+          supplier_name: item.supplierName,
+          supplier_currency: 'EGP'
+        }]);
       } finally {
         setIsLoading(false);
       }

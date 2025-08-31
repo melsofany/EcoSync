@@ -861,7 +861,9 @@ export class GoogleSheetsRealtimeData {
         currency: row[13] || '',
         notes: row[14] || '',
         status: row[15] || 'في انتظار تسعير الموردين',
-        lineItem: '' // سيتم ملؤه من صفحة DATA
+        lineItem: '', // سيتم ملؤه من صفحة DATA
+        supplierPrice: '', // سيتم ملؤه من ورقة تسعير الموردين
+        supplierName: '' // سيتم ملؤه من ورقة تسعير الموردين
       })).filter((item: any) => {
         // التحقق من وجود رقم البند
         if (!item.itemNumber) return false;
@@ -887,7 +889,7 @@ export class GoogleSheetsRealtimeData {
         return true;
       });
 
-      // الآن نحتاج لجلب LINE ITEM من صفحة DATA لكل بند
+      // الآن نحتاج لجلب LINE ITEM من صفحة DATA وبيانات الموردين
       if (items.length > 0) {
         try {
           const dataResponse = await this.sheets.spreadsheets.values.get({
@@ -897,6 +899,15 @@ export class GoogleSheetsRealtimeData {
 
           const dataRows = dataResponse.data.values || [];
           console.log(`📊 تم قراءة ${dataRows.length} صف من صفحة DATA للبحث عن LINE ITEM`);
+          
+          // جلب بيانات تسعير الموردين
+          const supplierResponse = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.spreadsheetId,
+            range: 'تسعير_الموردين!A2:AA1000', // قراءة بيانات تسعير الموردين
+          });
+          
+          const supplierRows = supplierResponse.data.values || [];
+          console.log(`📊 تم قراءة ${supplierRows.length} صف من صفحة تسعير الموردين`);
 
           // مطابقة كل بند مع LINE ITEM من صفحة DATA وتصحيح معرف البند بعد التوحيد
           for (const item of items) {
@@ -987,6 +998,23 @@ export class GoogleSheetsRealtimeData {
             
             if (!item.lineItem) {
               console.log(`⚠️ لم يتم العثور على LINE ITEM للبند ${item.itemNumber}`);
+            }
+            
+            // البحث عن بيانات المورد من ورقة تسعير الموردين
+            for (const supplierRow of supplierRows) {
+              const supplierItemNumber = (supplierRow[0] || '').trim(); // العمود A - Item Number
+              const supplierRfqNumber = (supplierRow[5] || '').trim(); // العمود F - RFQ Number
+              
+              if (supplierItemNumber === item.itemNumber && supplierRfqNumber === item.rfqNumber) {
+                item.supplierPrice = supplierRow[14] || ''; // العمود O - Unit Price
+                item.supplierName = supplierRow[9] || '';   // العمود J - Supplier Name
+                console.log(`💰 وجدت بيانات المورد للبند ${item.itemNumber}: السعر=${item.supplierPrice}, المورد=${item.supplierName}`);
+                break;
+              }
+            }
+            
+            if (!item.supplierPrice) {
+              console.log(`⚠️ لم يتم العثور على سعر المورد للبند ${item.itemNumber}`);
             }
           }
         } catch (dataError) {
