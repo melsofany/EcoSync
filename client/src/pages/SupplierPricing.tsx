@@ -1,18 +1,63 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, DollarSign, History, FileText, AlertCircle, Clock, Package, Eye } from "lucide-react";
+import { Plus, DollarSign, History, FileText, AlertCircle, Clock, Package, Eye, Trash2 } from "lucide-react";
 import NewSupplierPricingModal from "@/components/modals/NewSupplierPricingModal";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function SupplierPricing() {
+  const { toast } = useToast();
   const [isNewPricingModalOpen, setIsNewPricingModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [showPricingHistory, setShowPricingHistory] = useState(false);
   const [showItemsList, setShowItemsList] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Mutation to clear all supplier pricing data
+  const clearAllMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/supplier-pricing/clear-all', {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'فشل في حذف البيانات');
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "تم الحذف بنجاح",
+        description: data.message || `تم حذف ${data.deletedCount} بند من تسعير الموردين`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/items-requiring-pricing"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/supplier-pricing"] });
+      setShowDeleteDialog(false);
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "خطأ في الحذف",
+        description: error.message || "حدث خطأ أثناء حذف البيانات",
+      });
+    }
+  });
 
   // Fetch items requiring pricing
   const { data: rawItemsRequiringPricing = [], isLoading: itemsLoading } = useQuery<any[]>({
@@ -133,6 +178,14 @@ export default function SupplierPricing() {
               العودة للقائمة
             </Button>
           )}
+          <Button 
+            variant="destructive" 
+            onClick={() => setShowDeleteDialog(true)}
+            className="ml-2"
+          >
+            <Trash2 className="h-4 w-4 ml-2" />
+            حذف جميع البيانات
+          </Button>
           <Button onClick={() => handleAddPricing()}>
             <Plus className="h-4 w-4 ml-2" />
             إضافة سعر جديد
@@ -345,6 +398,29 @@ export default function SupplierPricing() {
         onClose={() => setIsNewPricingModalOpen(false)}
         selectedItemId={selectedItemId}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد حذف جميع البيانات</AlertDialogTitle>
+            <AlertDialogDescription className="text-right">
+              هل أنت متأكد من حذف جميع بيانات تسعير الموردين من النظام؟
+              <br />
+              هذا الإجراء لا يمكن التراجع عنه وسيتم حذف جميع البيانات نهائياً من صفحة تسعير الموردين في Google Sheets.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => clearAllMutation.mutate()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              حذف جميع البيانات
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

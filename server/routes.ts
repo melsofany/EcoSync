@@ -5512,6 +5512,36 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Clear all supplier pricing data (Admin only)
+  app.delete("/api/supplier-pricing/clear-all", requireAuth, async (req: Request, res: Response) => {
+    try {
+      // التحقق من صلاحيات المدير
+      if (req.session.user?.role !== 'it_admin' && req.session.user?.role !== 'manager') {
+        return res.status(403).json({ message: "غير مصرح لك بحذف البيانات" });
+      }
+      
+      console.log(`🗑️ طلب حذف جميع بيانات تسعير الموردين من ${req.session.user?.username}`);
+      
+      const { ClearSupplierPricing } = await import('./clear-supplier-pricing.js');
+      const clearer = new ClearSupplierPricing();
+      await clearer.initialize();
+      
+      const result = await clearer.clearAllData();
+      
+      await logActivity(req, "delete_all_supplier_pricing", "supplier_pricing", "all", 
+        `Cleared all supplier pricing data (${result.deletedCount} items)`);
+      
+      res.json({ 
+        success: true, 
+        message: `تم حذف ${result.deletedCount} بند من تسعير الموردين`,
+        deletedCount: result.deletedCount 
+      });
+    } catch (error: any) {
+      console.error("❌ خطأ في حذف بيانات تسعير الموردين:", error);
+      res.status(500).json({ message: "حدث خطأ في حذف البيانات" });
+    }
+  });
+
   app.get("/api/supplier-pricing", requireAuth, async (req: Request, res: Response) => {
     try {
       const pricing = await storage.getAllSupplierPricing();
