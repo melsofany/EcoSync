@@ -5834,26 +5834,41 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         // في حالة فشل الحفظ في DATA، نستمر ونحفظ في صفحة تسعير العملاء
       }
       
-      // حفظ في صفحة تسعير العملاء أيضاً
+      // حفظ في صفحة تسعير العملاء أيضاً مع البيانات الكاملة
       try {
-        console.log(`🟡 استيراد CustomerPricingUpdater لحفظ في صفحة تسعير العملاء...`);
-        const { CustomerPricingUpdater } = await import('./customer-pricing-update.js');
-        const customerPricingUpdater = new CustomerPricingUpdater();
-        await customerPricingUpdater.initialize();
+        console.log(`🟡 استيراد SaveCompleteCustomerPricing لحفظ البيانات الكاملة...`);
+        const { SaveCompleteCustomerPricing } = await import('./save-complete-customer-pricing.js');
+        const completeDataSaver = new SaveCompleteCustomerPricing();
+        await completeDataSaver.initialize();
         
-        console.log(`🟡 استدعاء updateCustomerPricing...`);
-        await customerPricingUpdater.updateCustomerPricing(
-          pricingData.itemNumber,
-          {
-            customerUnitPrice: pricingData.customerPrice || "",
-            employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد",
-            profitMargin: pricingData.profitMargin || "",
-            notes: pricingData.notes || ""
-          }
-        );
-        console.log(`✅ تم حفظ سعر العميل في صفحة تسعير العملاء بنجاح`);
+        // حساب السعر الإجمالي
+        const quantity = parseFloat(pricingData.quantity || '1');
+        const unitPrice = parseFloat(pricingData.customerPrice || '0');
+        const totalPrice = (quantity * unitPrice).toString();
+        
+        console.log(`🟡 حفظ البيانات الكاملة في صفحة تسعير العملاء...`);
+        await completeDataSaver.saveCompleteData({
+          itemNumber: pricingData.itemNumber,
+          partNumber: pricingData.partNumber || '',
+          description: pricingData.description || '',
+          uom: pricingData.uom || 'EACH',
+          quantity: pricingData.quantity || '1',
+          rfqNumber: pricingData.rfqNumber || '',
+          clientName: pricingData.clientName || '',
+          requestDate: pricingData.requestDate || new Date().toISOString().split('T')[0],
+          expiryDate: pricingData.expiryDate || '',
+          customerUnitPrice: pricingData.customerPrice || '',
+          customerTotalPrice: totalPrice,
+          supplierUnitPrice: pricingData.supplierPrice || '',
+          profitMargin: pricingData.profitMargin || '',
+          currency: pricingData.currency || 'EGP',
+          notes: pricingData.notes || '',
+          status: 'مُسعّر',
+          employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
+        });
+        console.log(`✅ تم حفظ البيانات الكاملة في صفحة تسعير العملاء بنجاح`);
       } catch (pricingError) {
-        console.warn(`⚠️ لم يتم العثور على البند في صفحة تسعير العملاء: ${pricingError.message}`);
+        console.warn(`⚠️ خطأ في حفظ البيانات في صفحة تسعير العملاء: ${pricingError.message}`);
       }
       
       await logActivity(req, "create_customer_pricing", "pricing", pricingData.itemNumber, 
