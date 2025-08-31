@@ -371,10 +371,13 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
       const suppPrice = parseFloat(supplierPrice);
       
       if (!isNaN(custPrice) && !isNaN(suppPrice) && suppPrice > 0) {
-        const margin = custPrice - suppPrice;
-        const percentage = ((margin / suppPrice) * 100).toFixed(2);
+        // حساب هامش الربح قبل الضريبة
+        const grossMargin = custPrice - suppPrice;
+        // خصم 14% ضريبة من هامش الربح
+        const netMargin = grossMargin * 0.86; // خصم 14% يعني الضرب في 0.86
+        const percentage = ((netMargin / suppPrice) * 100).toFixed(2);
         
-        setProfitMargin(margin.toFixed(2));
+        setProfitMargin(netMargin.toFixed(2));
         setProfitPercentage(percentage);
       }
     } else {

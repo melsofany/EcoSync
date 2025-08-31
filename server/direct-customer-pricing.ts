@@ -20,7 +20,7 @@ export class DirectCustomerPricing {
 
   async saveCustomerPrice(itemNumber: string, price: string, rfqNumber: string = '') {
     try {
-      console.log(`📝 حفظ مباشر لسعر العميل: ${itemNumber} = ${price}`);
+      console.log(`📝 حفظ مباشر لسعر العميل: ${itemNumber} = ${price} للطلب ${rfqNumber}`);
       
       // قراءة ورقة DATA
       const response = await this.sheets.spreadsheets.values.get({
@@ -31,24 +31,22 @@ export class DirectCustomerPricing {
       const rows = response.data.values || [];
       console.log(`📊 تم قراءة ${rows.length} صف من DATA`);
 
-      // البحث عن البند
+      // البحث عن البند مع رقم الطلب
       let targetRow = -1;
       for (let i = 1; i < rows.length; i++) {
         const itemCol = (rows[i][0] || '').toString().trim();
-        const rfqCol = (rows[i][5] || '').toString().trim();
+        const rfqCol = (rows[i][5] || '').toString().trim(); // العمود F للطلب
         
+        // البحث عن تطابق كامل: البند + رقم الطلب
         if (itemCol.toUpperCase() === itemNumber.toUpperCase()) {
-          // إذا كان لدينا RFQ، نبحث عن تطابق كامل
           if (rfqNumber && rfqCol === rfqNumber) {
             targetRow = i + 1;
-            console.log(`✅ وجدت تطابق كامل في الصف ${targetRow}`);
+            console.log(`✅ وجدت تطابق كامل: البند ${itemNumber} مع الطلب ${rfqNumber} في الصف ${targetRow}`);
             break;
-          }
-          // إذا لم يكن لدينا RFQ أو لم نجد تطابق، نستخدم أول صف
-          if (targetRow === -1) {
+          } else if (!rfqNumber && targetRow === -1) {
+            // إذا لم يكن لدينا رقم طلب، نستخدم أول تطابق
             targetRow = i + 1;
-            console.log(`📌 وجدت البند في الصف ${targetRow}`);
-            if (!rfqNumber) break; // إذا لم يكن لدينا RFQ، نتوقف عند أول تطابق
+            console.log(`📌 وجدت البند ${itemNumber} في الصف ${targetRow} (بدون رقم طلب)`);
           }
         }
       }
