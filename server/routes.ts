@@ -5746,6 +5746,37 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Direct customer pricing save (for testing)
+  app.post("/api/customer-pricing-direct", async (req: Request, res: Response) => {
+    try {
+      const { itemNumber, customerPrice, rfqNumber } = req.body;
+      
+      console.log(`🔵 حفظ مباشر لسعر العميل: ${itemNumber} = ${customerPrice}`);
+      
+      const { DirectCustomerPricing } = await import('./direct-customer-pricing.js');
+      const directPricing = new DirectCustomerPricing();
+      await directPricing.initialize();
+      
+      const result = await directPricing.saveCustomerPrice(
+        itemNumber, 
+        customerPrice,
+        rfqNumber || ''
+      );
+      
+      res.json({ 
+        success: true, 
+        message: `تم حفظ السعر في الصف ${result.row}`,
+        row: result.row 
+      });
+    } catch (error) {
+      console.error('خطأ في الحفظ المباشر:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || 'فشل حفظ السعر' 
+      });
+    }
+  });
+
   // Customer pricing endpoints
   app.post("/api/customer-pricing", requireAuth, requireRole(['manager', 'data_entry', 'purchasing']), async (req: Request, res: Response) => {
     try {
