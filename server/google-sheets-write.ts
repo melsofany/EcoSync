@@ -36,51 +36,62 @@ export class GoogleSheetsWriter {
     try {
       // محاولة تحميل المفتاح من متغير البيئة أو الملف
       let credentials;
+      let credentialsLoaded = false;
       
-      // التحقق من وجود متغير البيئة أولاً (للإنتاج)
-      if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
-        try {
-          const keyData = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
-          credentials = JSON.parse(keyData);
-          console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة BASE64');
-          console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
-        } catch (parseError) {
-          console.error('❌ خطأ في تحليل مفتاح Google Sheets BASE64:', (parseError as Error).message);
-          throw new Error('فشل في تحليل مفتاح Google Sheets من متغير البيئة');
+      // محاولة تحميل من الملف المحلي أولاً (الأكثر موثوقية)
+      try {
+        const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
+        const fileContent = fs.readFileSync(credentialsPath, 'utf8');
+        credentials = JSON.parse(fileContent);
+        
+        // التحقق من وجود المفتاح الخاص
+        if (!credentials.private_key || !credentials.client_email) {
+          throw new Error('ملف المفاتيح غير مكتمل - المفتاح الخاص أو البريد الإلكتروني مفقود');
         }
-      } else if (process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY) {
-        try {
-          const keyData = process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY.trim();
-          credentials = JSON.parse(keyData);
-          console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة');
-          console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
-        } catch (parseError) {
-          console.error('❌ خطأ في تحليل مفتاح Google Sheets:', (parseError as Error).message);
-          throw new Error('فشل في تحليل مفتاح Google Sheets من متغير البيئة');
+        
+        // التحقق من طول المفتاح الخاص
+        if (credentials.private_key.length < 1000) {
+          throw new Error(`المفتاح الخاص مقطوع أو غير مكتمل - الطول الحالي: ${credentials.private_key.length} حرف، المطلوب: أكثر من 1000 حرف`);
         }
-      } else {
-        // محاولة تحميل من الملف المحلي (للتطوير فقط)
-        try {
-          const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
-          const fileContent = fs.readFileSync(credentialsPath, 'utf8');
-          credentials = JSON.parse(fileContent);
-          
-          // التحقق من وجود المفتاح الخاص
-          if (!credentials.private_key || !credentials.client_email) {
-            throw new Error('ملف المفاتيح غير مكتمل - المفتاح الخاص أو البريد الإلكتروني مفقود');
+        
+        console.log('✅ تم تحميل مفاتيح Google Sheets من الملف المحلي');
+        console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
+        console.log(`🔐 طول المفتاح الخاص: ${credentials.private_key.length} حرف`);
+        credentialsLoaded = true;
+      } catch (fileError) {
+        console.log('⚠️ لم يتم العثور على الملف المحلي، سيتم البحث في متغيرات البيئة');
+      }
+      
+      // إذا فشل تحميل الملف، حاول من متغيرات البيئة
+      if (!credentialsLoaded) {
+        // التحقق من وجود متغير البيئة BASE64
+        if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+          try {
+            const keyData = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
+            credentials = JSON.parse(keyData);
+            console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة BASE64');
+            console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
+            credentialsLoaded = true;
+          } catch (parseError) {
+            console.error('⚠️ تجاهل متغير البيئة BASE64 بسبب خطأ في التحليل');
           }
-          
-          // التحقق من طول المفتاح الخاص
-          if (credentials.private_key.length < 1000) {
-            throw new Error(`المفتاح الخاص مقطوع أو غير مكتمل - الطول الحالي: ${credentials.private_key.length} حرف، المطلوب: أكثر من 1000 حرف`);
+        }
+        
+        // محاولة متغير البيئة العادي
+        if (!credentialsLoaded && process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY) {
+          try {
+            const keyData = process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY.trim();
+            credentials = JSON.parse(keyData);
+            console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة');
+            console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
+            credentialsLoaded = true;
+          } catch (parseError) {
+            console.error('⚠️ تجاهل متغير البيئة العادي بسبب خطأ في التحليل');
           }
-          
-          console.log('🔑 تم تحميل مفاتيح Google Sheets من الملف المحلي');
-          console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
-          console.log(`🔐 طول المفتاح الخاص: ${credentials.private_key.length} حرف`);
-        } catch (fileError) {
-          console.error('❌ خطأ في تحميل ملف مفاتيح Google Sheets:', (fileError as Error).message);
-          throw new Error('فشل في تحميل مفاتيح Google Sheets');
+        }
+        
+        if (!credentialsLoaded) {
+          throw new Error('فشل في تحميل مفاتيح Google Sheets من أي مصدر');
         }
       }
 
