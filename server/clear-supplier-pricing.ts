@@ -1,14 +1,30 @@
-import { GoogleSheetsRealtimeData } from './google-sheets-realtime-data.js';
+import { google } from 'googleapis';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export class ClearSupplierPricing {
-  private googleSheets: GoogleSheetsRealtimeData;
-  
-  constructor() {
-    this.googleSheets = new GoogleSheetsRealtimeData();
-  }
+  private sheets: any;
+  private spreadsheetId: string = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
   
   async initialize() {
-    await this.googleSheets.initialize();
+    try {
+      // قراءة مفتاح Google
+      const keyPath = path.join(process.cwd(), 'attached_assets', 'cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
+      const keyFile = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+      
+      const auth = new google.auth.JWT(
+        keyFile.client_email,
+        undefined,
+        keyFile.private_key,
+        ['https://www.googleapis.com/auth/spreadsheets']
+      );
+      
+      this.sheets = google.sheets({ version: 'v4', auth });
+      console.log('✅ تم تهيئة Google Sheets لحذف البيانات');
+    } catch (error) {
+      console.error('❌ خطأ في تهيئة Google Sheets:', error);
+      throw error;
+    }
   }
   
   async clearAllData() {
@@ -16,8 +32,8 @@ export class ClearSupplierPricing {
       console.log('🗑️ بدء حذف بيانات تسعير الموردين...');
       
       // قراءة البيانات الحالية
-      const response = await this.googleSheets.sheets.spreadsheets.values.get({
-        spreadsheetId: this.googleSheets.spreadsheetId,
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
         range: 'تسعير_الموردين!A:AA'
       });
       
@@ -26,8 +42,8 @@ export class ClearSupplierPricing {
       
       if (rows.length > 1) {
         // حذف جميع البيانات عدا صف العناوين
-        await this.googleSheets.sheets.spreadsheets.values.clear({
-          spreadsheetId: this.googleSheets.spreadsheetId,
+        await this.sheets.spreadsheets.values.clear({
+          spreadsheetId: this.spreadsheetId,
           range: 'تسعير_الموردين!A2:AA'
         });
         
