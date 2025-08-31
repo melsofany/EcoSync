@@ -357,17 +357,18 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
 // Main component function for customer pricing form
 function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => void }) {
   const [customerPrice, setCustomerPrice] = useState("");
+  const [supplierPrice, setSupplierPrice] = useState(item.supplierPrice || "");
   const [profitMargin, setProfitMargin] = useState("");
   const [profitPercentage, setProfitPercentage] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   
-  // حساب هامش الربح والنسبة المئوية تلقائياً عند تغيير سعر العميل
+  // حساب هامش الربح والنسبة المئوية تلقائياً عند تغيير سعر العميل أو سعر المورد
   React.useEffect(() => {
-    if (customerPrice && item.supplierPrice) {
+    if (customerPrice && supplierPrice) {
       const custPrice = parseFloat(customerPrice);
-      const suppPrice = parseFloat(item.supplierPrice);
+      const suppPrice = parseFloat(supplierPrice);
       
       if (!isNaN(custPrice) && !isNaN(suppPrice) && suppPrice > 0) {
         const margin = custPrice - suppPrice;
@@ -380,7 +381,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
       setProfitMargin("");
       setProfitPercentage("");
     }
-  }, [customerPrice, item.supplierPrice]);
+  }, [customerPrice, supplierPrice]);
 
   const handleSubmit = async () => {
     if (!customerPrice || isNaN(Number(customerPrice))) {
@@ -449,15 +450,16 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
           <label className="text-sm font-medium">سعر المورد</label>
           <Input
             type="number"
-            value={item.supplierPrice || ""}
-            disabled
-            className="mt-1 bg-gray-100"
+            value={supplierPrice}
+            onChange={(e) => setSupplierPrice(e.target.value)}
+            placeholder="0.00"
+            className="mt-1"
           />
         </div>
       </div>
       
       {/* عرض هامش الربح والنسبة المئوية المحسوبة تلقائياً */}
-      {customerPrice && item.supplierPrice && (
+      {customerPrice && supplierPrice && (
         <div className="grid grid-cols-2 gap-4 p-3 bg-blue-50 rounded-lg mt-3">
           <div>
             <label className="text-sm font-medium text-blue-700">هامش الربح</label>
