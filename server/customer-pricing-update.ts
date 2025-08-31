@@ -6,6 +6,10 @@ export class CustomerPricingUpdater {
   constructor() {
     this.googleSheets = new GoogleSheetsRealtimeData();
   }
+  
+  async initialize() {
+    await this.googleSheets.initialize();
+  }
 
   /**
    * تحديث سعر العميل في العمود I في ورقة DATA
@@ -49,9 +53,9 @@ export class CustomerPricingUpdater {
       let searchCriteria = {
         itemId: itemId.trim(),
         rfq: rfqNumber ? rfqNumber.trim() : '',
-        lineItem: pricingData.lineItem || '',
-        partNumber: pricingData.partNumber || '',
-        quantity: pricingData.quantity || ''
+        lineItem: '',
+        partNumber: '',
+        quantity: ''
       };
       
       console.log(`🔍 معايير البحث:`, searchCriteria);

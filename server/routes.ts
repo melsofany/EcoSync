@@ -5759,9 +5759,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       // محاولة الحفظ في صفحة DATA أولاً
       try {
+        console.log(`🟡 استيراد CustomerPricingUpdater...`);
         const { CustomerPricingUpdater } = await import('./customer-pricing-update.js');
         const customerPricingUpdater = new CustomerPricingUpdater();
+        await customerPricingUpdater.initialize();
         
+        console.log(`🟡 استدعاء updateCustomerPricingInDataSheet...`);
         await customerPricingUpdater.updateCustomerPricingInDataSheet(
           pricingData.itemNumber,
           pricingData.rfqNumber || "",
@@ -5770,6 +5773,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
             employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
           }
         );
+        console.log(`✅ تم حفظ سعر العميل في Google Sheets بنجاح`);
       } catch (dataError) {
         console.warn(`⚠️ لم يتم العثور على البند في صفحة DATA، سيتم الحفظ في صفحة تسعير العملاء فقط`);
         // في حالة فشل الحفظ في DATA، نستمر ونحفظ في صفحة تسعير العملاء
