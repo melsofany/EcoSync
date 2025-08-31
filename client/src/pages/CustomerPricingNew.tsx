@@ -147,7 +147,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">اسم المورد</label>
             <p className="text-sm font-semibold text-gray-900">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_name) || 
+              {comprehensiveData?.[0]?.supplier_name || 
                detailedPricing?.supplierName || 
                item.supplierName || 
                "غير محدد"}
@@ -156,7 +156,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">المسؤول عند المورد</label>
             <p className="text-sm font-semibold text-indigo-600">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_contact) || 
+              {comprehensiveData?.[0]?.supplier_contact || 
                detailedPricing?.supplierContactPerson || 
                item.supplierContactPerson || 
                "غير محدد"}
@@ -168,7 +168,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">رقم الهاتف</label>
             <p className="text-sm font-medium text-gray-900" dir="ltr">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_phone) || 
+              {comprehensiveData?.[0]?.supplier_phone || 
                detailedPricing?.supplierPhone || 
                item.supplierPhone || 
                "غير متوفر"}
@@ -177,7 +177,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">البريد الإلكتروني</label>
             <p className="text-sm font-medium text-gray-900">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_email) || 
+              {comprehensiveData?.[0]?.supplier_email || 
                detailedPricing?.supplierEmail || 
                item.supplierEmail || 
                "غير متوفر"}
@@ -186,7 +186,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">العنوان</label>
             <p className="text-sm font-medium text-gray-900">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_address) || 
+              {comprehensiveData?.[0]?.supplier_address || 
                detailedPricing?.supplierAddress || 
                item.supplierAddress || 
                "غير متوفر"}
@@ -199,27 +199,27 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="text-center border-r">
             <label className="text-sm font-medium block mb-1">سعر الوحدة (بدون ضريبة)</label>
             <p className="font-bold text-green-600 text-lg">
-              {formatCurrency(Number((comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_price) || detailedPricing?.supplierUnitPrice || item.supplierPrice || 0))}
+              {formatCurrency(Number(comprehensiveData?.[0]?.supplier_price || detailedPricing?.supplierUnitPrice || item.supplierPrice || 0))}
             </p>
           </div>
           <div className="text-center border-r">
             <label className="text-sm font-medium block mb-1">قيمة الضريبة</label>
             <p className="font-bold text-blue-600 text-lg">
               {(() => {
-                const basePrice = Number((comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_price) || detailedPricing?.supplierUnitPrice || item.supplierPrice || 0);
-                const vatRate = Number((comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].vat_rate?.replace('%', '')) || detailedPricing?.vatRate || item.vatRate || 14) / 100;
+                const basePrice = Number(comprehensiveData?.[0]?.supplier_price || detailedPricing?.supplierUnitPrice || item.supplierPrice || 0);
+                const vatRate = Number(comprehensiveData?.[0]?.vat_rate?.replace('%', '') || detailedPricing?.vatRate || item.vatRate || 14) / 100;
                 const vatAmount = basePrice * vatRate;
                 return formatCurrency(vatAmount);
               })()}
             </p>
             <p className="text-xs text-gray-600">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].vat_rate) || detailedPricing?.vatRate || item.vatRate || "14"}% ضريبة
+              {comprehensiveData?.[0]?.vat_rate || detailedPricing?.vatRate || item.vatRate || "14"}% ضريبة
             </p>
           </div>
           <div className="text-center">
             <label className="text-sm font-medium block mb-1">الشخص المسؤول</label>
             <p className="font-bold text-purple-700 text-lg">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].responsible_employee) || detailedPricing?.responsibleEmployee || detailedPricing?.employeeName || item.employeeName || "غير محدد"}
+              {comprehensiveData?.[0]?.responsible_employee || detailedPricing?.responsibleEmployee || detailedPricing?.employeeName || item.employeeName || "غير محدد"}
             </p>
             <p className="text-xs text-gray-600">
               الموظف المسؤول عن التسعير
@@ -232,7 +232,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div>
             <label className="text-xs font-medium text-gray-600">شروط الدفع:</label>
             <p className="text-sm font-medium">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].payment_terms) || 
+              {comprehensiveData?.[0]?.payment_terms || 
                detailedPricing?.paymentTerms || 
                item.paymentTerms || 
                "نقداً عند التسليم"}
@@ -241,7 +241,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div>
             <label className="text-xs font-medium text-gray-600">مدة التوريد:</label>
             <p className="text-sm font-medium">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].delivery_time) || 
+              {comprehensiveData?.[0]?.delivery_time || 
                detailedPricing?.deliveryTime || 
                item.deliveryTime || 
                "فوري"}
@@ -250,7 +250,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div>
             <label className="text-xs font-medium text-gray-600">فترة الضمان:</label>
             <p className="text-sm font-medium">
-              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].warranty_period) || 
+              {comprehensiveData?.[0]?.warranty_period || 
                detailedPricing?.warrantyPeriod || 
                item.warrantyPeriod || 
                "غير محدد"}
