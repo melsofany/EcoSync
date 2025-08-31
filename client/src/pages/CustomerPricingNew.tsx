@@ -414,7 +414,13 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save customer pricing');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('خطأ في الاستجابة:', response.status, errorData);
+        
+        if (response.status === 401) {
+          throw new Error('يجب تسجيل الدخول أولاً');
+        }
+        throw new Error(errorData.message || 'Failed to save customer pricing');
       }
 
       toast({
