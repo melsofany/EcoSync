@@ -1,6 +1,5 @@
 import { google } from 'googleapis';
-import * as fs from 'fs';
-import * as path from 'path';
+import { createGoogleAuth } from './google-auth-helper';
 
 export class ClearSupplierPricing {
   private sheets: any;
@@ -8,20 +7,8 @@ export class ClearSupplierPricing {
   
   async initialize() {
     try {
-      // قراءة مفتاح Google
-      const keyPath = path.join(process.cwd(), 'attached_assets', 'cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
-      const keyFile = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
-      
-      const auth = new google.auth.JWT(
-        keyFile.client_email,
-        undefined,
-        keyFile.private_key,
-        ['https://www.googleapis.com/auth/spreadsheets']
-      );
-      
-      // المصادقة أولاً
-      await auth.authorize();
-      
+      // استخدام نفس طريقة المصادقة المستخدمة في النظام
+      const auth = createGoogleAuth();
       this.sheets = google.sheets({ version: 'v4', auth });
       console.log('✅ تم تهيئة Google Sheets لحذف البيانات');
     } catch (error) {
