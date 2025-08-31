@@ -406,8 +406,7 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
     console.log('🚀 إرسال بيانات تسعير العميل:', dataToSend);
     
     try {
-      // استخدام المعالج المباشر مؤقتاً
-      const response = await fetch('/api/customer-pricing-direct', {
+      const response = await fetch('/api/customer-pricing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
