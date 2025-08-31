@@ -1004,7 +1004,12 @@ export class GoogleSheetsRealtimeData {
               if (supplierItemNumber === item.itemNumber && supplierRfqNumber === item.rfqNumber) {
                 item.supplierPrice = supplierRow[14] || ''; // العمود O - Unit Price
                 item.supplierName = supplierRow[9] || '';   // العمود J - Supplier Name
+                item.supplierContact = supplierRow[10] || ''; // العمود K - Contact Person
+                item.supplierPhone = supplierRow[11] || '';   // العمود L - Phone
+                item.supplierEmail = supplierRow[12] || '';   // العمود M - Email
+                item.supplierAddress = supplierRow[13] || ''; // العمود N - Address
                 console.log(`💰 وجدت بيانات المورد للبند ${item.itemNumber}: السعر=${item.supplierPrice}, المورد=${item.supplierName}`);
+                console.log(`📞 بيانات الاتصال: جهة الاتصال=${item.supplierContact}, الهاتف=${item.supplierPhone}`);
                 break;
               }
             }

@@ -145,14 +145,30 @@ function ItemDetailedPricing({ item }: { item: any }) {
             </p>
           </div>
           <div>
+            <label className="text-sm font-medium">اسم المورد:</label>
+            <p className="text-sm font-semibold">{item.supplierName || "غير محدد"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">المسؤول عند المورد:</label>
+            <p className="text-sm">{item.supplierContact || "غير محدد"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">رقم الهاتف:</label>
+            <p className="text-sm">{item.supplierPhone || "غير متوفر"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">البريد الإلكتروني:</label>
+            <p className="text-sm">{item.supplierEmail || "غير متوفر"}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium">العنوان:</label>
+            <p className="text-sm">{item.supplierAddress || "غير متوفر"}</p>
+          </div>
+          <div>
             <label className="text-sm font-medium">تاريخ ورود السعر:</label>
             <p className="text-sm">
               {item.requestNumber ? `طلب رقم: ${item.requestNumber}` : "غير محدد"}
             </p>
-          </div>
-          <div>
-            <label className="text-sm font-medium">المورد:</label>
-            <p className="text-sm">{item.supplierName || "غير محدد"}</p>
           </div>
           <div>
             <label className="text-sm font-medium">حالة أمر الشراء:</label>
@@ -317,6 +333,10 @@ function ItemDetailedPricing({ item }: { item: any }) {
             <table className="w-full min-w-max text-xs border-collapse border border-gray-300">
               <thead className="sticky top-0 bg-gray-100 z-10">
                 <tr>
+                  <th className="border border-gray-300 p-2 text-right min-w-[120px]">المورد</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[100px]">جهة الاتصال</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[100px]">الهاتف</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">سعر المورد</th>
                   <th className="border border-gray-300 p-2 text-right min-w-[80px]">TOTAL PO</th>
                   <th className="border border-gray-300 p-2 text-right min-w-[80px]">PRICE/PO</th>
                   <th className="border border-gray-300 p-2 text-right min-w-[70px]">Quantity/PO</th>
@@ -338,6 +358,10 @@ function ItemDetailedPricing({ item }: { item: any }) {
                 {detailedPricing
                   .map((record: any, index: number) => (
                   <tr key={index} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 p-2 text-right font-semibold">{record.supplier_name || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.supplier_contact || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.supplier_phone || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right text-green-600">{record.supplier_price ? formatCurrency(parseFloat(record.supplier_price)) : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.po_total || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.po_price ? formatCurrency(parseFloat(record.po_price)) : '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.po_quantity || '-'}</td>
