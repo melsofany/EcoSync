@@ -278,18 +278,19 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                 </p>
               </div>
             )}
-            {comprehensiveData[comprehensiveData.length - 1].customer_price && comprehensiveData[comprehensiveData.length - 1].supplier_price && (
+            {/* عرض هامش ونسبة الربح المتوقعة بناءً على سعر افتراضي */}
+            {comprehensiveData[comprehensiveData.length - 1].supplier_price && (
               <>
                 <div>
-                  <label className="text-gray-600">هامش الربح:</label>
+                  <label className="text-gray-600">هامش الربح المتوقع (عند 20% ربح):</label>
                   <p className="font-semibold text-blue-600">
-                    {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].customer_price || 0) - Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 0))}
+                    {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 0) * 0.20)}
                   </p>
                 </div>
                 <div>
-                  <label className="text-gray-600">نسبة الربح:</label>
-                  <p className="font-semibold text-blue-600">
-                    {((Number(comprehensiveData[comprehensiveData.length - 1].customer_price || 0) - Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 0)) / Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 1) * 100).toFixed(2)}%
+                  <label className="text-gray-600">السعر المقترح للعميل (20% ربح):</label>
+                  <p className="font-semibold text-purple-600">
+                    {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 0) * 1.20)}
                   </p>
                 </div>
               </>
