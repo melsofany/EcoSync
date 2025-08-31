@@ -22,10 +22,10 @@ export class DirectCustomerPricing {
     try {
       console.log(`📝 حفظ مباشر لسعر العميل: ${itemNumber} = ${price} للطلب ${rfqNumber}`);
       
-      // قراءة ورقة DATA
+      // قراءة ورقة DATA مع كل الأعمدة
       const response = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: 'DATA!A:I'
+        range: 'DATA!A:AA'
       });
 
       const rows = response.data.values || [];
@@ -33,45 +33,53 @@ export class DirectCustomerPricing {
 
       // البحث عن البند مع رقم الطلب
       let targetRow = -1;
-      console.log(`🔍 البحث عن: "${itemNumber}" (RFQ: ${rfqNumber || 'لا يوجد'})`);
+      let matchedRows = [];
+      console.log(`🔍 البحث عن: البند="${itemNumber}" مع RFQ="${rfqNumber}"`);
       
       for (let i = 1; i < rows.length; i++) {
-        if (!rows[i] || rows[i].length === 0) continue; // تخطي الصفوف الفارغة
+        if (!rows[i] || rows[i].length === 0) continue;
         
         const itemCol = (rows[i][0] || '').toString().trim();
-        const rfqCol = rows[i].length > 5 ? (rows[i][5] || '').toString().trim() : ''; // العمود F للطلب
+        const rfqCol = rows[i].length > 5 ? (rows[i][5] || '').toString().trim() : '';
         
-        // عرض أول 5 صفوف للتشخيص
-        if (i <= 5) {
-          console.log(`   صف ${i + 1}: البند="${itemCol}", RFQ="${rfqCol}"`);
-        }
-        
-        // عرض صف البند P-0000017 إذا وجد
-        if (itemCol === 'P-0000017') {
-          console.log(`🎯 وجدت P-0000017 في الصف ${i + 1}: البند="${itemCol}", RFQ="${rfqCol}"`);
-        }
-        
-        // البحث عن تطابق كامل: البند + رقم الطلب (تحقق بدون uppercase أولاً)
+        // البحث عن البند المطابق
         if (itemCol === itemNumber || itemCol.toUpperCase() === itemNumber.toUpperCase()) {
-          console.log(`📍 مطابقة البند في الصف ${i + 1}: itemCol="${itemCol}", rfqCol="${rfqCol}", rfqNumber="${rfqNumber}"`);
+          matchedRows.push({
+            row: i + 1,
+            itemNumber: itemCol,
+            rfq: rfqCol
+          });
           
+          // إذا وجدنا تطابق كامل مع رقم الطلب
           if (rfqNumber && rfqCol === rfqNumber) {
             targetRow = i + 1;
-            console.log(`✅ وجدت تطابق كامل: البند ${itemNumber} مع الطلب ${rfqNumber} في الصف ${targetRow}`);
+            console.log(`✅ تطابق كامل: البند ${itemNumber} + RFQ ${rfqNumber} في الصف ${targetRow}`);
             break;
-          } else if (!rfqNumber && targetRow === -1) {
-            // إذا لم يكن لدينا رقم طلب، نستخدم أول تطابق
-            targetRow = i + 1;
-            console.log(`📌 وجدت البند ${itemNumber} في الصف ${targetRow} (بدون رقم طلب)`);
           }
+        }
+      }
+      
+      // إذا لم نجد تطابق كامل، نستخدم أول صف يحتوي على البند
+      if (targetRow === -1 && matchedRows.length > 0) {
+        if (rfqNumber) {
+          console.log(`⚠️ لم يتم العثور على RFQ ${rfqNumber} للبند ${itemNumber}`);
+          console.log(`📋 الصفوف المطابقة للبند:`, matchedRows);
+          // البحث عن أقرب تطابق
+          targetRow = matchedRows[0].row;
+          console.log(`📌 استخدام الصف ${targetRow} (أول تطابق للبند)`);
+        } else {
+          targetRow = matchedRows[0].row;
+          console.log(`📌 استخدام الصف ${targetRow} (بدون تحديد RFQ)`);
         }
       }
 
       if (targetRow === -1) {
-        throw new Error(`لم يتم العثور على البند ${itemNumber}`);
+        console.error(`❌ لم يتم العثور على البند ${itemNumber} في ورقة DATA`);
+        throw new Error(`لم يتم العثور على البند ${itemNumber} في ورقة DATA`);
       }
 
       // حفظ السعر في العمود I
+      console.log(`💾 حفظ السعر ${price} في الخلية DATA!I${targetRow}`);
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
         range: `DATA!I${targetRow}`,
@@ -81,10 +89,10 @@ export class DirectCustomerPricing {
         }
       });
 
-      console.log(`✅ تم حفظ السعر ${price} في الخلية I${targetRow}`);
+      console.log(`✅ تم حفظ سعر العميل ${price} في DATA!I${targetRow} بنجاح`);
       return { success: true, row: targetRow };
     } catch (error) {
-      console.error('❌ خطأ في الحفظ المباشر:', error);
+      console.error('❌ خطأ في حفظ سعر العميل:', error);
       throw error;
     }
   }
