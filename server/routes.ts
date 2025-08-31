@@ -5752,9 +5752,9 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const pricingData = req.body;
       
       console.log(`📝 طلب حفظ تسعير العميل:`, {
-        itemId: pricingData.itemId,
+        itemNumber: pricingData.itemNumber,
         rfqNumber: pricingData.rfqNumber,
-        customerUnitPrice: pricingData.customerUnitPrice
+        customerPrice: pricingData.customerPrice
       });
       
       // محاولة الحفظ في صفحة DATA أولاً
@@ -5763,10 +5763,10 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         const customerPricingUpdater = new CustomerPricingUpdater();
         
         await customerPricingUpdater.updateCustomerPricingInDataSheet(
-          pricingData.itemId,
+          pricingData.itemNumber,
           pricingData.rfqNumber || "",
           {
-            customerUnitPrice: pricingData.customerUnitPrice || "",
+            customerUnitPrice: pricingData.customerPrice || "",
             employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
           }
         );
@@ -5775,11 +5775,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         // في حالة فشل الحفظ في DATA، نستمر ونحفظ في صفحة تسعير العملاء
       }
       
-      await logActivity(req, "create_customer_pricing", "pricing", pricingData.itemId, 
-        `Added customer pricing for item ${pricingData.itemId} by ${req.session.user?.fullName || req.session.user?.username}`);
+      await logActivity(req, "create_customer_pricing", "pricing", pricingData.itemNumber, 
+        `Added customer pricing for item ${pricingData.itemNumber} by ${req.session.user?.fullName || req.session.user?.username}`);
       
       res.status(201).json({ 
-        id: pricingData.itemId,
+        id: pricingData.itemNumber,
         message: "تم إضافة تسعير العميل بنجاح مع تسجيل اسم الموظف",
         ...pricingData,
         employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
