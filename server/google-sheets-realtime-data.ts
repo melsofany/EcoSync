@@ -795,10 +795,8 @@ export class GoogleSheetsRealtimeData {
         // التحقق من وجود رقم البند
         if (!item.itemNumber) return false;
         
-        // التحقق من الحالة
-        if (item.status === "مُسعّر" || item.status === "مكتمل" || item.status === "منتهي") {
-          return false;
-        }
+        // لا نقوم بفلترة البنود بناءً على الحالة - نعرض كل البنود
+        // حتى البنود المسعّرة يمكن عرضها وتعديلها
         
         // التحقق من تاريخ الانتهاء
         if (item.expiryDate) {
@@ -868,10 +866,8 @@ export class GoogleSheetsRealtimeData {
         // التحقق من وجود رقم البند
         if (!item.itemNumber) return false;
         
-        // التحقق من الحالة
-        if (item.status === "مُسعّر" || item.status === "مكتمل" || item.status === "منتهي") {
-          return false;
-        }
+        // لا نقوم بفلترة البنود بناءً على الحالة - نعرض كل البنود
+        // حتى البنود المسعّرة يمكن عرضها وتعديلها
         
         // التحقق من تاريخ الانتهاء
         if (item.expiryDate) {

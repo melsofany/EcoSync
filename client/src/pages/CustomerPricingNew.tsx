@@ -799,8 +799,23 @@ export default function CustomerPricingNew() {
                                 {item.lineItem}
                               </Badge>
                             )}
-                            {pricedItems.has(item.id) && (
-                              <Badge className="bg-green-600">تم التسعير</Badge>
+                            {/* عرض حالة البند من Google Sheets */}
+                            {item.status && (
+                              <Badge 
+                                className={
+                                  item.status === "مُسعّر" ? "bg-green-600" : 
+                                  item.status === "مكتمل" ? "bg-blue-600" :
+                                  item.status === "منتهي" ? "bg-gray-600" :
+                                  item.status === "في انتظار تسعير الموردين" ? "bg-yellow-600" :
+                                  "bg-gray-400"
+                                }
+                              >
+                                {item.status}
+                              </Badge>
+                            )}
+                            {/* مؤشر إضافي للبنود المسعرة حديثاً في الجلسة */}
+                            {pricedItems.has(item.id) && !item.status?.includes("مُسعّر") && (
+                              <Badge className="bg-purple-600">مُسعّر حديثاً</Badge>
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
