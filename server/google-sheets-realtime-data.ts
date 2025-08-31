@@ -1055,7 +1055,7 @@ export class GoogleSheetsRealtimeData {
       try {
         const supplierResponse = await this.sheets.spreadsheets.values.get({
           spreadsheetId: this.spreadsheetId,
-          range: 'تسعير_الموردين!A2:AA1000', // العمود AA هو آخر عمود (Employee Name)
+          range: 'تسعير_الموردين!A2:AA5000', // العمود AA هو آخر عمود (Employee Name)
         });
         supplierPricingData = supplierResponse.data.values || [];
         console.log(`📊 تم جلب ${supplierPricingData.length} صف من ورقة تسعير الموردين`);
@@ -1076,7 +1076,11 @@ export class GoogleSheetsRealtimeData {
             const supplierItemNumber = (supplierRow[0] || '').trim(); // العمود A - Item Number
             const supplierRfqNumber = (supplierRow[5] || '').trim(); // العمود F - RFQ Number
             
-            if (supplierItemNumber === itemId && supplierRfqNumber === rfqNumber) {
+            // المطابقة مع مراعاة الأحرف الكبيرة والصغيرة وإزالة المسافات
+            const itemMatch = supplierItemNumber.toUpperCase() === itemId.toUpperCase();
+            const rfqMatch = supplierRfqNumber.toUpperCase() === rfqNumber.toUpperCase();
+            
+            if (itemMatch && rfqMatch) {
               supplierInfo = {
                 supplier_name: supplierRow[9] || '',        // العمود J - Supplier Name
                 supplier_contact: supplierRow[10] || '',    // العمود K - Contact Person
@@ -1097,6 +1101,7 @@ export class GoogleSheetsRealtimeData {
                 supplier_status: supplierRow[25] || '',    // العمود Z - Status
               };
               console.log(`💰 وجدت معلومات تسعير المورد للبند ${itemId} RFQ ${rfqNumber}`);
+              console.log(`📋 تفاصيل المورد:`, supplierInfo);
               break;
             }
           }
