@@ -16,7 +16,11 @@ export class CustomerPricingUpdater {
   }): Promise<void> {
     try {
       const sheetName = 'DATA';
-      console.log(`🔄 تحديث سعر العميل للبند ${itemId} مع RFQ ${rfqNumber || 'بدون RFQ'} في ورقة DATA`);
+      console.log(`🟢 === بدء تحديث سعر العميل في Google Sheets ===`);
+      console.log(`📌 معرف البند: ${itemId}`);
+      console.log(`📌 رقم RFQ: ${rfqNumber || 'بدون RFQ'}`);
+      console.log(`💰 السعر المطلوب حفظه: ${pricingData.customerUnitPrice}`);
+      console.log(`👤 اسم الموظف: ${pricingData.employeeName}`);
 
       // قراءة البيانات الحالية من ورقة DATA
       const response = await this.googleSheets.sheets.spreadsheets.values.get({
@@ -238,6 +242,7 @@ export class CustomerPricingUpdater {
       }
 
       // تحديث العمود I (سعر العميل) والعمود S (اسم الموظف) للصف الموجود
+      console.log(`🎯 سيتم التحديث في الصف ${targetRowIndex}`);
       const updateRequests = [];
       
       // تحديث العمود I - سعر العميل
@@ -246,6 +251,7 @@ export class CustomerPricingUpdater {
           range: `${sheetName}!I${targetRowIndex}`,
           values: [[pricingData.customerUnitPrice]]
         });
+        console.log(`📝 سيتم كتابة السعر "${pricingData.customerUnitPrice}" في الخلية I${targetRowIndex}`);
       }
       
       // تحديث العمود S - اسم الموظف
@@ -254,10 +260,12 @@ export class CustomerPricingUpdater {
           range: `${sheetName}!S${targetRowIndex}`,
           values: [[pricingData.employeeName]]
         });
+        console.log(`📝 سيتم كتابة اسم الموظف "${pricingData.employeeName}" في الخلية S${targetRowIndex}`);
       }
 
       // تنفيذ التحديثات
       if (updateRequests.length > 0) {
+        console.log(`🚀 إرسال ${updateRequests.length} تحديث إلى Google Sheets...`);
         await this.googleSheets.sheets.spreadsheets.values.batchUpdate({
           spreadsheetId: this.googleSheets.spreadsheetId,
           resource: {
@@ -268,6 +276,9 @@ export class CustomerPricingUpdater {
         
         console.log(`✅ تم تحديث سعر العميل (${pricingData.customerUnitPrice}) في العمود I، الصف ${targetRowIndex}`);
         console.log(`✅ تم تحديث اسم الموظف (${pricingData.employeeName}) في العمود S، الصف ${targetRowIndex}`);
+        console.log(`🟢 === انتهى التحديث بنجاح ===`);
+      } else {
+        console.log(`⚠️ لا توجد بيانات للتحديث`);
       }
 
     } catch (error) {

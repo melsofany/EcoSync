@@ -394,18 +394,23 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
     }
 
     setIsSubmitting(true);
+    
+    const dataToSend = {
+      itemNumber: item.itemNumber,
+      rfqNumber: item.requestNumber,
+      customerPrice: customerPrice,
+      profitMargin: profitMargin || null,
+      notes: notes || null
+    };
+    
+    console.log('🚀 إرسال بيانات تسعير العميل:', dataToSend);
+    
     try {
       const response = await fetch('/api/customer-pricing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          itemNumber: item.itemNumber,
-          rfqNumber: item.requestNumber,
-          customerPrice: customerPrice,
-          profitMargin: profitMargin || null,
-          notes: notes || null
-        })
+        body: JSON.stringify(dataToSend)
       });
 
       if (!response.ok) {
