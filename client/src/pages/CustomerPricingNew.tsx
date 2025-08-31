@@ -25,6 +25,18 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
 
   // State for comprehensive data
   const [comprehensiveData, setComprehensiveData] = useState<any[]>([]);
+  
+  // Log comprehensive data whenever it changes
+  React.useEffect(() => {
+    if (comprehensiveData && comprehensiveData.length > 0) {
+      console.log('📊 Current comprehensiveData state:', comprehensiveData);
+      console.log('📊 First row supplier info:', {
+        supplier_name: comprehensiveData[0]?.supplier_name,
+        supplier_contact: comprehensiveData[0]?.supplier_contact,
+        supplier_phone: comprehensiveData[0]?.supplier_phone
+      });
+    }
+  }, [comprehensiveData]);
 
   // Fetch detailed pricing when component mounts
   React.useEffect(() => {
@@ -54,6 +66,13 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         if (comprehensiveResult.allDataRows && comprehensiveResult.allDataRows.length > 0) {
           console.log('Setting comprehensiveData with allDataRows, count:', comprehensiveResult.allDataRows.length);
           console.log('First row data:', comprehensiveResult.allDataRows[0]);
+          console.log('🔍 Supplier data from first row:', {
+            supplier_name: comprehensiveResult.allDataRows[0].supplier_name,
+            supplier_contact: comprehensiveResult.allDataRows[0].supplier_contact,
+            supplier_phone: comprehensiveResult.allDataRows[0].supplier_phone,
+            supplier_email: comprehensiveResult.allDataRows[0].supplier_email,
+            supplier_address: comprehensiveResult.allDataRows[0].supplier_address,
+          });
           setComprehensiveData(comprehensiveResult.allDataRows);
         } else if (comprehensiveResult.lineItem) {
           // Single row backwards compatibility
