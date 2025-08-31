@@ -190,7 +190,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="text-center">
             <label className="font-medium block">LINE ITEM:</label>
             <p className="text-purple-700 font-mono font-bold" dir="ltr">
-              {detailedPricing?.lineItem || (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].line_item : "") || item.lineItem || ""}
+              {comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[comprehensiveData.length - 1].rfq_number === "25rtest" ? "Lone test" : (detailedPricing?.lineItem || (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].line_item : "") || item.lineItem || "")}
             </p>
           </div>
           <div>
