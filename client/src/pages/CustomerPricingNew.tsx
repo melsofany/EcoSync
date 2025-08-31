@@ -161,6 +161,18 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           معلومات التسعير الحالي
         </h4>
         
+        {/* التحقق من وجود بيانات المورد */}
+        {!item.supplierPrice && !comprehensiveData?.[0]?.supplier_name && !comprehensiveData?.[0]?.supplier_price && (
+          <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-4">
+            <p className="text-yellow-800 font-semibold text-center text-lg">
+              ⚠️ لم يتم إدخال تسعير المورد لهذا البند بعد
+            </p>
+            <p className="text-yellow-700 text-center mt-2">
+              يرجى الذهاب إلى صفحة "تسعير الموردين" وإدخال بيانات المورد أولاً قبل تسعير العميل
+            </p>
+          </div>
+        )}
+        
         {/* معلومات المورد الأساسية */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="bg-white p-3 rounded-lg border border-gray-200">
