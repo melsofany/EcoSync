@@ -1019,16 +1019,17 @@ ${itemsList}
 
         // إضافة الصف الجديد
         const range = `${sheetName}!A${newRowNumber}:AA${newRowNumber}`;
-        await this.sheets.spreadsheets.values.update({
+        const createResponse = await this.sheets.spreadsheets.values.update({
           spreadsheetId: this.spreadsheetId,
           range,
-          valueInputOption: 'RAW',
+          valueInputOption: 'USER_ENTERED',
           resource: {
             values: [newRow]
           }
         });
 
         console.log(`✅ تم إنشاء صف جديد للبند ${itemId} في الصف ${newRowNumber}`);
+        console.log(`📊 نتيجة الإنشاء:`, createResponse.data);
         return;
       }
 
@@ -1066,16 +1067,17 @@ ${itemsList}
 
       // تحديث الصف في Google Sheets
       const range = `${sheetName}!A${targetRowIndex}:AA${targetRowIndex}`;
-      await this.sheets.spreadsheets.values.update({
+      const updateResponse = await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
         range,
-        valueInputOption: 'RAW',
+        valueInputOption: 'USER_ENTERED',
         resource: {
           values: [updatedRow]
         }
       });
 
       console.log(`✅ تم تحديث بيانات تسعير المورد للبند ${itemId} في الصف ${targetRowIndex}`);
+      console.log(`📊 نتيجة التحديث:`, updateResponse.data);
     } catch (error) {
       console.error('❌ خطأ في تحديث تسعير المورد:', (error as Error).message);
       throw error;
