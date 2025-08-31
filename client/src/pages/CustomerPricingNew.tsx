@@ -144,17 +144,17 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         
         {/* معلومات المورد الأساسية */}
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="text-sm font-medium">اسم المورد:</label>
-            <p className="text-sm font-semibold">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">اسم المورد</label>
+            <p className="text-sm font-semibold text-gray-900">
               {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_name) || 
                detailedPricing?.supplierName || 
                item.supplierName || 
                "غير محدد"}
             </p>
           </div>
-          <div>
-            <label className="text-sm font-medium">المسؤول عند المورد:</label>
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">المسؤول عند المورد</label>
             <p className="text-sm font-semibold text-indigo-600">
               {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_contact) || 
                detailedPricing?.supplierContactPerson || 
@@ -163,28 +163,29 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             </p>
           </div>
         </div>
+        
         <div className="grid grid-cols-3 gap-4 mb-4">
-          <div>
-            <label className="text-sm font-medium">رقم الهاتف:</label>
-            <p className="text-sm" dir="ltr">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">رقم الهاتف</label>
+            <p className="text-sm font-medium text-gray-900" dir="ltr">
               {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_phone) || 
                detailedPricing?.supplierPhone || 
                item.supplierPhone || 
                "غير متوفر"}
             </p>
           </div>
-          <div>
-            <label className="text-sm font-medium">البريد الإلكتروني:</label>
-            <p className="text-sm">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">البريد الإلكتروني</label>
+            <p className="text-sm font-medium text-gray-900">
               {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_email) || 
                detailedPricing?.supplierEmail || 
                item.supplierEmail || 
                "غير متوفر"}
             </p>
           </div>
-          <div>
-            <label className="text-sm font-medium">العنوان:</label>
-            <p className="text-sm">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">العنوان</label>
+            <p className="text-sm font-medium text-gray-900">
               {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_address) || 
                detailedPricing?.supplierAddress || 
                item.supplierAddress || 
