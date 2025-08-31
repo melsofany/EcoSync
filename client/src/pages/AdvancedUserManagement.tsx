@@ -98,7 +98,7 @@ export default function AdvancedUserManagement() {
   const addUserMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest('POST', '/api/users', newUser);
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -129,8 +129,8 @@ export default function AdvancedUserManagement() {
   // حذف مستخدم
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await apiRequest(`/api/users/${userId}`, 'DELETE');
-      return response.json();
+      const response = await apiRequest('DELETE', `/api/users/${userId}`);
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -151,8 +151,8 @@ export default function AdvancedUserManagement() {
   // حظر/إلغاء حظر مستخدم
   const toggleUserStatusMutation = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      const response = await apiRequest(`/api/users/${userId}/status`, 'PATCH', { isActive });
-      return response.json();
+      const response = await apiRequest('PATCH', `/api/users/${userId}/status`, { isActive });
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -178,10 +178,10 @@ export default function AdvancedUserManagement() {
         throw new Error('كلمة المرور وتأكيدها غير متطابقين');
       }
       
-      const response = await apiRequest(`/api/users/${selectedUser.id}/password`, 'PATCH', {
+      const response = await apiRequest('PATCH', `/api/users/${selectedUser.id}/password`, {
         newPassword: passwordData.newPassword
       });
-      return response.json();
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -212,6 +212,10 @@ export default function AdvancedUserManagement() {
         method: 'POST',
         body: formData,
       });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'فشل في رفع الصورة');
+      }
       return response.json();
     },
     onSuccess: () => {

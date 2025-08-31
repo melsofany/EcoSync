@@ -62,8 +62,8 @@ export default function UserPermissions() {
   // تحديث صلاحية الوصول للبوت
   const updateBotAccessMutation = useMutation({
     mutationFn: async ({ username, canAccess }: { username: string; canAccess: boolean }) => {
-      const response = await apiRequest(`/api/bot-access/${username}`, 'PATCH', { canAccess });
-      return response.json();
+      const response = await apiRequest('PATCH', `/api/bot-access/${username}`, { canAccess });
+      return response;
     },
     onSuccess: (data) => {
       toast({
@@ -85,7 +85,7 @@ export default function UserPermissions() {
   const createUserMutation = useMutation({
     mutationFn: async (userData: typeof newUser) => {
       const response = await apiRequest('POST', '/api/sheets-users', userData);
-      return response.json();
+      return response;
     },
     onSuccess: (data) => {
       toast({
@@ -116,7 +116,7 @@ export default function UserPermissions() {
   const initializeSheetsMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest('POST', '/api/initialize-user-sheets');
-      return response.json();
+      return response;
     },
     onSuccess: (data) => {
       toast({
