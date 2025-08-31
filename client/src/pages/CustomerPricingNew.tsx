@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronDown, ChevronRight, Clock, Package, AlertCircle, DollarSign, Calculator } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, Package, AlertCircle, DollarSign, Calculator, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 
@@ -341,6 +341,99 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           </div>
         )}
       </div>
+
+      {/* بيانات المورد والضريبة */}
+      {comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_name && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg p-4 mb-4">
+          <h4 className="font-semibold mb-3 text-green-800 flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            بيانات المورد والضريبة
+          </h4>
+          <div className="grid grid-cols-2 gap-6">
+            {/* بيانات المورد */}
+            <div className="space-y-3">
+              <h5 className="font-medium text-gray-700 border-b pb-1">معلومات المورد</h5>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <label className="text-gray-600">اسم المورد:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_name || '-'}</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">جهة الاتصال:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_contact || '-'}</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">الهاتف:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_phone || '-'}</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">البريد الإلكتروني:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_email || '-'}</p>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-gray-600">العنوان:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].supplier_address || '-'}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* بيانات الضريبة والأسعار */}
+            <div className="space-y-3">
+              <h5 className="font-medium text-gray-700 border-b pb-1">الأسعار والضريبة</h5>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <label className="text-gray-600">سعر الوحدة:</label>
+                  <p className="font-bold text-green-700">{comprehensiveData[0].supplier_price ? formatCurrency(Number(comprehensiveData[0].supplier_price)) : '-'}</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">السعر الإجمالي:</label>
+                  <p className="font-bold text-green-700">{comprehensiveData[0].supplier_total ? formatCurrency(Number(comprehensiveData[0].supplier_total)) : '-'}</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">الضريبة مشمولة:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].vat_included || 'لا'}</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">نسبة الضريبة:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].vat_rate || '0'}%</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">السعر قبل الضريبة:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].price_before_vat ? formatCurrency(Number(comprehensiveData[0].price_before_vat)) : '-'}</p>
+                </div>
+                <div>
+                  <label className="text-gray-600">قيمة الضريبة:</label>
+                  <p className="font-semibold text-gray-900">{comprehensiveData[0].vat_amount ? formatCurrency(Number(comprehensiveData[0].vat_amount)) : '-'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* شروط إضافية */}
+          <div className="mt-4 pt-3 border-t border-green-200">
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <label className="text-gray-600">وقت التسليم:</label>
+                <p className="font-semibold text-gray-900">{comprehensiveData[0].delivery_time || '-'}</p>
+              </div>
+              <div>
+                <label className="text-gray-600">شروط الدفع:</label>
+                <p className="font-semibold text-gray-900">{comprehensiveData[0].payment_terms || '-'}</p>
+              </div>
+              <div>
+                <label className="text-gray-600">فترة الضمان:</label>
+                <p className="font-semibold text-gray-900">{comprehensiveData[0].warranty_period || '-'}</p>
+              </div>
+            </div>
+            {comprehensiveData[0].supplier_notes && (
+              <div className="mt-3">
+                <label className="text-gray-600">ملاحظات المورد:</label>
+                <p className="font-semibold text-gray-900 bg-yellow-50 p-2 rounded mt-1">{comprehensiveData[0].supplier_notes}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* إحصائيات سريعة */}
       {comprehensiveData && comprehensiveData.length > 0 && (
