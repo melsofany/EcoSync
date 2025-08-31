@@ -162,6 +162,81 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           </div>
         </div>
         
+        {/* عرض معلومات تسعير الموردين من comprehensiveData */}
+        {comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_price && (
+          <div className="mt-4 p-3 bg-white rounded-lg border border-green-300">
+            <h5 className="font-medium text-sm mb-2 text-green-700">تفاصيل تسعير المورد:</h5>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <label className="text-gray-600">اسم المورد:</label>
+                <p className="font-medium">{comprehensiveData[0].supplier_name || "-"}</p>
+              </div>
+              <div>
+                <label className="text-gray-600">سعر الوحدة:</label>
+                <p className="font-semibold text-green-600">
+                  {formatCurrency(Number(comprehensiveData[0].supplier_price || 0))}
+                </p>
+              </div>
+              <div>
+                <label className="text-gray-600">العملة:</label>
+                <p>{comprehensiveData[0].supplier_currency || "EGP"}</p>
+              </div>
+              <div>
+                <label className="text-gray-600">الضريبة مشمولة:</label>
+                <p>{comprehensiveData[0].vat_included === "نعم" ? "نعم" : "لا"}</p>
+              </div>
+              {comprehensiveData[0].vat_rate && (
+                <div>
+                  <label className="text-gray-600">نسبة الضريبة:</label>
+                  <p>{comprehensiveData[0].vat_rate}</p>
+                </div>
+              )}
+              {comprehensiveData[0].price_before_vat && (
+                <div>
+                  <label className="text-gray-600">السعر قبل الضريبة:</label>
+                  <p className="font-semibold">
+                    {formatCurrency(Number(comprehensiveData[0].price_before_vat || 0))}
+                  </p>
+                </div>
+              )}
+              {comprehensiveData[0].vat_amount && (
+                <div>
+                  <label className="text-gray-600">قيمة الضريبة:</label>
+                  <p className="font-semibold">
+                    {formatCurrency(Number(comprehensiveData[0].vat_amount || 0))}
+                  </p>
+                </div>
+              )}
+              {comprehensiveData[0].total_price && (
+                <div>
+                  <label className="text-gray-600">السعر الإجمالي:</label>
+                  <p className="font-semibold text-green-600">
+                    {formatCurrency(Number(comprehensiveData[0].total_price || 0))}
+                  </p>
+                </div>
+              )}
+              {comprehensiveData[0].delivery_time && (
+                <div>
+                  <label className="text-gray-600">وقت التسليم:</label>
+                  <p>{comprehensiveData[0].delivery_time}</p>
+                </div>
+              )}
+              {comprehensiveData[0].payment_terms && (
+                <div>
+                  <label className="text-gray-600">شروط الدفع:</label>
+                  <p>{comprehensiveData[0].payment_terms}</p>
+                </div>
+              )}
+              {comprehensiveData[0].warranty_period && (
+                <div>
+                  <label className="text-gray-600">فترة الضمان:</label>
+                  <p>{comprehensiveData[0].warranty_period}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         <div className="mt-4 flex gap-2">
           <Button
             onClick={() => setShowPricingForm(!showPricingForm)}
@@ -177,7 +252,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <CustomerPricingForm 
               item={{
                 ...item,
-                supplierPrice: comprehensiveData?.supplierUnitPrice || item.supplierPrice
+                supplierPrice: (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[0].supplier_price : null) || item.supplierPrice
               }} 
               onSuccess={() => {
                 setShowPricingForm(false);
