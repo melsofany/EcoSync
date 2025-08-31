@@ -151,11 +151,22 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         </h4>
         
         {/* معلومات المورد الأساسية */}
-        <div className="grid grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="text-sm font-medium">اسم المورد:</label>
             <p className="text-sm font-semibold">{detailedPricing?.supplierName || item.supplierName || "غير محدد"}</p>
           </div>
+          <div>
+            <label className="text-sm font-medium">المسؤول عند المورد:</label>
+            <p className="text-sm font-semibold text-indigo-600">
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_contact) || 
+               detailedPricing?.supplierContactPerson || 
+               item.supplierContactPerson || 
+               "غير محدد"}
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <div>
             <label className="text-sm font-medium">رقم الهاتف:</label>
             <p className="text-sm" dir="ltr">{detailedPricing?.supplierPhone || item.supplierPhone || "غير متوفر"}</p>
