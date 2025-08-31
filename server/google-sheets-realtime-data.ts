@@ -795,9 +795,9 @@ export class GoogleSheetsRealtimeData {
         // التحقق من وجود رقم البند
         if (!item.itemNumber) return false;
         
-        // فلترة البنود المسعّرة - إخفاء البنود التي تم تسعيرها للعميل
-        if (item.customerUnitPrice && item.customerUnitPrice !== '' && item.customerUnitPrice !== '0') {
-          console.log(`💰 إخفاء البند ${item.itemNumber} - تم تسعيره بالفعل (${item.customerUnitPrice})`);
+        // فلترة البنود المسعّرة من الموردين - إخفاء البنود التي تم تسعيرها
+        if (item.unitPrice && item.unitPrice !== '' && item.unitPrice !== '0') {
+          console.log(`💰 إخفاء البند ${item.itemNumber} من تسعير الموردين - تم تسعيره بالفعل (${item.unitPrice})`);
           return false;
         }
         
