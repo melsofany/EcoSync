@@ -9554,5 +9554,31 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
     });
   });
 
+  // مسح بيانات تسعير العملاء
+  app.delete("/api/clear-customer-pricing", requireAuth, requireRole(['it_admin', 'manager']), async (req: Request, res: Response) => {
+    try {
+      console.log('🗑️ طلب مسح بيانات تسعير العملاء...');
+      
+      const { ClearCustomerPricing } = await import('./clear-customer-pricing');
+      const clearer = new ClearCustomerPricing();
+      await clearer.initialize();
+      const result = await clearer.clearAllCustomerPricingData();
+      
+      await logActivity(req, "clear_customer_pricing", "customer_pricing", "", `تم مسح ${result.deletedCount} بند من تسعير العملاء`);
+      
+      res.json({
+        success: true,
+        message: `تم مسح ${result.deletedCount} بند من صفحة تسعير العملاء بنجاح`,
+        deletedCount: result.deletedCount
+      });
+    } catch (error) {
+      console.error('❌ خطأ في مسح بيانات تسعير العملاء:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "فشل في مسح بيانات تسعير العملاء" 
+      });
+    }
+  });
+
   return httpServer;
 }
