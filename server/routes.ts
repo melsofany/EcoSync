@@ -5815,26 +5815,45 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       console.log(`📌 رقم RFQ: ${pricingData.rfqNumber}`);
       console.log(`📌 سعر العميل: ${pricingData.customerPrice}`);
       
-      // محاولة الحفظ في صفحة DATA أولاً
+      // محاولة الحفظ في صفحة DATA أولاً باستخدام DirectCustomerPricing
       try {
-        console.log(`🟡 استيراد CustomerPricingUpdater...`);
+        console.log(`🟡 استيراد DirectCustomerPricing...`);
+        const { DirectCustomerPricing } = await import('./direct-customer-pricing.js');
+        const directPricing = new DirectCustomerPricing();
+        await directPricing.initialize();
+        
+        console.log(`🟡 استدعاء saveCustomerPrice...`);
+        const result = await directPricing.saveCustomerPrice(
+          pricingData.itemNumber,
+          pricingData.customerPrice || "",
+          pricingData.rfqNumber || ""
+        );
+        console.log(`✅ تم حفظ سعر العميل في العمود I في الصف ${result.row} بنجاح`);
+      } catch (dataError) {
+        console.warn(`⚠️ لم يتم العثور على البند في صفحة DATA: ${dataError.message}`);
+        // في حالة فشل الحفظ في DATA، نستمر ونحفظ في صفحة تسعير العملاء
+      }
+      
+      // حفظ في صفحة تسعير العملاء أيضاً
+      try {
+        console.log(`🟡 استيراد CustomerPricingUpdater لحفظ في صفحة تسعير العملاء...`);
         const { CustomerPricingUpdater } = await import('./customer-pricing-update.js');
         const customerPricingUpdater = new CustomerPricingUpdater();
         await customerPricingUpdater.initialize();
         
-        console.log(`🟡 استدعاء updateCustomerPricingInDataSheet...`);
-        await customerPricingUpdater.updateCustomerPricingInDataSheet(
+        console.log(`🟡 استدعاء updateCustomerPricing...`);
+        await customerPricingUpdater.updateCustomerPricing(
           pricingData.itemNumber,
-          pricingData.rfqNumber || "",
           {
             customerUnitPrice: pricingData.customerPrice || "",
-            employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد"
+            employeeName: req.session.user?.fullName || req.session.user?.username || "غير محدد",
+            profitMargin: pricingData.profitMargin || "",
+            notes: pricingData.notes || ""
           }
         );
-        console.log(`✅ تم حفظ سعر العميل في Google Sheets بنجاح`);
-      } catch (dataError) {
-        console.warn(`⚠️ لم يتم العثور على البند في صفحة DATA، سيتم الحفظ في صفحة تسعير العملاء فقط`);
-        // في حالة فشل الحفظ في DATA، نستمر ونحفظ في صفحة تسعير العملاء
+        console.log(`✅ تم حفظ سعر العميل في صفحة تسعير العملاء بنجاح`);
+      } catch (pricingError) {
+        console.warn(`⚠️ لم يتم العثور على البند في صفحة تسعير العملاء: ${pricingError.message}`);
       }
       
       await logActivity(req, "create_customer_pricing", "pricing", pricingData.itemNumber, 
