@@ -179,12 +179,17 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             </p>
           </div>
           <div className="text-center border-l">
-            <label className="text-sm font-medium block mb-1">ضريبة القيمة المضافة</label>
-            <p className="font-semibold text-blue-600">
-              {detailedPricing?.vatRate || item.vatRate || "14"}%
+            <label className="text-sm font-medium block mb-1">قيمة الضريبة</label>
+            <p className="font-bold text-blue-600 text-lg">
+              {(() => {
+                const basePrice = Number(detailedPricing?.supplierUnitPrice || item.supplierPrice || 0);
+                const vatRate = Number(detailedPricing?.vatRate || item.vatRate || 14) / 100;
+                const vatAmount = basePrice * vatRate;
+                return formatCurrency(vatAmount);
+              })()}
             </p>
             <p className="text-xs text-gray-600">
-              {detailedPricing?.vatInclusive === "true" || item.vatInclusive === "true" ? "شامل الضريبة" : "غير شامل الضريبة"}
+              {detailedPricing?.vatRate || item.vatRate || "14"}% ضريبة
             </p>
           </div>
           <div className="text-center">
@@ -196,6 +201,9 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                 const isInclusive = detailedPricing?.vatInclusive === "true" || item.vatInclusive === "true";
                 return formatCurrency(isInclusive ? basePrice : basePrice * (1 + vatRate));
               })()}
+            </p>
+            <p className="text-xs text-gray-600">
+              {detailedPricing?.vatInclusive === "true" || item.vatInclusive === "true" ? "شامل الضريبة" : "غير شامل الضريبة"}
             </p>
           </div>
         </div>
