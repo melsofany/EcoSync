@@ -19,6 +19,9 @@ export class ClearSupplierPricing {
         ['https://www.googleapis.com/auth/spreadsheets']
       );
       
+      // المصادقة أولاً
+      await auth.authorize();
+      
       this.sheets = google.sheets({ version: 'v4', auth });
       console.log('✅ تم تهيئة Google Sheets لحذف البيانات');
     } catch (error) {
