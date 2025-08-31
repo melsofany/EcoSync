@@ -322,30 +322,6 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           </div>
         )}
         
-        <div className="mt-4 flex gap-2">
-          <Button
-            onClick={() => setShowPricingForm(!showPricingForm)}
-            variant={showPricingForm ? "secondary" : "default"}
-            size="sm"
-          >
-            {showPricingForm ? "إخفاء النموذج" : "إضافة تسعير للعميل"}
-          </Button>
-        </div>
-        
-        {showPricingForm && (
-          <div className="mt-4">
-            <CustomerPricingForm 
-              item={{
-                ...item,
-                supplierPrice: (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[0].supplier_price : null) || item.supplierPrice
-              }} 
-              onSuccess={() => {
-                setShowPricingForm(false);
-                onItemPriced(); // Call the parent callback
-              }} 
-            />
-          </div>
-        )}
       </div>
 
       {/* بيانات المورد والضريبة */}
@@ -438,6 +414,32 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
               </div>
             )}
           </div>
+          
+          {/* زر إضافة تسعير للعميل */}
+          <div className="mt-4 pt-3 border-t border-green-200">
+            <Button
+              onClick={() => setShowPricingForm(!showPricingForm)}
+              variant={showPricingForm ? "secondary" : "default"}
+              className="w-full"
+            >
+              {showPricingForm ? "إخفاء نموذج التسعير" : "إضافة تسعير للعميل"}
+            </Button>
+          </div>
+          
+          {showPricingForm && (
+            <div className="mt-4">
+              <CustomerPricingForm 
+                item={{
+                  ...item,
+                  supplierPrice: (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].supplier_price : null) || item.supplierPrice
+                }} 
+                onSuccess={() => {
+                  setShowPricingForm(false);
+                  onItemPriced();
+                }} 
+              />
+            </div>
+          )}
         </div>
       )}
 
