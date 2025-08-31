@@ -795,8 +795,11 @@ export class GoogleSheetsRealtimeData {
         // التحقق من وجود رقم البند
         if (!item.itemNumber) return false;
         
-        // لا نقوم بفلترة البنود بناءً على الحالة - نعرض كل البنود
-        // حتى البنود المسعّرة يمكن عرضها وتعديلها
+        // فلترة البنود المسعّرة - إخفاء البنود التي تم تسعيرها للعميل
+        if (item.customerUnitPrice && item.customerUnitPrice !== '' && item.customerUnitPrice !== '0') {
+          console.log(`💰 إخفاء البند ${item.itemNumber} - تم تسعيره بالفعل (${item.customerUnitPrice})`);
+          return false;
+        }
         
         // التحقق من تاريخ الانتهاء
         if (item.expiryDate) {
@@ -866,8 +869,11 @@ export class GoogleSheetsRealtimeData {
         // التحقق من وجود رقم البند
         if (!item.itemNumber) return false;
         
-        // لا نقوم بفلترة البنود بناءً على الحالة - نعرض كل البنود
-        // حتى البنود المسعّرة يمكن عرضها وتعديلها
+        // فلترة البنود المسعّرة - إخفاء البنود التي تم تسعيرها للعميل
+        if (item.customerUnitPrice && item.customerUnitPrice !== '' && item.customerUnitPrice !== '0') {
+          console.log(`💰 إخفاء البند ${item.itemNumber} - تم تسعيره بالفعل (${item.customerUnitPrice})`);
+          return false;
+        }
         
         // التحقق من تاريخ الانتهاء
         if (item.expiryDate) {
