@@ -195,7 +195,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="text-center">
             <label className="text-sm font-medium block mb-1">الشخص المسؤول</label>
             <p className="font-bold text-purple-700 text-lg">
-              {detailedPricing?.employeeName || item.employeeName || "غير محدد"}
+              {detailedData?.responsibleEmployee || detailedPricing?.responsibleEmployee || detailedPricing?.employeeName || item.employeeName || "غير محدد"}
             </p>
             <p className="text-xs text-gray-600">
               الموظف المسؤول عن التسعير

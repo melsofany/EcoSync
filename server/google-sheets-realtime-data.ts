@@ -1245,7 +1245,7 @@ export class GoogleSheetsRealtimeData {
           try {
             const supplierResponse = await this.sheets.spreadsheets.values.get({
               spreadsheetId: this.spreadsheetId,
-              range: 'تسعير_الموردين!A2:Z',
+              range: 'تسعير_الموردين!A2:AA',
             });
             
             const supplierRows = supplierResponse.data.values || [];
@@ -1273,6 +1273,7 @@ export class GoogleSheetsRealtimeData {
               const supplierRfqNumber = (supplierRow[5] || '').trim(); // العمود F - RFQ Number الصحيح
               const rowSupplierName = supplierRow[9] || ''; // العمود J - اسم المورد
               const supplierUnitPrice = supplierRow[14] || ''; // العمود O - سعر المورد
+              const responsibleEmployee = supplierRow[26] || ''; // العمود AA - الموظف المسؤول
               
               // طباعة كل سجل يحتوي على البند المطلوب
               if (supplierItemNumber === itemId) {
@@ -1284,6 +1285,9 @@ export class GoogleSheetsRealtimeData {
                 supplierPrice = supplierUnitPrice;
                 supplierName = rowSupplierName;
                 console.log(`💰 تم العثور على سعر المورد من العمود O في الصف ${idx + 2}: ${supplierPrice} من المورد: ${supplierName}`);
+                console.log(`👤 الموظف المسؤول من العمود AA: ${responsibleEmployee || 'غير محدد'}`);
+                // حفظ اسم الموظف المسؤول
+                customerItemData.responsibleEmployee = responsibleEmployee;
                 break;
               }
             }
@@ -1301,6 +1305,7 @@ export class GoogleSheetsRealtimeData {
             lineItem: row[2] || '', // العمود C من صفحة DATA - LINE ITEM
             supplierUnitPrice: supplierPrice || customerItemData.supplierUnitPrice, // سعر المورد من ورقة تسعير الموردين
             supplierName: supplierName, // اسم المورد من ورقة تسعير الموردين
+            responsibleEmployee: customerItemData.responsibleEmployee || '', // الموظف المسؤول من ورقة تسعير الموردين
           };
           
           if (row[2] && row[2].trim() !== '') {
