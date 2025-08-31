@@ -52,8 +52,10 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         console.log('detailedPricing data:', data);
         setDetailedPricing(data);
 
-        // Also fetch comprehensive data with cache busting
-        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data?t=${Date.now()}`, {
+        // Also fetch comprehensive data with cache busting - use itemNumber not id
+        const itemNumberToUse = item.itemNumber || item.id;
+        console.log('🔍 Fetching comprehensive data for:', itemNumberToUse);
+        const comprehensiveResponse = await fetch(`/api/items/${itemNumberToUse}/comprehensive-data?t=${Date.now()}`, {
           credentials: 'include',
           headers: { 'Cache-Control': 'no-cache' }
         });
