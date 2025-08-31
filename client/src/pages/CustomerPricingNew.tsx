@@ -73,15 +73,6 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
     fetchDetailedPricing();
   }, [item?.id]);
 
-  // Debug log for comprehensiveData
-  React.useEffect(() => {
-    console.log('comprehensiveData state updated:', comprehensiveData);
-    console.log('comprehensiveData length:', comprehensiveData.length);
-    if (comprehensiveData.length > 0) {
-      console.log('First row in state:', comprehensiveData[0]);
-      console.log('supplier_contact value:', comprehensiveData[0].supplier_contact);
-    }
-  }, [comprehensiveData]);
 
   if (isLoading) {
     return <div className="bg-muted/30 rounded-lg p-4 text-center">جاري تحميل التفاصيل...</div>;
@@ -204,24 +195,24 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
 
         {/* معلومات التسعير والضريبة */}
         <div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-white rounded-lg">
-          <div className="text-center border-l">
+          <div className="text-center border-r">
             <label className="text-sm font-medium block mb-1">سعر الوحدة (بدون ضريبة)</label>
             <p className="font-bold text-green-600 text-lg">
-              {formatCurrency(Number(detailedPricing?.supplierUnitPrice || item.supplierPrice || 0))}
+              {formatCurrency(Number((comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_price) || detailedPricing?.supplierUnitPrice || item.supplierPrice || 0))}
             </p>
           </div>
-          <div className="text-center border-l">
+          <div className="text-center border-r">
             <label className="text-sm font-medium block mb-1">قيمة الضريبة</label>
             <p className="font-bold text-blue-600 text-lg">
               {(() => {
-                const basePrice = Number(detailedPricing?.supplierUnitPrice || item.supplierPrice || 0);
-                const vatRate = Number(detailedPricing?.vatRate || item.vatRate || 14) / 100;
+                const basePrice = Number((comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_price) || detailedPricing?.supplierUnitPrice || item.supplierPrice || 0);
+                const vatRate = Number((comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].vat_rate?.replace('%', '')) || detailedPricing?.vatRate || item.vatRate || 14) / 100;
                 const vatAmount = basePrice * vatRate;
                 return formatCurrency(vatAmount);
               })()}
             </p>
             <p className="text-xs text-gray-600">
-              {detailedPricing?.vatRate || item.vatRate || "14"}% ضريبة
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].vat_rate) || detailedPricing?.vatRate || item.vatRate || "14"}% ضريبة
             </p>
           </div>
           <div className="text-center">
@@ -239,15 +230,30 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 rounded-lg">
           <div>
             <label className="text-xs font-medium text-gray-600">شروط الدفع:</label>
-            <p className="text-sm font-medium">{detailedPricing?.paymentTerms || item.paymentTerms || "نقداً عند التسليم"}</p>
+            <p className="text-sm font-medium">
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].payment_terms) || 
+               detailedPricing?.paymentTerms || 
+               item.paymentTerms || 
+               "نقداً عند التسليم"}
+            </p>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-600">مدة التوريد:</label>
-            <p className="text-sm font-medium">{detailedPricing?.deliveryTime || item.deliveryTime || "فوري"}</p>
+            <p className="text-sm font-medium">
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].delivery_time) || 
+               detailedPricing?.deliveryTime || 
+               item.deliveryTime || 
+               "فوري"}
+            </p>
           </div>
           <div>
             <label className="text-xs font-medium text-gray-600">فترة الضمان:</label>
-            <p className="text-sm font-medium">{detailedPricing?.warrantyPeriod || item.warrantyPeriod || "غير محدد"}</p>
+            <p className="text-sm font-medium">
+              {(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].warranty_period) || 
+               detailedPricing?.warrantyPeriod || 
+               item.warrantyPeriod || 
+               "غير محدد"}
+            </p>
           </div>
         </div>
 
