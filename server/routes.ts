@@ -5746,6 +5746,33 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     }
   });
 
+  // Remove item from supplier pricing
+  app.delete("/api/supplier-pricing-item/:itemNumber", async (req: Request, res: Response) => {
+    try {
+      const { itemNumber } = req.params;
+      
+      console.log(`🗑️ حذف البند ${itemNumber} من تسعير الموردين`);
+      
+      const { RemoveSupplierPricing } = await import('./remove-supplier-pricing.js');
+      const remover = new RemoveSupplierPricing();
+      await remover.initialize();
+      
+      const result = await remover.removeItem(itemNumber);
+      
+      res.json({ 
+        success: true, 
+        message: `تم حذف ${result.deletedRows} صف للبند ${itemNumber}`,
+        deletedRows: result.deletedRows 
+      });
+    } catch (error) {
+      console.error('خطأ في حذف البند:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: error.message || 'فشل حذف البند' 
+      });
+    }
+  });
+
   // Direct customer pricing save (for testing)
   app.post("/api/customer-pricing-direct", async (req: Request, res: Response) => {
     try {
