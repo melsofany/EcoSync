@@ -97,7 +97,7 @@ export default function AdvancedUserManagement() {
   // إضافة مستخدم جديد
   const addUserMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/users', 'POST', newUser);
+      const response = await apiRequest('POST', '/api/users', newUser);
       return response.json();
     },
     onSuccess: () => {

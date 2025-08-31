@@ -84,7 +84,7 @@ export default function UserPermissions() {
   // إنشاء مستخدم جديد
   const createUserMutation = useMutation({
     mutationFn: async (userData: typeof newUser) => {
-      const response = await apiRequest('/api/sheets-users', 'POST', userData);
+      const response = await apiRequest('POST', '/api/sheets-users', userData);
       return response.json();
     },
     onSuccess: (data) => {
@@ -115,7 +115,7 @@ export default function UserPermissions() {
   // تهيئة أوراق المستخدمين
   const initializeSheetsMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/initialize-user-sheets', 'POST');
+      const response = await apiRequest('POST', '/api/initialize-user-sheets');
       return response.json();
     },
     onSuccess: (data) => {
