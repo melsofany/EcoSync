@@ -76,6 +76,8 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           if (comprehensiveResult.allDataRows && comprehensiveResult.allDataRows.length > 0) {
             console.log('Setting comprehensiveData with allDataRows, count:', comprehensiveResult.allDataRows.length);
             console.log('First row data:', comprehensiveResult.allDataRows[0]);
+            console.log('Last row data:', comprehensiveResult.allDataRows[comprehensiveResult.allDataRows.length - 1]);
+            console.log('Last row expiry_date:', comprehensiveResult.allDataRows[comprehensiveResult.allDataRows.length - 1].expiry_date);
             console.log('Supplier info in first row:', {
               supplier_name: comprehensiveResult.allDataRows[0].supplier_name,
               supplier_price: comprehensiveResult.allDataRows[0].supplier_price,
@@ -219,7 +221,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           </div>
           <div>
             <label className="font-medium">تاريخ انتهاء العرض:</label>
-            <p className="text-yellow-700">{(comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].expiry_date : "") || detailedPricing?.expiryDate || item.expiryDate || ""}</p>
+            <p className="text-yellow-700">{(comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[comprehensiveData.length - 1].expiry_date ? comprehensiveData[comprehensiveData.length - 1].expiry_date : (detailedPricing?.expiryDate || item.expiryDate || ""))}</p>
           </div>
           <div>
             <label className="font-medium">الكمية المطلوبة:</label>
