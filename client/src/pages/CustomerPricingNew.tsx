@@ -188,16 +188,16 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="text-center">
             <label className="font-medium block">LINE ITEM:</label>
             <p className="text-purple-700 font-mono font-bold" dir="ltr">
-              {detailedPricing?.lineItem || (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[0].line_item : "") || item.lineItem || ""}
+              {detailedPricing?.lineItem || (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].line_item : "") || item.lineItem || ""}
             </p>
           </div>
           <div>
             <label className="font-medium">PART NO:</label>
-            <p className="text-blue-600">{detailedPricing?.partNumber || item.partNumber || ""}</p>
+            <p className="text-blue-600">{(comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].part_no : "") || detailedPricing?.partNumber || item.partNumber || ""}</p>
           </div>
           <div>
             <label className="font-medium">الوحدة:</label>
-            <p className="text-blue-600">{detailedPricing?.uom || item.uom || item.unit || "EACH"}</p>
+            <p className="text-blue-600">{(comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].uom : "") || detailedPricing?.uom || item.uom || item.unit || "EACH"}</p>
           </div>
         </div>
       </div>
@@ -211,19 +211,19 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         <div className="grid grid-cols-4 gap-4 text-sm">
           <div>
             <label className="font-medium">رقم طلب التسعير:</label>
-            <p className="text-yellow-700 font-bold">{detailedPricing?.rfqNumber || item.requestNumber || ""}</p>
+            <p className="text-yellow-700 font-bold">{(comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].rfq_number : "") || detailedPricing?.rfqNumber || item.requestNumber || ""}</p>
           </div>
           <div>
             <label className="font-medium">تاريخ الطلب:</label>
-            <p className="text-yellow-700">{detailedPricing?.requestDate || item.requestDate || ""}</p>
+            <p className="text-yellow-700">{(comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].rfq_date : "") || detailedPricing?.requestDate || item.requestDate || ""}</p>
           </div>
           <div>
             <label className="font-medium">تاريخ انتهاء العرض:</label>
-            <p className="text-yellow-700">{detailedPricing?.expiryDate || item.expiryDate || ""}</p>
+            <p className="text-yellow-700">{(comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].expiry_date : "") || detailedPricing?.expiryDate || item.expiryDate || ""}</p>
           </div>
           <div>
             <label className="font-medium">الكمية المطلوبة:</label>
-            <p className="text-yellow-700 font-bold">{detailedPricing?.quantity || item.quantity || ""}</p>
+            <p className="text-yellow-700 font-bold">{(comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[comprehensiveData.length - 1].rfq_qty : "") || detailedPricing?.quantity || item.quantity || ""}</p>
           </div>
         </div>
       </div>
@@ -248,74 +248,74 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         </div>
         
         {/* عرض معلومات تسعير الموردين من comprehensiveData */}
-        {comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_price && (
+        {comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[comprehensiveData.length - 1].supplier_price && (
           <div className="mt-4 p-3 bg-white rounded-lg border border-green-300">
             <h5 className="font-medium text-sm mb-2 text-green-700">تفاصيل تسعير المورد:</h5>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <label className="text-gray-600">اسم المورد:</label>
-                <p className="font-medium">{comprehensiveData[0].supplier_name || "-"}</p>
+                <p className="font-medium">{comprehensiveData[comprehensiveData.length - 1].supplier_name || "-"}</p>
               </div>
               <div>
                 <label className="text-gray-600">سعر الوحدة:</label>
                 <p className="font-semibold text-green-600">
-                  {formatCurrency(Number(comprehensiveData[0].supplier_price || 0))}
+                  {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].supplier_price || 0))}
                 </p>
               </div>
               <div>
                 <label className="text-gray-600">العملة:</label>
-                <p>{comprehensiveData[0].supplier_currency || "EGP"}</p>
+                <p>{comprehensiveData[comprehensiveData.length - 1].supplier_currency || "EGP"}</p>
               </div>
               <div>
                 <label className="text-gray-600">الضريبة مشمولة:</label>
-                <p>{comprehensiveData[0].vat_included === "نعم" ? "نعم" : "لا"}</p>
+                <p>{comprehensiveData[comprehensiveData.length - 1].vat_included === "نعم" ? "نعم" : "لا"}</p>
               </div>
-              {comprehensiveData[0].vat_rate && (
+              {comprehensiveData[comprehensiveData.length - 1].vat_rate && (
                 <div>
                   <label className="text-gray-600">نسبة الضريبة:</label>
-                  <p>{comprehensiveData[0].vat_rate}</p>
+                  <p>{comprehensiveData[comprehensiveData.length - 1].vat_rate}</p>
                 </div>
               )}
-              {comprehensiveData[0].price_before_vat && (
+              {comprehensiveData[comprehensiveData.length - 1].price_before_vat && (
                 <div>
                   <label className="text-gray-600">السعر قبل الضريبة:</label>
                   <p className="font-semibold">
-                    {formatCurrency(Number(comprehensiveData[0].price_before_vat || 0))}
+                    {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].price_before_vat || 0))}
                   </p>
                 </div>
               )}
-              {comprehensiveData[0].vat_amount && (
+              {comprehensiveData[comprehensiveData.length - 1].vat_amount && (
                 <div>
                   <label className="text-gray-600">قيمة الضريبة:</label>
                   <p className="font-semibold">
-                    {formatCurrency(Number(comprehensiveData[0].vat_amount || 0))}
+                    {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].vat_amount || 0))}
                   </p>
                 </div>
               )}
-              {comprehensiveData[0].total_price && (
+              {comprehensiveData[comprehensiveData.length - 1].total_price && (
                 <div>
                   <label className="text-gray-600">السعر الإجمالي:</label>
                   <p className="font-semibold text-green-600">
-                    {formatCurrency(Number(comprehensiveData[0].total_price || 0))}
+                    {formatCurrency(Number(comprehensiveData[comprehensiveData.length - 1].total_price || 0))}
                   </p>
                 </div>
               )}
-              {comprehensiveData[0].delivery_time && (
+              {comprehensiveData[comprehensiveData.length - 1].delivery_time && (
                 <div>
                   <label className="text-gray-600">وقت التسليم:</label>
-                  <p>{comprehensiveData[0].delivery_time}</p>
+                  <p>{comprehensiveData[comprehensiveData.length - 1].delivery_time}</p>
                 </div>
               )}
-              {comprehensiveData[0].payment_terms && (
+              {comprehensiveData[comprehensiveData.length - 1].payment_terms && (
                 <div>
                   <label className="text-gray-600">شروط الدفع:</label>
-                  <p>{comprehensiveData[0].payment_terms}</p>
+                  <p>{comprehensiveData[comprehensiveData.length - 1].payment_terms}</p>
                 </div>
               )}
-              {comprehensiveData[0].warranty_period && (
+              {comprehensiveData[comprehensiveData.length - 1].warranty_period && (
                 <div>
                   <label className="text-gray-600">فترة الضمان:</label>
-                  <p>{comprehensiveData[0].warranty_period}</p>
+                  <p>{comprehensiveData[comprehensiveData.length - 1].warranty_period}</p>
                 </div>
               )}
             </div>
