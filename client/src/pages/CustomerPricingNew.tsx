@@ -29,11 +29,11 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
   // Fetch detailed pricing when component mounts
   React.useEffect(() => {
     const fetchDetailedPricing = async () => {
-      if (!item?.id) return;
+      if (!item?.itemNumber) return;
       
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/items/${item.id}/detailed-pricing`, {
+        const response = await fetch(`/api/items/${item.itemNumber}/detailed-pricing`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -41,7 +41,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         setDetailedPricing(data);
 
         // Also fetch comprehensive data with cache busting
-        const comprehensiveResponse = await fetch(`/api/items/${item.id}/comprehensive-data?t=${Date.now()}`, {
+        const comprehensiveResponse = await fetch(`/api/items/${item.itemNumber}/comprehensive-data?t=${Date.now()}`, {
           credentials: 'include',
           headers: { 'Cache-Control': 'no-cache' }
         });
@@ -71,7 +71,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
     };
 
     fetchDetailedPricing();
-  }, [item?.id]);
+  }, [item?.itemNumber]);
 
   // Debug log for comprehensiveData
   React.useEffect(() => {
