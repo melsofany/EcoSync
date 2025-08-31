@@ -193,17 +193,12 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             </p>
           </div>
           <div className="text-center">
-            <label className="text-sm font-medium block mb-1">السعر النهائي</label>
-            <p className="font-bold text-green-700 text-lg">
-              {(() => {
-                const basePrice = Number(detailedPricing?.supplierUnitPrice || item.supplierPrice || 0);
-                const vatRate = Number(detailedPricing?.vatRate || item.vatRate || 14) / 100;
-                const isInclusive = detailedPricing?.vatInclusive === "true" || item.vatInclusive === "true";
-                return formatCurrency(isInclusive ? basePrice : basePrice * (1 + vatRate));
-              })()}
+            <label className="text-sm font-medium block mb-1">الشخص المسؤول</label>
+            <p className="font-bold text-purple-700 text-lg">
+              {detailedPricing?.employeeName || item.employeeName || "غير محدد"}
             </p>
             <p className="text-xs text-gray-600">
-              {detailedPricing?.vatInclusive === "true" || item.vatInclusive === "true" ? "شامل الضريبة" : "غير شامل الضريبة"}
+              الموظف المسؤول عن التسعير
             </p>
           </div>
         </div>
