@@ -33,12 +33,28 @@ export class DirectCustomerPricing {
 
       // البحث عن البند مع رقم الطلب
       let targetRow = -1;
+      console.log(`🔍 البحث عن: "${itemNumber}" (RFQ: ${rfqNumber || 'لا يوجد'})`);
+      
       for (let i = 1; i < rows.length; i++) {
-        const itemCol = (rows[i][0] || '').toString().trim();
-        const rfqCol = (rows[i][5] || '').toString().trim(); // العمود F للطلب
+        if (!rows[i] || rows[i].length === 0) continue; // تخطي الصفوف الفارغة
         
-        // البحث عن تطابق كامل: البند + رقم الطلب
-        if (itemCol.toUpperCase() === itemNumber.toUpperCase()) {
+        const itemCol = (rows[i][0] || '').toString().trim();
+        const rfqCol = rows[i].length > 5 ? (rows[i][5] || '').toString().trim() : ''; // العمود F للطلب
+        
+        // عرض أول 5 صفوف للتشخيص
+        if (i <= 5) {
+          console.log(`   صف ${i + 1}: البند="${itemCol}", RFQ="${rfqCol}"`);
+        }
+        
+        // عرض صف البند P-0000017 إذا وجد
+        if (itemCol === 'P-0000017') {
+          console.log(`🎯 وجدت P-0000017 في الصف ${i + 1}: البند="${itemCol}", RFQ="${rfqCol}"`);
+        }
+        
+        // البحث عن تطابق كامل: البند + رقم الطلب (تحقق بدون uppercase أولاً)
+        if (itemCol === itemNumber || itemCol.toUpperCase() === itemNumber.toUpperCase()) {
+          console.log(`📍 مطابقة البند في الصف ${i + 1}: itemCol="${itemCol}", rfqCol="${rfqCol}", rfqNumber="${rfqNumber}"`);
+          
           if (rfqNumber && rfqCol === rfqNumber) {
             targetRow = i + 1;
             console.log(`✅ وجدت تطابق كامل: البند ${itemNumber} مع الطلب ${rfqNumber} في الصف ${targetRow}`);

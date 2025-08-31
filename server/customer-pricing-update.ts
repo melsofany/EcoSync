@@ -35,6 +35,12 @@ export class CustomerPricingUpdater {
       const rows = response.data.values || [];
       console.log(`📊 عدد الصفوف المقروءة من DATA: ${rows.length}`);
       
+      // إظهار أول 10 صفوف من العمود A للتحقق
+      console.log(`🔍 أول 10 معرفات بنود في DATA:`);
+      for (let i = 1; i < Math.min(11, rows.length); i++) {
+        console.log(`   صف ${i + 1}: "${(rows[i][0] || '').toString().trim()}"`);
+      }
+      
       // التأكد من قراءة كل الصفوف
       if (rows.length < 600) {
         console.error(`⚠️ تحذير: تم قراءة ${rows.length} صف فقط، قد تكون البيانات ناقصة`);
@@ -51,7 +57,7 @@ export class CustomerPricingUpdater {
       
       // الحصول على معلومات إضافية من البيانات الأصلية إذا توفرت
       let searchCriteria = {
-        itemId: itemId.trim(),
+        itemId: itemId.trim().toUpperCase(),
         rfq: rfqNumber ? rfqNumber.trim() : '',
         lineItem: '',
         partNumber: '',
@@ -62,7 +68,7 @@ export class CustomerPricingUpdater {
       
       for (let i = 1; i < rows.length; i++) { // البداية من الصف 2 (تخطي الرؤوس)
         const row = rows[i];
-        const itemNumber = (row[0] || '').toString().trim(); // العمود A - معرف البند
+        const itemNumber = (row[0] || '').toString().trim().toUpperCase(); // العمود A - معرف البند
         const lineItem = (row[2] || '').toString().trim(); // العمود C - LINE ITEM  
         const partNumber = (row[3] || '').toString().trim(); // العمود D - Part Number
         const rfqCol = (row[5] || '').toString().trim(); // العمود F - RFQ
@@ -75,7 +81,7 @@ export class CustomerPricingUpdater {
         let matchDetails = [];
         
         // 1. مطابقة معرف البند (الأولوية القصوى)
-        if (itemNumber && itemNumber.toUpperCase() === searchCriteria.itemId.toUpperCase()) {
+        if (itemNumber && itemNumber === searchCriteria.itemId) {
           matchScore += 3; // وزن أعلى لمعرف البند
           matchDetails.push(`معرف البند: ${itemNumber}`);
         }
@@ -171,6 +177,22 @@ export class CustomerPricingUpdater {
         }
       }
 
+      // إذا لم نجد البند بالبحث المعقد، نحاول بحث بسيط مباشر
+      if (targetRowIndex === -1) {
+        console.log(`🔄 البحث البسيط عن البند ${itemId}...`);
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          const itemNumber = (row[0] || '').toString().trim();
+          
+          // مقارنة مباشرة بدون تحويل لـ uppercase
+          if (itemNumber === itemId || itemNumber.toUpperCase() === itemId.toUpperCase()) {
+            targetRowIndex = i + 1;
+            console.log(`✅ وجدت البند بالبحث البسيط في الصف ${targetRowIndex}`);
+            break;
+          }
+        }
+      }
+      
       // إذا لم نجد البند، نضيفه كصف جديد
       if (targetRowIndex === -1) {
         console.log(`⚠️ البند ${itemId} غير موجود في ورقة DATA، سيتم إضافته`);
