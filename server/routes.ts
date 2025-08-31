@@ -5751,11 +5751,11 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       const pricingData = req.body;
       
-      console.log(`📝 طلب حفظ تسعير العميل:`, {
-        itemNumber: pricingData.itemNumber,
-        rfqNumber: pricingData.rfqNumber,
-        customerPrice: pricingData.customerPrice
-      });
+      console.log(`\n🔴 ========== بداية معالجة طلب حفظ تسعير العميل ==========`);
+      console.log(`📝 البيانات المستلمة كاملة:`, JSON.stringify(pricingData, null, 2));
+      console.log(`📌 معرف البند: ${pricingData.itemNumber}`);
+      console.log(`📌 رقم RFQ: ${pricingData.rfqNumber}`);
+      console.log(`📌 سعر العميل: ${pricingData.customerPrice}`);
       
       // محاولة الحفظ في صفحة DATA أولاً
       try {
@@ -5777,6 +5777,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       
       await logActivity(req, "create_customer_pricing", "pricing", pricingData.itemNumber, 
         `Added customer pricing for item ${pricingData.itemNumber} by ${req.session.user?.fullName || req.session.user?.username}`);
+      
+      console.log(`🔴 ========== انتهاء معالجة الطلب بنجاح ==========\n`);
       
       res.status(201).json({ 
         id: pricingData.itemNumber,
