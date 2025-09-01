@@ -5,7 +5,8 @@ import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 // Configuration
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
+// التوكن القديم لم يعد يعمل - يجب استخدام توكن جديد صالح
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 let AUTHORIZED_USERS: string[] = [
   // Will be loaded from Google Sheets
 ];
@@ -47,23 +48,36 @@ class QortobaAnalysisBot {
   private pollingEnabled: boolean;
 
   constructor() {
-    // تفعيل polling في جميع البيئات
-    this.pollingEnabled = true;
+    // تفعيل polling فقط إذا كان هناك توكن صالح
+    this.pollingEnabled = !!TELEGRAM_BOT_TOKEN && TELEGRAM_BOT_TOKEN.length > 0;
     
     console.log(`🤖 [TELEGRAM BOT] البيئة: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🤖 [TELEGRAM BOT] التوكن: ${TELEGRAM_BOT_TOKEN ? 'موجود' : 'غير موجود'}`);
     console.log(`🤖 [TELEGRAM BOT] حالة Polling: ${this.pollingEnabled ? 'مفعّل' : 'معطّل'}`);
     
-    this.bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { 
-      polling: this.pollingEnabled 
-    });
+    if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN.length === 0) {
+      console.log('⚠️ [TELEGRAM BOT] لا يوجد توكن صالح - البوت معطّل');
+      // إنشاء بوت وهمي لتجنب الأخطاء
+      this.bot = { sendMessage: async () => {}, on: () => {}, onText: () => {} } as any;
+      return;
+    }
     
-    if (this.pollingEnabled) {
-      this.setupHandlers();
-      // Initialize authorized users list
-      this.loadAuthorizedUsers();
-      console.log('✅ [TELEGRAM BOT] تم تهيئة البوت بنجاح');
-    } else {
-      console.log('⚠️ [TELEGRAM BOT] البوت معطّل');
+    try {
+      this.bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { 
+        polling: this.pollingEnabled 
+      });
+      
+      if (this.pollingEnabled) {
+        this.setupHandlers();
+        // Initialize authorized users list
+        this.loadAuthorizedUsers();
+        console.log('✅ [TELEGRAM BOT] تم تهيئة البوت بنجاح');
+      }
+    } catch (error) {
+      console.error('❌ [TELEGRAM BOT] خطأ في تهيئة البوت:', error);
+      this.pollingEnabled = false;
+      // إنشاء بوت وهمي لتجنب الأخطاء
+      this.bot = { sendMessage: async () => {}, on: () => {}, onText: () => {} } as any;
     }
   }
 
@@ -419,7 +433,11 @@ class QortobaAnalysisBot {
 
   // Method to send automatic analysis for new items
   async sendNewItemAnalysis(itemId: string) {
-    // إرسال التحليل في جميع البيئات
+    // التحقق من وجود بوت صالح
+    if (!this.pollingEnabled || !TELEGRAM_BOT_TOKEN) {
+      console.log('⚠️ [TELEGRAM BOT] البوت معطّل - لا يمكن إرسال التحليل');
+      return;
+    }
     
     try {
       // Load authorized users if empty
@@ -480,7 +498,11 @@ class QortobaAnalysisBot {
 
   // Send analysis with direct item data (for new quotations)
   async sendNewItemAnalysisWithData(itemData: any) {
-    // إرسال التحليل في جميع البيئات
+    // التحقق من وجود بوت صالح
+    if (!this.pollingEnabled || !TELEGRAM_BOT_TOKEN) {
+      console.log('⚠️ [TELEGRAM BOT] البوت معطّل - لا يمكن إرسال التحليل');
+      return;
+    }
     
     try {
       // Load authorized users if empty
