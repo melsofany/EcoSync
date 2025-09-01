@@ -5806,9 +5806,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
   // Direct customer pricing save (for testing)
   app.post("/api/customer-pricing-direct", async (req: Request, res: Response) => {
     try {
-      const { itemNumber, customerPrice, rfqNumber } = req.body;
+      const { itemNumber, customerPrice, rfqNumber, employeeName } = req.body;
+      
+      // الحصول على اسم الموظف من الجلسة إذا لم يتم تمريره
+      const employee = employeeName || req.session?.user?.fullName || 'غير محدد';
       
       console.log(`🔵 حفظ مباشر لسعر العميل: ${itemNumber} = ${customerPrice}`);
+      console.log(`👤 اسم الموظف: ${employee}`);
       
       const { DirectCustomerPricing } = await import('./direct-customer-pricing.js');
       const directPricing = new DirectCustomerPricing();
@@ -5817,12 +5821,13 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const result = await directPricing.saveCustomerPrice(
         itemNumber, 
         customerPrice,
-        rfqNumber || ''
+        rfqNumber || '',
+        employee
       );
       
       res.json({ 
         success: true, 
-        message: `تم حفظ السعر في الصف ${result.row}`,
+        message: `تم حفظ السعر والبيانات الكاملة في الصف ${result.row}`,
         row: result.row 
       });
     } catch (error) {
@@ -5853,10 +5858,12 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         await directPricing.initialize();
         
         console.log(`🟡 استدعاء saveCustomerPrice...`);
+        const employee = pricingData.employeeName || req.session?.user?.fullName || 'غير محدد';
         const result = await directPricing.saveCustomerPrice(
           pricingData.itemNumber,
           pricingData.customerPrice || "",
-          pricingData.rfqNumber || ""
+          pricingData.rfqNumber || "",
+          employee
         );
         console.log(`✅ تم حفظ سعر العميل في العمود I في الصف ${result.row} بنجاح`);
       } catch (dataError) {

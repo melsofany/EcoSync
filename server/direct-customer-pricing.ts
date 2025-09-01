@@ -18,7 +18,7 @@ export class DirectCustomerPricing {
     this.sheets = google.sheets({ version: 'v4', auth: authClient as any });
   }
 
-  async saveCustomerPrice(itemNumber: string, price: string, rfqNumber: string = '') {
+  async saveCustomerPrice(itemNumber: string, price: string, rfqNumber: string = '', employeeName: string = '') {
     try {
       console.log(`📝 حفظ مباشر لسعر العميل: ${itemNumber} = ${price} للطلب ${rfqNumber}`);
       
@@ -34,6 +34,7 @@ export class DirectCustomerPricing {
       // البحث عن البند مع رقم الطلب
       let targetRow = -1;
       let matchedRows = [];
+      let rowData: any = null;
       console.log(`🔍 البحث عن: البند="${itemNumber}" مع RFQ="${rfqNumber}"`);
       
       for (let i = 1; i < rows.length; i++) {
@@ -47,12 +48,14 @@ export class DirectCustomerPricing {
           matchedRows.push({
             row: i + 1,
             itemNumber: itemCol,
-            rfq: rfqCol
+            rfq: rfqCol,
+            data: rows[i]
           });
           
           // إذا وجدنا تطابق كامل مع رقم الطلب
           if (rfqNumber && rfqCol === rfqNumber) {
             targetRow = i + 1;
+            rowData = rows[i];
             console.log(`✅ تطابق كامل: البند ${itemNumber} + RFQ ${rfqNumber} في الصف ${targetRow}`);
             break;
           }
@@ -66,19 +69,21 @@ export class DirectCustomerPricing {
           console.log(`📋 الصفوف المطابقة للبند:`, matchedRows);
           // البحث عن أقرب تطابق
           targetRow = matchedRows[0].row;
+          rowData = matchedRows[0].data;
           console.log(`📌 استخدام الصف ${targetRow} (أول تطابق للبند)`);
         } else {
           targetRow = matchedRows[0].row;
+          rowData = matchedRows[0].data;
           console.log(`📌 استخدام الصف ${targetRow} (بدون تحديد RFQ)`);
         }
       }
 
-      if (targetRow === -1) {
+      if (targetRow === -1 || !rowData) {
         console.error(`❌ لم يتم العثور على البند ${itemNumber} في ورقة DATA`);
         throw new Error(`لم يتم العثور على البند ${itemNumber} في ورقة DATA`);
       }
 
-      // حفظ السعر في العمود I
+      // حفظ السعر في العمود I من DATA
       console.log(`💾 حفظ السعر ${price} في الخلية DATA!I${targetRow}`);
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
@@ -89,7 +94,90 @@ export class DirectCustomerPricing {
         }
       });
 
-      console.log(`✅ تم حفظ سعر العميل ${price} في DATA!I${targetRow} بنجاح`);
+      // الآن نحتاج لحفظ البيانات الكاملة في صفحة تسعير_العملاء
+      console.log(`📝 حفظ البيانات الكاملة في صفحة تسعير_العملاء`);
+      
+      // التحقق من وجود البند في صفحة تسعير_العملاء
+      const customerPricingResponse = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: 'تسعير_العملاء!A:Q'
+      });
+      
+      const customerRows = customerPricingResponse.data.values || [];
+      let customerTargetRow = -1;
+      
+      // البحث عن البند في صفحة تسعير_العملاء
+      for (let i = 1; i < customerRows.length; i++) {
+        if (!customerRows[i] || customerRows[i].length === 0) continue;
+        
+        const custItemNumber = (customerRows[i][0] || '').toString().trim();
+        const custRfqNumber = customerRows[i].length > 5 ? (customerRows[i][5] || '').toString().trim() : '';
+        
+        if (custItemNumber === itemNumber && custRfqNumber === rfqNumber) {
+          customerTargetRow = i + 1;
+          console.log(`✅ تم العثور على البند في صفحة تسعير_العملاء في الصف ${customerTargetRow}`);
+          break;
+        }
+      }
+
+      // إعداد بيانات تسعير العملاء الكاملة
+      const customerPricingData = [
+        itemNumber,                    // A - Item Number
+        rowData[3] || '',              // B - Part Number
+        rowData[4] || '',              // C - Description  
+        rowData[1] || '',              // D - UOM
+        rowData[7] || '',              // E - Quantity
+        rfqNumber || rowData[5] || '', // F - RFQ Number
+        rowData[16] || '',             // G - Client Name
+        rowData[6] || '',              // H - Request Date
+        '',                            // I - Expiry Date (if available)
+        price,                         // J - Customer Unit Price
+        '',                            // K - Customer Total Price (calculated)
+        '',                            // L - Supplier Unit Price
+        '',                            // M - Profit Margin %
+        'جنيه',                        // N - Currency
+        '',                            // O - Notes
+        'تم التسعير',                  // P - Status
+        employeeName || ''             // Q - مدخل التسعير
+      ];
+
+      // حساب السعر الإجمالي
+      if (customerPricingData[4] && price) {
+        const quantity = parseFloat(customerPricingData[4]);
+        const unitPrice = parseFloat(price);
+        if (!isNaN(quantity) && !isNaN(unitPrice)) {
+          customerPricingData[10] = (quantity * unitPrice).toString();
+        }
+      }
+
+      if (customerTargetRow === -1) {
+        // إضافة صف جديد في صفحة تسعير_العملاء
+        console.log(`➕ إضافة بند جديد في صفحة تسعير_العملاء`);
+        await this.sheets.spreadsheets.values.append({
+          spreadsheetId: this.spreadsheetId,
+          range: 'تسعير_العملاء!A:Q',
+          valueInputOption: 'RAW',
+          insertDataOption: 'INSERT_ROWS',
+          resource: {
+            values: [customerPricingData]
+          }
+        });
+        console.log(`✅ تم إضافة البند في صفحة تسعير_العملاء`);
+      } else {
+        // تحديث الصف الموجود
+        console.log(`🔄 تحديث البند في صفحة تسعير_العملاء في الصف ${customerTargetRow}`);
+        await this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `تسعير_العملاء!A${customerTargetRow}:Q${customerTargetRow}`,
+          valueInputOption: 'RAW',
+          resource: {
+            values: [customerPricingData]
+          }
+        });
+        console.log(`✅ تم تحديث البند في صفحة تسعير_العملاء`);
+      }
+
+      console.log(`✅ تم حفظ سعر العميل ${price} بنجاح في كل من DATA وتسعير_العملاء`);
       return { success: true, row: targetRow };
     } catch (error) {
       console.error('❌ خطأ في حفظ سعر العميل:', error);
