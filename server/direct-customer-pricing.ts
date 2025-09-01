@@ -97,6 +97,38 @@ export class DirectCustomerPricing {
       // الآن نحتاج لحفظ البيانات الكاملة في صفحة تسعير_العملاء
       console.log(`📝 حفظ البيانات الكاملة في صفحة تسعير_العملاء`);
       
+      // أولاً نجلب سعر المورد من صفحة تسعير_الموردين
+      let supplierPrice = '';
+      try {
+        console.log(`🔍 البحث عن سعر المورد للبند ${itemNumber}`);
+        const supplierPricingResponse = await this.sheets.spreadsheets.values.get({
+          spreadsheetId: this.spreadsheetId,
+          range: 'تسعير_الموردين!A:AA'
+        });
+        
+        const supplierRows = supplierPricingResponse.data.values || [];
+        
+        // البحث عن البند في صفحة تسعير الموردين
+        for (let i = 1; i < supplierRows.length; i++) {
+          if (!supplierRows[i] || supplierRows[i].length === 0) continue;
+          
+          const suppItemNumber = (supplierRows[i][0] || '').toString().trim();
+          
+          if (suppItemNumber === itemNumber || suppItemNumber.toUpperCase() === itemNumber.toUpperCase()) {
+            // العمود O (الفهرس 14) يحتوي على سعر المورد
+            supplierPrice = supplierRows[i][14] || '';
+            console.log(`✅ تم العثور على سعر المورد: ${supplierPrice} في الصف ${i + 1}`);
+            break;
+          }
+        }
+        
+        if (!supplierPrice) {
+          console.log(`⚠️ لم يتم العثور على سعر المورد للبند ${itemNumber}`);
+        }
+      } catch (error) {
+        console.error(`❌ خطأ في جلب سعر المورد:`, error);
+      }
+      
       // التحقق من وجود البند في صفحة تسعير_العملاء
       const customerPricingResponse = await this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
@@ -120,6 +152,18 @@ export class DirectCustomerPricing {
         }
       }
 
+      // حساب نسبة الربح إذا توفر سعر المورد
+      let profitMargin = '';
+      if (supplierPrice && price) {
+        const suppPrice = parseFloat(supplierPrice);
+        const custPrice = parseFloat(price);
+        if (!isNaN(suppPrice) && !isNaN(custPrice) && suppPrice > 0) {
+          const margin = ((custPrice - suppPrice) / suppPrice) * 100;
+          profitMargin = margin.toFixed(2) + '%';
+          console.log(`💰 نسبة الربح المحسوبة: ${profitMargin}`);
+        }
+      }
+
       // إعداد بيانات تسعير العملاء الكاملة
       const customerPricingData = [
         itemNumber,                    // A - Item Number
@@ -133,8 +177,8 @@ export class DirectCustomerPricing {
         '',                            // I - Expiry Date (if available)
         price,                         // J - Customer Unit Price
         '',                            // K - Customer Total Price (calculated)
-        '',                            // L - Supplier Unit Price
-        '',                            // M - Profit Margin %
+        supplierPrice,                 // L - Supplier Unit Price (من صفحة تسعير الموردين)
+        profitMargin,                  // M - Profit Margin % (محسوبة)
         'جنيه',                        // N - Currency
         '',                            // O - Notes
         'تم التسعير',                  // P - Status
