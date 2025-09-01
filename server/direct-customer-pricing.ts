@@ -1,21 +1,19 @@
 import { google } from 'googleapis';
-import * as fs from 'fs';
+import { createGoogleAuth } from './google-auth-helper';
 
 export class DirectCustomerPricing {
   private sheets: any;
-  private spreadsheetId: string = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
+  private spreadsheetId: string = process.env.GOOGLE_SHEETS_ID || '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
 
   async initialize() {
-    const keyFile = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
-    const credentials = JSON.parse(fs.readFileSync(keyFile, 'utf-8'));
-    
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets']
-    });
-
-    const authClient = await auth.getClient();
-    this.sheets = google.sheets({ version: 'v4', auth: authClient as any });
+    try {
+      const auth = createGoogleAuth();
+      this.sheets = google.sheets({ version: 'v4', auth });
+      console.log('✅ تم تهيئة DirectCustomerPricing مع Google Sheets');
+    } catch (error) {
+      console.error('❌ خطأ في تهيئة DirectCustomerPricing:', error);
+      throw error;
+    }
   }
 
   async saveCustomerPrice(itemNumber: string, price: string, rfqNumber: string = '', employeeName: string = '') {
