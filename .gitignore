@@ -138,4 +138,4 @@ cookies*.txt
 
 # Test files
 test_*
-*_test.*
+*_test.*unification_log.txt
