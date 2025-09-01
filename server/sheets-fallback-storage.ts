@@ -47,23 +47,31 @@ export class SheetsFallbackStorage {
   }
   
   private loadSheetsData() {
-    try {
-      // Try to load synced data from sheets
-      this.sheetsData = JSON.parse(readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8'));
-      console.log('📊 تم تحميل بيانات Google Sheets كنظام احتياطي');
-    } catch (error) {
+    // في بيئة الإنتاج، نستخدم بيانات فارغة فقط
+    // البيانات الحقيقية ستأتي من Google Sheets API
+    console.log('📊 تهيئة بيانات Sheets Fallback (فارغة - سيتم التحميل من Google Sheets)');
+    this.sheetsData = { quotations: [], items: [], purchaseOrders: [] };
+    
+    // محاولة تحميل البيانات المحلية فقط في بيئة التطوير
+    if (process.env.NODE_ENV !== 'production') {
       try {
-        // Fallback to complete excel data
-        this.sheetsData = JSON.parse(readFileSync('./attached_assets/complete_excel_data.json', 'utf8'));
-        console.log('📊 تم تحميل البيانات من complete_excel_data.json');
-      } catch (error2) {
+        // Try to load synced data from sheets
+        this.sheetsData = JSON.parse(readFileSync('./attached_assets/synced_data_from_sheets.json', 'utf8'));
+        console.log('📊 تم تحميل بيانات Google Sheets كنظام احتياطي');
+      } catch (error) {
         try {
-          // Final fallback to corrected data
-          this.sheetsData = JSON.parse(readFileSync('./attached_assets/corrected_data_5449.json', 'utf8'));
-          console.log('📊 تم تحميل البيانات من corrected_data_5449.json');
-        } catch (error3) {
-          console.error('❌ فشل في تحميل أي ملف بيانات:', error3.message);
-          this.sheetsData = { quotations: [], items: [], purchaseOrders: [] };
+          // Fallback to complete excel data
+          this.sheetsData = JSON.parse(readFileSync('./attached_assets/complete_excel_data.json', 'utf8'));
+          console.log('📊 تم تحميل البيانات من complete_excel_data.json');
+        } catch (error2) {
+          try {
+            // Final fallback to corrected data
+            this.sheetsData = JSON.parse(readFileSync('./attached_assets/corrected_data_5449.json', 'utf8'));
+            console.log('📊 تم تحميل البيانات من corrected_data_5449.json');
+          } catch (error3) {
+            console.log('📊 استخدام بيانات فارغة (لا توجد ملفات محلية)');
+            this.sheetsData = { quotations: [], items: [], purchaseOrders: [] };
+          }
         }
       }
     }
