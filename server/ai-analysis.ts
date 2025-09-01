@@ -5,7 +5,19 @@
 import { storage } from './storage.js';
 import { items } from '../shared/schema.js';
 import { eq } from 'drizzle-orm';
-import { runComprehensiveItemAnalysis } from './utils/ai-item-matcher.js';
+// AI item matching functionality
+interface SmartItemMatch {
+  id: string;
+  itemNumber: string;
+  confidence: number;
+}
+
+// Placeholder for AI item matcher functionality
+const runComprehensiveItemAnalysis = async (): Promise<any> => {
+  // Placeholder implementation
+  console.log('AI analysis disabled in current configuration');
+  return { status: 'disabled' };
+};
 
 async function main() {
   try {

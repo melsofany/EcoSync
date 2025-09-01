@@ -19,6 +19,25 @@ interface UserData {
   profileImage?: string;
 }
 
+interface UserSheet {
+  id: string;
+  username: string;
+  fullName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  role: string;
+  permissions: any;
+  isActive: boolean;
+  isOnline: boolean;
+  lastLogin?: Date;
+  lastActivityAt?: Date;
+  ipAddress?: string;
+  profileImage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface PermissionData {
   id: string;
   permissionName: string;

@@ -27,7 +27,7 @@ async function runAIDuplicateAnalysis() {
     }
 
     // تحويل البيانات إلى الشكل المطلوب للتحليل
-    const itemsForAnalysis = pendingItems.map(item => ({
+    const itemsForAnalysis = pendingItems.map((item: any) => ({
       id: item.id,
       serial_number: item.itemNumber,
       part_number: item.partNumber || "",
@@ -49,10 +49,10 @@ async function runAIDuplicateAnalysis() {
     let updatedCount = 0;
 
     // معالجة مجموعات التكرار
-    for (const duplicateGroup of analysisResult.duplicateGroups) {
+    for (const duplicateGroup of (analysisResult.duplicateGroups || [])) {
       console.log(`\n🔍 معالجة مجموعة تكرار:`);
-      console.log(`   البند الرئيسي: ${duplicateGroup.masterItem.description}`);
-      console.log(`   البنود المكررة: ${duplicateGroup.duplicates.length}`);
+      console.log(`   البند الرئيسي: ${(duplicateGroup as any).masterItem?.description}`);
+      console.log(`   البنود المكررة: ${(duplicateGroup as any).duplicates?.length}`);
 
       // تحديث البند الرئيسي
       await db
@@ -61,17 +61,17 @@ async function runAIDuplicateAnalysis() {
           aiStatus: "verified",
           aiMatchedItemId: null
         })
-        .where(eq(items.id, duplicateGroup.masterItem.id));
+        .where(eq(items.id, (duplicateGroup as any).masterItem?.id));
       
       updatedCount++;
 
       // حذف البنود المكررة
-      for (const duplicate of duplicateGroup.duplicates) {
-        console.log(`   🗑️ حذف البند المكرر: ${duplicate.serial_number}`);
+      for (const duplicate of ((duplicateGroup as any).duplicates || [])) {
+        console.log(`   🗑️ حذف البند المكرر: ${(duplicate as any).serial_number}`);
         
         await db
           .delete(items)
-          .where(eq(items.id, duplicate.id));
+          .where(eq(items.id, (duplicate as any).id));
         
         deletedCount++;
       }
@@ -79,10 +79,10 @@ async function runAIDuplicateAnalysis() {
 
     // تحديث البنود غير المكررة
     const uniqueItemIds = itemsForAnalysis
-      .filter(item => !analysisResult.duplicateGroups.some(group => 
-        group.duplicates.some(dup => dup.id === item.id)
+      .filter((item: any) => !(analysisResult.duplicateGroups || []).some((group: any) => 
+        (group.duplicates || []).some((dup: any) => dup.id === item.id)
       ))
-      .map(item => item.id);
+      .map((item: any) => item.id);
 
     if (uniqueItemIds.length > 0) {
       for (const itemId of uniqueItemIds) {

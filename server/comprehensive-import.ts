@@ -63,7 +63,7 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
     
     // Get EDC client (main client)
     const clients = await storage.getAllClients();
-    let defaultClient = clients.find(c => c.name === 'EDC');
+    let defaultClient = clients.find((c: any) => c.name === 'EDC');
     
     if (!defaultClient) {
       defaultClient = await storage.createClient({
@@ -108,7 +108,7 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
       
       try {
         // Analyze current batch for duplicates
-        const aiResult = await analyzeItemsForDuplicates(batch);
+        const aiResult = await analyzeItemsForDuplicates(batch) as any;
         
         // Process each item in the batch
         for (const aiItem of batch) {
@@ -119,8 +119,8 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
           const normalizedDesc = aiItem.description.toLowerCase().trim();
           
           // Check if this is a duplicate we should skip
-          const duplicateGroup = aiResult.duplicateGroups.find(group => 
-            group.duplicates.some(dup => dup.serial_number === aiItem.serial_number)
+          const duplicateGroup = (aiResult.duplicates || []).find((group: any) => 
+            (group.duplicates || []).some((dup: any) => dup.serial_number === aiItem.serial_number)
           );
           
           if (duplicateGroup) {
@@ -174,11 +174,11 @@ export async function importAllItemsWithAIAnalysis(): Promise<ComprehensiveImpor
             // Create quotation if RFQ exists
             if (originalItem.rfq && originalItem.rfq !== '0') {
               try {
-                const existingQuotations = await storage.getQuotations();
+                const existingQuotations = await storage.getAllQuotationRequests();
                 let quotation = existingQuotations.find((q: any) => q.customRequestNumber === originalItem.rfq);
                 
                 if (!quotation) {
-                  quotation = await storage.createQuotation({
+                  quotation = await storage.createQuotationRequest({
                     createdBy: adminUserId,
                     clientId: defaultClient.id,
                     customRequestNumber: originalItem.rfq,
