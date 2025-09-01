@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 // Configuration
-const TELEGRAM_BOT_TOKEN = '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '7864221250:AAHNT7210rnkhaUx95seHlk9yqoineAY6Lo';
 let AUTHORIZED_USERS: string[] = [
   // Will be loaded from Google Sheets
 ];
@@ -40,15 +40,15 @@ async function getAllAuthorizedUsers() {
 
 // DeepSeek API configuration
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY; // Will be added to env
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || 'sk-9a037e93f59c4ae082b659e2c68ec8f3';
 
 class QortobaAnalysisBot {
   private bot: TelegramBot;
   private pollingEnabled: boolean;
 
   constructor() {
-    // تعطيل polling في الإنتاج لتجنب التعارض
-    this.pollingEnabled = process.env.NODE_ENV !== 'production';
+    // تفعيل polling في جميع البيئات
+    this.pollingEnabled = true;
     
     console.log(`🤖 [TELEGRAM BOT] البيئة: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🤖 [TELEGRAM BOT] حالة Polling: ${this.pollingEnabled ? 'مفعّل' : 'معطّل'}`);
@@ -61,8 +61,9 @@ class QortobaAnalysisBot {
       this.setupHandlers();
       // Initialize authorized users list
       this.loadAuthorizedUsers();
+      console.log('✅ [TELEGRAM BOT] تم تهيئة البوت بنجاح');
     } else {
-      console.log('⚠️ [TELEGRAM BOT] البوت معطّل في بيئة الإنتاج لتجنب التعارض');
+      console.log('⚠️ [TELEGRAM BOT] البوت معطّل');
     }
   }
 
@@ -418,10 +419,7 @@ class QortobaAnalysisBot {
 
   // Method to send automatic analysis for new items
   async sendNewItemAnalysis(itemId: string) {
-    // تجاهل في الإنتاج
-    if (!this.pollingEnabled) {
-      return;
-    }
+    // إرسال التحليل في جميع البيئات
     
     try {
       // Load authorized users if empty
@@ -482,10 +480,7 @@ class QortobaAnalysisBot {
 
   // Send analysis with direct item data (for new quotations)
   async sendNewItemAnalysisWithData(itemData: any) {
-    // تجاهل في الإنتاج
-    if (!this.pollingEnabled) {
-      return;
-    }
+    // إرسال التحليل في جميع البيئات
     
     try {
       // Load authorized users if empty
