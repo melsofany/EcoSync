@@ -9329,7 +9329,15 @@ Respond with only "YES" if they are the same product, or "NO" if different produ
   // تهيئة نظام التوحيد الذكي
   const initializeAIUnifier = async () => {
     if (!aiBackgroundUnifier) {
-      const { AIBackgroundUnifier } = await import('./ai-background-unifier.js');
+      // const { AIBackgroundUnifier } = await import('./ai-background-unifier.js');
+      // مؤقتاً: استخدام كائن وهمي
+      const AIBackgroundUnifier = class { 
+        on() {} 
+        pauseUnification() {} 
+        resumeUnification() {} 
+        stopUnification() {} 
+        startUnification() { return { success: false, message: 'نظام التوحيد معطل مؤقتاً' }; }
+      };
       aiBackgroundUnifier = new AIBackgroundUnifier(googleSheetsRealTimeData);
       
       // ربط الأحداث بالتحديثات المباشرة

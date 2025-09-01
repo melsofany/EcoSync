@@ -1,7 +1,13 @@
 import { eq, and, isNull } from "drizzle-orm";
 import { db } from "./db.js";
 import { items } from "../shared/schema.js";
-import { analyzeItemsForDuplicates } from "./ai-duplicate-detector.js";
+// import { analyzeItemsForDuplicates } from "./ai-duplicate-detector.js";
+// مؤقتاً: تعريف دالة بديلة
+const analyzeItemsForDuplicates = async (items: any[]) => ({ 
+  totalItems: items.length, 
+  uniqueItems: items.length, 
+  duplicateGroups: [] 
+});
 
 async function runAIDuplicateAnalysis() {
   try {

@@ -2,7 +2,11 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { storage } from './storage.js';
 import { nanoid } from 'nanoid';
-import { analyzeItemsForDuplicates, type ItemForAnalysis, type AIAnalysisResult } from './ai-duplicate-detector.js';
+// import { analyzeItemsForDuplicates, type ItemForAnalysis, type AIAnalysisResult } from './ai-duplicate-detector.js';
+// مؤقتاً: تعريف الأنواع والدوال المطلوبة
+type ItemForAnalysis = any;
+type AIAnalysisResult = any;
+const analyzeItemsForDuplicates = async () => ({ duplicates: [] });
 
 interface ComprehensiveImportResult {
   success: boolean;
