@@ -333,59 +333,113 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         </div>
       )}
 
-      {/* جدول البيانات الشاملة - تاريخ الطلبات وأوامر الشراء */}
+      {/* جدول البيانات التفصيلية الشاملة */}
       {comprehensiveData && comprehensiveData.length > 0 && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+        <div className="bg-white border rounded-lg p-4">
           <h4 className="font-semibold mb-3 flex items-center gap-2">
-            <ShoppingCart className="h-4 w-4" />
-            تاريخ الطلبات وأوامر الشراء ({comprehensiveData.length} سجل)
+            <Package className="h-4 w-4" />
+            السجلات التفصيلية للبند {item.itemNumber}
           </h4>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-indigo-100 border-b-2 border-indigo-300">
-                  <th className="text-right p-2 border border-gray-300">#</th>
-                  <th className="text-right p-2 border border-gray-300">رقم الصف</th>
-                  <th className="text-right p-2 border border-gray-300">RFQ</th>
-                  <th className="text-right p-2 border border-gray-300">التاريخ</th>
-                  <th className="text-right p-2 border border-gray-300">LINE ITEM</th>
-                  <th className="text-right p-2 border border-gray-300">الكمية</th>
-                  <th className="text-right p-2 border border-gray-300">سعر العميل</th>
-                  <th className="text-right p-2 border border-gray-300">رقم PO</th>
-                  <th className="text-right p-2 border border-gray-300">كمية PO</th>
-                  <th className="text-right p-2 border border-gray-300">قيمة PO</th>
-                  <th className="text-right p-2 border border-gray-300">المورد</th>
-                  <th className="text-right p-2 border border-gray-300">سعر المورد</th>
+          <p className="text-sm text-gray-600 mb-4">
+            عرض تاريخ البند: {item.partNumber || item.itemNumber} - إجمالي ({comprehensiveData.length} سجل) من طلبات التسعير وأوامر الشراء
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
+            <p className="text-sm text-blue-800">
+              <strong>ملاحظة:</strong> هذا الجدول يعرض جميع السجلات التاريخية للبند بما في ذلك تواريخ الطلبات وأوامر الشراء كما كانت في الشيت الأصلي
+            </p>
+          </div>
+          
+          <div className="overflow-auto max-h-96 border border-gray-300" style={{scrollbarWidth: 'thin'}}>
+            <table className="w-full min-w-max text-xs border-collapse border border-gray-300">
+              <thead className="sticky top-0 bg-gray-100 z-10">
+                <tr>
+                  <th className="border border-gray-300 p-2 text-right min-w-[40px]">#</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[120px]">المورد</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[100px]">جهة الاتصال</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[100px]">الهاتف</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">سعر المورد</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">TOTAL PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">PRICE/PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[70px]">Quantity/PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">DATE/PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[100px]">PO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[70px]">Category</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">RES.DATE</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">PRICE/RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[50px]">QTY</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[80px]">DATE/RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[120px]">RFQ</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[300px] max-w-[400px]">DESCRIPTION</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[120px]">PART NO</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[100px]">LINE ITEM</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[60px]">UOM</th>
                 </tr>
               </thead>
               <tbody>
-                {comprehensiveData.map((row, index) => (
-                  <tr key={index} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${row.has_po ? 'font-semibold' : ''}`}>
-                    <td className="p-2 border border-gray-300 text-center">{index + 1}</td>
-                    <td className="p-2 border border-gray-300 text-center">{row.row_number || '-'}</td>
-                    <td className="p-2 border border-gray-300 text-center text-blue-600">{row.rfq || '-'}</td>
-                    <td className="p-2 border border-gray-300 text-center">{row.date || '-'}</td>
-                    <td className="p-2 border border-gray-300 text-center font-mono text-xs">{row.line_item || '-'}</td>
-                    <td className="p-2 border border-gray-300 text-center">{row.qty || '-'}</td>
-                    <td className="p-2 border border-gray-300 text-center text-green-600">
-                      {row.customer_price ? formatCurrency(Number(row.customer_price)) : '-'}
+                {comprehensiveData.map((record: any, index: number) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 p-2 text-center">{index + 1}</td>
+                    <td className="border border-gray-300 p-2 text-right font-semibold">{record.supplier_name || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.supplier_contact || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.supplier_phone || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right text-green-600">
+                      {record.supplier_price ? formatCurrency(Number(record.supplier_price)) : '-'}
                     </td>
-                    <td className="p-2 border border-gray-300 text-center text-purple-600">
-                      {row.po_number || '-'}
+                    <td className="border border-gray-300 p-2 text-right">
+                      {record.po_value ? formatCurrency(Number(record.po_value)) : '-'}
                     </td>
-                    <td className="p-2 border border-gray-300 text-center">{row.po_qty || '-'}</td>
-                    <td className="p-2 border border-gray-300 text-center text-purple-600">
-                      {row.po_value ? formatCurrency(Number(row.po_value)) : '-'}
+                    <td className="border border-gray-300 p-2 text-right">
+                      {record.po_price ? formatCurrency(Number(record.po_price)) : '-'}
                     </td>
-                    <td className="p-2 border border-gray-300">{row.supplier_name || '-'}</td>
-                    <td className="p-2 border border-gray-300 text-center text-orange-600">
-                      {row.supplier_price ? formatCurrency(Number(row.supplier_price)) : '-'}
+                    <td className="border border-gray-300 p-2 text-right">{record.po_qty || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.po_date || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium">{record.po_number || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.category || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.res_date || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">
+                      {record.customer_price ? formatCurrency(Number(record.customer_price)) : '-'}
                     </td>
+                    <td className="border border-gray-300 p-2 text-right">{record.qty || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.date || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.rfq || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right break-words" style={{wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: '1.4'}}>
+                      <div className="max-w-[400px]" title={record.description || item.description}>
+                        {record.description || item.description || '-'}
+                      </div>
+                    </td>
+                    <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium break-words">
+                      <div className="max-w-[120px]" title={record.part_number || item.partNumber}>
+                        {record.part_number || item.partNumber || '-'}
+                      </div>
+                    </td>
+                    <td className="border border-gray-300 p-2 text-right font-mono text-blue-600">
+                      {record.line_item || '-'}
+                    </td>
+                    <td className="border border-gray-300 p-2 text-right">{record.uom || item.uom || 'EACH'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 p-3 rounded">
+              <h5 className="font-medium text-blue-800">طلبات التسعير (RFQ)</h5>
+              <p className="text-lg font-bold text-blue-600">
+                {comprehensiveData.filter((r: any) => r.rfq).length}
+              </p>
+            </div>
+            <div className="bg-green-50 p-3 rounded">
+              <h5 className="font-medium text-green-800">أوامر الشراء (PO)</h5>
+              <p className="text-lg font-bold text-green-600">
+                {comprehensiveData.filter((r: any) => r.po_number).length}
+              </p>
+            </div>
+          </div>
+          
+          <p className="text-sm text-gray-600 mt-3">
+            إجمالي السجلات: {comprehensiveData.length} سجل
+          </p>
         </div>
       )}
 
