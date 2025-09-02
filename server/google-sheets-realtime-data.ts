@@ -1136,6 +1136,7 @@ export class GoogleSheetsRealtimeData {
                 warranty_period: supplierRow[23] || '',    // العمود X - Warranty Period
                 supplier_notes: supplierRow[24] || '',     // العمود Y - Notes
                 supplier_status: supplierRow[25] || '',    // العمود Z - Status
+                supplier_employee: supplierRow[26] || '',  // العمود AA - Employee Name
                 supplier_rfq: supplierRfqNumber            // احفظ رقم RFQ المورد
               };
             }
@@ -1160,6 +1161,7 @@ export class GoogleSheetsRealtimeData {
                 warranty_period: supplierRow[23] || '',    // العمود X - Warranty Period
                 supplier_notes: supplierRow[24] || '',     // العمود Y - Notes
                 supplier_status: supplierRow[25] || '',    // العمود Z - Status
+                supplier_employee: supplierRow[26] || '',  // العمود AA - Employee Name
               };
               console.log(`💰 وجدت معلومات تسعير المورد للبند ${itemId} RFQ ${rfqNumber}`);
               console.log(`📋 تفاصيل المورد:`, supplierInfo);

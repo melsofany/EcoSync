@@ -228,6 +228,17 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           </div>
         </div>
         
+        {/* الموظف الذي أحضر العرض */}
+        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4">
+          <label className="text-xs font-medium text-blue-700 block mb-1">الموظف الذي أحضر عرض السعر</label>
+          <p className="text-sm font-bold text-blue-900">
+            {comprehensiveData?.[0]?.supplier_employee || 
+             detailedPricing?.supplierEmployee || 
+             item.supplierEmployee ||
+             "غير محدد"}
+          </p>
+        </div>
+        
         {/* معلومات التسعير والضرائب */}
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div className="bg-white p-3 rounded-lg border border-gray-200">
@@ -372,6 +383,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                   <th className="border border-gray-300 p-2 text-right min-w-[100px]">الهاتف</th>
                   <th className="border border-gray-300 p-2 text-right min-w-[100px]">جهة الاتصال</th>
                   <th className="border border-gray-300 p-2 text-right min-w-[120px]">المورد</th>
+                  <th className="border border-gray-300 p-2 text-right min-w-[120px]">الموظف</th>
                   <th className="border border-gray-300 p-2 text-right min-w-[40px]">#</th>
                 </tr>
               </thead>
@@ -415,6 +427,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                     <td className="border border-gray-300 p-2 text-right">{record.supplier_phone || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.supplier_contact || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right font-semibold">{record.supplier_name || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.supplier_employee || '-'}</td>
                     <td className="border border-gray-300 p-2 text-center">{index + 1}</td>
                   </tr>
                 ))}
