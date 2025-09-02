@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronDown, ChevronRight, Clock, Package, AlertCircle, DollarSign, Calculator } from "lucide-react";
+import { ChevronDown, ChevronRight, Clock, Package, AlertCircle, DollarSign, Calculator, Search, CalendarClock, FileText, ShoppingCart } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
 
@@ -227,289 +227,200 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             </p>
           </div>
         </div>
-
-        {/* معلومات التسعير والضريبة */}
-        <div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-white rounded-lg">
-          <div className="text-center border-r">
-            <label className="text-sm font-medium block mb-1">سعر الوحدة (بدون ضريبة)</label>
-            <p className="font-bold text-green-600 text-lg">
-              {formatCurrency(Number(comprehensiveData?.[0]?.supplier_price || detailedPricing?.supplierUnitPrice || item.supplierPrice || 0))}
+        
+        {/* معلومات التسعير والضرائب */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">سعر المورد الأساسي</label>
+            <p className="text-lg font-bold text-green-600">
+              {formatCurrency(Number(comprehensiveData?.[0]?.supplier_price || detailedPricing?.supplierPrice || item.supplierPrice || 0))}
             </p>
           </div>
-          <div className="text-center border-r">
-            <label className="text-sm font-medium block mb-1">قيمة الضريبة</label>
-            <p className="font-bold text-blue-600 text-lg">
-              {(() => {
-                const basePrice = Number(comprehensiveData?.[0]?.supplier_price || detailedPricing?.supplierUnitPrice || item.supplierPrice || 0);
-                const vatRate = Number(comprehensiveData?.[0]?.vat_rate?.replace('%', '') || detailedPricing?.vatRate || item.vatRate || 14) / 100;
-                const vatAmount = basePrice * vatRate;
-                return formatCurrency(vatAmount);
-              })()}
-            </p>
-            <p className="text-xs text-gray-600">
-              {comprehensiveData?.[0]?.vat_rate || detailedPricing?.vatRate || item.vatRate || "14"}% ضريبة
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">حالة الضريبة</label>
+            <p className="text-sm font-semibold text-blue-600">
+              {comprehensiveData?.[0]?.price_with_vat || 
+               detailedPricing?.priceWithVat || 
+               item.priceWithVat || 
+               "غير محدد"}
             </p>
           </div>
-          <div className="text-center">
-            <label className="text-sm font-medium block mb-1">الشخص المسؤول</label>
-            <p className="font-bold text-purple-700 text-lg">
-              {comprehensiveData?.[0]?.responsible_employee || detailedPricing?.responsibleEmployee || detailedPricing?.employeeName || item.employeeName || "غير محدد"}
-            </p>
-            <p className="text-xs text-gray-600">
-              الموظف المسؤول عن التسعير
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">نسبة الضريبة</label>
+            <p className="text-sm font-semibold text-blue-600">
+              {comprehensiveData?.[0]?.vat_rate || 
+               detailedPricing?.vatRate || 
+               item.vatRate || 
+               "0"}%
             </p>
           </div>
         </div>
-
-        {/* الشروط والأحكام */}
-        <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 rounded-lg">
-          <div>
-            <label className="text-xs font-medium text-gray-600">شروط الدفع:</label>
-            <p className="text-sm font-medium">
+        
+        {/* شروط التوريد */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">شروط الدفع</label>
+            <p className="text-sm font-medium text-gray-900">
               {comprehensiveData?.[0]?.payment_terms || 
                detailedPricing?.paymentTerms || 
-               item.paymentTerms || 
-               "نقداً عند التسليم"}
+               item.paymentTerms ||
+               "غير محدد"}
             </p>
           </div>
-          <div>
-            <label className="text-xs font-medium text-gray-600">مدة التوريد:</label>
-            <p className="text-sm font-medium">
-              {comprehensiveData?.[0]?.delivery_time || 
-               detailedPricing?.deliveryTime || 
-               item.deliveryTime || 
-               "فوري"}
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">مدة التسليم</label>
+            <p className="text-sm font-medium text-gray-900">
+              {comprehensiveData?.[0]?.delivery_period || 
+               detailedPricing?.deliveryPeriod || 
+               item.deliveryPeriod ||
+               "غير محدد"}
             </p>
           </div>
-          <div>
-            <label className="text-xs font-medium text-gray-600">فترة الضمان:</label>
-            <p className="text-sm font-medium">
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">مدة الضمان</label>
+            <p className="text-sm font-medium text-gray-900">
               {comprehensiveData?.[0]?.warranty_period || 
                detailedPricing?.warrantyPeriod || 
-               item.warrantyPeriod || 
+               item.warrantyPeriod ||
                "غير محدد"}
             </p>
           </div>
         </div>
-
-        {/* ملاحظات إضافية */}
-        {(detailedPricing?.supplierNotes || item.supplierNotes) && (
-          <div className="mt-3 p-2 bg-yellow-50 rounded">
-            <label className="text-xs font-medium text-gray-600">ملاحظات المورد:</label>
-            <p className="text-sm mt-1">{detailedPricing?.supplierNotes || item.supplierNotes}</p>
-          </div>
-        )}
         
-        <div className="mt-4 flex gap-2">
-          <Button
-            onClick={() => setShowPricingForm(!showPricingForm)}
-            variant={showPricingForm ? "secondary" : "default"}
-            size="sm"
-          >
-            {showPricingForm ? "إخفاء النموذج" : "إضافة تسعير للعميل"}
-          </Button>
-        </div>
-        
-        {showPricingForm && (
-          <div className="mt-4">
-            <CustomerPricingForm 
-              item={{
-                ...item,
-                supplierPrice: (comprehensiveData && comprehensiveData.length > 0 && comprehensiveData[0].supplier_unit_price) || detailedPricing?.supplierUnitPrice || item.supplierPrice
-              }} 
-              onSuccess={() => {
-                setShowPricingForm(false);
-                onItemPriced(); // Call the parent callback
-              }} 
-            />
+        {/* ملاحظات المورد */}
+        {(comprehensiveData?.[0]?.notes || detailedPricing?.notes || item.notes) && (
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <label className="text-xs font-medium text-gray-600 block mb-1">ملاحظات المورد</label>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              {comprehensiveData?.[0]?.notes || detailedPricing?.notes || item.notes}
+            </p>
           </div>
         )}
       </div>
 
-      {/* إحصائيات سريعة */}
-      {comprehensiveData && comprehensiveData.length > 0 && (
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
-          <h4 className="font-semibold mb-3 text-blue-800">ملخص إحصائيات البند المطابق</h4>
-          <div className="grid grid-cols-4 gap-4 text-sm">
-            <div className="bg-white rounded-lg p-3 border border-blue-200">
-              <label className="font-medium text-gray-600">إجمالي السجلات:</label>
-              <p className="text-purple-700 font-bold text-lg">{comprehensiveData.length}</p>
-            </div>
-            <div className="bg-white rounded-lg p-3 border border-green-200">
-              <label className="font-medium text-gray-600">إجمالي الكمية:</label>
-              <p className="text-green-700 font-bold text-lg">
-                {comprehensiveData.reduce((sum, row) => sum + (Number(row.rfq_qty) || 0), 0)}
+      {/* معلومات تسعير العميل إن وجدت */}
+      {(item.customerPrice || comprehensiveData?.[0]?.customer_price) && (
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <Calculator className="h-4 w-4" />
+            تسعير العميل الحالي
+          </h4>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white p-3 rounded-lg border border-gray-200">
+              <label className="text-xs font-medium text-gray-600 block mb-1">سعر البيع للعميل</label>
+              <p className="text-lg font-bold text-purple-600">
+                {formatCurrency(Number(comprehensiveData?.[0]?.customer_price || item.customerPrice || 0))}
               </p>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-orange-200">
-              <label className="font-medium text-gray-600">طلبات مع أسعار:</label>
-              <p className="text-orange-700 font-bold text-lg">
-                {comprehensiveData.filter(row => Number(row.customer_price) > 0).length}
+            <div className="bg-white p-3 rounded-lg border border-gray-200">
+              <label className="text-xs font-medium text-gray-600 block mb-1">هامش الربح</label>
+              <p className="text-sm font-semibold text-green-600">
+                {(() => {
+                  const supplierPrice = Number(comprehensiveData?.[0]?.supplier_price || item.supplierPrice || 0);
+                  const customerPrice = Number(comprehensiveData?.[0]?.customer_price || item.customerPrice || 0);
+                  const profit = supplierPrice > 0 ? ((customerPrice - supplierPrice) / supplierPrice * 100).toFixed(2) : 0;
+                  return `${profit}%`;
+                })()}
               </p>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-red-200">
-              <label className="font-medium text-gray-600">أوامر الشراء:</label>
-              <p className="text-red-700 font-bold text-lg">
-                {comprehensiveData.filter(row => row.po_number && row.po_number !== '').length}
+            <div className="bg-white p-3 rounded-lg border border-gray-200">
+              <label className="text-xs font-medium text-gray-600 block mb-1">إجمالي القيمة</label>
+              <p className="text-sm font-semibold text-blue-600">
+                {formatCurrency(Number(comprehensiveData?.[0]?.customer_price || item.customerPrice || 0) * Number(item.quantity || 1))}
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* جدول بيانات بتصميم حديث */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3">
-          <h4 className="font-semibold text-white text-sm flex items-center gap-2">
-            <Package className="h-4 w-4" />
-            جدول البيانات التفصيلية للبند
-          </h4>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800 sticky left-0 bg-gray-50 z-10">معرف البند</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">UOM</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">LINE ITEM</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">PART NO</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">DESCRIPTION</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">RFQ</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">DATE/RFQ</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">QTY</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">PRICE RFQ</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">RES. DATE</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">PO</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">DATE/PO</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">Quantity/PO</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">PRICE/PO</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">TOTAL PO</th>
-                <th className="border-b-2 border-r border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">العميل</th>
-                <th className="border-b-2 border-gray-300 px-2 py-3 text-center font-semibold text-gray-800">الموظف المسؤول</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* عرض البيانات الشاملة من قاعدة البيانات */}
-              {comprehensiveData && comprehensiveData.length > 0 ? (
-                comprehensiveData.map((row: any, index: number) => (
-                  <tr key={index} className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-semibold text-blue-700 sticky left-0 bg-white z-10">
-                      {item.itemNumber || "P-0000016"}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center text-gray-700">{row.uom || item.uom || item.unit || "EACH"}</td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-medium text-blue-600">{row.line_item || item.lineItem || ""}</td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center text-gray-700">{row.part_no || item.partNumber || "-"}</td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-right text-gray-900" title={row.description}>
-                      {row.description || item.description}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-medium text-purple-600">
-                      {row.rfq_number || item.requestNumber}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center text-gray-700">
-                      {row.rfq_date ? row.rfq_date.split('T')[0] : "-"}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-semibold text-gray-900">{row.rfq_qty || item.quantity}</td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-bold text-green-600">
-                      {row.customer_price ? formatCurrency(Number(row.customer_price)) : formatCurrency(Number(item.supplierPrice || 0))}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center text-gray-700">
-                      {row.res_date ? row.res_date.split('T')[0] : "-"}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-medium text-blue-600">
-                      {row.po_number || "-"}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center text-gray-700">
-                      {row.po_date ? row.po_date.split('T')[0] : "-"}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center text-gray-900">{row.po_quantity || "-"}</td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-semibold text-gray-900">
-                      {row.po_price ? formatCurrency(Number(row.po_price)) : "-"}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-bold text-green-700">
-                      {row.po_total ? formatCurrency(Number(row.po_total)) : "-"}
-                    </td>
-                    <td className="border-b border-r border-gray-200 px-2 py-2 text-center text-gray-800 font-medium">{row.client_name || item.clientName || "-"}</td>
-                    <td className="border-b border-gray-200 px-2 py-2 text-center text-gray-800">{row.employee_name || item.employeeName || "-"}</td>
-                  </tr>
-                ))
-              ) : (
-                /* صف RFQ الأساسي إذا لم توجد بيانات شاملة */
-                <tr className="hover:bg-blue-50 transition-colors bg-white">
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-semibold text-blue-700 sticky left-0 bg-white z-10">
-                    {item.itemNumber || "P-0000016"}
-                  </td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">{item.uom || item.unit || "EACH"}</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-medium text-blue-600">{item.lineItem || ""}</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">{item.partNumber || "-"}</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-right" title={item.description}>
-                    {item.description}
-                  </td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-medium text-purple-600">{item.requestNumber}</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">{item.requestDate?.split('T')[0] || "-"}</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-semibold">{item.quantity}</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-bold text-green-600">
-                    {formatCurrency(Number(item.supplierPrice || 0))}
-                  </td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">{item.expiryDate?.split('T')[0] || "-"}</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">-</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">-</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">-</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">-</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center">-</td>
-                  <td className="border-b border-r border-gray-200 px-2 py-2 text-center font-medium">{item.clientName || "-"}</td>
-                  <td className="border-b border-gray-200 px-2 py-2 text-center">{item.employeeName || "-"}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* إضافة معلومات إضافية أسفل الجدول */}
-        {comprehensiveData && comprehensiveData.length > 0 && (
-          <div className="bg-gray-50 p-4 rounded-b-lg border-t">
-            <div className="flex justify-between items-center text-sm text-gray-600">
-              <div className="flex gap-6">
-                <span className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-yellow-500 rounded"></div>
-                  طلبات التسعير (RFQ)
-                </span>
-                <span className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded"></div>
-                  أوامر الشراء (PO)
-                </span>
-              </div>
-              <div className="text-gray-700 font-medium">
-                إجمالي السجلات: {comprehensiveData.length} سجل
-              </div>
-            </div>
-          </div>
+      {/* Customer pricing form */}
+      {showPricingForm ? (
+        <CustomerPricingForm item={item} onSuccess={() => {
+          setShowPricingForm(false);
+          onItemPriced();
+        }} />
+      ) : (
+        <Button 
+          onClick={() => setShowPricingForm(true)}
+          className="w-full"
+          size="lg"
+        >
+          <DollarSign className="ml-2 h-5 w-5" />
+          تحديد سعر العميل
+        </Button>
+      )}
+    </div>
+  );
+}
+
+// بيانات شاملة للصف من Google Sheets
+function ComprehensiveRowDisplay({ row }: { row: any }) {
+  return (
+    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h5 className="font-semibold text-sm text-gray-700">صف #{row.row_number || 'N/A'}</h5>
+        {row.has_po && (
+          <Badge className="bg-blue-600">له أمر شراء</Badge>
         )}
       </div>
-
-      {/* ملخص سريع للبيانات */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="font-semibold mb-3">ملخص البيانات المرتبطة</h4>
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div className="text-center">
-            <p className="font-medium">عدد عروض الموردين</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {detailedPricing?.supplierPricings?.length || 1}
-            </p>
+      
+      {/* بيانات RFQ والكميات */}
+      <div className="grid grid-cols-4 gap-3 text-xs">
+        <div>
+          <label className="font-medium text-gray-600">RFQ:</label>
+          <p className="text-gray-900">{row.rfq || 'غير محدد'}</p>
+        </div>
+        <div>
+          <label className="font-medium text-gray-600">التاريخ:</label>
+          <p className="text-gray-900">{row.date || 'غير محدد'}</p>
+        </div>
+        <div>
+          <label className="font-medium text-gray-600">الكمية:</label>
+          <p className="text-gray-900 font-semibold">{row.qty || '0'}</p>
+        </div>
+        <div>
+          <label className="font-medium text-gray-600">سعر العميل:</label>
+          <p className="text-green-600 font-semibold">
+            {row.customer_price ? formatCurrency(Number(row.customer_price)) : 'غير محدد'}
+          </p>
+        </div>
+      </div>
+      
+      {/* بيانات أمر الشراء إن وجدت */}
+      {row.has_po && (
+        <div className="grid grid-cols-3 gap-3 text-xs bg-blue-50 p-2 rounded">
+          <div>
+            <label className="font-medium text-blue-700">رقم أمر الشراء:</label>
+            <p className="text-blue-900 font-semibold">{row.po_number || 'غير محدد'}</p>
           </div>
-          <div className="text-center">
-            <p className="font-medium">عدد أوامر الشراء</p>
-            <p className="text-2xl font-bold text-purple-600">
-              {detailedPricing?.purchaseOrders?.length || 0}
-            </p>
+          <div>
+            <label className="font-medium text-blue-700">كمية PO:</label>
+            <p className="text-blue-900">{row.po_qty || '0'}</p>
           </div>
-          <div className="text-center">
-            <p className="font-medium">عدد تسعيرات العملاء</p>
-            <p className="text-2xl font-bold text-green-600">
-              {detailedPricing?.customerPricings?.length || 0}
+          <div>
+            <label className="font-medium text-blue-700">قيمة PO:</label>
+            <p className="text-blue-900 font-semibold">
+              {row.po_value ? formatCurrency(Number(row.po_value)) : 'غير محدد'}
             </p>
           </div>
         </div>
-      </div>
+      )}
+      
+      {/* بيانات المورد */}
+      {row.supplier_name && (
+        <div className="grid grid-cols-2 gap-3 text-xs bg-green-50 p-2 rounded">
+          <div>
+            <label className="font-medium text-green-700">المورد:</label>
+            <p className="text-green-900">{row.supplier_name}</p>
+          </div>
+          <div>
+            <label className="font-medium text-green-700">سعر المورد:</label>
+            <p className="text-green-900 font-semibold">
+              {row.supplier_price ? formatCurrency(Number(row.supplier_price)) : 'غير محدد'}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -622,34 +533,18 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
             type="number"
             value={formData.quantity}
             onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-            placeholder="الكمية"
             min="1"
             className="mt-1"
           />
         </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4 p-3 bg-gray-50 rounded-lg">
-        <div className="text-center">
-          <span className="text-sm text-gray-600">نسبة الربح</span>
-          <p className={`text-lg font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        <div>
+          <label className="text-sm font-medium">هامش الربح</label>
+          <div className={`mt-1 p-2 bg-gray-100 rounded ${profitMargin > 0 ? 'text-green-600' : 'text-red-600'} font-semibold`}>
             {profitMargin.toFixed(2)}%
-          </p>
-        </div>
-        <div className="text-center">
-          <span className="text-sm text-gray-600">الإجمالي</span>
-          <p className="text-lg font-bold text-blue-600">
-            {formatCurrency(totalAmount)}
-          </p>
-        </div>
-        <div className="text-center">
-          <span className="font-medium">صافي الربح:</span>
-          <p className={`text-lg font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {formatCurrency((Number(formData.sellingPrice) - (Number(formData.supplierPrice) || Number(item.supplierPrice || 0))) * Number(formData.quantity))}
-          </p>
+          </div>
         </div>
       </div>
-
+      
       <div>
         <label className="text-sm font-medium">ملاحظات</label>
         <Textarea
@@ -657,27 +552,108 @@ function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => 
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           placeholder="أي ملاحظات إضافية..."
           className="mt-1"
-          rows={2}
+          rows={3}
         />
       </div>
-
-      <div className="flex gap-2">
-        <Button type="submit" size="sm" className="flex-1">
-          <DollarSign className="h-4 w-4 ml-2" />
-          حفظ التسعير
-        </Button>
+      
+      <div className="bg-blue-50 p-3 rounded">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">الإجمالي</p>
+          <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</p>
+        </div>
       </div>
+      
+      <Button type="submit" className="w-full" size="lg">
+        حفظ التسعير
+      </Button>
     </form>
   );
 }
 
 export default function CustomerPricingNew() {
+  const [expandedRFQs, setExpandedRFQs] = useState<Set<string>>(new Set());
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [pricedItems, setPricedItems] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
   
   const { data: items = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/items-ready-for-customer-pricing"],
   });
+
+  // حساب المدة المتبقية لإغلاق الطلب
+  const calculateRemainingTime = (expiryDate: string) => {
+    if (!expiryDate) return { days: 999, text: "غير محدد", isUrgent: false };
+    
+    const expiry = new Date(expiryDate);
+    const now = new Date();
+    const diffTime = expiry.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+      return { days: -1, text: "منتهي", isUrgent: true, isExpired: true };
+    } else if (diffDays === 0) {
+      return { days: 0, text: "اليوم", isUrgent: true };
+    } else if (diffDays === 1) {
+      return { days: 1, text: "غداً", isUrgent: true };
+    } else if (diffDays <= 3) {
+      return { days: diffDays, text: `${diffDays} أيام`, isUrgent: true };
+    } else if (diffDays <= 7) {
+      return { days: diffDays, text: `${diffDays} أيام`, isUrgent: false };
+    } else {
+      return { days: diffDays, text: `${diffDays} يوم`, isUrgent: false };
+    }
+  };
+
+  // تجميع البنود حسب RFQ
+  const groupedByRFQ = React.useMemo(() => {
+    const groups: Record<string, any> = {};
+    
+    items.forEach((item) => {
+      const rfqNumber = item.requestNumber || item.rfqNumber || "بدون طلب";
+      if (!groups[rfqNumber]) {
+        groups[rfqNumber] = {
+          rfqNumber,
+          requestDate: item.requestDate,
+          expiryDate: item.expiryDate,
+          items: [],
+          totalItems: 0,
+          pricedItems: 0,
+          remaining: calculateRemainingTime(item.expiryDate)
+        };
+      }
+      groups[rfqNumber].items.push(item);
+      groups[rfqNumber].totalItems++;
+      if (item.customerPrice || pricedItems.has(item.id)) {
+        groups[rfqNumber].pricedItems++;
+      }
+    });
+
+    // ترتيب الطلبات حسب المدة المتبقية (الأقرب للانتهاء أولاً)
+    return Object.values(groups).sort((a, b) => a.remaining.days - b.remaining.days);
+  }, [items, pricedItems]);
+
+  // فلترة الطلبات حسب البحث
+  const filteredRFQs = React.useMemo(() => {
+    if (!searchQuery) return groupedByRFQ;
+    
+    return groupedByRFQ.filter(rfq => 
+      rfq.rfqNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      rfq.items.some((item: any) => 
+        item.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.itemNumber?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [groupedByRFQ, searchQuery]);
+
+  const toggleRFQExpanded = (rfqNumber: string) => {
+    const newExpanded = new Set(expandedRFQs);
+    if (newExpanded.has(rfqNumber)) {
+      newExpanded.delete(rfqNumber);
+    } else {
+      newExpanded.add(rfqNumber);
+    }
+    setExpandedRFQs(newExpanded);
+  };
 
   const toggleItemExpanded = (itemId: string) => {
     const newExpanded = new Set(expandedItems);
@@ -711,6 +687,22 @@ export default function CustomerPricingNew() {
         </p>
       </div>
 
+      {/* Search Bar */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="البحث عن طلب تسعير برقم الطلب أو وصف البند..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pr-10"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Progress Overview */}
       <Card>
         <CardHeader>
@@ -739,107 +731,122 @@ export default function CustomerPricingNew() {
       </Card>
 
       {/* Summary Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">إجمالي البنود</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              إجمالي الطلبات
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{filteredRFQs.length}</div>
+            <p className="text-xs text-muted-foreground">طلب تسعير</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              إجمالي البنود
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalItems}</div>
-            <p className="text-xs text-muted-foreground">بنود تحتاج تسعير</p>
+            <p className="text-xs text-muted-foreground">بند للتسعير</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">تم التسعير</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              تم التسعير
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{pricedCount}</div>
-            <p className="text-xs text-muted-foreground">بنود مسعرة</p>
+            <p className="text-xs text-muted-foreground">بند مسعر</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">بانتظار التسعير</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              بانتظار التسعير
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{totalItems - pricedCount}</div>
-            <p className="text-xs text-muted-foreground">بنود متبقية</p>
+            <p className="text-xs text-muted-foreground">بند متبقي</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Items List */}
+      {/* RFQs List */}
       <Card>
         <CardHeader>
-          <CardTitle>البنود الجاهزة للتسعير</CardTitle>
+          <CardTitle>طلبات التسعير</CardTitle>
           <CardDescription>
-            {items.length === 0 ? "لا توجد بنود جاهزة للتسعير حالياً" : `${items.length} بند جاهز للتسعير`}
+            {filteredRFQs.length === 0 ? "لا توجد طلبات تسعير" : `${filteredRFQs.length} طلب تسعير`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {items.map((item) => (
-            <Collapsible key={item.id} open={expandedItems.has(item.id)}>
-              <Card className={`border transition-all ${pricedItems.has(item.id) ? 'bg-green-50 border-green-300' : ''}`}>
+          {filteredRFQs.map((rfq) => (
+            <Collapsible key={rfq.rfqNumber} open={expandedRFQs.has(rfq.rfqNumber)}>
+              <Card className={`border transition-all ${
+                rfq.remaining.isExpired ? 'border-red-300 bg-red-50' :
+                rfq.remaining.isUrgent ? 'border-orange-300 bg-orange-50' :
+                'border-gray-200'
+              }`}>
                 <CollapsibleTrigger asChild>
                   <CardHeader 
                     className="cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => toggleItemExpanded(item.id)}
+                    onClick={() => toggleRFQExpanded(rfq.rfqNumber)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        {expandedItems.has(item.id) ? 
+                        {expandedRFQs.has(rfq.rfqNumber) ? 
                           <ChevronDown className="h-5 w-5 text-muted-foreground" /> : 
                           <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         }
                         <div>
                           <div className="flex items-center gap-3">
-                            <span className="font-semibold text-base">{item.itemNumber}</span>
-                            {item.lineItem && (
-                              <Badge variant="outline" className="bg-blue-50">
-                                {item.lineItem}
-                              </Badge>
+                            <span className="font-semibold text-lg">{rfq.rfqNumber}</span>
+                            {rfq.remaining.isExpired ? (
+                              <Badge className="bg-red-600">منتهي</Badge>
+                            ) : rfq.remaining.isUrgent ? (
+                              <Badge className="bg-orange-600">عاجل - {rfq.remaining.text}</Badge>
+                            ) : (
+                              <Badge variant="secondary">متبقي {rfq.remaining.text}</Badge>
                             )}
-                            {/* عرض حالة البند من Google Sheets */}
-                            {item.status && (
-                              <Badge 
-                                className={
-                                  item.status === "مُسعّر" ? "bg-green-600" : 
-                                  item.status === "مكتمل" ? "bg-blue-600" :
-                                  item.status === "منتهي" ? "bg-gray-600" :
-                                  item.status === "في انتظار تسعير الموردين" ? "bg-yellow-600" :
-                                  "bg-gray-400"
-                                }
-                              >
-                                {item.status}
+                            <Badge variant="outline" className="bg-blue-50">
+                              {rfq.totalItems} بند
+                            </Badge>
+                            {rfq.pricedItems > 0 && (
+                              <Badge className="bg-green-600">
+                                {rfq.pricedItems} مسعر
                               </Badge>
-                            )}
-                            {/* مؤشر إضافي للبنود المسعرة حديثاً في الجلسة */}
-                            {pricedItems.has(item.id) && !item.status?.includes("مُسعّر") && (
-                              <Badge className="bg-purple-600">مُسعّر حديثاً</Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                            {item.description}
-                          </p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                            <span className="flex items-center gap-1">
+                              <CalendarClock className="h-3 w-3" />
+                              تاريخ الطلب: {rfq.requestDate || "غير محدد"}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              ينتهي: {rfq.expiryDate || "غير محدد"}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">RFQ</p>
-                          <p className="font-medium">{item.requestNumber}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">الكمية</p>
-                          <p className="font-medium">{item.quantity} {item.uom || item.unit}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-muted-foreground">سعر المورد</p>
-                          <p className="font-semibold text-green-600">
-                            {formatCurrency(Number(item.supplierPrice || 0))}
-                          </p>
+                      <div className="text-right">
+                        <div className="text-sm text-muted-foreground">التقدم</div>
+                        <div className="text-lg font-semibold">
+                          {rfq.totalItems > 0 ? Math.round((rfq.pricedItems / rfq.totalItems) * 100) : 0}%
                         </div>
                       </div>
                     </div>
@@ -847,11 +854,66 @@ export default function CustomerPricingNew() {
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent>
-                  <CardContent className="pt-0">
-                    <ItemDetailedPricing 
-                      item={item} 
-                      onItemPriced={() => handleItemPriced(item.id)}
-                    />
+                  <CardContent className="pt-0 space-y-4">
+                    {/* قائمة البنود داخل الطلب */}
+                    {rfq.items.map((item: any) => (
+                      <Collapsible key={item.id} open={expandedItems.has(item.id)}>
+                        <Card className={`border transition-all ${pricedItems.has(item.id) ? 'bg-green-50 border-green-300' : ''}`}>
+                          <CollapsibleTrigger asChild>
+                            <CardHeader 
+                              className="cursor-pointer hover:bg-muted/50 transition-colors"
+                              onClick={() => toggleItemExpanded(item.id)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  {expandedItems.has(item.id) ? 
+                                    <ChevronDown className="h-4 w-4 text-muted-foreground" /> : 
+                                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                  }
+                                  <div>
+                                    <div className="flex items-center gap-3">
+                                      <span className="font-semibold">{item.itemNumber}</span>
+                                      {item.lineItem && (
+                                        <Badge variant="outline" className="bg-blue-50">
+                                          {item.lineItem}
+                                        </Badge>
+                                      )}
+                                      {pricedItems.has(item.id) && (
+                                        <Badge className="bg-purple-600">مُسعّر حديثاً</Badge>
+                                      )}
+                                    </div>
+                                    <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                      {item.description}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  <div className="text-right">
+                                    <p className="text-sm text-muted-foreground">الكمية</p>
+                                    <p className="font-medium">{item.quantity} {item.uom || item.unit}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-sm text-muted-foreground">سعر المورد</p>
+                                    <p className="font-semibold text-green-600">
+                                      {formatCurrency(Number(item.supplierPrice || 0))}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardHeader>
+                          </CollapsibleTrigger>
+                          
+                          <CollapsibleContent>
+                            <CardContent className="pt-0">
+                              <ItemDetailedPricing 
+                                item={item} 
+                                onItemPriced={() => handleItemPriced(item.id)}
+                              />
+                            </CardContent>
+                          </CollapsibleContent>
+                        </Card>
+                      </Collapsible>
+                    ))}
                   </CardContent>
                 </CollapsibleContent>
               </Card>
