@@ -1118,6 +1118,15 @@ export class GoogleSheetsRealtimeData {
             
             // إذا تطابق البند، احفظ البيانات كاحتياط
             if (itemMatch && !Object.keys(fallbackSupplierInfo).length) {
+              // سجل البيانات للتحقق
+              console.log(`📍 بيانات المورد الخام للبند ${itemId}:`, {
+                name: supplierRow[9],
+                contact: supplierRow[10], 
+                phone: supplierRow[11],
+                email: supplierRow[12],
+                address: supplierRow[13]
+              });
+              
               fallbackSupplierInfo = {
                 supplier_name: supplierRow[9] || '',        // العمود J - Supplier Name
                 supplier_contact: supplierRow[10] || '',    // العمود K - Contact Person
