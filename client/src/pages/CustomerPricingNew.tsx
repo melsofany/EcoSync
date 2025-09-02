@@ -340,10 +340,51 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <ShoppingCart className="h-4 w-4" />
             تاريخ الطلبات وأوامر الشراء ({comprehensiveData.length} سجل)
           </h4>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {comprehensiveData.map((row, index) => (
-              <ComprehensiveRowDisplay key={index} row={row} />
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-indigo-100 border-b-2 border-indigo-300">
+                  <th className="text-right p-2 border border-gray-300">#</th>
+                  <th className="text-right p-2 border border-gray-300">رقم الصف</th>
+                  <th className="text-right p-2 border border-gray-300">RFQ</th>
+                  <th className="text-right p-2 border border-gray-300">التاريخ</th>
+                  <th className="text-right p-2 border border-gray-300">LINE ITEM</th>
+                  <th className="text-right p-2 border border-gray-300">الكمية</th>
+                  <th className="text-right p-2 border border-gray-300">سعر العميل</th>
+                  <th className="text-right p-2 border border-gray-300">رقم PO</th>
+                  <th className="text-right p-2 border border-gray-300">كمية PO</th>
+                  <th className="text-right p-2 border border-gray-300">قيمة PO</th>
+                  <th className="text-right p-2 border border-gray-300">المورد</th>
+                  <th className="text-right p-2 border border-gray-300">سعر المورد</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comprehensiveData.map((row, index) => (
+                  <tr key={index} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${row.has_po ? 'font-semibold' : ''}`}>
+                    <td className="p-2 border border-gray-300 text-center">{index + 1}</td>
+                    <td className="p-2 border border-gray-300 text-center">{row.row_number || '-'}</td>
+                    <td className="p-2 border border-gray-300 text-center text-blue-600">{row.rfq || '-'}</td>
+                    <td className="p-2 border border-gray-300 text-center">{row.date || '-'}</td>
+                    <td className="p-2 border border-gray-300 text-center font-mono text-xs">{row.line_item || '-'}</td>
+                    <td className="p-2 border border-gray-300 text-center">{row.qty || '-'}</td>
+                    <td className="p-2 border border-gray-300 text-center text-green-600">
+                      {row.customer_price ? formatCurrency(Number(row.customer_price)) : '-'}
+                    </td>
+                    <td className="p-2 border border-gray-300 text-center text-purple-600">
+                      {row.po_number || '-'}
+                    </td>
+                    <td className="p-2 border border-gray-300 text-center">{row.po_qty || '-'}</td>
+                    <td className="p-2 border border-gray-300 text-center text-purple-600">
+                      {row.po_value ? formatCurrency(Number(row.po_value)) : '-'}
+                    </td>
+                    <td className="p-2 border border-gray-300">{row.supplier_name || '-'}</td>
+                    <td className="p-2 border border-gray-300 text-center text-orange-600">
+                      {row.supplier_price ? formatCurrency(Number(row.supplier_price)) : '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -368,77 +409,6 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
   );
 }
 
-// بيانات شاملة للصف من Google Sheets
-function ComprehensiveRowDisplay({ row }: { row: any }) {
-  return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h5 className="font-semibold text-sm text-gray-700">صف #{row.row_number || 'N/A'}</h5>
-        {row.has_po && (
-          <Badge className="bg-blue-600">له أمر شراء</Badge>
-        )}
-      </div>
-      
-      {/* بيانات RFQ والكميات */}
-      <div className="grid grid-cols-4 gap-3 text-xs">
-        <div>
-          <label className="font-medium text-gray-600">RFQ:</label>
-          <p className="text-gray-900">{row.rfq || 'غير محدد'}</p>
-        </div>
-        <div>
-          <label className="font-medium text-gray-600">التاريخ:</label>
-          <p className="text-gray-900">{row.date || 'غير محدد'}</p>
-        </div>
-        <div>
-          <label className="font-medium text-gray-600">الكمية:</label>
-          <p className="text-gray-900 font-semibold">{row.qty || '0'}</p>
-        </div>
-        <div>
-          <label className="font-medium text-gray-600">سعر العميل:</label>
-          <p className="text-green-600 font-semibold">
-            {row.customer_price ? formatCurrency(Number(row.customer_price)) : 'غير محدد'}
-          </p>
-        </div>
-      </div>
-      
-      {/* بيانات أمر الشراء إن وجدت */}
-      {row.has_po && (
-        <div className="grid grid-cols-3 gap-3 text-xs bg-blue-50 p-2 rounded">
-          <div>
-            <label className="font-medium text-blue-700">رقم أمر الشراء:</label>
-            <p className="text-blue-900 font-semibold">{row.po_number || 'غير محدد'}</p>
-          </div>
-          <div>
-            <label className="font-medium text-blue-700">كمية PO:</label>
-            <p className="text-blue-900">{row.po_qty || '0'}</p>
-          </div>
-          <div>
-            <label className="font-medium text-blue-700">قيمة PO:</label>
-            <p className="text-blue-900 font-semibold">
-              {row.po_value ? formatCurrency(Number(row.po_value)) : 'غير محدد'}
-            </p>
-          </div>
-        </div>
-      )}
-      
-      {/* بيانات المورد */}
-      {row.supplier_name && (
-        <div className="grid grid-cols-2 gap-3 text-xs bg-green-50 p-2 rounded">
-          <div>
-            <label className="font-medium text-green-700">المورد:</label>
-            <p className="text-green-900">{row.supplier_name}</p>
-          </div>
-          <div>
-            <label className="font-medium text-green-700">سعر المورد:</label>
-            <p className="text-green-900 font-semibold">
-              {row.supplier_price ? formatCurrency(Number(row.supplier_price)) : 'غير محدد'}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // Simplified inline customer pricing form
 function CustomerPricingForm({ item, onSuccess }: { item: any; onSuccess: () => void }) {
