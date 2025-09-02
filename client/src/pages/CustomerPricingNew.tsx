@@ -386,12 +386,12 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                       {record.supplier_price ? formatCurrency(Number(record.supplier_price)) : '-'}
                     </td>
                     <td className="border border-gray-300 p-2 text-right">
-                      {record.po_value ? formatCurrency(Number(record.po_value)) : '-'}
+                      {record.po_total ? formatCurrency(Number(record.po_total)) : '-'}
                     </td>
                     <td className="border border-gray-300 p-2 text-right">
                       {record.po_price ? formatCurrency(Number(record.po_price)) : '-'}
                     </td>
-                    <td className="border border-gray-300 p-2 text-right">{record.po_qty || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.po_quantity || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.po_date || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium">{record.po_number || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right">{record.category || '-'}</td>
@@ -399,17 +399,17 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                     <td className="border border-gray-300 p-2 text-right">
                       {record.customer_price ? formatCurrency(Number(record.customer_price)) : '-'}
                     </td>
-                    <td className="border border-gray-300 p-2 text-right">{record.qty || '-'}</td>
-                    <td className="border border-gray-300 p-2 text-right">{record.date || '-'}</td>
-                    <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.rfq || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.rfq_qty || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right">{record.rfq_date || '-'}</td>
+                    <td className="border border-gray-300 p-2 text-right text-blue-600 font-medium">{record.rfq_number || '-'}</td>
                     <td className="border border-gray-300 p-2 text-right break-words" style={{wordWrap: 'break-word', whiteSpace: 'normal', lineHeight: '1.4'}}>
                       <div className="max-w-[400px]" title={record.description || item.description}>
                         {record.description || item.description || '-'}
                       </div>
                     </td>
                     <td className="border border-gray-300 p-2 text-right text-purple-600 font-medium break-words">
-                      <div className="max-w-[120px]" title={record.part_number || item.partNumber}>
-                        {record.part_number || item.partNumber || '-'}
+                      <div className="max-w-[120px]" title={record.part_no || item.partNumber}>
+                        {record.part_no || item.partNumber || '-'}
                       </div>
                     </td>
                     <td className="border border-gray-300 p-2 text-right font-mono text-blue-600">
@@ -426,7 +426,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <div className="bg-blue-50 p-3 rounded">
               <h5 className="font-medium text-blue-800">طلبات التسعير (RFQ)</h5>
               <p className="text-lg font-bold text-blue-600">
-                {comprehensiveData.filter((r: any) => r.rfq).length}
+                {comprehensiveData.filter((r: any) => r.rfq_number).length}
               </p>
             </div>
             <div className="bg-green-50 p-3 rounded">
