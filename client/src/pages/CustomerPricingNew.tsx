@@ -333,6 +333,21 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         </div>
       )}
 
+      {/* جدول البيانات الشاملة - تاريخ الطلبات وأوامر الشراء */}
+      {comprehensiveData && comprehensiveData.length > 0 && (
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4" />
+            تاريخ الطلبات وأوامر الشراء ({comprehensiveData.length} سجل)
+          </h4>
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {comprehensiveData.map((row, index) => (
+              <ComprehensiveRowDisplay key={index} row={row} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Customer pricing form */}
       {showPricingForm ? (
         <CustomerPricingForm item={item} onSuccess={() => {
