@@ -1106,7 +1106,6 @@ export class GoogleSheetsRealtimeData {
           
           // البحث عن بيانات تسعير المورد لهذا البند وطلب التسعير
           let supplierInfo: any = {};
-          
           for (const supplierRow of supplierPricingData) {
             const supplierItemNumber = (supplierRow[0] || '').trim(); // العمود A - Item Number
             const supplierRfqNumber = (supplierRow[5] || '').trim(); // العمود F - RFQ Number
@@ -1115,7 +1114,6 @@ export class GoogleSheetsRealtimeData {
             const itemMatch = supplierItemNumber.toUpperCase() === itemId.toUpperCase();
             const rfqMatch = supplierRfqNumber.toUpperCase() === rfqNumber.toUpperCase();
             
-            // يجب أن يتطابق البند ورقم RFQ معاً
             if (itemMatch && rfqMatch) {
               supplierInfo = {
                 supplier_name: supplierRow[9] || '',        // العمود J - Supplier Name
@@ -1140,11 +1138,6 @@ export class GoogleSheetsRealtimeData {
               console.log(`📋 تفاصيل المورد:`, supplierInfo);
               break;
             }
-          }
-          
-          // إذا لم نجد تطابق، سجل في السجلات
-          if (!Object.keys(supplierInfo).length) {
-            console.log(`⚠️ لم يتم العثور على تسعير المورد للبند ${itemId} مع RFQ ${rfqNumber}`);
           }
           
           const rowData = {
