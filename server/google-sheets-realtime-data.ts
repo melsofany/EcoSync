@@ -1106,6 +1106,8 @@ export class GoogleSheetsRealtimeData {
           
           // البحث عن بيانات تسعير المورد لهذا البند وطلب التسعير
           let supplierInfo: any = {};
+          let fallbackSupplierInfo: any = {}; // بيانات احتياطية في حالة عدم تطابق RFQ
+          
           for (const supplierRow of supplierPricingData) {
             const supplierItemNumber = (supplierRow[0] || '').trim(); // العمود A - Item Number
             const supplierRfqNumber = (supplierRow[5] || '').trim(); // العمود F - RFQ Number
@@ -1114,6 +1116,31 @@ export class GoogleSheetsRealtimeData {
             const itemMatch = supplierItemNumber.toUpperCase() === itemId.toUpperCase();
             const rfqMatch = supplierRfqNumber.toUpperCase() === rfqNumber.toUpperCase();
             
+            // إذا تطابق البند، احفظ البيانات كاحتياط
+            if (itemMatch && !Object.keys(fallbackSupplierInfo).length) {
+              fallbackSupplierInfo = {
+                supplier_name: supplierRow[9] || '',        // العمود J - Supplier Name
+                supplier_contact: supplierRow[10] || '',    // العمود K - Contact Person
+                supplier_phone: supplierRow[11] || '',      // العمود L - Phone
+                supplier_email: supplierRow[12] || '',      // العمود M - Email
+                supplier_address: supplierRow[13] || '',    // العمود N - Address
+                supplier_price: supplierRow[14] || '',      // العمود O - Unit Price
+                supplier_total: supplierRow[15] || '',      // العمود P - Total Price
+                supplier_currency: supplierRow[16] || 'EGP', // العمود Q - Currency
+                vat_included: supplierRow[17] || 'لا',      // العمود R - VAT Included
+                vat_rate: supplierRow[18] || '',           // العمود S - VAT Rate
+                price_before_vat: supplierRow[19] || '',   // العمود T - Price Before VAT
+                vat_amount: supplierRow[20] || '',         // العمود U - VAT Amount
+                delivery_time: supplierRow[21] || '',      // العمود V - Delivery Time
+                payment_terms: supplierRow[22] || '',      // العمود W - Payment Terms
+                warranty_period: supplierRow[23] || '',    // العمود X - Warranty Period
+                supplier_notes: supplierRow[24] || '',     // العمود Y - Notes
+                supplier_status: supplierRow[25] || '',    // العمود Z - Status
+                supplier_rfq: supplierRfqNumber            // احفظ رقم RFQ المورد
+              };
+            }
+            
+            // إذا تطابق البند مع RFQ، استخدم هذه البيانات
             if (itemMatch && rfqMatch) {
               supplierInfo = {
                 supplier_name: supplierRow[9] || '',        // العمود J - Supplier Name
@@ -1138,6 +1165,13 @@ export class GoogleSheetsRealtimeData {
               console.log(`📋 تفاصيل المورد:`, supplierInfo);
               break;
             }
+          }
+          
+          // إذا لم نجد تطابق كامل، استخدم البيانات الاحتياطية
+          if (!Object.keys(supplierInfo).length && Object.keys(fallbackSupplierInfo).length) {
+            supplierInfo = fallbackSupplierInfo;
+            console.log(`⚠️ استخدام بيانات المورد من RFQ مختلف: ${fallbackSupplierInfo.supplier_rfq} للبند ${itemId}`);
+            console.log(`📋 تفاصيل المورد الاحتياطي:`, supplierInfo);
           }
           
           const rowData = {
