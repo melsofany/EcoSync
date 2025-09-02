@@ -604,11 +604,19 @@ export default function CustomerPricingNew() {
     }
   };
 
+  // حساب البنود النشطة فقط (غير المنتهية)
+  const activeItems = React.useMemo(() => {
+    return items.filter(item => {
+      const remaining = calculateRemainingTime(item.expiryDate);
+      return !remaining.isExpired;
+    });
+  }, [items]);
+
   // تجميع البنود حسب RFQ
   const groupedByRFQ = React.useMemo(() => {
     const groups: Record<string, any> = {};
     
-    items.forEach((item) => {
+    activeItems.forEach((item) => {
       const rfqNumber = item.requestNumber || item.rfqNumber || "بدون طلب";
       if (!groups[rfqNumber]) {
         groups[rfqNumber] = {
@@ -630,7 +638,7 @@ export default function CustomerPricingNew() {
 
     // ترتيب الطلبات حسب المدة المتبقية (الأقرب للانتهاء أولاً)
     return Object.values(groups).sort((a, b) => a.remaining.days - b.remaining.days);
-  }, [items, pricedItems]);
+  }, [activeItems, pricedItems]);
 
   // فلترة الطلبات حسب البحث
   const filteredRFQs = React.useMemo(() => {
@@ -672,9 +680,9 @@ export default function CustomerPricingNew() {
   if (isLoading) {
     return <div className="flex justify-center py-8">جاري التحميل...</div>;
   }
-
-  const totalItems = items.length;
-  const pricedCount = pricedItems.size;
+  
+  const totalItems = activeItems.length;
+  const pricedCount = activeItems.filter(item => item.customerPrice || pricedItems.has(item.id)).length;
   const progressPercentage = totalItems > 0 ? (pricedCount / totalItems) * 100 : 0;
 
   return (
