@@ -250,9 +250,12 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">حالة الضريبة</label>
             <p className="text-sm font-semibold text-blue-600">
-              {comprehensiveData?.[0]?.price_with_vat || 
-               detailedPricing?.priceWithVat || 
-               item.priceWithVat || 
+              {comprehensiveData?.[0]?.vat_included === 'نعم' ? 'شامل الضريبة' : 
+               comprehensiveData?.[0]?.vat_included === 'لا' ? 'غير شامل الضريبة' :
+               detailedPricing?.vatIncluded === 'نعم' ? 'شامل الضريبة' :
+               detailedPricing?.vatIncluded === 'لا' ? 'غير شامل الضريبة' :
+               item.vatIncluded === 'نعم' ? 'شامل الضريبة' :
+               item.vatIncluded === 'لا' ? 'غير شامل الضريبة' :
                "غير محدد"}
             </p>
           </div>
@@ -281,9 +284,9 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">مدة التسليم</label>
             <p className="text-sm font-medium text-gray-900">
-              {comprehensiveData?.[0]?.delivery_period || 
-               detailedPricing?.deliveryPeriod || 
-               item.deliveryPeriod ||
+              {comprehensiveData?.[0]?.delivery_time || 
+               detailedPricing?.deliveryTime || 
+               item.deliveryTime ||
                "غير محدد"}
             </p>
           </div>
@@ -299,11 +302,11 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
         </div>
         
         {/* ملاحظات المورد */}
-        {(comprehensiveData?.[0]?.notes || detailedPricing?.notes || item.notes) && (
+        {(comprehensiveData?.[0]?.supplier_notes || detailedPricing?.supplierNotes || item.supplierNotes) && (
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">ملاحظات المورد</label>
             <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {comprehensiveData?.[0]?.notes || detailedPricing?.notes || item.notes}
+              {comprehensiveData?.[0]?.supplier_notes || detailedPricing?.supplierNotes || item.supplierNotes}
             </p>
           </div>
         )}
