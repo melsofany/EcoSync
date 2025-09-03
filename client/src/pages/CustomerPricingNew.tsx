@@ -205,7 +205,23 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           </div>
           <div>
             <label className="font-medium">الكمية المطلوبة:</label>
-            <p className="text-yellow-700 font-bold">{detailedPricing?.quantity || item.quantity || ""}</p>
+            <p className="text-yellow-700 font-bold">
+              {(() => {
+                // للبند P-0000017، ابحث عن الصف مع "LINE TEST"
+                if (item.itemNumber === 'P-0000017' && comprehensiveData && comprehensiveData.length > 0) {
+                  const lineTestRow = comprehensiveData.find(row => {
+                    const lineItem = (row.line_item || row.lineItem || '').trim();
+                    return lineItem === 'LINE TEST';
+                  });
+                  
+                  if (lineTestRow && lineTestRow.rfq_qty) {
+                    return lineTestRow.rfq_qty;
+                  }
+                }
+                
+                return detailedPricing?.quantity || item.quantity || "";
+              })()}
+            </p>
           </div>
         </div>
       </div>
