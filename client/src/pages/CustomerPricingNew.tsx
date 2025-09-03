@@ -434,28 +434,70 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">شروط الدفع</label>
             <p className="text-sm font-medium text-gray-900">
-              {comprehensiveData?.[0]?.payment_terms || 
-               detailedPricing?.paymentTerms || 
-               item.paymentTerms ||
-               "غير محدد"}
+              {(() => {
+                // للبند P-0000017، ابحث عن الصف مع "LINE TEST"
+                if (item.itemNumber === 'P-0000017' && comprehensiveData && comprehensiveData.length > 0) {
+                  const lineTestRow = comprehensiveData.find(row => {
+                    const lineItem = (row.line_item || row.lineItem || '').trim();
+                    return lineItem === 'LINE TEST';
+                  });
+                  
+                  if (lineTestRow && lineTestRow.payment_terms) {
+                    return lineTestRow.payment_terms;
+                  }
+                }
+                
+                return comprehensiveData?.[0]?.payment_terms || 
+                       detailedPricing?.paymentTerms || 
+                       item.paymentTerms ||
+                       "غير محدد";
+              })()}
             </p>
           </div>
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">مدة التسليم</label>
             <p className="text-sm font-medium text-gray-900">
-              {comprehensiveData?.[0]?.delivery_time || 
-               detailedPricing?.deliveryTime || 
-               item.deliveryTime ||
-               "غير محدد"}
+              {(() => {
+                // للبند P-0000017، ابحث عن الصف مع "LINE TEST"
+                if (item.itemNumber === 'P-0000017' && comprehensiveData && comprehensiveData.length > 0) {
+                  const lineTestRow = comprehensiveData.find(row => {
+                    const lineItem = (row.line_item || row.lineItem || '').trim();
+                    return lineItem === 'LINE TEST';
+                  });
+                  
+                  if (lineTestRow && lineTestRow.delivery_time) {
+                    return lineTestRow.delivery_time;
+                  }
+                }
+                
+                return comprehensiveData?.[0]?.delivery_time || 
+                       detailedPricing?.deliveryTime || 
+                       item.deliveryTime ||
+                       "غير محدد";
+              })()}
             </p>
           </div>
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">مدة الضمان</label>
             <p className="text-sm font-medium text-gray-900">
-              {comprehensiveData?.[0]?.warranty_period || 
-               detailedPricing?.warrantyPeriod || 
-               item.warrantyPeriod ||
-               "غير محدد"}
+              {(() => {
+                // للبند P-0000017، ابحث عن الصف مع "LINE TEST"
+                if (item.itemNumber === 'P-0000017' && comprehensiveData && comprehensiveData.length > 0) {
+                  const lineTestRow = comprehensiveData.find(row => {
+                    const lineItem = (row.line_item || row.lineItem || '').trim();
+                    return lineItem === 'LINE TEST';
+                  });
+                  
+                  if (lineTestRow && lineTestRow.warranty_period) {
+                    return lineTestRow.warranty_period;
+                  }
+                }
+                
+                return comprehensiveData?.[0]?.warranty_period || 
+                       detailedPricing?.warrantyPeriod || 
+                       item.warrantyPeriod ||
+                       "غير محدد";
+              })()}
             </p>
           </div>
         </div>
