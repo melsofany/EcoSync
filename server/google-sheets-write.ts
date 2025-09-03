@@ -929,8 +929,12 @@ ${itemsList}
 
   /**
    * تحديث صف تسعير المورد مع البيانات المحسنة
+   * @param itemId - معرف البند
+   * @param rfqNumber - رقم طلب التسعير للمطابقة
+   * @param quantity - الكمية للمطابقة
+   * @param pricingData - بيانات التسعير
    */
-  async updateSupplierPricingRow(itemId: string, pricingData: any): Promise<void> {
+  async updateSupplierPricingRow(itemId: string, rfqNumber: string, quantity: string, pricingData: any): Promise<void> {
     try {
       if (!this.sheets) {
         const initialized = await this.initialize();
@@ -951,11 +955,42 @@ ${itemsList}
       const rows = readResponse.data.values || [];
       let targetRowIndex = -1;
 
-      // البحث عن الصف الذي يحتوي على معرف البند
+      // البحث عن الصف الذي يحتوي على معرف البند ورقم الطلب والكمية المطابقة
+      console.log(`🔍 البحث عن البند ${itemId} مع RFQ: ${rfqNumber} والكمية: ${quantity}`);
+      
       for (let i = 0; i < rows.length; i++) {
-        if (rows[i][0] === itemId) { // العمود A يحتوي على Item Number
+        // المطابقة بناءً على:
+        // العمود A (index 0) - Item Number
+        // العمود F (index 5) - RFQ Number
+        // العمود E (index 4) - Quantity
+        if (rows[i][0] === itemId && 
+            rows[i][5] === rfqNumber && 
+            rows[i][4] === quantity.toString()) {
           targetRowIndex = i + 2; // +2 لأن الصفوف تبدأ من 1 والرؤوس في الصف 1
+          console.log(`✅ وجدت الصف المطابق في السطر ${targetRowIndex}`);
           break;
+        }
+      }
+      
+      // إذا لم نجد تطابق كامل، نبحث عن صف بنفس البند والـ RFQ فقط
+      if (targetRowIndex === -1) {
+        for (let i = 0; i < rows.length; i++) {
+          if (rows[i][0] === itemId && rows[i][5] === rfqNumber) {
+            targetRowIndex = i + 2;
+            console.log(`⚠️ وجدت صف مطابق جزئياً (البند و RFQ فقط) في السطر ${targetRowIndex}`);
+            break;
+          }
+        }
+      }
+      
+      // إذا لم نجد أي تطابق، نبحث عن أول صف للبند
+      if (targetRowIndex === -1) {
+        for (let i = 0; i < rows.length; i++) {
+          if (rows[i][0] === itemId) {
+            targetRowIndex = i + 2;
+            console.log(`⚠️ وجدت صف للبند فقط في السطر ${targetRowIndex}`);
+            break;
+          }
         }
       }
 
@@ -992,8 +1027,8 @@ ${itemsList}
           itemInfo[3] || '',                   // B - Part Number (من العمود D في DATA)
           itemInfo[4] || '',                   // C - Description (من العمود E في DATA)
           itemInfo[1] || 'EACH',               // D - UOM (من العمود B في DATA)
-          itemInfo[7] || '1',                  // E - Quantity (من العمود H في DATA)
-          itemInfo[5] || '',                   // F - RFQ Number (من العمود F في DATA)
+          quantity || itemInfo[7] || '1',      // E - Quantity (استخدام الكمية المرسلة أو من العمود H في DATA)
+          rfqNumber || itemInfo[5] || '',      // F - RFQ Number (استخدام RFQ المرسل أو من العمود F في DATA)
           itemInfo[16] || '',                  // G - Client Name (من العمود Q في DATA)
           itemInfo[6] || '',                   // H - Request Date (من العمود G في DATA)
           itemInfo[9] || '',                   // I - Expiry Date (من العمود J في DATA)

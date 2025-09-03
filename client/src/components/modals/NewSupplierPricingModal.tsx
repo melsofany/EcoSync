@@ -128,9 +128,12 @@ export default function NewSupplierPricingModal({
     const selectedItem = itemsRequiringPricing.find((item: any) => item.id === data.itemId);
     const submissionData = {
       ...data,
-      itemId: selectedItem?.itemNumber || data.itemId // استخدام رقم البند الصحيح
+      itemId: selectedItem?.itemNumber || data.itemId, // استخدام رقم البند الصحيح
+      rfqNumber: selectedItem?.rfqNumber || '', // إضافة رقم طلب التسعير
+      quantity: selectedItem?.quantity || '1' // إضافة الكمية
     };
     
+    console.log('📝 إرسال بيانات التسعير:', submissionData);
     createPricingMutation.mutate(submissionData);
   };
 

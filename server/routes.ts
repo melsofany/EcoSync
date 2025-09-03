@@ -5458,10 +5458,14 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       console.log('📝 بيانات تسعير المورد المستلمة:', req.body);
       
+      // استخراج البيانات المطلوبة للمطابقة
+      const rfqNumber = req.body.rfqNumber || '';
+      const quantity = req.body.quantity || '1';
+      
       const pricingData = {
         ...req.body,
         createdBy: req.session.user!.id,
-        totalPrice: (parseFloat(req.body.unitPrice) * parseFloat(req.body.quantity || "1")).toFixed(2),
+        totalPrice: (parseFloat(req.body.unitPrice) * parseFloat(quantity)).toFixed(2),
         status: "مُسعّر"
       };
 
@@ -5470,6 +5474,8 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
         const googleSheetsWriter = new GoogleSheetsWriter();
         await googleSheetsWriter.updateSupplierPricingRow(
             req.body.itemId,
+            rfqNumber,  // تمرير رقم طلب التسعير
+            quantity,   // تمرير الكمية
             {
               supplierName: pricingData.supplierName || "",
               supplierContact: pricingData.supplierContact || "",
