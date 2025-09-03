@@ -125,8 +125,11 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                 if (comprehensiveData && comprehensiveData.length > 0 && currentRFQ) {
                   // البحث عن الصف الذي يطابق رقم طلب التسعير
                   const matchingRow = comprehensiveData.find(row => {
-                    console.log('مطابقة:', row.rfq_number, '==', currentRFQ, 'أو', row.rfqNumber, '==', currentRFQ);
-                    return row.rfq_number === currentRFQ || row.rfqNumber === currentRFQ;
+                    // تنظيف وتوحيد القيم للمقارنة
+                    const rowRFQ = (row.rfq_number || row.rfqNumber || '').trim();
+                    const targetRFQ = currentRFQ.trim();
+                    console.log('مطابقة:', rowRFQ, '==', targetRFQ);
+                    return rowRFQ === targetRFQ;
                   });
                   
                   if (matchingRow) {
@@ -135,7 +138,7 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
                   }
                   
                   // إذا لم نجد تطابق، نأخذ من أول صف كـ fallback
-                  console.log('⚠️ لم أجد صف مطابق، استخدام أول صف');
+                  console.log('⚠️ لم أجد صف مطابق للطلب', currentRFQ, '- استخدام أول صف');
                   return comprehensiveData[0].line_item || comprehensiveData[0].lineItem || "";
                 }
                 return detailedPricing?.lineItem || item.lineItem || "";
