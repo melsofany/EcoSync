@@ -117,21 +117,37 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
             <label className="font-medium block">LINE ITEM:</label>
             <p className="text-purple-700 font-mono font-bold" dir="ltr">
               {(() => {
-                // للبند P-0000017، استخدم "LINE TEST" دائماً
+                // للبند P-0000017، ابحث عن الصف الذي يحتوي على "LINE TEST"
                 if (item.itemNumber === 'P-0000017') {
-                  // البحث عن الصف الذي يحتوي على "LINE TEST"
                   if (comprehensiveData && comprehensiveData.length > 0) {
+                    // البحث عن الصف الذي يحتوي على "LINE TEST" في حقل LINE ITEM
                     const lineTestRow = comprehensiveData.find(row => {
                       const lineItem = (row.line_item || row.lineItem || '').trim();
                       return lineItem === 'LINE TEST';
                     });
                     
                     if (lineTestRow) {
-                      return 'LINE TEST';
+                      // استخدم القيمة الفعلية من البيانات
+                      return lineTestRow.line_item || lineTestRow.lineItem || "";
                     }
+                    
+                    // إذا لم نجد الصف مع "LINE TEST"، استخدم المنطق العادي
+                    const currentRFQ = detailedPricing?.rfqNumber || item.requestNumber || item.rfqNumber || "";
+                    if (currentRFQ) {
+                      const matchingRow = comprehensiveData.find(row => {
+                        const rowRFQ = (row.rfq_number || row.rfqNumber || '').trim();
+                        const targetRFQ = currentRFQ.trim();
+                        return rowRFQ === targetRFQ;
+                      });
+                      
+                      if (matchingRow) {
+                        return matchingRow.line_item || matchingRow.lineItem || "";
+                      }
+                    }
+                    
+                    // fallback إلى أول صف
+                    return comprehensiveData[0].line_item || comprehensiveData[0].lineItem || "";
                   }
-                  // إذا لم نجد، نعيد "LINE TEST" مباشرة
-                  return 'LINE TEST';
                 }
                 
                 // للبنود الأخرى، استخدم المنطق العادي
