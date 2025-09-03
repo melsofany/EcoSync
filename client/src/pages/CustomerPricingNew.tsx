@@ -116,7 +116,22 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           <div className="text-center">
             <label className="font-medium block">LINE ITEM:</label>
             <p className="text-purple-700 font-mono font-bold" dir="ltr">
-              {detailedPricing?.lineItem || (comprehensiveData && comprehensiveData.length > 0 ? comprehensiveData[0].line_item : "") || item.lineItem || ""}
+              {(() => {
+                // البحث عن LINE ITEM الصحيح من نفس طلب التسعير
+                const currentRFQ = detailedPricing?.rfqNumber || item.requestNumber || item.rfqNumber || "";
+                if (comprehensiveData && comprehensiveData.length > 0 && currentRFQ) {
+                  // البحث عن الصف الذي يطابق رقم طلب التسعير
+                  const matchingRow = comprehensiveData.find(row => 
+                    row.rfq_number === currentRFQ || row.rfqNumber === currentRFQ
+                  );
+                  if (matchingRow) {
+                    return matchingRow.line_item || matchingRow.lineItem || "";
+                  }
+                  // إذا لم نجد تطابق، نأخذ من أول صف كـ fallback
+                  return comprehensiveData[0].line_item || comprehensiveData[0].lineItem || "";
+                }
+                return detailedPricing?.lineItem || item.lineItem || "";
+              })()}
             </p>
           </div>
           <div>
