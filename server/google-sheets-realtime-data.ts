@@ -1127,6 +1127,14 @@ export class GoogleSheetsRealtimeData {
                 address: supplierRow[13]
               });
               
+              // سجل قيمة الموظف للتحقق
+              const employeeName = supplierRow[26] || '';
+              if (employeeName) {
+                console.log(`👤 اسم الموظف للبند ${itemId}: ${employeeName}`);
+              } else {
+                console.log(`⚠️ لا يوجد اسم موظف للبند ${itemId} (العمود AA فارغ)`);
+              }
+              
               fallbackSupplierInfo = {
                 supplier_name: supplierRow[9] || '',        // العمود J - Supplier Name
                 supplier_contact: supplierRow[10] || '',    // العمود K - Contact Person
@@ -1145,13 +1153,21 @@ export class GoogleSheetsRealtimeData {
                 warranty_period: supplierRow[23] || '',    // العمود X - Warranty Period
                 supplier_notes: supplierRow[24] || '',     // العمود Y - Notes
                 supplier_status: supplierRow[25] || '',    // العمود Z - Status
-                supplier_employee: supplierRow[26] || '',  // العمود AA - Employee Name
+                supplier_employee: employeeName,           // العمود AA - Employee Name
                 supplier_rfq: supplierRfqNumber            // احفظ رقم RFQ المورد
               };
             }
             
             // إذا تطابق البند مع RFQ، استخدم هذه البيانات
             if (itemMatch && rfqMatch) {
+              // سجل قيمة الموظف للتحقق
+              const employeeName = supplierRow[26] || '';
+              if (employeeName) {
+                console.log(`👤 اسم الموظف للبند ${itemId} مع RFQ ${rfqNumber}: ${employeeName}`);
+              } else {
+                console.log(`⚠️ لا يوجد اسم موظف للبند ${itemId} مع RFQ ${rfqNumber} (العمود AA فارغ)`);
+              }
+              
               supplierInfo = {
                 supplier_name: supplierRow[9] || '',        // العمود J - Supplier Name
                 supplier_contact: supplierRow[10] || '',    // العمود K - Contact Person
@@ -1170,7 +1186,7 @@ export class GoogleSheetsRealtimeData {
                 warranty_period: supplierRow[23] || '',    // العمود X - Warranty Period
                 supplier_notes: supplierRow[24] || '',     // العمود Y - Notes
                 supplier_status: supplierRow[25] || '',    // العمود Z - Status
-                supplier_employee: supplierRow[26] || '',  // العمود AA - Employee Name
+                supplier_employee: employeeName,           // العمود AA - Employee Name
               };
               console.log(`💰 وجدت معلومات تسعير المورد للبند ${itemId} RFQ ${rfqNumber}`);
               console.log(`📋 تفاصيل المورد:`, supplierInfo);
