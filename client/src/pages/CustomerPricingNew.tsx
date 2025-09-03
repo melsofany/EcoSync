@@ -219,11 +219,17 @@ function ItemDetailedPricing({ item, onItemPriced }: { item: any; onItemPriced: 
           </div>
           <div className="bg-white p-3 rounded-lg border border-gray-200">
             <label className="text-xs font-medium text-gray-600 block mb-1">العنوان</label>
-            <p className="text-sm font-medium text-gray-900">
-              {comprehensiveData?.[0]?.supplier_address || 
-               detailedPricing?.supplierAddress || 
-               item.supplierAddress ||
-               "غير متوفر"}
+            <p className={`text-sm font-medium ${
+              comprehensiveData?.[0]?.supplier_address?.trim() || 
+              detailedPricing?.supplierAddress?.trim() || 
+              item.supplierAddress?.trim() 
+                ? 'text-gray-900' 
+                : 'text-amber-600'
+            }`}>
+              {comprehensiveData?.[0]?.supplier_address?.trim() || 
+               detailedPricing?.supplierAddress?.trim() || 
+               item.supplierAddress?.trim() ||
+               "⚠ لم يتم إدخال العنوان في Google Sheets"}
             </p>
           </div>
         </div>
