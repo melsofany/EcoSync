@@ -1185,58 +1185,10 @@ export class GoogleSheetsRealtimeData {
             console.log(`📋 تفاصيل المورد الاحتياطي:`, supplierInfo);
           }
           
-          // تحديد LINE ITEM الصحيح
-          let correctLineItem = row[2] || ''; // LINE ITEM الافتراضي من الصف الحالي
-          
-          // إذا كان هذا صف يحتوي على سعر مورد، ابحث عن LINE ITEM من صف الهيدر
-          if (supplierInfo.supplier_price) {
-            console.log(`🔍 البحث عن LINE ITEM الصحيح للصف مع سعر المورد...`);
-            // البحث عن صف الهيدر بنفس البند وRFQ والكمية ولكن بدون سعر مورد
-            for (let j = 0; j < dataRows.length; j++) {
-              const headerRow = dataRows[j];
-              const headerItemNumber = (headerRow[0] || '').trim();
-              const headerRfqNumber = (headerRow[5] || '').trim();
-              const headerQuantity = (headerRow[7] || '').trim();
-              const headerPoNumber = (headerRow[10] || '').trim(); // العمود K - PO
-              
-              // تحقق من أن هذا صف هيدر (بدون PO أو معلومات أمر شراء)
-              const isHeaderRow = !headerPoNumber || headerPoNumber === '';
-              
-              if (headerItemNumber === itemId && 
-                  headerRfqNumber === rfqNumber && 
-                  headerQuantity === (row[7] || '').trim() &&
-                  isHeaderRow) {
-                correctLineItem = headerRow[2] || ''; // أخذ LINE ITEM من صف الهيدر
-                console.log(`✅ تم العثور على LINE ITEM من صف الهيدر: "${correctLineItem}" للبند ${itemId} في RFQ ${rfqNumber}`);
-                break;
-              }
-            }
-            
-            // إذا لم نجد صف هيدر مطابق، ابحث عن أي صف بنفس البند وRFQ بدون سعر مورد
-            if (correctLineItem === (row[2] || '')) {
-              for (let j = 0; j < dataRows.length; j++) {
-                const headerRow = dataRows[j];
-                const headerItemNumber = (headerRow[0] || '').trim();
-                const headerRfqNumber = (headerRow[5] || '').trim();
-                const headerPoNumber = (headerRow[10] || '').trim();
-                
-                const isHeaderRow = !headerPoNumber || headerPoNumber === '';
-                
-                if (headerItemNumber === itemId && 
-                    headerRfqNumber === rfqNumber && 
-                    isHeaderRow) {
-                  correctLineItem = headerRow[2] || '';
-                  console.log(`⚠️ استخدام LINE ITEM من صف هيدر آخر بنفس RFQ: "${correctLineItem}"`);
-                  break;
-                }
-              }
-            }
-          }
-          
           const rowData = {
             itemNumber: row[0] || '',       // العمود A - معرف البند
             uom: row[1] || '',              // العمود B - UOM
-            line_item: correctLineItem,     // العمود C - LINE ITEM (المُصحح)
+            line_item: row[2] || '',        // العمود C - LINE ITEM
             part_no: row[3] || '',          // العمود D - PART NO
             description: row[4] || '',      // العمود E - DESCRIPTION
             rfq_number: row[5] || '',       // العمود F - RFQ
@@ -1255,7 +1207,7 @@ export class GoogleSheetsRealtimeData {
             ...supplierInfo                 // إضافة معلومات تسعير المورد
           };
           itemRows.push(rowData);
-          console.log(`📌 وجدت البند ${itemId} في الصف ${i + 2}: RFQ="${row[5]}", LINE_ITEM="${correctLineItem}" ${supplierInfo.supplier_price ? '(مُصحح من الهيدر)' : ''}`);
+          console.log(`📌 وجدت البند ${itemId} في الصف ${i + 2}: RFQ="${row[5]}", LINE_ITEM="${row[2]}"`);
         }
       }
       
