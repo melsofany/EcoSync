@@ -55,44 +55,9 @@ export class GoogleSheetsWriter {
           if (fs.existsSync(p)) { credentials = JSON.parse(fs.readFileSync(p, 'utf8')); credentialsLoaded = true; break; }
         }
       }
-      if (credentialsLoaded) {
-          console.log('✅ جاهز للاتصال بـ Google Sheets');
-          credentialsLoaded = true;
-      } catch (fileError) {
-        console.log('⚠️ لم يتم العثور على الملف المحلي، سيتم البحث في متغيرات البيئة');
-      }
-      
-      // إذا فشل تحميل الملف، حاول من متغيرات البيئة
+
       if (!credentialsLoaded) {
-        // التحقق من وجود متغير البيئة BASE64
-        if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
-          try {
-            const keyData = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
-            credentials = JSON.parse(keyData);
-            console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة BASE64');
-            console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
-            credentialsLoaded = true;
-          } catch (parseError) {
-            console.error('⚠️ تجاهل متغير البيئة BASE64 بسبب خطأ في التحليل');
-          }
-        }
-        
-        // محاولة متغير البيئة العادي
-        if (!credentialsLoaded && process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY) {
-          try {
-            const keyData = process.env.GOOGLE_SHEETS_SERVICE_ACCOUNT_KEY.trim();
-            credentials = JSON.parse(keyData);
-            console.log('🔑 تم تحميل مفاتيح Google Sheets من متغير البيئة');
-            console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
-            credentialsLoaded = true;
-          } catch (parseError) {
-            console.error('⚠️ تجاهل متغير البيئة العادي بسبب خطأ في التحليل');
-          }
-        }
-        
-        if (!credentialsLoaded) {
-          throw new Error('فشل في تحميل مفاتيح Google Sheets من أي مصدر');
-        }
+        throw new Error('فشل في تحميل مفاتيح Google Sheets. تأكد من وجود GOOGLE_SERVICE_ACCOUNT_BASE64 في متغيرات البيئة');
       }
 
       this.auth = new GoogleAuth({
