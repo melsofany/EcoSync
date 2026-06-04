@@ -57,11 +57,6 @@ export class UsersGoogleSheetsManager {
 
   constructor() {
     this.spreadsheetId = '1GYlz87nWa7q0W8KD7QuqiR-GCzu3C2KRmCGnYOCKZEg';
-    this.initializeAuth();
-    this.startAutoSync();
-  }
-
-  private async initializeAuth() {
     try {
       this.auth = createGoogleAuth();
       this.sheets = google.sheets({ version: 'v4', auth: this.auth });
@@ -70,7 +65,9 @@ export class UsersGoogleSheetsManager {
       console.error('❌ خطأ في تهيئة Google Sheets للمستخدمين:', error);
       throw error;
     }
+    this.startAutoSync();
   }
+
 
   // إنشاء ورقة المستخدمين إذا لم تكن موجودة
   async createUsersWorksheet() {
