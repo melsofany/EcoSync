@@ -38,26 +38,26 @@ export class GoogleSheetsWriter {
       let credentials;
       let credentialsLoaded = false;
       
-      // محاولة تحميل من الملف المحلي أولاً (الأكثر موثوقية)
-      try {
-        const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
-        const fileContent = fs.readFileSync(credentialsPath, 'utf8');
-        credentials = JSON.parse(fileContent);
-        
-        // التحقق من وجود المفتاح الخاص
-        if (!credentials.private_key || !credentials.client_email) {
-          throw new Error('ملف المفاتيح غير مكتمل - المفتاح الخاص أو البريد الإلكتروني مفقود');
+      // أولاً: جرب متغير البيئة (Render/Railway)
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+        try {
+          const decodedJson = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
+          credentials = JSON.parse(decodedJson);
+          if (!credentials.private_key || !credentials.client_email) throw new Error('مفتاح غير مكتمل');
+          console.log('✅ تم تحميل مفاتيح Google Sheets من متغير البيئة');
+          credentialsLoaded = true;
+        } catch (envErr: any) { console.error('❌ خطأ في GOOGLE_SERVICE_ACCOUNT_BASE64:', envErr.message); }
+      }
+      // ثانياً: جرب الملف المحلي (للتطوير فقط)
+      if (!credentialsLoaded) {
+        const localPaths = ['./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json', './google-service-account.json'];
+        for (const p of localPaths) {
+          if (fs.existsSync(p)) { credentials = JSON.parse(fs.readFileSync(p, 'utf8')); credentialsLoaded = true; break; }
         }
-        
-        // التحقق من طول المفتاح الخاص
-        if (credentials.private_key.length < 1000) {
-          throw new Error(`المفتاح الخاص مقطوع أو غير مكتمل - الطول الحالي: ${credentials.private_key.length} حرف، المطلوب: أكثر من 1000 حرف`);
-        }
-        
-        console.log('✅ تم تحميل مفاتيح Google Sheets من الملف المحلي');
-        console.log(`📧 البريد الإلكتروني: ${credentials.client_email}`);
-        console.log(`🔐 طول المفتاح الخاص: ${credentials.private_key.length} حرف`);
-        credentialsLoaded = true;
+      }
+      if (credentialsLoaded) {
+          console.log('✅ جاهز للاتصال بـ Google Sheets');
+          credentialsLoaded = true;
       } catch (fileError) {
         console.log('⚠️ لم يتم العثور على الملف المحلي، سيتم البحث في متغيرات البيئة');
       }
