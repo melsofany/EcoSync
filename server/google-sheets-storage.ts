@@ -8,18 +8,18 @@ export class GoogleSheetsStorage {
   private spreadsheetId: string;
 
   constructor() {
-    // استخدام المفتاح الجديد من الملف المحلي
-    const fs = require('fs');
-    const path = require('path');
-    
-    let credentials;
-    try {
-      const credentialsPath = path.resolve('./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json');
-      const fileContent = fs.readFileSync(credentialsPath, 'utf8');
-      credentials = JSON.parse(fileContent);
-    } catch (fileError) {
-      console.error('❌ خطأ في قراءة مفتاح Google Sheets:', fileError.message);
-      throw fileError;
+    // تحميل المفاتيح: أولاً متغير البيئة، ثم الملف المحلي للتطوير
+    let credentials: any;
+    if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+      const decodedJson = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
+      credentials = JSON.parse(decodedJson);
+      console.log('✅ تم تحميل مفتاح Google Sheets من متغير البيئة');
+    } else {
+      const fsSync = require('fs');
+      const localPaths = ['./attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json', './google-service-account.json'];
+      let loaded = false;
+      for (const p of localPaths) { if (fsSync.existsSync(p)) { credentials = JSON.parse(fsSync.readFileSync(p, 'utf8')); loaded = true; break; } }
+      if (!loaded) throw new Error('أضف GOOGLE_SERVICE_ACCOUNT_BASE64 في متغيرات البيئة');
     }
 
     this.auth = new GoogleAuth({
