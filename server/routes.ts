@@ -145,7 +145,7 @@ async function writeUnifiedResultsToGoogleSheets(unifiedItems: any[]): Promise<v
     
     // إعداد Google Sheets API
     const auth = new google.auth.GoogleAuth({
-      keyFile: './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json',
+      credentials: process.env.GOOGLE_SERVICE_ACCOUNT_BASE64 ? JSON.parse(Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8')) : (() => { throw new Error('GOOGLE_SERVICE_ACCOUNT_BASE64 missing'); })(),
       scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
     
@@ -1468,7 +1468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // تحديث مباشر في Google Sheets
         import('googleapis').then(async (googleModule) => {
           const auth = new googleModule.google.auth.GoogleAuth({
-            keyFile: './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json',
+            credentials: process.env.GOOGLE_SERVICE_ACCOUNT_BASE64 ? JSON.parse(Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8')) : (() => { throw new Error('GOOGLE_SERVICE_ACCOUNT_BASE64 missing'); })(),
             scopes: ['https://www.googleapis.com/auth/spreadsheets']
           });
           const sheets = googleModule.google.sheets({ version: 'v4', auth });
@@ -7201,7 +7201,7 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
     try {
       // إعداد Google Sheets API
       const auth = new google.auth.GoogleAuth({
-        keyFile: './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json',
+        credentials: process.env.GOOGLE_SERVICE_ACCOUNT_BASE64 ? JSON.parse(Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8')) : (() => { throw new Error('GOOGLE_SERVICE_ACCOUNT_BASE64 missing'); })(),
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
       });
       
