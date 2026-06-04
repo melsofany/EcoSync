@@ -183,7 +183,9 @@ app.use((req, res, next) => {
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
     try {
       const fs = await import('fs/promises');
-      const keyData = await fs.readFile('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
+      const keyData = process.env.GOOGLE_SERVICE_ACCOUNT_BASE64 
+          ? Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8')
+          : await fs.readFile('./attached_assets/cortoba-supp-sys-75c0919d127e_1754952836786.json', 'utf8');
       process.env.GOOGLE_SERVICE_ACCOUNT_KEY = keyData;
       console.log('✅ تم تحميل مفتاح Google Sheets من الملف المُرفق');
     } catch (error) {
