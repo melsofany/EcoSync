@@ -34,15 +34,20 @@ export class UserSheetsManager {
   // تهيئة الاتصال بـ Google Sheets
   async initialize() {
     try {
-      // استخدام المفتاح الجديد من الملف المحلي
+      // تحميل المفاتيح: أولاً متغير البيئة، ثم الملف المحلي للتطوير
       let credentials;
-      try {
-        const credentialsPath = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
-        const fileContent = readFileSync(credentialsPath, 'utf8');
-        credentials = JSON.parse(fileContent);
-      } catch (fileError) {
-        console.error('❌ خطأ في قراءة مفتاح Google Sheets:', (fileError as Error).message);
-        throw fileError;
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+        const decodedJson = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf-8');
+        credentials = JSON.parse(decodedJson);
+        console.log('✅ تم تحميل مفتاح Google Sheets من متغير البيئة');
+      } else {
+        try {
+          const credentialsPath = './attached_assets/cortoba-supp-sys-93ea3e5bcad2_1755195927771.json';
+          const fileContent = readFileSync(credentialsPath, 'utf8');
+          credentials = JSON.parse(fileContent);
+        } catch (fileError) {
+          throw new Error('لا يمكن العثور على مفتاح Google. أضف GOOGLE_SERVICE_ACCOUNT_BASE64 في متغيرات البيئة');
+        }
       }
 
       const auth = new GoogleAuth({
