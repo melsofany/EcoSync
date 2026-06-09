@@ -1088,333 +1088,155 @@ ${itemsList}
    * حفظ بيانات أمر الشراء في Google Sheets
    * يحفظ رقم أمر الشراء في العمود K، التاريخ في L، الكمية في M، السعر في N
    */
-  /**
-     * تحديث Google Sheets مع إعادة المحاولة عند تجاوز حد الاستخدام (429)
-     */
-    private async sheetsUpdateWithRetry(range: string, values: any[][], retries = 3): Promise<void> {
-      for (let attempt = 1; attempt <= retries; attempt++) {
+  // ===== Helper methods for reliable Google Sheets API calls =====
+
+    private async sheetsApiWithRetry<T>(fn: () => Promise<T>, opName = 'Sheets API'): Promise<T> {
+      const maxRetries = 4;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          await this.sheets.spreadsheets.values.update({
-            spreadsheetId: this.spreadsheetId,
-            range,
-            valueInputOption: 'RAW',
-            resource: { values }
-          });
-          return;
+          return await fn();
         } catch (error: any) {
-          const isRateLimit = error?.status === 429 || error?.code === 429 ||
-            (error?.message && error.message.includes('Quota exceeded'));
-          if (isRateLimit && attempt < retries) {
-            const delay = attempt * 2000;
-            console.warn(`⚠️ Google Sheets rate limit - إعادة المحاولة بعد ${delay}ms (محاولة ${attempt}/${retries})`);
-            await new Promise(resolve => setTimeout(resolve, delay));
+          const status = error?.status || error?.code || error?.response?.status;
+          const isTransient = status === 429 || status === 500 || status === 503 || status === 502
+            || (error?.message && (error.message.includes('Quota exceeded') || error.message.includes('ECONNRESET') || error.message.includes('socket hang up') || error.message.includes('ETIMEDOUT')));
+          if (isTransient && attempt < maxRetries) {
+            const delay = attempt * 1500;
+            console.warn(`⚠️ ${opName} خطأ مؤقت (status=${status}) - إعادة المحاولة بعد ${delay}ms (محاولة ${attempt}/${maxRetries})`);
+            await new Promise(r => setTimeout(r, delay));
           } else {
             throw error;
           }
         }
       }
+      throw new Error(`${opName}: تجاوز الحد الأقصى لعدد المحاولات`);
     }
 
-    async savePurchaseOrderToSheets(poData: {
-    poNumber: string;
-    poDate: string;
-    items: Array<{
-      itemNumber?: string;
-      lineItem?: string;
-      rfqNumber?: string; // إضافة رقم طلب التسعير
-      quantity: number;
-      unitPrice: number;
-    }>;
-  }): Promise<void> {
-    try {
-      console.log('🚀 بدء دالة savePurchaseOrderToSheets');
-      console.log('📋 البيانات المستلمة:', JSON.stringify(poData, null, 2));
-      
-      // التأكد من التهيئة
-      if (!this.sheets || !this.spreadsheetId) {
-        console.log('🔄 إعادة تهيئة Google Sheets...');
-        const initialized = await this.initialize();
-        if (!initialized) {
-          throw new Error('فشل في تهيئة Google Sheets');
-        }
-      }
+    private async sheetsGetWithRetry(range: string) {
+      return this.sheetsApiWithRetry(
+        () => this.sheets.spreadsheets.values.get({ spreadsheetId: this.spreadsheetId, range }),
+        `GET ${range}`
+      );
+    }
 
-      // التحقق مرة أخرى
-      if (!this.sheets) {
-        throw new Error('لا يمكن الوصول إلى Google Sheets API');
-      }
-
-      if (!this.spreadsheetId) {
-        throw new Error('معرف Google Sheets غير محدد. تأكد من وجود GOOGLE_SHEETS_ID في متغيرات البيئة');
-      }
-
-      console.log(`📝 حفظ أمر الشراء ${poData.poNumber} في Google Sheets`);
-      console.log(`📋 عدد البنود: ${poData.items.length}`);
-
-      let isFirstItem = true; // متغير لتتبع أول بند
-      let savedItemsCount = 0; // عداد للبنود المحفوظة فعلياً
-      
-      for (const item of poData.items) {
-        if (!item.lineItem && !item.itemNumber) {
-          console.log('⚠️ تخطي بند بدون LINE ITEM أو رقم صنف');
-          continue;
-        }
-
-        // البحث عن البند في ورقة DATA
-        const searchValue = item.lineItem || item.itemNumber || '';
-        const rfqNumber = item.rfqNumber || ''; // الحصول على رقم طلب التسعير من البند
-        console.log(`🔍 البحث عن البند: ${searchValue} في طلب التسعير: ${rfqNumber || '(غير محدد)'}`);
-
-        // قراءة كل البيانات للعثور على البند والتحقق من وجود PO سابق
-        const response = await this.sheets.spreadsheets.values.get({
+    private async sheetsBatchUpdateWithRetry(data: { range: string; values: any[][] }[]) {
+      return this.sheetsApiWithRetry(
+        () => this.sheets.spreadsheets.values.batchUpdate({
           spreadsheetId: this.spreadsheetId,
-          range: 'DATA!A:AA', // قراءة كل الأعمدة
-        });
-
-        const values = response.data.values || [];
-        let targetRow = -1;
-        let existingPOInSameRFQ = false;
-        let rowData: any[] = [];
-
-        // البحث عن الصف المطابق للبند وطلب التسعير
-        let matchingRowWithRFQ = -1;
-        let lastMatchingRow = -1;
-        let firstMatchingRowWithoutPO = -1; // أول صف مطابق بدون أمر شراء
-        
-        for (let i = 1; i < values.length; i++) { // تخطي الصف الأول (العناوين)
-          if (values[i] && values[i][2] && // العمود C (LINE ITEM)
-              (values[i][2].toString().trim() === searchValue.trim())) {
-            
-            // تحديث آخر صف مطابق للبند (بغض النظر عن RFQ)
-            lastMatchingRow = i + 1;
-            
-            // إذا لم يكن هناك أمر شراء في هذا الصف، احفظه كخيار محتمل
-            if (!values[i][10] || values[i][10].toString().trim() === '') {
-              if (firstMatchingRowWithoutPO === -1) {
-                firstMatchingRowWithoutPO = i + 1;
-                rowData = values[i]; // حفظ بيانات الصف للاستخدام المحتمل
-              }
-            }
-            
-            // التحقق من مطابقة RFQ (العمود F) - فقط إذا كان rfqNumber محدد
-            const rowRFQ = values[i][5] ? values[i][5].toString().trim() : '';
-            if (rfqNumber && rowRFQ === rfqNumber.trim()) {
-              // وجدنا الصف المطابق للبند وطلب التسعير
-              matchingRowWithRFQ = i + 1;
-              rowData = values[i]; // حفظ بيانات الصف للنسخ
-              
-              // التحقق من وجود PO في هذا الصف المحدد
-              if (values[i][10] && values[i][10].toString().trim() !== '') {
-                existingPOInSameRFQ = true;
-                console.log(`📋 البند ${searchValue} في طلب التسعير ${rfqNumber} له أمر شراء: ${values[i][10]} في الصف ${i + 1}`);
-              } else {
-                console.log(`✅ البند ${searchValue} في طلب التسعير ${rfqNumber} بدون أمر شراء في الصف ${i + 1}`);
-              }
-            }
-          }
-        }
-        
-        // تحديد الصف المستهدف
-        if (matchingRowWithRFQ !== -1) {
-          // وجدنا الصف المطابق للبند وطلب التسعير المحدد
-          if (existingPOInSameRFQ) {
-            // البند له أمر شراء في نفس طلب التسعير - نضيف صف جديد بعده
-            targetRow = matchingRowWithRFQ;
-            console.log(`📍 سيتم إضافة صف جديد بعد الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير مع أمر شراء موجود)`);
-          } else {
-            // البند بدون أمر شراء في نفس طلب التسعير - نحدث نفس الصف
-            targetRow = matchingRowWithRFQ;
-            console.log(`📍 سيتم التحديث في الصف ${matchingRowWithRFQ} (نفس البند وطلب التسعير بدون أمر شراء)`);
-          }
-        } else if (!rfqNumber) {
-          // لا يوجد رقم طلب تسعير محدد - نبحث عن أي صف متاح للبند
-          console.warn(`⚠️ البند ${searchValue} بدون رقم طلب تسعير محدد - البحث عن صف متاح`);
-          if (firstMatchingRowWithoutPO !== -1) {
-            targetRow = firstMatchingRowWithoutPO;
-            console.log(`📍 سيتم استخدام الصف ${firstMatchingRowWithoutPO} (بند بدون أمر شراء)`);
-          } else if (lastMatchingRow !== -1) {
-            targetRow = lastMatchingRow;
-            console.log(`📍 سيتم استخدام الصف ${lastMatchingRow} (آخر صف مطابق)`);
-          }
-        } else if (rfqNumber && lastMatchingRow !== -1) {
-          // يوجد رقم طلب تسعير محدد والبند موجود - نستخدم آخر صف مطابق
-          console.log(`📍 البند ${searchValue} موجود في الصف ${lastMatchingRow}`);
-          targetRow = lastMatchingRow;
-        }
-
-        if (targetRow === -1) {
-          console.warn(`⚠️ البند ${searchValue} غير موجود في ورقة DATA - سيتم إضافته كصف جديد`);
-          // لا نرمي خطأ هنا، بل نضع علامة لإضافة البند كصف جديد
-          targetRow = 0; // علامة خاصة لإضافة صف جديد
-        }
-
-        console.log(`✅ تم العثور على البند في الصف ${targetRow}`);
-
-        // تحديد السلوك بناءً على وجود أمر شراء في نفس طلب التسعير
-        let shouldAddNewRow = false;
-        
-        // إذا كان البند له أمر شراء في نفس طلب التسعير، نضيف صف جديد
-        if (existingPOInSameRFQ) {
-          console.log(`⚠️ البند ${searchValue} له أمر شراء سابق في نفس طلب التسعير - سيتم إضافة صف جديد`);
-          shouldAddNewRow = true;
-        } else {
-          console.log(`✅ البند ${searchValue} ليس له أمر شراء في نفس طلب التسعير - سيتم التحديث في نفس الصف`);
-          shouldAddNewRow = false;
-        }
-        
-        isFirstItem = false; // تحديث المتغير بعد أول بند
-
-        // معالجة البنود الجديدة (targetRow === 0)
-        if (targetRow === 0) {
-          console.log(`📝 إضافة بند جديد: ${searchValue}`);
-          
-          // إنشاء صف جديد للبند
-          const newRowData = [
-            '', // A - معرف البند (سيتم توليده لاحقاً)
-            '', // B - UOM
-            item.lineItem || '', // C - Line Item
-            '', // D - Part Number
-            '', // E - الوصف
-            item.rfqNumber || '', // F - رقم RFQ
-            '', // G - تاريخ RFQ
-            '', // H - كمية RFQ
-            '', // I - سعر العميل
-            '', // J - اسم المورد
-            poData.poNumber, // K - رقم أمر الشراء
-            poData.poDate, // L - تاريخ أمر الشراء
-            item.quantity?.toString() || '0', // M - كمية أمر الشراء
-            item.unitPrice?.toString() || '0', // N - سعر أمر الشراء
-            ((item.quantity || 0) * (item.unitPrice || 0)).toString() // O - الإجمالي
-          ];
-          
-          // إضافة الصف الجديد
-          await this.sheets.spreadsheets.values.append({
-            spreadsheetId: this.spreadsheetId,
-            range: 'DATA!A:O',
+          requestBody: {
             valueInputOption: 'RAW',
-            insertDataOption: 'INSERT_ROWS',
-            resource: {
-              values: [newRowData]
-            }
-          });
-          
-          console.log(`✅ تم إضافة البند الجديد: ${searchValue}`);
-          savedItemsCount++;
-          continue; // الانتقال للبند التالي
-        }
-        
-        // إذا كان يجب إضافة صف جديد
-        if (shouldAddNewRow) {
-          console.log(`📝 إضافة صف جديد للبند ${searchValue} مع أمر الشراء الجديد`);
-          
-          // طباعة كل الأعمدة لفهم البيانات
-          console.log(`📊 البيانات الكاملة للصف الأصلي:`);
-          for (let i = 0; i < Math.min(rowData.length, 27); i++) {
-            const columnLetter = String.fromCharCode(65 + i); // A, B, C, etc.
-            console.log(`   العمود ${columnLetter} [${i}]: ${rowData[i] || '(فارغ)'}`);
+            data
           }
-          
-          // إنشاء صف جديد ونسخ كل البيانات عمود بعمود
-          const newRowData = new Array(27); // إنشاء مصفوفة جديدة بحجم 27 (من A إلى AA)
-          
-          // نسخ الأعمدة من A إلى J (ما عدا H)
-          for (let i = 0; i <= 9; i++) { // من 0 إلى 9 (A إلى J)
-            if (i === 7) {
-              // العمود H (index 7) - الكمية RFQ - نتركه فارغاً
-              newRowData[i] = '';
-            } else {
-              // نسخ القيمة الأصلية من الصف الموجود
-              newRowData[i] = rowData[i] !== undefined ? rowData[i] : '';
-            }
-          }
-          
-          // إضافة بيانات أمر الشراء الجديد في الأعمدة K-N
-          newRowData[10] = poData.poNumber;           // العمود K - رقم أمر الشراء
-          newRowData[11] = poData.poDate;            // العمود L - تاريخ أمر الشراء
-          newRowData[12] = item.quantity.toString(); // العمود M - كمية أمر الشراء
-          newRowData[13] = item.unitPrice.toString(); // العمود N - سعر أمر الشراء
-          
-          // حساب حاصل ضرب الكمية في السعر للعمود O
-          const totalPrice = item.quantity * item.unitPrice;
-          newRowData[14] = totalPrice.toString(); // العمود O - الإجمالي
-          
-          // نسخ العمودين P و Q من الصف الأصلي
-          newRowData[15] = rowData[15] !== undefined ? rowData[15] : ''; // العمود P
-          newRowData[16] = rowData[16] !== undefined ? rowData[16] : ''; // العمود Q
-          
-          // ترك باقي الأعمدة فارغة (R-AA)
-          for (let i = 17; i < 27; i++) {
-            newRowData[i] = '';
-          }
-          
-          // التأكد من نسخ البيانات المهمة
-          console.log(`📝 البيانات المنسوخة:`);
-          console.log(`   العمود A (Item Number): "${newRowData[0]}"`);
-          console.log(`   العمود B (UOM): "${newRowData[1]}"`);
-          console.log(`   العمود C (LINE ITEM): "${newRowData[2]}"`);
-          console.log(`   العمود D (PART NO): "${newRowData[3]}"`);
-          console.log(`   العمود E (التوصيف): "${newRowData[4]}"`);
-          console.log(`   العمود F (RFQ): "${newRowData[5]}"`);
-          console.log(`   العمود G (التاريخ): "${newRowData[6]}"`);
-          console.log(`   العمود H (الكمية RFQ) - فارغ: "${newRowData[7]}"`);
-          console.log(`   العمود I: "${newRowData[8]}"`);
-          console.log(`   العمود J: "${newRowData[9]}"`);
-          console.log(`📦 بيانات أمر الشراء الجديد:`);
-          console.log(`   العمود K (PO): "${newRowData[10]}"`);
-          console.log(`   العمود L (PO Date): "${newRowData[11]}"`);
-          console.log(`   العمود M (PO Qty): "${newRowData[12]}"`);
-          console.log(`   العمود N (PO Price): "${newRowData[13]}"`);
-          console.log(`   العمود O (الإجمالي): "${newRowData[14]}"`);
-          console.log(`   العمود P (منسوخ): "${newRowData[15]}"`);
-          console.log(`   العمود Q (منسوخ): "${newRowData[16]}"`);
-          
-          // إدراج الصف الجديد بعد الصف الحالي
-          await this.insertNewRowAfter(targetRow, newRowData);
-          
-          console.log(`✅ تم إضافة صف جديد رقم ${targetRow + 1} مع أمر الشراء ${poData.poNumber}`);
-          savedItemsCount++; // زيادة عداد البنود المحفوظة
-        } else {
-          // إذا لم يكن هناك أمر شراء سابق، حدث البيانات في نفس الصف
-          console.log(`📝 تحديث بيانات أمر الشراء في الصف ${targetRow}`);
-          
-          // حساب الإجمالي
-          const totalPrice = item.quantity * item.unitPrice;
-          
-          // تحديث الأعمدة K-O في طلب API واحد بدلاً من 5 طلبات منفصلة (إصلاح مشكلة rate limit)
-            await this.sheetsUpdateWithRetry(
-              `DATA!K${targetRow}:O${targetRow}`,
-              [[
-                poData.poNumber,
-                poData.poDate,
-                item.quantity.toString(),
-                item.unitPrice.toString(),
-                totalPrice.toString()
-              ]]
-            );
-
-            console.log(`✅ تم حفظ بيانات البند ${searchValue} في الصف ${targetRow}`);
-          savedItemsCount++; // زيادة عداد البنود المحفوظة
-        }
-      }
-
-      // التحقق من عدد البنود المحفوظة فعلياً
-      if (savedItemsCount === 0 && poData.items.length > 0) {
-        console.warn(`⚠️ تحذير: لم يتم حفظ أي بند بعد - ربما البنود غير موجودة في Google Sheets`);
-        console.log(`📝 عدد البنود المطلوبة: ${poData.items.length}`);
-        // لا نرمي خطأ هنا - قد تكون البنود قد أضيفت في الكود أعلاه
-      }
-      
-      console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber} بنجاح مع ${savedItemsCount} بند`);
-    } catch (error) {
-      console.error('❌ خطأ في حفظ أمر الشراء:', (error as Error).message);
-      throw error;
+        }),
+        'batchUpdate'
+      );
     }
-  }
 
-  /**
-   * إدراج صف جديد بعد صف معين
-   */
-  private async insertNewRowAfter(afterRow: number, rowData: any[]): Promise<void> {
+    private async sheetsAppendWithRetry(range: string, values: any[][]) {
+      return this.sheetsApiWithRetry(
+        () => this.sheets.spreadsheets.values.append({
+          spreadsheetId: this.spreadsheetId,
+          range,
+          valueInputOption: 'RAW',
+          insertDataOption: 'INSERT_ROWS',
+          requestBody: { values }
+        }),
+        `APPEND ${range}`
+      );
+    }
+
+      async savePurchaseOrderToSheets(poData: {
+      poNumber: string;
+      poDate: string;
+      items: Array<{
+        itemNumber?: string;
+        lineItem?: string;
+        rfqNumber?: string;
+        quantity: number;
+        unitPrice: number;
+      }>;
+    }): Promise<void> {
+      try {
+        console.log(`📦 حفظ أمر الشراء ${poData.poNumber} مع ${poData.items.length} بند`);
+
+        if (!this.sheets || !this.spreadsheetId) {
+          const ok = await this.initialize();
+          if (!ok) throw new Error('فشل في تهيئة Google Sheets');
+        }
+
+        const processedItems = poData.items.filter(item => item.lineItem || item.itemNumber);
+        if (processedItems.length === 0) {
+          console.warn('⚠️ لا توجد بنود صالحة للحفظ');
+          return;
+        }
+
+        // قراءة ورقة DATA مرة واحدة فقط لجميع البنود
+        console.log('📖 قراءة بيانات ورقة DATA...');
+        const readResponse = await this.sheetsGetWithRetry('DATA!A:O');
+        const sheetValues: any[][] = readResponse.data.values || [];
+        console.log(`📊 عدد الصفوف: ${sheetValues.length}`);
+
+        // تحديد الصف المستهدف لكل بند
+        const batchData: { range: string; values: any[][] }[] = [];
+        const appendRows: any[][] = [];
+
+        for (const item of processedItems) {
+          const searchValue = (item.lineItem || item.itemNumber || '').trim();
+          const rfqNumber   = (item.rfqNumber || '').trim();
+          const totalPrice  = item.quantity * item.unitPrice;
+          const newCells    = [poData.poNumber, poData.poDate, String(item.quantity), String(item.unitPrice), String(totalPrice)];
+
+          let bestRow = -1;     // صف يطابق البند + RFQ + بدون PO
+          let fallbackRow = -1; // أي صف يطابق البند
+
+          for (let i = 1; i < sheetValues.length; i++) {
+            const row = sheetValues[i];
+            if (!row) continue;
+            const rowLineItem = (row[2] || '').toString().trim();
+            if (rowLineItem !== searchValue) continue;
+
+            const rowRFQ   = (row[5] || '').toString().trim();
+            const rowPO    = (row[10] || '').toString().trim();
+            const rfqMatch = !rfqNumber || !rowRFQ || rowRFQ === rfqNumber;
+
+            if (rfqMatch && !rowPO && bestRow === -1) {
+              bestRow = i + 1; // 1-based
+            }
+            if (rfqMatch && fallbackRow === -1) fallbackRow = i + 1;
+            if (bestRow !== -1 && fallbackRow !== -1) break;
+          }
+
+          const targetRow = bestRow > 0 ? bestRow : fallbackRow;
+
+          if (targetRow > 0) {
+            console.log(`✅ تحديث الصف ${targetRow} للبند: ${searchValue}`);
+            batchData.push({ range: `DATA!K${targetRow}:O${targetRow}`, values: [newCells] });
+          } else {
+            console.log(`➕ إضافة صف جديد للبند: ${searchValue}`);
+            appendRows.push(['', '', searchValue, '', '', rfqNumber, '', '', '', '', ...newCells]);
+          }
+        }
+
+        // تنفيذ كل التحديثات في طلب batchUpdate واحد
+        if (batchData.length > 0) {
+          console.log(`📝 إرسال batchUpdate لـ ${batchData.length} بند...`);
+          await this.sheetsBatchUpdateWithRetry(batchData);
+          console.log(`✅ batchUpdate نجح`);
+        }
+
+        // إضافة الصفوف الجديدة
+        for (const row of appendRows) {
+          await this.sheetsAppendWithRetry('DATA!A:O', [row]);
+        }
+
+        console.log(`✅ تم حفظ أمر الشراء ${poData.poNumber}: ${batchData.length} تحديث، ${appendRows.length} إضافة جديدة`);
+      } catch (error) {
+        console.error('❌ خطأ في حفظ أمر الشراء:', (error as Error).message);
+        console.error('❌ Stack:', (error as Error).stack);
+        throw error;
+      }
+    }
+
+    private async insertNewRowAfter(afterRow: number, rowData: any[]): Promise<void> {
     try {
       // أولاً، احصل على معرف الورقة
       const spreadsheet = await this.sheets.spreadsheets.get({
