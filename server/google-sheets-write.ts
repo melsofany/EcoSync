@@ -1088,7 +1088,34 @@ ${itemsList}
    * حفظ بيانات أمر الشراء في Google Sheets
    * يحفظ رقم أمر الشراء في العمود K، التاريخ في L، الكمية في M، السعر في N
    */
-  async savePurchaseOrderToSheets(poData: {
+  /**
+     * تحديث Google Sheets مع إعادة المحاولة عند تجاوز حد الاستخدام (429)
+     */
+    private async sheetsUpdateWithRetry(range: string, values: any[][], retries = 3): Promise<void> {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          await this.sheets.spreadsheets.values.update({
+            spreadsheetId: this.spreadsheetId,
+            range,
+            valueInputOption: 'RAW',
+            resource: { values }
+          });
+          return;
+        } catch (error: any) {
+          const isRateLimit = error?.status === 429 || error?.code === 429 ||
+            (error?.message && error.message.includes('Quota exceeded'));
+          if (isRateLimit && attempt < retries) {
+            const delay = attempt * 2000;
+            console.warn(`⚠️ Google Sheets rate limit - إعادة المحاولة بعد ${delay}ms (محاولة ${attempt}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          } else {
+            throw error;
+          }
+        }
+      }
+    }
+
+    async savePurchaseOrderToSheets(poData: {
     poNumber: string;
     poDate: string;
     items: Array<{
@@ -1353,43 +1380,19 @@ ${itemsList}
           // حساب الإجمالي
           const totalPrice = item.quantity * item.unitPrice;
           
-          // تحديث البيانات في الأعمدة K, L, M, N, O
-          const updates = [
-            {
-              range: `DATA!K${targetRow}`, // رقم أمر الشراء
-              values: [[poData.poNumber]]
-            },
-            {
-              range: `DATA!L${targetRow}`, // تاريخ أمر الشراء
-              values: [[poData.poDate]]
-            },
-            {
-              range: `DATA!M${targetRow}`, // الكمية
-              values: [[item.quantity.toString()]]
-            },
-            {
-              range: `DATA!N${targetRow}`, // السعر
-              values: [[item.unitPrice.toString()]]
-            },
-            {
-              range: `DATA!O${targetRow}`, // الإجمالي (كمية × سعر)
-              values: [[totalPrice.toString()]]
-            }
-          ];
+          // تحديث الأعمدة K-O في طلب API واحد بدلاً من 5 طلبات منفصلة (إصلاح مشكلة rate limit)
+            await this.sheetsUpdateWithRetry(
+              `DATA!K${targetRow}:O${targetRow}`,
+              [[
+                poData.poNumber,
+                poData.poDate,
+                item.quantity.toString(),
+                item.unitPrice.toString(),
+                totalPrice.toString()
+              ]]
+            );
 
-          // تحديث كل عمود
-          for (const update of updates) {
-            await this.sheets.spreadsheets.values.update({
-              spreadsheetId: this.spreadsheetId,
-              range: update.range,
-              valueInputOption: 'RAW',
-              resource: {
-                values: update.values
-              }
-            });
-          }
-
-          console.log(`✅ تم حفظ بيانات البند ${searchValue} في الصف ${targetRow}`);
+            console.log(`✅ تم حفظ بيانات البند ${searchValue} في الصف ${targetRow}`);
           savedItemsCount++; // زيادة عداد البنود المحفوظة
         }
       }
