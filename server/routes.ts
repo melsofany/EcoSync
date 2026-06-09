@@ -6169,11 +6169,16 @@ ${similarItems.map(item => `- ${item.itemNumber}: ${item.description} (رقم ا
       const errorMessage = error instanceof Error ? error.message : "خطأ في حفظ أمر الشراء";
       console.error("❌ تفاصيل الخطأ:", error instanceof Error ? error.stack : error);
       
-      res.status(500).json({ 
-        success: false,
-        message: "حدث خطأ في حفظ أمر الشراء. الرجاء المحاولة مرة أخرى.",
-        error: "SAVE_ERROR"
-      });
+      const isRateLimit = (error as any)?.status === 429 || (error as any)?.code === 429 ||
+          ((error instanceof Error) && error.message.includes('Quota exceeded'));
+        res.status(500).json({ 
+          success: false,
+          message: isRateLimit
+            ? "تجاوز حد استخدام Google Sheets API. الرجاء الانتظار دقيقة والمحاولة مرة أخرى."
+            : "حدث خطأ في حفظ أمر الشراء. الرجاء المحاولة مرة أخرى.",
+          error: isRateLimit ? "RATE_LIMIT" : "SAVE_ERROR",
+          detail: error instanceof Error ? error.message : String(error)
+        })
     }
   });
 
